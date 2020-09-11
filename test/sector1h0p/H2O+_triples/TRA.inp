@@ -1,0 +1,50 @@
+**GENERAL                                                                                           
+.PCMOUT                                                                                             
+**DIRAC                                                                                             
+.TITLE                                                                                              
+H2O ionization potential                                                                                 
+.WAVE F
+.4INDEX
+**HAMILTONIAN
+.NONREL                                                                                             
+**WAVE FUNCTION
+.SCF
+#.RELCCSD
+**MOLTRA                                                                                            
+.ACTIVE                                                                                             
+energy -100. 20.0 0.1                                                                                
+.PRINT                                                                                              
+1                                                                                                   
+**RELCC                                                                                             
+.FOCKSP                                                                                             
+.PRINT                                                                                              
+1                                                                                                   
+*CCENER
+.NTOL
+9
+*CCFSPC                                                                                             
+.MAXIT # maximum number of iterations for sectors                                                   
+100                                                                                                  
+.NTOL                                                                                               
+9                                                                                                   
+.DOIE     #  (1,0) sector                                                                           
+.NACTH                                                                                              
+ 4  4
+.DOIH
+*CCIH
+.EHMIN
+-100.0
+.EHMAX
+ 100.0
+.IHSCHEME
+1
+.NIH
+3
+.AIH
+-0.5
+.SH_H11
+-0.25
+.SH_H12
+-0.5
+*END OF DIRAC                                                                                       
+

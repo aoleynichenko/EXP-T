@@ -1,0 +1,9 @@
+DIRAC
+N2 molecule
+
+C   1    1XYZ
+        7.    1
+N1       0.0      0.0      1.0372
+LARGE BASIS cc-pVDZ
+FINISH
+

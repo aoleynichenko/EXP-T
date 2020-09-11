@@ -1,0 +1,13 @@
+# Test:
+# (1) LiNa in cc-pVDZ
+# (2) DC - relativistic, 4-comp
+# (3) symmetry Cs
+# (4) external field: Ez=0.01 a.u.
+
+title "Test LiNa/cc-pVDZ/Dirac-Coulomb/Cs/Fz=0.01"
+maxiter 50
+conv 1e-9
+
+# import integrals from
+integrals MRCONEE-Cs MDCINT-Cs
+

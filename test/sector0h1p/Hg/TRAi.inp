@@ -1,0 +1,47 @@
+**GENERAL
+.PCMOUT
+**DIRAC
+.TITLE
+FS-MRCC calculation: Hg2+ -> Hg+
+.WAVE F
+.4INDEX
+**HAMILTONIAN
+.ECP
+**WAVE FUNCTIONS
+.SCF
+#.RELCCSD
+*SCF
+.CLOSED SHELL
+ 12 6
+**MOLTRA
+.ACTIVE
+all
+**RELCC
+.FOCKSP
+.PRINT
+1
+*CCFSPC
+.MAXIT
+100
+.NTOL
+9
+.DOEA
+.NACTP
+  1 1 3 3
+*CCIH
+.EPMIN
+-5.
+.EPMAX
+ 5.
+.IHSCHEME
+1
+.NIH
+3
+.AIH
+0.0
+.SH_P11
+-0.1
+.SH_P12
+-0.3
+*END OF DIRAC                                                                                       
+

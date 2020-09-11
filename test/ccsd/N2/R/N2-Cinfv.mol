@@ -1,0 +1,13 @@
+DIRAC
+N2 molecule
+
+C   2     Cinfv
+        7.    2
+N1       0.0      0.0      1.0372
+N2       0.0      0.0     -1.0372
+LARGE BASIS cc-pVDZ
+        0.    1
+GH       0.0      0.0     10.0
+LARGE 0
+FINISH
+

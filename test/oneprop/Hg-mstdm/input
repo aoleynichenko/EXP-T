@@ -1,0 +1,12 @@
+sector 0h2p
+nactp 26
+diis 20
+nthreads 2
+disk_usage 0
+conv 1e-9
+nroots [0g]:1 [0u]:4 [1u+]:3 [1u-]:3 [2u+]:1 [2u-]:1
+shifttype real
+shift 0h1p 3 -0.3 -0.6
+shift 0h2p 3 -0.6
+dltdm
+

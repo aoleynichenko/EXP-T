@@ -1,0 +1,11 @@
+sector 1h1p
+nacth 6
+nactp 2
+diis 20
+damping 1h1p 3 0.8
+maxiter 200
+disk_usage 0
+conv 1e-8
+
+
+

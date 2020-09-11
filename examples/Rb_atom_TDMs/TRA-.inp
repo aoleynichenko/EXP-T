@@ -1,0 +1,28 @@
+! Four-index transformation
+! Rb atom
+**GENERAL
+.PCMOUT
+**DIRAC
+.TITLE
+Rb+ ion -- 4index transformation
+.WAVE F
+.4INDEX
+**HAMILTONIAN 
+.ECP
+.OPERATOR
+ ZDIPLEN
+ COMFACTOR
+ -0.00001
+**WAVE FUNCTION
+*SCF
+.CLOSED SHELL
+ 8
+**MOLTRA
+.SCHEME
+4
+.ACTIVE
+energy -100.0 20.0 0.5
+*END OF DIRAC
+
+
+

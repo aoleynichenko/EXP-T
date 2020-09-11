@@ -1,0 +1,45 @@
+**DIRAC         
+.TITLE          
+Ne6+ ion
+.WAVE FUNCTION  
+.4INDEX
+**HAMILTONIAN
+.NONREL
+**INTEGRALS
+.NUCMOD
+ 1
+**WAVE FUNCTION          
+.SCF
+#.RELCCSD
+*SCF            
+.CLOSED         
+ 4 6          
+.ERGCNV         
+1E-11        
+**MOLTRA        
+.ACTIVE         
+all
+**RELCC         
+.ENERGY
+.FOCKSP         
+.PRINT          
+1               
+*CCENER         
+.MAXIT          
+50              
+.NTOL           
+ 9     
+*CCFSPC
+.MAXIT
+200
+.NTOL
+9
+.DOEA
+.DOIE
+.DOEXC
+.NACTH
+ 0  0  3  3
+.NACTP
+ 1  1  3  3
+*END OF INPUT   
+				

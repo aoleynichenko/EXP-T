@@ -1,0 +1,19 @@
+**GENERAL
+.PCMOUT
+**DIRAC
+.TITLE
+FS-MRCC calculation: HgH3+ -> HgH2+
+.WAVE F
+.4INDEX
+**HAMILTONIAN
+.ECP
+**WAVE FUNCTIONS
+.SCF
+*SCF
+.CLOSED SHELL
+ 18
+**MOLTRA
+.ACTIVE
+all
+*END OF DIRAC                                                                                       
+

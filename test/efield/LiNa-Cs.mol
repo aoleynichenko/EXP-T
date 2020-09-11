@@ -1,0 +1,12 @@
+DIRAC
+LiNa molecule
+
+C   2    1  X
+        3.    1
+Li       0.0      0.0      0.0
+LARGE BASIS cc-pVDZ
+       11.    1
+Na       0.0      0.0      3.0
+LARGE BASIS cc-pVDZ
+FINISH
+

@@ -1,0 +1,13 @@
+# Test:
+# (1) Pb atom (22 electrons total, 14 correlated)
+# (2) AREP - quasi-relativistic
+# (3) symmetry D2
+
+title "Test Pb/AREP/D2"
+maxiter 30
+conv 1e-9
+
+# import integrals from
+integrals MRCONEE-D2 MDCINT-D2
+
+

@@ -1,0 +1,8 @@
+sector 0h0p
+nacth 6
+nactp 2
+maxiter 200
+disk_usage 0
+conv 1e-9
+
+

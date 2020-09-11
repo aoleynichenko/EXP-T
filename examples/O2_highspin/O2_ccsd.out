@@ -1,0 +1,800 @@
+
+		************************************************************************
+		**                              E X P - T                             **
+		**   Fock-Space Multireference Relativistic Coupled Cluster Program   **
+		************************************************************************
+Version: 1.4.1
+Release date: 15 Feb 2020
+Authors:
+  Alexander Oleynichenko [alexvoleynichenko@gmail.com]
+  Andrei Zaitsevskii
+  Ephraim Eliav
+Compiler: Intel C Compiler 1700 (Intel(R) C++ gcc 4.9 mode)
+BLAS/LAPACK implementation: OpenBLAS
+Build date: Feb 24 2020 14:23:09
+Run date: Mon Feb 24 16:04:00 2020
+Hostname: 192.168.1.12
+
+------------------------- size of data types (bytes) -------------------------
+                               integer types                                  
+ char            1  unsigned char   1   signed char     1   short           2
+ unsigned short  2  int             4   unsigned int    4   long            8
+ unsigned long   8  long long       8   unsigned long long                  8
+ int8_t          1  int16_t         2   int32_t         4   int64_t         8
+ uint8_t         1  uint16_t        2   uint32_t        4   uint64_t        8
+                      size, pointer, difference types                         
+ size_t          8  ptrdiff_t       8   void *          8
+                                 real types                                   
+ float           4  double          8   long double    16
+                               complex types                                  
+ float complex   8  double complex 16   long double complex                32
+------------------------------------------------------------------------------
+
+CUDA disabled
+
+Reading input file: input
+
+----------------------------- echo of input file -----------------------------
+sector 0h0p
+model ccsd
+
+occ_irreps 3 2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 2 1 1
+
+# an alternative way of setting spinor occupation numbers:
+#occ 1 1 1 1 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0
+
+
+------------------------------------------------------------------------------
+
+
+Options:
+  title             no title
+  scratch dir       scratch
+  clean scratch dir yes
+  print level       high
+  recommend arith   real
+  max memory usage  1024.0 Mb
+  data compression  disabled
+  <pp||pp> storage  disk
+  disk usage level  2 (rank-6+ and pppp on disk)
+  tile size         100
+  n OpenMP threads  1
+  CUDA              disabled
+  max iter          50
+  conv threshold    1e-09
+  read ampl-s for   nothing 
+  Interface to      DIRAC
+  One-el ints file  MRCONEE
+  Two-el ints file  MDCINT
+  Prop-s ints file  MDPROP
+  Target FS sector  0h0p
+  CC model          CCSD
+  active space      undefined
+  denom shifts      disabled
+  nroots            all
+  degeneracy thresh 1.0e-08
+  occup (by irreps) 3 2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 2 1 1 0 0 0 0 0 0 0 0 0 0 0 0 
+  occ numbers       default
+  restrict triples  disabled
+  damping           disabled
+  int-face OneProp  disabled
+  hermitization     enabled
+  calculate DL-TDMs disabled
+  natural orbitals  disabled
+  model-space props disabled
+
+ Creating scratch directory 'scratch' ...
+ Current working directory = /Users/Oleynichenko/qchem/RELEASE/examples/O2_highspin
+ Full path to one-electron integrals = /Users/Oleynichenko/qchem/RELEASE/examples/O2_highspin/MRCONEE
+ Full path to two-electron integrals = /Users/Oleynichenko/qchem/RELEASE/examples/O2_highspin/MDCINT
+ Full path to properties integrals = /Users/Oleynichenko/qchem/RELEASE/examples/O2_highspin/MDPROP
+ Changing working directory to scratch ...
+ Current working directory = /Users/Oleynichenko/qchem/RELEASE/examples/O2_highspin/scratch
+ 
+ ******************************************************************
+ **       BINARY INTERFACE TO THE DIRAC PROGRAM PACKAGE          **
+ **                    version 22 Jul 2019                       **
+ ******************************************************************
+ 
+ required unformatted files (produced by DIRAC):
+   MRCONEE -- spinor info & transformed one-electron integrals
+   MDCINT  -- transformed two-electron integrals
+ optional files (also DIRAC):
+   MDPROP  -- transformed integrals of one-electron properties
+ 
+ HINT: in order to obtain these files, add option .4INDEX to the
+   **DIRAC section of the DIRAC input file; this will enable the
+   code for integrals transformation. Then run:
+   $ pam --inp=<inp-file> --mol=<mol-file> --get="MRCONEE MDCINT"
+ 
+ 
+ Names of integral files:
+ MRCONEE = /Users/Oleynichenko/qchem/RELEASE/examples/O2_highspin/MRCONEE
+ MDCINT  = /Users/Oleynichenko/qchem/RELEASE/examples/O2_highspin/MDCINT
+ MDPROP  = /Users/Oleynichenko/qchem/RELEASE/examples/O2_highspin/MDPROP
+ MDPROP unformatted file is not found!
+ will be continued without properties
+ default integer type in DIRAC              integer(4)
+ 
+ *** MRCONEE FILE ***
+ nspinors                                             52
+ was breit in DHF                            F
+ nuclear repulsion energy                     -102.530883675429     
+ inversion symmetry (1-no,2-yes)                       2
+ group type (1-real,2-cmplx,4-quater)                  1
+ is spinfree                                           0
+ arithmetic                                 real
+ total num of orb-s (+frozen+deleted)                 56
+ total SCF energy                             -149.686661451846     
+ number of fermion irreps in parent group              4
+ names of these reps (grd, ungrd)             Eg 1Eg        Eg 2Eg      
+   Eu 1Eu        Eu 2Eu      
+ number of spinors active in the transf-n              2           2           3
+           3
+ total number of orb-s of this ircop                  13          13
+ number of occupied frozen (core) spinors   
+   - total                                             1           1
+   - positive energy                                   1           1
+   - negative energy                                   0           0
+ number of deleted spinors                             0           0
+ number of fermion irreps in Abelian subgrp           32
+ names of these irreps                        1g -1g  3g -3g  5g -5g  7g -7g  9g
+  -9g 11g-11g 13g-13g 15g-15g  1u -1u  3u -3u  5u -5u  7u -7u  9u -9u 11u-11u
+  13u-13u 15u-15u  0g  2g -2g  4g -4g  6g -6g  8g -8g 10g-10g 12g-12g 14g-14g
+  16g  0u  2u -2u  4u -4u  6u -6u  8u -8u 10u-10u 12u-12u 14u-14u 16u
+ number of g/u Kramers pairs          28          28
+ number of boson symmetry reps(LUCITA)            8
+ *** END OF MRCONEE FILE ***
+ 
+ *** spinor blocks ***
+ tile size =          100
+ number of fermion irreps in the Abelian subgroup =           32
+ repsizes =   8  8  4  4  1  1  0  0  0  0  0  0  0  0  0  0  8  8  4  4  1  1  0  0  0  0  0  0  0  0  0  0
+ number of spinor blocks =           12
+ sizes of spinor blocks =   8  8  4  4  1  1  8  8  4  4  1  1
+ indices of spinors for each spinor block:
+[  1]    1    2    3    5    6    8   11   12
+[  2]   14   15   16   18   19   21   24   25
+[  3]   17   20   22   26
+[  4]    4    7    9   13
+[  5]   10
+[  6]   23
+[  7]   27   28   30   31   32   34   35   39
+[  8]   40   41   43   44   45   47   48   52
+[  9]   42   46   49   50
+[ 10]   29   33   36   37
+[ 11]   38
+[ 12]   51
+ *** end spinor blocks ***
+ 
+ *** MDPROP FILE ***
+ path to MDPROP file = 
+ /Users/Oleynichenko/qchem/RELEASE/examples/O2_highspin/MDPROP
+ MDPROP file does not exist, properties integrals cannot be read
+ *** END OF MDPROP FILE ***
+ 
+ expectation value of dipole moment at the SCF level cannot be calculated
+ 
+ *** MDCINT FILE ***
+ Mon Feb 24 16:04:00 2020
+ datex                                  24Feb20  
+ timex                                 16:03:29
+ number of Kramers pairs                         26
+ number of VINT* files written                   1168
+ written to disk: 38840320 bytes =    0.04 Gb
+ Mon Feb 24 16:04:02 2020
+ *** END OF MDCINT FILE ***
+ 
+Total SCF energy =    -149.686661451846
+Arithmetic: real
+Group type: real
+Spin-orbit: on
+Detected point symmetry group: C16h aka Dinfh
+Totally symmetric irrep: 0g
+
+		*** creating spinor blocks ***
+nsym = 64
+sizes = 8 8 4 4 1 1 0 0 0 0 0 0 0 0 0 0 8 8 4 4 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+number of nonzero blocks = 12
+i = 0 j = 0 repno = 0 size = 8
+i = 1 j = 1 repno = 1 size = 8
+i = 2 j = 2 repno = 2 size = 4
+i = 3 j = 3 repno = 3 size = 4
+i = 4 j = 4 repno = 4 size = 1
+i = 5 j = 5 repno = 5 size = 1
+i = 16 j = 6 repno = 16 size = 8
+i = 17 j = 7 repno = 17 size = 8
+i = 18 j = 8 repno = 18 size = 4
+i = 19 j = 9 repno = 19 size = 4
+i = 20 j = 10 repno = 20 size = 1
+i = 21 j = 11 repno = 21 size = 1
+spinor blocks:
+ [0] sz = 8 repno = 0 idx = 0 1 2 4 5 7 10 11 
+ [1] sz = 8 repno = 1 idx = 13 14 15 17 18 20 23 24 
+ [2] sz = 4 repno = 2 idx = 16 19 21 25 
+ [3] sz = 4 repno = 3 idx = 3 6 8 12 
+ [4] sz = 1 repno = 4 idx = 9 
+ [5] sz = 1 repno = 5 idx = 22 
+ [6] sz = 8 repno = 16 idx = 26 27 29 30 31 33 34 38 
+ [7] sz = 8 repno = 17 idx = 39 40 42 43 44 46 47 51 
+ [8] sz = 4 repno = 18 idx = 41 45 48 49 
+ [9] sz = 4 repno = 19 idx = 28 32 35 36 
+ [10] sz = 1 repno = 20 idx = 37 
+ [11] sz = 1 repno = 21 idx = 50 
+			*** done ***
+
+spinor classification (define active space)...
+active space MIN energy = 0 a.u.
+active space MAX energy = 0 a.u.
+I/A = inactive/active
+H/P = hole/particle
+spinor occupation numbers are to be re-defined
+NH = NIH + NAH = 12 + 0 = 12
+NP = NIP + NAP = 40 + 0 = 40
+...done
+
+
+		Irreducible representations
+		---------------------------
+
+number of irreps: 64
+is abelian: 1
+representation names:
+    0 1/2g+
+    1 1/2g-
+    2 3/2g+
+    3 3/2g-
+    4 5/2g+
+    5 5/2g-
+    6 7/2g+
+    7 7/2g-
+    8 9/2g+
+    9 9/2g-
+    10 11/2g+
+    11 11/2g-
+    12 13/2g+
+    13 13/2g-
+    14 15/2g+
+    15 15/2g-
+    16 1/2u+
+    17 1/2u-
+    18 3/2u+
+    19 3/2u-
+    20 5/2u+
+    21 5/2u-
+    22 7/2u+
+    23 7/2u-
+    24 9/2u+
+    25 9/2u-
+    26 11/2u+
+    27 11/2u-
+    28 13/2u+
+    29 13/2u-
+    30 15/2u+
+    31 15/2u-
+    32 0g
+    33 1g+
+    34 1g-
+    35 2g+
+    36 2g-
+    37 3g+
+    38 3g-
+    39 4g+
+    40 4g-
+    41 5g+
+    42 5g-
+    43 6g+
+    44 6g-
+    45 7g+
+    46 7g-
+    47 8g+
+    48 0u
+    49 1u+
+    50 1u-
+    51 2u+
+    52 2u-
+    53 3u+
+    54 3u-
+    55 4u+
+    56 4u-
+    57 5u+
+    58 5u-
+    59 6u+
+    60 6u-
+    61 7u+
+    62 7u-
+    63 8u+
+
+
+			Spinors info
+			------------
+
+     no    rep         occ    active        one-el energy
+    -------------------------------------------------------
+       1   0 "1/2g+ "   1       -          -1.657087432038
+       2   0 "1/2g+ "   1       -          -0.731171512930
+       3   0 "1/2g+ "   1       -          -0.353747925632
+       4   3 "3/2g- "   1       -          -0.352768545128
+       5   0 "1/2g+ "   0       -           1.152705009814
+       6   0 "1/2g+ "   0       -           1.216031298870
+       7   3 "3/2g- "   0       -           1.217075270256
+       8   0 "1/2g+ "   0       -           1.326889865151
+       9   3 "3/2g- "   0       -           2.682330235441
+      10   4 "5/2g+ "   0       -           2.682564682014
+      11   0 "1/2g+ "   0       -           3.177945059729
+      12   0 "1/2g+ "   0       -           3.677751407669
+      13   3 "3/2g- "   0       -           3.677904646684
+      14   1 "1/2g- "   1       -          -1.657087432038
+      15   1 "1/2g- "   1       -          -0.731171512930
+      16   1 "1/2g- "   0       -          -0.353747925632
+      17   2 "3/2g+ "   0       -          -0.352768545128
+      18   1 "1/2g- "   0       -           1.152705009814
+      19   1 "1/2g- "   0       -           1.216031298870
+      20   2 "3/2g+ "   0       -           1.217075270256
+      21   1 "1/2g- "   0       -           1.326889865151
+      22   2 "3/2g+ "   0       -           2.682330235441
+      23   5 "5/2g- "   0       -           2.682564682014
+      24   1 "1/2g- "   0       -           3.177945059729
+      25   1 "1/2g- "   0       -           3.677751407669
+      26   2 "3/2g+ "   0       -           3.677904646684
+      27  16 "1/2u+ "   1       -          -1.101598007748
+      28  16 "1/2u+ "   1       -          -0.703351973923
+      29  19 "3/2u- "   1       -          -0.702547404790
+      30  16 "1/2u+ "   0       -           0.461770307116
+      31  16 "1/2u+ "   0       -           1.077458284966
+      32  16 "1/2u+ "   0       -           1.108301221917
+      33  19 "3/2u- "   0       -           1.109420848131
+      34  16 "1/2u+ "   0       -           1.971963403052
+      35  16 "1/2u+ "   0       -           2.401379451889
+      36  19 "3/2u- "   0       -           2.401516041204
+      37  19 "3/2u- "   0       -           3.007758582501
+      38  20 "5/2u+ "   0       -           3.008010665682
+      39  16 "1/2u+ "   0       -           4.190405300547
+      40  17 "1/2u- "   1       -          -1.101598007748
+      41  17 "1/2u- "   1       -          -0.703351973923
+      42  18 "3/2u+ "   1       -          -0.702547404790
+      43  17 "1/2u- "   0       -           0.461770307116
+      44  17 "1/2u- "   0       -           1.077458284966
+      45  17 "1/2u- "   0       -           1.108301221917
+      46  18 "3/2u+ "   0       -           1.109420848131
+      47  17 "1/2u- "   0       -           1.971963403052
+      48  17 "1/2u- "   0       -           2.401379451889
+      49  18 "3/2u+ "   0       -           2.401516041204
+      50  18 "3/2u+ "   0       -           3.007758582501
+      51  21 "5/2u- "   0       -           3.008010665682
+      52  17 "1/2u- "   0       -           4.190405300547
+    -------------------------------------------------------
+
+    irreps             1/2g+ 1/2g- 3/2g+ 3/2g- 5/2g+ 5/2g- 1/2u+ 1/2u- 3/2u+ 3/2u- 5/2u+ 5/2u-
+    occupied inactive      3     2     0     1     0     0     2     2     1     1     0     0
+    occupied active        0     0     0     0     0     0     0     0     0     0     0     0
+    virtual active         0     0     0     0     0     0     0     0     0     0     0     0
+    virtual inactive       5     6     4     3     1     1     6     6     3     3     1     1
+
+
+				*****************
+				** Sector 0h0p **
+				*****************
+
+
+ Integral sorting routine (version 21 Feb 2019): integrals for the 0h0p sector
+ -----------------------------------------------------------------------------
+   diagrams to be sorted: [hh/00] [hp/00] [ph/00] [pp/00] [hhpp/0000] [pphh/0000] [hhhh/0000] [phhp/0000] [pppp/0000] [pphp/0000] [phpp/0000] [phhh/0000] [hhhp/0000] [hphh/0000] [hphp/0000] 
+   number of spinor blocks: 12
+   tile size: 100
+   max spinor block length: 8
+   i/o buffers size, bytes: 262144 (indices) + 131072 (integrals) [384.00 KB total]
+   estimated max memory required for the straightforward algorithm (not used!): 0.11 GB
+   size of working arrays, bytes: 65536 (indices) + 70216 (integrals) [0.13 MB total]
+   sorting two-electron integrals ...
+   sorting one-electron integrals ...
+     Fock matrix construction ...
+     SCF energy (energy of reference determinant) was updated:
+       old energy =    -149.686661451846 a.u.
+       new energy =    -149.718144633814 a.u.
+     The diagonal elements of the reconstructed Fock matrix don't coincide with the orbital energies!
+     NOTE: The diagonal elements of the recomputed Fock matrix (right column) are used in perturbation expressions.
+
+     no    rep         occ    active     one-el energy        recalc energy            delta    
+    ---------------------------------------------------------------------------------------------
+       0   0 "1/2g+ "   1       i        -1.6570874320        -1.6026227675         5.446466e-02
+       1   0 "1/2g+ "   1       i        -0.7311715129        -0.6968486167         3.432290e-02
+       2   0 "1/2g+ "   1       i        -0.3537479256        -0.5294028318        -1.756549e-01
+       3   3 "3/2g- "   1       i        -0.3527685451        -0.5282602301        -1.754917e-01
+       4   0 "1/2g+ "   0       i         1.1527050098         1.1629639436         1.025893e-02
+       5   0 "1/2g+ "   0       i         1.2160312989         1.1696960570        -4.633524e-02
+       6   3 "3/2g- "   0       i         1.2170752703         1.1706875636        -4.638771e-02
+       7   0 "1/2g+ "   0       i         1.3268898652         1.3450872194         1.819735e-02
+       8   3 "3/2g- "   0       i         2.6823302354         2.7356452251         5.331499e-02
+       9   4 "5/2g+ "   0       i         2.6825646820         2.7358753957         5.331071e-02
+      10   0 "1/2g+ "   0       i         3.1779450597         3.2097236995         3.177864e-02
+      11   0 "1/2g+ "   0       i         3.6777514077         3.6420763026        -3.567511e-02
+      12   3 "3/2g- "   0       i         3.6779046467         3.6422389338        -3.566571e-02
+      13   1 "1/2g- "   1       i        -1.6570874320        -1.7115520943        -5.446466e-02
+      14   1 "1/2g- "   1       i        -0.7311715129        -0.7654944063        -3.432289e-02
+      15   1 "1/2g- "   0       i        -0.3537479256         0.1101198522         4.638678e-01
+      16   2 "3/2g+ "   0       i        -0.3527685451         0.1108707231         4.636393e-01
+      17   1 "1/2g- "   0       i         1.1527050098         1.1424460829        -1.025893e-02
+      18   1 "1/2g- "   0       i         1.2160312989         1.2623665441         4.633525e-02
+      19   2 "3/2g+ "   0       i         1.2170752703         1.2634629803         4.638771e-02
+      20   1 "1/2g- "   0       i         1.3268898652         1.3086925150        -1.819735e-02
+      21   2 "3/2g+ "   0       i         2.6823302354         2.6290152493        -5.331499e-02
+      22   5 "5/2g- "   0       i         2.6825646820         2.6292539719        -5.331071e-02
+      23   1 "1/2g- "   0       i         3.1779450597         3.1461664222        -3.177864e-02
+      24   1 "1/2g- "   0       i         3.6777514077         3.7134265164         3.567511e-02
+      25   2 "3/2g+ "   0       i         3.6779046467         3.7135703632         3.566572e-02
+      26  16 "1/2u+ "   1       i        -1.1015980077        -1.0110489060         9.054910e-02
+      27  16 "1/2u+ "   1       i        -0.7033519739        -0.8203415342        -1.169896e-01
+      28  19 "3/2u- "   1       i        -0.7025474048        -0.8194134449        -1.168660e-01
+      29  16 "1/2u+ "   0       i         0.4617703071         0.4940929594         3.232265e-02
+      30  16 "1/2u+ "   0       i         1.0774582850         1.0914940342         1.403575e-02
+      31  16 "1/2u+ "   0       i         1.1083012219         1.0600387017        -4.826252e-02
+      32  19 "3/2u- "   0       i         1.1094208481         1.0610753132        -4.834553e-02
+      33  16 "1/2u+ "   0       i         1.9719634031         1.9962035508         2.424015e-02
+      34  16 "1/2u+ "   0       i         2.4013794519         2.3642652886        -3.711416e-02
+      35  19 "3/2u- "   0       i         2.4015160412         2.3643960761        -3.711997e-02
+      36  19 "3/2u- "   0       i         3.0077585825         3.0749421373         6.718355e-02
+      37  20 "5/2u+ "   0       i         3.0080106657         3.0751898979         6.717923e-02
+      38  16 "1/2u+ "   0       i         4.1904053005         4.2116608189         2.125552e-02
+      39  17 "1/2u- "   1       i        -1.1015980077        -1.1921471095        -9.054910e-02
+      40  17 "1/2u- "   1       i        -0.7033519739        -0.5863624172         1.169896e-01
+      41  18 "3/2u+ "   1       i        -0.7025474048        -0.5856813683         1.168660e-01
+      42  17 "1/2u- "   0       i         0.4617703071         0.4294476599        -3.232265e-02
+      43  17 "1/2u- "   0       i         1.0774582850         1.0634225408        -1.403574e-02
+      44  17 "1/2u- "   0       i         1.1083012219         1.1565637457         4.826252e-02
+      45  18 "3/2u+ "   0       i         1.1094208481         1.1577663866         4.834554e-02
+      46  17 "1/2u- "   0       i         1.9719634031         1.9477232586        -2.424014e-02
+      47  17 "1/2u- "   0       i         2.4013794519         2.4384936165         3.711416e-02
+      48  18 "3/2u+ "   0       i         2.4015160412         2.4386360076         3.711997e-02
+      49  18 "3/2u+ "   0       i         3.0077585825         2.9405750319        -6.718355e-02
+      50  21 "5/2u- "   0       i         3.0080106657         2.9408314377        -6.717923e-02
+      51  17 "1/2u- "   0       i         4.1904053005         4.1691497852        -2.125552e-02
+    ---------------------------------------------------------------------------------------------
+     max deviation of the diagonal elements of the reconstructed Fock matrix and orbital energies = 4.638678e-01
+     fill 1-electron diagrams ... hh hp ph pp done
+   reorder diagrams (if required): phhp[2431] done
+   save sorted diagrams to disk: hh hp ph pp hhpp pphh hhhh phhp ppppr pphp phpp phhh hhhp hphh hphp done
+   number of blocks read from disk: 2264
+   total number of integrals read from disk: 4568288
+   total number of bytes read from disk: 73101536 (0.07 GB)
+   sorting performance, Mb/sec: 43.32
+   time for 2-e integrals sorting, sec: 1.61
+   time for DIRAC interface (integral extraction & write), sec: 2.12
+   total time for sorting operations, sec: 3.73
+   deallocating memory ...
+   done
+
+ Initial guess
+ -------------
+ Contributions to the MP2 energy:
+   one-particle    -0.0119045766   two-particle    -0.3711567340
+ MP2 correlation energy =      -0.383061310629
+       Total MP2 energy =    -150.101205944443
+
+ Solution of amplitude equations (sector 0h0p)
+ --------------------------------------------------------------------
+ Iteration 1 started at Mon Feb 24 16:04:05 2020
+ Contributions to the CC energy:
+   T1      -0.0092204546   T1^2    -0.0001744986   T2      -0.3417537625
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+   1      -0.351148715724927      0.019887257628      0.019587701957
+ T1 diagnostic = 0.02214889
+ More on T1 diagnostic: [T.J.Lee,P.R.Taylor,IJQC 23,199(1989)]
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 2 started at Mon Feb 24 16:04:06 2020
+ Contributions to the CC energy:
+   T1      -0.0104273464   T1^2    -0.0002887983   T2      -0.3579552111
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+   2      -0.368671355822134      0.006377658334      0.011114754441
+ T1 diagnostic = 0.01952868
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 3 started at Mon Feb 24 16:04:08 2020
+ Contributions to the CC energy:
+   T1      -0.0102529757   T1^2    -0.0002685916   T2      -0.3549780003
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+   3      -0.365499567557871      0.001914338016      0.001496700259
+ T1 diagnostic = 0.02093630
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 4 started at Mon Feb 24 16:04:09 2020
+ Contributions to the CC energy:
+   T1      -0.0103829354   T1^2    -0.0002804816   T2      -0.3563762849
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+   4      -0.367039701867568      0.000593727385      0.001542678185
+ T1 diagnostic = 0.02111722
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 5 started at Mon Feb 24 16:04:11 2020
+ Contributions to the CC energy:
+   T1      -0.0103773138   T1^2    -0.0002793021   T2      -0.3561320984
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+   5      -0.366788714357294      0.000314410780      0.000321952769
+ T1 diagnostic = 0.02131854
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 6 started at Mon Feb 24 16:04:12 2020
+ Contributions to the CC energy:
+   T1      -0.0103933549   T1^2    -0.0002806920   T2      -0.3562721227
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+   6      -0.366946169608370      0.000083331152      0.000303767902
+ T1 diagnostic = 0.02137323
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 7 started at Mon Feb 24 16:04:13 2020
+ Contributions to the CC energy:
+   T1      -0.0103947212   T1^2    -0.0002807212   T2      -0.3562578835
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+   7      -0.366933325892369      0.000060722869      0.000112804561
+ T1 diagnostic = 0.02140703
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 8 started at Mon Feb 24 16:04:14 2020
+ Contributions to the CC energy:
+   T1      -0.0103970002   T1^2    -0.0002809076   T2      -0.3562746225
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+   8      -0.366952530275040      0.000023032339      0.000076232782
+ T1 diagnostic = 0.02141929
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 9 started at Mon Feb 24 16:04:16 2020
+ Contributions to the CC energy:
+   T1      -0.0103974868   T1^2    -0.0002809366   T2      -0.3562754103
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+   9      -0.366953833671533      0.000012932497      0.000036769831
+ T1 diagnostic = 0.02142568
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 10 started at Mon Feb 24 16:04:16 2020
+ Contributions to the CC energy:
+   T1      -0.0103978537   T1^2    -0.0002809651   T2      -0.3562780028
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  10      -0.366956821603024      0.000007668451      0.000021391222
+ T1 diagnostic = 0.02142833
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 11 started at Mon Feb 24 16:04:17 2020
+ Contributions to the CC energy:
+   T1      -0.0103979677   T1^2    -0.0002809726   T2      -0.3562786301
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  11      -0.366957570432496      0.000005280425      0.000011235866
+ T1 diagnostic = 0.02142963
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 12 started at Mon Feb 24 16:04:18 2020
+ Contributions to the CC energy:
+   T1      -0.0103980309   T1^2    -0.0002809772   T2      -0.3562791567
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  12      -0.366958164795476      0.000003637487      0.000006254815
+ T1 diagnostic = 0.02143020
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 13 started at Mon Feb 24 16:04:19 2020
+ Contributions to the CC energy:
+   T1      -0.0103980536   T1^2    -0.0002809787   T2      -0.3562793669
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  13      -0.366958399227594      0.000002508321      0.000003375818
+ T1 diagnostic = 0.02143047
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 14 started at Mon Feb 24 16:04:21 2020
+ Contributions to the CC energy:
+   T1      -0.0103980641   T1^2    -0.0002809794   T2      -0.3562794962
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  14      -0.366958539698157      0.000001730825      0.000001855069
+ T1 diagnostic = 0.02143059
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 15 started at Mon Feb 24 16:04:22 2020
+ Contributions to the CC energy:
+   T1      -0.0103980678   T1^2    -0.0002809796   T2      -0.3562795589
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  15      -0.366958606180845      0.000001195224      0.000001009974
+ T1 diagnostic = 0.02143065
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 16 started at Mon Feb 24 16:04:23 2020
+ Contributions to the CC energy:
+   T1      -0.0103980691   T1^2    -0.0002809796   T2      -0.3562795940
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  16      -0.366958642702238      0.000000825909      0.000000552985
+ T1 diagnostic = 0.02143068
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 17 started at Mon Feb 24 16:04:24 2020
+ Contributions to the CC energy:
+   T1      -0.0103980694   T1^2    -0.0002809796   T2      -0.3562796124
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  17      -0.366958661297260      0.000000571085      0.000000301960
+ T1 diagnostic = 0.02143069
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 18 started at Mon Feb 24 16:04:25 2020
+ Contributions to the CC energy:
+   T1      -0.0103980693   T1^2    -0.0002809795   T2      -0.3562796224
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  18      -0.366958671283319      0.000000395131      0.000000165195
+ T1 diagnostic = 0.02143069
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 19 started at Mon Feb 24 16:04:27 2020
+ Contributions to the CC energy:
+   T1      -0.0103980692   T1^2    -0.0002809795   T2      -0.3562796278
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  19      -0.366958676530129      0.000000273558      0.000000090313
+ T1 diagnostic = 0.02143069
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 20 started at Mon Feb 24 16:04:29 2020
+ Contributions to the CC energy:
+   T1      -0.0103980690   T1^2    -0.0002809795   T2      -0.3562796308
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  20      -0.366958679343980      0.000000189503      0.000000059583
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 21 started at Mon Feb 24 16:04:30 2020
+ Contributions to the CC energy:
+   T1      -0.0103980689   T1^2    -0.0002809795   T2      -0.3562796324
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  21      -0.366958680847087      0.000000131353      0.000000043886
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 22 started at Mon Feb 24 16:04:32 2020
+ Contributions to the CC energy:
+   T1      -0.0103980689   T1^2    -0.0002809795   T2      -0.3562796333
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  22      -0.366958681657905      0.000000091099      0.000000032211
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 23 started at Mon Feb 24 16:04:33 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796338
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  23      -0.366958682096233      0.000000063217      0.000000023570
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 24 started at Mon Feb 24 16:04:35 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796341
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  24      -0.366958682334808      0.000000043893      0.000000017199
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 25 started at Mon Feb 24 16:04:38 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796342
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  25      -0.366958682465291      0.000000030492      0.000000012520
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 26 started at Mon Feb 24 16:04:41 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796343
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  26      -0.366958682537140      0.000000021195      0.000000009093
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 27 started at Mon Feb 24 16:04:43 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796343
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  27      -0.366958682576976      0.000000014740      0.000000006592
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 28 started at Mon Feb 24 16:04:46 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796344
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  28      -0.366958682599243      0.000000010256      0.000000004770
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 29 started at Mon Feb 24 16:04:48 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796344
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  29      -0.366958682611804      0.000000007140      0.000000003446
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 30 started at Mon Feb 24 16:04:50 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796344
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  30      -0.366958682618963      0.000000004973      0.000000002486
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 31 started at Mon Feb 24 16:04:51 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796344
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  31      -0.366958682623091      0.000000003465      0.000000001791
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 32 started at Mon Feb 24 16:04:54 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796344
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  32      -0.366958682625502      0.000000002416      0.000000001288
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 33 started at Mon Feb 24 16:04:55 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796344
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  33      -0.366958682626929      0.000000001685      0.000000000926
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 34 started at Mon Feb 24 16:04:56 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796344
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  34      -0.366958682627787      0.000000001176      0.000000000665
+ T1 diagnostic = 0.02143070
+ current memory usage = 0.008 Gb; peak memory usage = 0.011 Gb
+ --------------------------------------------------------------------
+ Iteration 35 started at Mon Feb 24 16:04:57 2020
+ Contributions to the CC energy:
+   T1      -0.0103980688   T1^2    -0.0002809795   T2      -0.3562796344
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+  35      -0.366958682628309      0.000000000821      0.000000000477
+ --------------------------------------------------------------------
+	converged in 35 iterations
+
+          SCF reference energy =    -149.718144633814
+       CCSD correlation energy =      -0.366958682628
+             Total CCSD energy =    -150.085103316442
+
+ average time per iteration = 1.554 sec
+ (absolute values)
+ Max T1 amplitude (t_ia) [ 39 -> 42 ] = 0.03383349
+   [  39] eps=     -1.19214711 rep=1/2u- inactive occ
+   [  42] eps=      0.42944766 rep=1/2u- inactive virt
+ Max T2 amplitude (t_ijab) [ 40 41 -> 15 16 ] = 0.10705310
+   [  40] eps=     -0.58636242 rep=1/2u- inactive occ
+   [  41] eps=     -0.58568137 rep=3/2u+ inactive occ
+   [  15] eps=      0.11011985 rep=1/2g- inactive virt
+   [  16] eps=      0.11087072 rep=3/2g+ inactive virt
+
+
+ time for (sec):
+ -------------------------------------------------------
+  Total time of execution                        58.926
+  Diagram contraction (mult) for <PP||PP>        35.017
+  DIRAC interface (MRCONEE/MDCINT)                2.117
+  Diagram template constr (tmplt)                 0.762
+  Sorting of integrals                            1.609
+  Multidim transposition (reorder)                4.493
+  Energy denominators (diveps)                    0.034
+  0h0p -- Singles equations (T1)                  1.385
+  Diagram contraction (mult)                     46.977
+  mult M <- M x M                                10.461
+  mult M <- D x M                                34.940
+  Diagram addition (update)                       0.238
+  0h0p -- Doubles equations (T2)                 52.821
+ -------------------------------------------------------
+
+
+ memory in usage  = 7524976 bytes = 7.2 Mb = 0.01 Gb
+ max memory usage = 12050840 bytes = 11.5 Mb = 0.01 Gb
+
+ Disk I/O:
+   files created: 86346   files removed: 0
+   read         191161056 bytes = 0.178 Gb
+   write        163688468 bytes = 0.152 Gb
+
+ EXP-T terminated normally at Mon Feb 24 16:05:00 2020
+ Total run time: 0 days 0 hours 0 minutes 58 seconds 926 milliseconds

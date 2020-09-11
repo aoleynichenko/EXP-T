@@ -1,0 +1,18 @@
+# Test:
+# (1) CO in cc-pVDZ
+# (2) nonrelativistic
+# (3) symmetry Cinfv
+
+title "Test CO/cc-pVDZ/nonrel/Cinfv"
+maxiter 30
+conv 1e-9
+nactp 2
+#nactp [Ag_a]:1
+sector 0h1p
+model ccsd
+#natorb [Ag_a]:1 [Ag_b]:1
+
+
+# import integrals from
+
+

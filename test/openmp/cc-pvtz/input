@@ -1,0 +1,13 @@
+# Test:
+# (1) CO in cc-pVTZ
+# (2) DC - relativistic, 4-comp
+# (3) symmetry Cinfv
+
+title "Test CO/cc-pVTZ/Dirac-Coulomb/Cinfv"
+maxiter 30
+conv 1e-9
+nthreads 4
+disk_usage 0
+#tilesize 14
+
+

@@ -1,0 +1,31 @@
+**DIRAC         
+.TITLE          
+LiNa molecule
+.4INDEX
+.WAVE FUNCTION
+**HAMILTONIAN   
+.OPERATOR
+ ZDIPLEN
+ COMFACTOR
+ 0.01
+**WAVE FUNCTION
+.RELCCSD
+*SCF            
+.CLOSED         
+ 14          
+.ERGCNV         
+1E-12           
+**MOLTRA        
+.ACTIVE         
+all
+**RELCC         
+.ENERGY         
+.PRINT          
+1               
+*CCENER         
+.MAXIT          
+50              
+.NTOL           
+ 9              
+*END OF INPUT   
+				

@@ -1,0 +1,25 @@
+# CO molecule, CCSD/cc-pVDZ
+# nonrelativistic, symmetry C1
+
+# title for the task (of type "string")
+title "CO/CCSD/cc-pVDZ"
+
+# print level, default medium
+print medium
+
+# max number of iterations
+maxiter 30
+
+# convergence threshold (by cluster amplitudes)
+conv 1e-9
+
+# target Fock space sector
+sector 0h0p
+
+# CC model: ccsd, ccsdt-1, etc
+model ccsd
+
+# import integrals from
+integrals MRCONEE-C1 MDCINT-C1
+
+

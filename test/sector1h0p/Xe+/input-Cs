@@ -1,0 +1,10 @@
+title "Test Xe+/2c-ECP(gatchina)/Cs/sector 1h0p"
+maxiter 500
+conv 1e-9
+sector 1h0p
+nacth 6
+memory 4 gb
+
+# import integrals from
+integrals MRCONEE-Cs MDCINT-Cs
+

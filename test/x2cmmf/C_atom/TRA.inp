@@ -1,0 +1,29 @@
+**DIRAC         
+.TITLE          
+Carbon atom in external electric field
+.4INDEX
+.WAVE FUNCTION
+**HAMILTONIAN
+.X2Cmmf
+.DOSSSS
+.GAUNT
+**WAVE FUNCTION
+.SCF 
+#.RELCCSD
+*SCF            
+.CLOSED         
+4 0
+.ERGCNV         
+1E-12       
+**MOLTRA        
+.ACTIVE         
+all
+**RELCCSD
+.FOCKSP
+*CCFSPC
+.NACTP
+0 0 3 3
+.DOEA2
+*END OF INPUT
+
+		

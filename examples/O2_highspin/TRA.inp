@@ -1,0 +1,18 @@
+!
+! calculation of the triplet ground state of molecular oxygen
+!
+**DIRAC
+.TITLE
+molecular oxygen -- ground state
+.WAVE F
+.4INDEX
+**WAVE FUNCTIONS
+.SCF
+*SCF
+.CLOSED SHELL
+ 6 8
+.OPEN SHELL
+1
+2/4,0
+*END OF
+

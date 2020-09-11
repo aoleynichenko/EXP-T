@@ -1,0 +1,28 @@
+-- LiNa molecule
+
+title = "LiNa"
+
+molecule = {
+    {"Li",  0, 0, 0, basis='cc-pvdz'},
+    {"Na",  0, 0, 3, basis='cc-pvdz'}
+}
+
+wf = {
+    occ = 12
+}
+
+scf = {
+    iter = 30,
+    diis = true
+}
+
+cc = {
+ h = 0,
+ p = 1,
+ active = -0.3,
+ conv = 1e-9
+}
+
+run('scf')
+run('cc')
+

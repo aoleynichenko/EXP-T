@@ -1,0 +1,12 @@
+# Test:
+# (1) Pb2+ (20 electrons)
+# (2) SOREP - relativistic
+# (3) symmetry Dinfh
+
+title "Test Pb/SOREP/Dinfh"
+maxiter 30
+conv 1e-9
+
+# import integrals from
+integrals MRCONEE-Dinfh MDCINT-Dinfh
+

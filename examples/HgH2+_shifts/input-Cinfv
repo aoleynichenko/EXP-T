@@ -1,0 +1,28 @@
+# Test:
+# (1) HgH2+ ion, FSCC scheme: HgH3+ -> HgH2+
+# (2) hamiltionian: 2-comp gatchina ECP
+# (3) symmetry Cinfv
+# (4) sector (0h,1p)
+
+title "Test HgH3+ -> HgH2+/gatchina ECP/Cinfv"
+maxiter 200
+conv 1e-9
+active -10 -0.5
+sector 0h1p
+
+# import integrals from:
+integrals MRCONEE-Cinfv MDCINT-Cinfv
+
+# shifts of denominators:
+# =======================
+
+# I. shift type
+# real shift:
+shifttype real
+
+# II. shift parameters:
+# 1. <n>  -- compensation power (here: 3)
+# 3. <S1> -- shift for all S1 amplitudes (here: -0.5)
+# 3. <S2> -- shift for all S2 amplitudes (here: -1.0)
+shift 0h1p 3 -0.5 -1.0
+

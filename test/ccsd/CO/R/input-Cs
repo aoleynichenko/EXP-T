@@ -1,0 +1,14 @@
+# Test:
+# (1) CO in cc-pVDZ
+# (2) DC - relativistic, 4-comp
+# (3) symmetry Cs
+
+title "Test CO/cc-pVDZ/Dirac-Coulomb/Cs"
+maxiter 30
+conv 1e-9
+memory 8 gb
+#nthreads 2
+
+# import integrals from
+integrals MRCONEE-Cs MDCINT-Cs
+

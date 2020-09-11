@@ -1,0 +1,1179 @@
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -  0.477 GB)
+ of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB - 16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Aarhus              Denmark       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Erik D. Hedegaard        Lund University                   Sweden        *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Vrije Universiteit Amsterdam      Netherlands   *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            ETH Zuerich                       Switzerland   *
+ *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Linkoeping University             Sweden        *
+ *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Avijit Shee              University of Michigan            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    The code (in whole or part) is not to be reproduced for further          *
+ *    distribution without the written permission of the authors or            *
+ *    their representatives.                                                   *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC17 (2017),                                                  *
+ *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, A. S. P. Gomes, E. D. Hedegrd, T. Helgaker,               *
+ *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
+ *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
+ *    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *
+ *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
+ *    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *
+ *    and S. Yamamoto (see http://diracprogram.org).                           *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | 
+Commit hash   | 
+Commit author | 
+Commit date   | 
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | alexander
+Compiled on server       | alexander
+Operating system         | Linux-3.10.0-1062.4.1.el7.x86_64
+CMake version            | 3.15.3
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2019-11-02 15:01:22.098594
+Python version           | 2.7.5
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 4.8.5
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fdefault-integer-8
+C compiler               | /usr/bin/gcc
+C compiler version       | 4.8.5
+C compiler flags         |  -g
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 4.8.5
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+Static linking           | False
+64-bit integers          | True
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | -Wl,--start-group;/home/alexander/Software/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64/libmkl_lapack95_ilp64.a;/home/alexander/Software/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64/libmkl_gf_ilp64.so;-fopenmp;-Wl,--end-group;-Wl,--start-group;/home/alexander/Software/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64/libmkl_gf_ilp64.so;/home/alexander/Software/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64/libmkl_gnu_thread.so;/home/alexander/Software/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-fopenmp;-Wl,--end-group
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;SYS_LINUX;PRG_DIRAC;INT_STAR8;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES
+
+
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Sun Dec 29 23:28:26 2019
+     Host name              : alexander                               
+
+
+Contents of the input file
+--------------------------
+
+! Four-index transformation                                                                         
+! Rb atom                                                                                           
+**GENERAL                                                                                           
+.PCMOUT                                                                                             
+**DIRAC                                                                                             
+.TITLE                                                                                              
+Rb+ ion -- SCF step, zero field                                                                     
+.WAVE F                                                                                             
+**HAMILTONIAN                                                                                       
+.ECP                                                                                                
+.OPERATOR                                                                                           
+ ZDIPLEN                                                                                            
+ COMFACTOR                                                                                          
+ 0.0                                                                                                
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+ 8                                                                                                  
+**MOLTRA                                                                                            
+.ACTIVE                                                                                             
+energy -100.0 20.0 0.5                                                                              
+*END OF DIRAC                                                                                       
+                                                                                                    
+                                                                                                    
+                                                                                                    
+
+
+Contents of the molecule file
+-----------------------------
+
+Rb+ ion                                                                                             
+ECP by Mosyagin et al (PNPI)                                                                        
+basis set by A. Zaitsevskii (PNPI, MSU)                                                             
+C   2                                                                                               
+       37.    1                                                                                     
+Rb    0.00000000           0.00000000         0.0                                                   
+LARGE   5    1    1    1    1    1                                                                  
+# S FUNC                                                                                            
+# 0 tells that these functions are uncontracted                                                     
+# F = free format                                                                                   
+F  9    7                                                                                           
+      3.51066    0.435605797  -0.09982137  0.0  0.0  0.0 0.0 0.0                                    
+      2.70046   -0.846687222   0.20235206  0.0  0.0  0.0 0.0 0.0                                    
+      0.59785    0.622057696  -0.18869393  0.0  0.0  1.0 0.0 0.0                                    
+      0.30141    0.524623249  -0.18992225  0.0  0.0  0.0 0.0 1.0                                    
+      0.13447    0.122003324  -0.24311820  0.0  0.0  0.0 1.0 0.0                                    
+      0.053379  -0.016171733   0.42440376  0.0  1.0  0.0 0.0 0.0                                    
+      0.021018   0.009529129   0.75486068  0.0  0.0  0.0 0.0 0.0                                    
+      0.00991   -0.004419832   0.05396617  1.0  0.0  0.0 0.0 0.0                                    
+      0.00330    0.000880589   0.00749778  0.0  0.0  0.0 0.0 0.0                                    
+# p functions                                                                                       
+F  11    7                                                                                          
+    2.83398    -0.06559042  0.0905700  -0.0106137  0. 0. 0. 0.0                                     
+    0.75975     0.25460720 -0.3247647   0.0469784  0. 0. 0. 0.0                                     
+    0.35407     0.26357388 -0.3972564   0.0359326  0. 0. 0. 0.0                                     
+    0.16840     0.13349369 -0.1893413   0.0708964  0. 0. 0. 0.0                                     
+    0.06601     0.00542302 -0.0169745  -0.1113374  0. 0. 0. 0.0                                     
+    0.020506    0.00097456  0.0022463  -0.4322681  0. 0. 0. 0.0                                     
+    0.008855   -0.00056531 -0.0012836  -0.1069558  0. 0. 1. 0.0                                     
+    0.00308     0.00017535  0.0003340  -0.0066171  0. 0. 0. 0.0                                     
+    0.11300     0.0         0.0         0.0        0. 1. 0. 0.0                                     
+    0.04600     0.0         0.0         0.0        0. 0. 0. 1.0                                     
+    0.25800     0.0         0.0         0.0        1. 0. 0. 0.0                                     
+# d functions                                                                                       
+F  9    5                                                                                           
+    1.91700   0.00034510 0.0    0.0    0.0   0.0                                                    
+    0.73591   0.02349952 0.0    0.0    0.0   0.0                                                    
+    0.23350   0.05392279 0.0    0.0    0.0   0.0                                                    
+    0.07250   0.10804206 0.0    0.0    0.0   0.0                                                    
+    0.02549   0.32269222 0.0    0.0    0.0   0.0                                                    
+    0.00886   0.31150241 1.0    0.0    0.0   0.0                                                    
+    0.73591    0.        0.0    1.0    0.0   0.0                                                    
+    0.23350    0.        0.0    0.0    1.0   0.0                                                    
+    0.07250    0.        0.0    0.0    0.0   1.0                                                    
+# f functions                                                                                       
+F  3    0                                                                                           
+    0.96176576                                                                                      
+    0.31863785                                                                                      
+    0.1250000                                                                                       
+# g functions                                                                                       
+F  2    0                                                                                           
+     0.751                                                                                          
+     0.33000                                                                                        
+ECP 28 4 3                                                                                          
+# f                                                                                                 
+7                                                                                                   
+ 1   10.69988534565278       -10.34229639098868                                                     
+ 1   3.531231461157029       -17.14342155843451                                                     
+ 1   2.538301307763532       14.03737120157393                                                      
+ 1   0.1397852688314383       -0.4149703235526658E-002                                              
+ 2   2.451653810724303       -9.604640173135522                                                     
+ 2   0.1696218580242564       0.1685924979081044E-002                                               
+ 2   0.1198788812789735E-001  -0.4032763923022094E-006                                              
+# s-f                                                                                               
+7                                                                                                   
+ 0  0.1889458763100233   6.000000000000000                                                          
+ 1   7.909034227164920   16.10708707442575                                                          
+ 2   3.738041259036603   -60.96895049209320                                                         
+ 2   2.774166034526668   121.7297850279483                                                          
+ 2   2.058752986080349   -58.31772903862537                                                         
+ 2  0.5148543037939249   -3.126135081093181                                                         
+ 2  0.2339101772307657   -0.7459125914932924                                                        
+# p-f                                                                                               
+7                                                                                                   
+ 0  0.2978314566304255    4.999999999999999                                                         
+ 1   8.295887669719949    14.60994361492612                                                         
+ 1   2.939299626285198    -33.48331977722046                                                        
+ 1   2.154145574324995    66.54350676999456                                                         
+ 1   1.580800487751164    -29.14621141625685                                                        
+ 1  0.3932211766965747    -2.838287958450564                                                        
+ 1  0.2619393957403697    -0.3515039783528664                                                       
+# d-f                                                                                               
+5                                                                                                   
+ 0   2.530158176910719    3.000000000000000                                                         
+ 1   7.873836027329885    10.13661563098140                                                         
+ 1   1.859969315037883    3.209923035228712                                                         
+ 1  0.4601278156706453    2.563620963219364                                                         
+ 2  0.5389223969888935    -1.708632983934876                                                        
+# p  (spin-orbit block)                                                                             
+6                                                                                                   
+ 1   8.295887669719949   0.223861124745478                                                          
+ 1   2.939299626285198   -1.39321981737157                                                          
+ 1   2.154145574324995   1.4676330073659                                                            
+ 1   1.580800487751164   -0.109973758847142                                                         
+ 1  0.3932211766965747   0.00226235638001526                                                        
+ 1  0.2619393957403697   -0.00133591208350481                                                       
+# d                                                                                                 
+4                                                                                                   
+ 1   7.873836027329885  0.00737435690825805                                                         
+ 1   1.859969315037883 -0.0801425104611553                                                          
+ 1  0.4601278156706453  0.0872534895301215                                                          
+ 2  0.5389223969888935 -0.0587831462617033                                                          
+# f                                                                                                 
+7                                                                                                   
+  1   10.69988534565278      0.0704867876525311                                                     
+  1   3.531231461157029     -0.0615486264041465                                                     
+  1   2.538301307763532      0.0477908591974483                                                     
+  1  0.1397852688314383     -0.000872373448730558                                                   
+  2   2.451653810724303     -0.0181664327563859                                                     
+  2  0.1696218580242564      0.000403079579175625                                                   
+  2  0.01198788812789735     0.0000000939158                                                        
+# end spin-orbit                                                                                    
+        0.    1                                                                                     
+Gh    0.00000000           0.00000000        10.0                                                   
+LARGE   0                                                                                           
+FINISH                                                                                              
+                                                                                                    
+                                                                                                    
+
+
+    *************************************************************************
+    ******************** Rb+ ion -- SCF step, zero field ********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in two-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * MO-coefficients written to formatted file DFPCMO
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  ECP by Mosyagin et al (PNPI)                                            
+  basis set by A. Zaitsevskii (PNPI, MSU)                                 
+  Nuclear Gaussian exponent for atom of charge  37.000 :    2.3301551109D+08
+  * This atomic center has RECP with  28 core electrons.
+    The charge value is changed as   9.000
+
+
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+    The molecule has been centered at center of mass
+
+ Symmetry point group found: C(oo,v)        
+
+ Centered and Rotated in original atom order
+ -------------------------------------------
+    0         0.00000000     0.00000000    10.00000000       1
+   37         0.00000000     0.00000000     0.00000000       1
+
+ The following elements were found: X  Y     
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Full group is:  C(oo,v)        
+Represented as: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1  x E1  : A1  + A2  + B1  + B2 
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A1 (1)  A2 (2)  |
+      Sa  |  A2 (1)  A1 (2)  |
+      Lb  |  B1 (3)  B2 (4)  |
+      Sb  |  B2 (3)  B1 (4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A1   1
+    B1   j
+    B2   k
+    A2   i
+
+  QM-QM nuclear repulsion energy :      0.000000000000
+
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           Rb         84.911800
+
+                       Total mass:    84.911800 amu
+                       Natural abundance:  72.170 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  Rb          1       9     156     118      L  - [9s11p9d3f2g|7s7p5d3f2g]                                       
+                              0       0      S  - No small component basis functions attached                    
+  Gh          1       0       0       0      L  - No large component basis functions attached                    
+                              0       0      S  - No small component basis functions attached                    
+  ----------------------------------------------------------------------
+                            156     118      L  - large components
+  ----------------------------------------------------------------------
+  total:      2       9     156     118
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+  Basis set typed explicitly in input file                                        
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  6
+
+
+   1   Rb       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   Gh       x      0.0000000000
+   5            y      0.0000000000
+   6            z     10.0000000000
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    2
+
+Rb     0.0000000000   0.0000000000   0.0000000000
+Gh     0.0000000000   0.0000000000   5.2917720830
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     2    2    2    0
+
+
+  Symmetry  A1 ( 1)
+
+    1   Rb    z    3
+    2   Gh    z    6
+
+
+  Symmetry  B1 ( 2)
+
+    3   Rb    x    1
+    4   Gh    x    4
+
+
+  Symmetry  B2 ( 3)
+
+    5   Rb    y    2
+    6   Gh    y    5
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            Rb          Gh  
+
+   Rb      0.000000
+   Gh      5.291772    0.000000
+
+
+ RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER                     9  OR                     0  ARE UNAVAILABLE 
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+
+
+
+   Nuclear repulsion energy :    0.000000000000 Hartree
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   35
+     1  L Rb  1 s        2  L Rb  1 px       3  L Rb  1 py       4  L Rb  1 pz       5  L Rb  1 dxx      6  L Rb  1 dxy 
+     7  L Rb  1 dxz      8  L Rb  1 dyy      9  L Rb  1 dyz     10  L Rb  1 dzz     11  L Rb  1 fxxx    12  L Rb  1 fxxy
+    13  L Rb  1 fxxz    14  L Rb  1 fxyy    15  L Rb  1 fxyz    16  L Rb  1 fxzz    17  L Rb  1 fyyy    18  L Rb  1 fyyz
+    19  L Rb  1 fyzz    20  L Rb  1 fzzz    21  L Rb  1 g400    22  L Rb  1 g310    23  L Rb  1 g301    24  L Rb  1 g220
+    25  L Rb  1 g211    26  L Rb  1 g202    27  L Rb  1 g130    28  L Rb  1 g121    29  L Rb  1 g112    30  L Rb  1 g103
+    31  L Rb  1 g040    32  L Rb  1 g031    33  L Rb  1 g022    34  L Rb  1 g013    35  L Rb  1 g004
+   * Small components:    0
+
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   35
+     1  L A1 Rb s        2  L A1 Rb pz       3  L A1 Rb dxx      4  L A1 Rb dyy      5  L A1 Rb dzz      6  L A1 Rb fxxz
+     7  L A1 Rb fyyz     8  L A1 Rb fzzz     9  L A1 Rb g400    10  L A1 Rb g220    11  L A1 Rb g202    12  L A1 Rb g040
+    13  L A1 Rb g022    14  L A1 Rb g004    15  L B1 Rb px      16  L B1 Rb dxz     17  L B1 Rb fxxx    18  L B1 Rb fxyy
+    19  L B1 Rb fxzz    20  L B1 Rb g301    21  L B1 Rb g121    22  L B1 Rb g103    23  L B2 Rb py      24  L B2 Rb dyz 
+    25  L B2 Rb fxxy    26  L B2 Rb fyyy    27  L B2 Rb fyzz    28  L B2 Rb g211    29  L B2 Rb g031    30  L B2 Rb g013
+    31  L A2 Rb dxy     32  L A2 Rb fxyz    33  L A2 Rb g310    34  L A2 Rb g130    35  L A2 Rb g112
+   * Small components:    0
+
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           50    27    27    14
+  Number of large orbitals in each symmetry:     50    27    27    14
+  Number of small orbitals in each symmetry:      0     0     0     0
+
+* Large component functions
+
+  Symmetry  A1 ( 1)
+
+        7 functions:    Rb s   
+        7 functions:    Rb pz  
+        5 functions:    Rb dxx 
+        5 functions:    Rb dyy 
+        5 functions:    Rb dzz 
+        3 functions:    Rb fxxz
+        3 functions:    Rb fyyz
+        3 functions:    Rb fzzz
+        2 functions:    Rb g400
+        2 functions:    Rb g220
+        2 functions:    Rb g202
+        2 functions:    Rb g040
+        2 functions:    Rb g022
+        2 functions:    Rb g004
+
+  Symmetry  B1 ( 2)
+
+        7 functions:    Rb px  
+        5 functions:    Rb dxz 
+        3 functions:    Rb fxxx
+        3 functions:    Rb fxyy
+        3 functions:    Rb fxzz
+        2 functions:    Rb g301
+        2 functions:    Rb g121
+        2 functions:    Rb g103
+
+  Symmetry  B2 ( 3)
+
+        7 functions:    Rb py  
+        5 functions:    Rb dyz 
+        3 functions:    Rb fxxy
+        3 functions:    Rb fyyy
+        3 functions:    Rb fyzz
+        2 functions:    Rb g211
+        2 functions:    Rb g031
+        2 functions:    Rb g013
+
+  Symmetry  A2 ( 4)
+
+        5 functions:    Rb dxy 
+        3 functions:    Rb fxyz
+        2 functions:    Rb g310
+        2 functions:    Rb g130
+        2 functions:    Rb g112
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+   employing effective-core-potentials (ECP)
+   with the following modifications:
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - contracted large component basis set
+   - The following finite-field one-electron operators have been added:
+---------------------------------------------------------------------------
+    Operator no.  1:   ZDIPLEN         
+---------------------------------------------------------------------------
+    1  ZDIPLEN              A1      T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : ZDIPLEN  +00+     0.000000000E+00 (real)     
+...........................................................................
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with     8 electrons in    4 orbitals.
+ * Sum of atomic potentials used for start guess
+ * General print level   :   0
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+   The final open-shell orbital energies are recalculated with 1.0 scaling,
+   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+    ---> this is default setting from Hamiltonian input
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+    *************************************************************************
+    ************************** RECP integral start **************************
+    *************************************************************************
+
+
+
+          -----------------------------------------------------------
+          Relativistic Effective Core Potential Integral routine
+          This routine is based on ARGOS integral
+          with the permission of R. M. Pitzer (Ohio State University)
+          and maintained by Y. S. Lee and Y. C. Park (KAIST)
+          
+          Electronic mail:
+          YoonSupLee@kaist.ac.kr
+          youngc@kaist.ac.kr
+          
+          Reference:
+          Bull.Korean.Chem.Soc. v.33, p.803 (2012)
+          -----------------------------------------------------------
+
+
+ * Warning: Symmetries higher than D2h in RECP integral is not fully tested.
+            The calculation results can be erroneous.
+            Use auto-symmetry with care.
+
+ * Nuc. Center No.     :   1 (Rb )
+   Sym. distinct atoms :   1
+   Core electrons      :  28
+   AREP blocks         :   4
+   SO blocks           :   3
+
+ * Nuc. Center No.     :   2 (Gh )
+   Sym. distinct atoms :   1
+   This nuclear center does not have core potential
+
+ * VCORE was generated : RECP_INT_C
+ * SOX was generated   : RECP_INT_X
+ * SOY was generated   : RECP_INT_Y
+ * SOZ was generated   : RECP_INT_Z
+
+
+     ***********************************************************************
+     ************************** RECP integral end **************************
+     ***********************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A1    * Deleted:         14(Proj:         14, Lindep:          0) Smin: 0.28E-04
+   L   B1    * Deleted:          5(Proj:          5, Lindep:          0) Smin: 0.28E-04
+   L   B2    * Deleted:          5(Proj:          5, Lindep:          0) Smin: 0.28E-04
+   L   A2    * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.39E-01
+
+
+                                Output from LINSYM
+                                ------------------
+
+
+ Parity   MJ  Functions(total) Functions(LC) Functions(SC)
+     1    1/2         41           41            0
+     1   -3/2         27           27            0
+     1    5/2         15           15            0
+     1   -7/2          7            7            0
+     1    9/2          2            2            0
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    92
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):    92
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found.
+ Using bare nucleus approximation for initial trial vectors.
+             Improved by a sum of atomic screening potentials.
+
+
+########## START ITERATION NO.   1 ##########   Sun Dec 29 23:28:27 2019
+
+E_HOMO...E_LUMO, symmetry 1:     4   0.01547    5   0.01653
+
+=> Calculating sum of orbital energies
+It.    1   -9.3697032916595E-02  0.00D+00  0.00D+00  0.00D+00               0.11389900s   Scr. nuclei    Sun Dec 29
+
+########## START ITERATION NO.   2 ##########   Sun Dec 29 23:28:27 2019
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   64.38%   19.32%    6.05%    8.08%   0.09981698s
+E_HOMO...E_LUMO, symmetry 1:     4  -3.35513    5  -2.21428
+>>> Total wall time: 0.16154445s, and total CPU time : 0.15706900s
+
+########## END ITERATION NO.   2 ##########   Sun Dec 29 23:28:27 2019
+
+It.    2    -9.944336411097      9.85D+00 -6.74D+00  3.09D+00               0.15706900s   LL             Sun Dec 29
+
+########## START ITERATION NO.   3 ##########   Sun Dec 29 23:28:27 2019
+
+    3 *** Differential density matrix. DCOVLP     = 5.2461
+ INFO: Useless value for DCOVLP, value reset to: 1.0D0
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   57.06%   25.98%    6.66%    8.99%   0.11332902s
+E_HOMO...E_LUMO, symmetry 1:     4  -1.59231    5  -0.52801
+>>> Total wall time: 0.12086117s, and total CPU time : 0.11652300s
+
+########## END ITERATION NO.   3 ##########   Sun Dec 29 23:28:27 2019
+
+It.    3    -22.62068103970      1.27D+01  3.88D+00  2.16D+00   DIIS   2    0.11652300s   LL             Sun Dec 29
+
+########## START ITERATION NO.   4 ##########   Sun Dec 29 23:28:27 2019
+
+    4 *** Differential density matrix. DCOVLP     = 0.0511
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   77.67%    6.51%    4.15%    6.77%   0.08546999s
+E_HOMO...E_LUMO, symmetry 1:     4  -1.02164    5  -0.15484
+>>> Total wall time: 0.09215498s, and total CPU time : 0.08837200s
+
+########## END ITERATION NO.   4 ##########   Sun Dec 29 23:28:27 2019
+
+It.    4    -23.52449695841      9.04D-01 -3.60D-01  7.14D-01   DIIS   3    0.08837200s   LL             Sun Dec 29
+
+########## START ITERATION NO.   5 ##########   Sun Dec 29 23:28:27 2019
+
+    5 *** Differential density matrix. DCOVLP     = 0.0913
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   78.88%    3.80%    4.05%    6.58%   0.07577002s
+E_HOMO...E_LUMO, symmetry 1:     4  -0.99593    5  -0.13911
+>>> Total wall time: 0.08232274s, and total CPU time : 0.07862500s
+
+########## END ITERATION NO.   5 ##########   Sun Dec 29 23:28:27 2019
+
+It.    5    -23.65623912974      1.32D-01 -2.02D-01  5.32D-02   DIIS   4    0.07862500s   LL             Sun Dec 29
+
+########## START ITERATION NO.   6 ##########   Sun Dec 29 23:28:27 2019
+
+    6 *** Differential density matrix. DCOVLP     = 0.9506
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   80.76%    0.86%    3.79%    6.18%   0.07278001s
+E_HOMO...E_LUMO, symmetry 1:     4  -0.99948    5  -0.13929
+>>> Total wall time: 0.07928849s, and total CPU time : 0.07571700s
+
+########## END ITERATION NO.   6 ##########   Sun Dec 29 23:28:27 2019
+
+It.    6    -23.65746428413      1.23D-03 -1.56D-02  5.30D-03   DIIS   5    0.07571700s   LL             Sun Dec 29
+
+########## START ITERATION NO.   7 ##########   Sun Dec 29 23:28:27 2019
+
+    7 *** Differential density matrix. DCOVLP     = 0.9958
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   78.88%    3.80%    4.05%    6.58%   0.07481104s
+E_HOMO...E_LUMO, symmetry 1:     4  -0.99933    5  -0.13928
+>>> Total wall time: 0.08141859s, and total CPU time : 0.07771700s
+
+########## END ITERATION NO.   7 ##########   Sun Dec 29 23:28:27 2019
+
+It.    7    -23.65747391527      9.63D-06 -3.91D-04  2.24D-04   DIIS   6    0.07771700s   LL             Sun Dec 29
+
+########## START ITERATION NO.   8 ##########   Sun Dec 29 23:28:27 2019
+
+    8 *** Differential density matrix. DCOVLP     = 1.0004
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   80.29%    0.88%    3.88%    6.33%   0.07153201s
+E_HOMO...E_LUMO, symmetry 1:     4  -0.99934    5  -0.13928
+>>> Total wall time: 0.07804881s, and total CPU time : 0.07448700s
+
+########## END ITERATION NO.   8 ##########   Sun Dec 29 23:28:27 2019
+
+It.    8    -23.65747393688      2.16D-08 -4.71D-05  2.33D-05   DIIS   7    0.07448700s   LL             Sun Dec 29
+
+########## START ITERATION NO.   9 ##########   Sun Dec 29 23:28:27 2019
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   75.80%    5.98%    4.61%    7.13%   0.07810301s
+E_HOMO...E_LUMO, symmetry 1:     4  -0.99934    5  -0.13928
+>>> Total wall time: 0.08457662s, and total CPU time : 0.08105500s
+
+########## END ITERATION NO.   9 ##########   Sun Dec 29 23:28:27 2019
+
+It.    9    -23.65747393708      2.07D-10  4.94D-06  2.51D-06   DIIS   8    0.08105500s   LL             Sun Dec 29
+
+########## START ITERATION NO.  10 ##########   Sun Dec 29 23:28:27 2019
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   76.27%    5.09%    4.55%    7.07%   0.07658905s
+E_HOMO...E_LUMO, symmetry 1:     4  -0.99934    5  -0.13928
+>>> Total wall time: 0.08320054s, and total CPU time : 0.07957000s
+
+########## END ITERATION NO.  10 ##########   Sun Dec 29 23:28:28 2019
+
+It.   10    -23.65747393709      3.08D-12  1.74D-07  2.51D-07   DIIS   9    0.07957000s   LL             Sun Dec 29
+
+########## START ITERATION NO.  11 ##########   Sun Dec 29 23:28:28 2019
+
+   11 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   79.82%    1.91%    3.94%    6.41%   0.07237804s
+>>> Total wall time: 0.07348969s, and total CPU time : 0.07349000s
+
+########## END ITERATION NO.  11 ##########   Sun Dec 29 23:28:28 2019
+
+It.   11    -23.65747393709     -1.07D-14 -4.86D-08  1.53D-08   DIIS   9    0.07349000s   LL             Sun Dec 29
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1   -9.3697032916595E-02  0.00D+00  0.00D+00  0.00D+00               0.11389900s   Scr. nuclei    Sun Dec 29
+It.    2    -9.944336411097      9.85D+00 -6.74D+00  3.09D+00               0.15706900s   LL             Sun Dec 29
+It.    3    -22.62068103970      1.27D+01  3.88D+00  2.16D+00   DIIS   2    0.11652300s   LL             Sun Dec 29
+It.    4    -23.52449695841      9.04D-01 -3.60D-01  7.14D-01   DIIS   3    0.08837200s   LL             Sun Dec 29
+It.    5    -23.65623912974      1.32D-01 -2.02D-01  5.32D-02   DIIS   4    0.07862500s   LL             Sun Dec 29
+It.    6    -23.65746428413      1.23D-03 -1.56D-02  5.30D-03   DIIS   5    0.07571700s   LL             Sun Dec 29
+It.    7    -23.65747391527      9.63D-06 -3.91D-04  2.24D-04   DIIS   6    0.07771700s   LL             Sun Dec 29
+It.    8    -23.65747393688      2.16D-08 -4.71D-05  2.33D-05   DIIS   7    0.07448700s   LL             Sun Dec 29
+It.    9    -23.65747393708      2.07D-10  4.94D-06  2.51D-06   DIIS   8    0.08105500s   LL             Sun Dec 29
+It.   10    -23.65747393709      3.08D-12  1.74D-07  2.51D-07   DIIS   9    0.07957000s   LL             Sun Dec 29
+It.   11    -23.65747393709     -1.07D-14 -4.86D-08  1.53D-08   DIIS   9    0.07349000s   LL             Sun Dec 29
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   11 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.11389684s
+      LL           :    0.09369061s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -23.657473937086912
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :      0.000000000000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -23.657473937086912
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Block   1 in E1 :  Omega =  1/2
+  * Closed shell, f = 1.0000
+ -1.77553071912703  ( 2)    -1.03488771785147  ( 2)    -0.99933940960561  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+ -0.13927864284463  ( 2)    -0.09075820760608  ( 2)    -0.08994651195535  ( 2)    -0.05970424938697  ( 2)    -0.05964475244007  ( 2)
+ -0.05651006102857  ( 2)    -0.04020979108576  ( 2)    -0.03974412206404  ( 2)    -0.02717065258813  ( 2)    -0.02710523924976  ( 2)
+  0.03623907909978  ( 2)     0.03733031751464  ( 2)     0.03896338754853  ( 2)     0.05195989564641  ( 2)     0.05199105086968  ( 2)
+  0.27303523679443  ( 2)     0.27319919457479  ( 2)     0.33342475979331  ( 2)     0.33501265112071  ( 2)     0.33531928677451  ( 2)
+  0.34300429492766  ( 2)     0.41606073155012  ( 2)     1.05864552930160  ( 2)     1.05917374935396  ( 2)     1.29940226912912  ( 2)
+  1.29969044256453  ( 2)     1.55935813672896  ( 2)     1.56916780564112  ( 2)     1.59286802224857  ( 2)     1.63508586634482  ( 2)
+  1.80953069462356  ( 2)     2.92570159160567  ( 2)     2.92629268081394  ( 2)     3.64846416106152  ( 2)     3.64860264143535  ( 2)
+ 10.12300546330011  ( 2)    10.38157279881585  ( 2)    42.91808704979341  ( 2)
+
+* Block   2 in E1 :  Omega =  3/2
+  * Closed shell, f = 1.0000
+ -0.99933940960561  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+ -0.08994651195535  ( 2)    -0.05970424938697  ( 2)    -0.05964475244007  ( 2)    -0.03974412206403  ( 2)    -0.02717065258813  ( 2)
+ -0.02710523924976  ( 2)     0.03896338754852  ( 2)     0.05195989564640  ( 2)     0.05199105086968  ( 2)     0.27303523679442  ( 2)
+  0.27319919457479  ( 2)     0.33342475979332  ( 2)     0.33501265112071  ( 2)     0.34300429492767  ( 2)     1.05864552930161  ( 2)
+  1.05917374935397  ( 2)     1.29940226912912  ( 2)     1.29969044256454  ( 2)     1.55935813672895  ( 2)     1.56916780564112  ( 2)
+  1.63508586634669  ( 2)     2.92570159160567  ( 2)     2.92629268081393  ( 2)     3.64846416106153  ( 2)     3.64860264143538  ( 2)
+ 10.38157279882025  ( 2)
+
+* Block   3 in E1 :  Omega =  5/2
+  * Virtual eigenvalues, f = 0.0000
+ -0.05970424938697  ( 2)    -0.02717065258813  ( 2)     0.05195989564641  ( 2)     0.27303523679443  ( 2)     0.27319919457479  ( 2)
+  0.33501265112071  ( 2)     1.05864552930161  ( 2)     1.05917374935396  ( 2)     1.29940226912912  ( 2)     1.29969044256453  ( 2)
+  1.56916780564112  ( 2)     2.92570159160568  ( 2)     2.92629268081394  ( 2)     3.64846416106153  ( 2)     3.64860264143536  ( 2)
+
+* Block   4 in E1 :  Omega =  7/2
+  * Virtual eigenvalues, f = 0.0000
+  0.27303523679442  ( 2)     1.05864552930160  ( 2)     1.29940226912912  ( 2)     1.29969044256454  ( 2)     2.92629268081394  ( 2)
+  3.64846416106153  ( 2)     3.64860264143536  ( 2)
+
+* Block   5 in E1 :  Omega =  9/2
+  * Virtual eigenvalues, f = 0.0000
+  1.29940226912913  ( 2)     3.64860264143536  ( 2)
+
+* Occupation in fermion symmetry E1 
+  * Inactive orbitals
+     1/2 1/2 3/2 1/2
+  * Virtual orbitals
+     1/2 1/2 3/2 1/2 1/2 5/2 3/2 3/2 1/2 1/2 1/2 1/2 3/2 1/2 5/2 3/2 1/2 3/2
+     1/2 1/2 3/2 1/2 3/2 5/2 1/2 1/2 3/2 7/2 3/2 5/2 1/2 1/2 5/2 3/2 1/2 3/2
+     5/2 1/2 3/2 1/2 1/2 3/2 1/2 1/2 7/2 3/2 5/2 1/2 5/2 3/2 1/2 5/2 7/2 3/2
+     9/2 1/2 5/2 3/2 7/2 3/2 1/2 3/2 5/2 1/2 1/2 1/2 3/2 1/2 1/2 3/2 5/2 3/2
+     1/2 7/2 5/2 1/2 5/2 7/2 3/2 1/2 5/2 9/2 7/2 3/2 1/2 1/2 3/2 1/2
+
+* Occupation of subblocks
+                       E1 :  1/2  3/2  5/2  7/2  9/2                                                        
+  closed shells (f=1.0000):    3    1    0    0    0
+ virtual shells (f=0.0000):   38   26   15    7    2
+tot.num. of pos.erg shells:   41   27   15    7    2
+
+
+* HOMO - LUMO gap:
+
+    E(LUMO) :    -0.13927864 au (symmetry E1 )
+  - E(HOMO) :    -0.99933941 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     0.86006077 au
+
+===========================================================================
+* PCMOUT: Coefficients read from unformatted DFCOEF 
+          and written to formatted DFPCMO
+===========================================================================
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Sun Dec 29 23:28:28 2019
+     Host name              : alexander                               
+
+>>>> Node 0, utime: 1, stime: 0, minflt: 55303, majflt: 0, nvcsw: 62, nivcsw: 25, maxrss: 40908
+>>>> Total WALL time used in DIRAC: 2s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :       106.22
+  
+  Largest                   10  allocations
+  
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.11 Mb at subroutine __allocator_track_if_MOD_allocator_registe for CMO in PCMOUT                             
+        0.11 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.05 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.03 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+  
+  Peak memory usage:       488.39 MB
+  Peak memory usage:        0.477 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:     0.00 MB
+
+*****************************************************
+DIRAC pam run in /home/alexander/Science/expt/examples/Rb_atom_TDMs_new

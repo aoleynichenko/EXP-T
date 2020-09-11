@@ -1,0 +1,12 @@
+DIRAC
+CO molecule, R = 2.132 bohrs
+symmetry C1
+C   2    0
+        6.    1
+C        0.0      0.0      0.0
+LARGE BASIS cc-pVDZ
+        8.    1
+O        0.0      0.0      2.132
+LARGE BASIS cc-pVDZ
+FINISH
+

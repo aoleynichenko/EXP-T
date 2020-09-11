@@ -1,0 +1,19 @@
+# Test:
+# (1) Hg+ ion (FSCC: Hg2+ -> Hg+ -> Hg)
+# (2) 2-comp RECP (Gatchina)
+# (3) symmetry D2h
+# (4) sector (0h,2p)
+
+title "Test Hg+/gatchina/D2h/sector 0h2p"
+maxiter 200
+conv 1e-9
+sector 0h2p
+nactp 8
+shifttype realimag
+shift 0h1p 3 -0.5 -1.0
+shift 0h2p 3 -2.0
+dltdm
+
+# import integrals from
+integrals MRCONEE-D2h MDCINT-D2h
+

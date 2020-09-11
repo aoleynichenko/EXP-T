@@ -1,0 +1,13 @@
+# Test:
+# (1) N2 in cc-pVDZ
+# (2) relativistic, DC
+# (3) symmetry Cs
+
+title "Test N2/cc-pVDZ/DC/Cs"
+maxiter 30
+conv 1e-9
+
+# import integrals from
+integrals MRCONEE-Cs MDCINT-Cs
+
+

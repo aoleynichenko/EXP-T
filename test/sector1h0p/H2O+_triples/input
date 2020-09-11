@@ -1,0 +1,12 @@
+title "Test H2O+/cc-pVTZ/C2v/sector 1h0p"
+maxiter 200
+conv 1e-9
+damping 100 0.5
+sector 1h0p
+nacth 8
+shifttype realimag
+shift_1h0p 3 -0.25 -0.5 -0.75
+#model ccsdt-1
+reuse 0h0p 1h0p
+disk_usage 0
+

@@ -1,0 +1,400 @@
+
+		************************************************************************
+		**                              E X P - T                             **
+		**   Fock-Space Multireference Relativistic Coupled Cluster Program   **
+		************************************************************************
+Version: 1.4.1
+Release date: 15 Feb 2020
+Authors:
+  Alexander Oleynichenko [alexvoleynichenko@gmail.com]
+  Andrei Zaitsevskii
+  Ephraim Eliav
+Compiler: Intel C Compiler 1700 (Intel(R) C++ gcc 4.9 mode)
+BLAS/LAPACK implementation: OpenBLAS
+Build date: Feb 24 2020 14:23:09
+Run date: Mon Feb 24 15:53:13 2020
+Hostname: 192.168.1.12
+
+------------------------- size of data types (bytes) -------------------------
+                               integer types                                  
+ char            1  unsigned char   1   signed char     1   short           2
+ unsigned short  2  int             4   unsigned int    4   long            8
+ unsigned long   8  long long       8   unsigned long long                  8
+ int8_t          1  int16_t         2   int32_t         4   int64_t         8
+ uint8_t         1  uint16_t        2   uint32_t        4   uint64_t        8
+                      size, pointer, difference types                         
+ size_t          8  ptrdiff_t       8   void *          8
+                                 real types                                   
+ float           4  double          8   long double    16
+                               complex types                                  
+ float complex   8  double complex 16   long double complex                32
+------------------------------------------------------------------------------
+
+CUDA disabled
+
+Reading input file: input-C1
+
+----------------------------- echo of input file -----------------------------
+# CO molecule, CCSD/cc-pVDZ
+# nonrelativistic, symmetry C1
+
+# title for the task (of type "string")
+title "CO/CCSD/cc-pVDZ"
+
+# print level, default medium
+print medium
+
+# max number of iterations
+maxiter 30
+
+# convergence threshold (by cluster amplitudes)
+conv 1e-9
+
+# target Fock space sector
+sector 0h0p
+
+# CC model: ccsd, ccsdt-1, etc
+model ccsd
+
+# import integrals from
+integrals MRCONEE-C1 MDCINT-C1
+
+
+------------------------------------------------------------------------------
+
+
+Options:
+  title             CO/CCSD/cc-pVDZ
+  scratch dir       scratch
+  clean scratch dir yes
+  print level       medium
+  recommend arith   real
+  max memory usage  1024.0 Mb
+  data compression  disabled
+  <pp||pp> storage  disk
+  disk usage level  2 (rank-6+ and pppp on disk)
+  tile size         100
+  n OpenMP threads  1
+  CUDA              disabled
+  max iter          30
+  conv threshold    1e-09
+  read ampl-s for   nothing 
+  Interface to      DIRAC
+  One-el ints file  MRCONEE-C1
+  Two-el ints file  MDCINT-C1
+  Prop-s ints file  MDPROP
+  Target FS sector  0h0p
+  CC model          CCSD
+  active space      undefined
+  denom shifts      disabled
+  nroots            all
+  degeneracy thresh 1.0e-08
+  occ_irreps        default
+  occ numbers       default
+  restrict triples  disabled
+  damping           disabled
+  int-face OneProp  disabled
+  hermitization     enabled
+  calculate DL-TDMs disabled
+  natural orbitals  disabled
+  model-space props disabled
+
+ Scratch directory 'scratch' exists
+ Current working directory = /Users/Oleynichenko/qchem/RELEASE/examples/CO_ccsd
+ Full path to one-electron integrals = /Users/Oleynichenko/qchem/RELEASE/examples/CO_ccsd/MRCONEE-C1
+ Full path to two-electron integrals = /Users/Oleynichenko/qchem/RELEASE/examples/CO_ccsd/MDCINT-C1
+ Full path to properties integrals = /Users/Oleynichenko/qchem/RELEASE/examples/CO_ccsd/MDPROP
+ Changing working directory to scratch ...
+ Current working directory = /Users/Oleynichenko/qchem/RELEASE/examples/CO_ccsd/scratch
+ 
+ ******************************************************************
+ **       BINARY INTERFACE TO THE DIRAC PROGRAM PACKAGE          **
+ **                    version 22 Jul 2019                       **
+ ******************************************************************
+ 
+ required unformatted files (produced by DIRAC):
+   MRCONEE -- spinor info & transformed one-electron integrals
+   MDCINT  -- transformed two-electron integrals
+ optional files (also DIRAC):
+   MDPROP  -- transformed integrals of one-electron properties
+ 
+ HINT: in order to obtain these files, add option .4INDEX to the
+   **DIRAC section of the DIRAC input file; this will enable the
+   code for integrals transformation. Then run:
+   $ pam --inp=<inp-file> --mol=<mol-file> --get="MRCONEE MDCINT"
+ 
+ 
+ Names of integral files:
+ MRCONEE = /Users/Oleynichenko/qchem/RELEASE/examples/CO_ccsd/MRCONEE-C1
+ MDCINT  = /Users/Oleynichenko/qchem/RELEASE/examples/CO_ccsd/MDCINT-C1
+ MDPROP  = /Users/Oleynichenko/qchem/RELEASE/examples/CO_ccsd/MDPROP
+ MDPROP unformatted file is not found!
+ will be continued without properties
+ default integer type in DIRAC              integer(4)
+ 
+ *** MRCONEE FILE ***
+ nspinors                                             56
+ was breit in DHF                            F
+ nuclear repulsion energy                      22.5140722326454     
+ inversion symmetry (1-no,2-yes)                       1
+ group type (1-real,2-cmplx,4-quater)                  4
+ is spinfree                                           0
+ arithmetic                                 complex
+ total num of orb-s (+frozen+deleted)                 56
+ total SCF energy                             -112.820480227131     
+ number of fermion irreps in parent group              2
+ names of these reps (grd, ungrd)             1A            2A          
+ number of spinors active in the transf-n              7           7
+ total number of orb-s of this ircop                  28
+ number of occupied frozen (core) spinors   
+   - total                                             0
+   - positive energy                                   0
+   - negative energy                                   0
+ number of deleted spinors                             0
+ number of fermion irreps in Abelian subgrp            1
+ names of these irreps                         A   a
+ number of g/u Kramers pairs          56
+ number of boson symmetry reps(LUCITA)            1
+ *** END OF MRCONEE FILE ***
+ 
+ *** spinor blocks ***
+ tile size =          100
+ number of fermion irreps in the Abelian subgroup =            1
+ repsizes =  56
+ number of spinor blocks =            1
+ sizes of spinor blocks =  56
+ indices of spinors for each spinor block:
+[  1]    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20
+   21   22   23   24   25   26   27   28   29   30   31   32   33   34   35   36   37   38   39   40
+   41   42   43   44   45   46   47   48   49   50   51   52   53   54   55   56
+ *** end spinor blocks ***
+ 
+ *** MDPROP FILE ***
+ path to MDPROP file = /Users/Oleynichenko/qchem/RELEASE/examples/CO_ccsd/MDPROP
+ MDPROP file does not exist, properties integrals cannot be read
+ *** END OF MDPROP FILE ***
+ 
+ expectation value of dipole moment at the SCF level cannot be calculated
+ 
+ *** MDCINT FILE ***
+ Mon Feb 24 15:53:13 2020
+ datex                                  24Feb20  
+ timex                                 15:48:46
+ number of Kramers pairs                         28
+ number of VINT* files written                      1
+ written to disk: 835483824 bytes =    0.78 Gb
+ Mon Feb 24 15:53:43 2020
+ *** END OF MDCINT FILE ***
+ 
+Total SCF energy =    -112.820480227131
+Arithmetic: complex
+Group type: quaternion
+Spin-orbit: on
+Detected point symmetry group: C1
+Totally symmetric irrep:    a
+
+		*** creating spinor blocks ***
+nsym = 2
+sizes = 56 0 
+number of nonzero blocks = 1
+i = 0 j = 0 repno = 0 size = 56
+spinor blocks:
+ [0] sz = 56 repno = 0 idx = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 
+			*** done ***
+
+spinor classification (define active space)...
+active space MIN energy = 0 a.u.
+active space MAX energy = 0 a.u.
+I/A = inactive/active
+H/P = hole/particle
+NH = NIH + NAH = 14 + 0 = 14
+NP = NIP + NAP = 42 + 0 = 42
+...done
+
+
+			Spinors info
+			------------
+
+     no    rep         occ    active        one-el energy
+    -------------------------------------------------------
+       1   0 "   A  "   1       -         -20.690636744672
+       2   0 "   A  "   1       -         -11.373247512628
+       3   0 "   A  "   1       -          -1.524432040854
+       4   0 "   A  "   1       -          -0.802554074468
+       5   0 "   A  "   1       -          -0.634563484141
+       6   0 "   A  "   1       -          -0.633710538095
+       7   0 "   A  "   1       -          -0.548943183612
+       8   0 "   A  "   0       -           0.154591988946
+       9   0 "   A  "   0       -           0.154903764441
+      10   0 "   A  "   0       -           0.382252807126
+      11   0 "   A  "   0       -           0.672083216637
+      12   0 "   A  "   0       -           0.672270077713
+      13   0 "   A  "   0       -           0.726253107486
+      14   0 "   A  "   0       -           1.017883630572
+      15   0 "   A  "   0       -           1.061695485966
+      16   0 "   A  "   0       -           1.223532465047
+      17   0 "   A  "   0       -           1.224634383992
+      18   0 "   A  "   0       -           1.344366265703
+      19   0 "   A  "   0       -           1.344421864363
+      20   0 "   A  "   0       -           1.558370935957
+      21   0 "   A  "   0       -           1.558576934602
+      22   0 "   A  "   0       -           1.938439793872
+      23   0 "   A  "   0       -           2.342170274483
+      24   0 "   A  "   0       -           2.937129636049
+      25   0 "   A  "   0       -           2.937505114981
+      26   0 "   A  "   0       -           3.426264052602
+      27   0 "   A  "   0       -           3.426464988043
+      28   0 "   A  "   0       -           3.871478245321
+      29   0 "   A  "   1       -         -20.690636744672
+      30   0 "   A  "   1       -         -11.373247512628
+      31   0 "   A  "   1       -          -1.524432040854
+      32   0 "   A  "   1       -          -0.802554074468
+      33   0 "   A  "   1       -          -0.634563484141
+      34   0 "   A  "   1       -          -0.633710538095
+      35   0 "   A  "   1       -          -0.548943183612
+      36   0 "   A  "   0       -           0.154591988946
+      37   0 "   A  "   0       -           0.154903764441
+      38   0 "   A  "   0       -           0.382252807126
+      39   0 "   A  "   0       -           0.672083216637
+      40   0 "   A  "   0       -           0.672270077713
+      41   0 "   A  "   0       -           0.726253107486
+      42   0 "   A  "   0       -           1.017883630572
+      43   0 "   A  "   0       -           1.061695485966
+      44   0 "   A  "   0       -           1.223532465047
+      45   0 "   A  "   0       -           1.224634383992
+      46   0 "   A  "   0       -           1.344366265703
+      47   0 "   A  "   0       -           1.344421864363
+      48   0 "   A  "   0       -           1.558370935957
+      49   0 "   A  "   0       -           1.558576934602
+      50   0 "   A  "   0       -           1.938439793872
+      51   0 "   A  "   0       -           2.342170274483
+      52   0 "   A  "   0       -           2.937129636049
+      53   0 "   A  "   0       -           2.937505114981
+      54   0 "   A  "   0       -           3.426264052602
+      55   0 "   A  "   0       -           3.426464988043
+      56   0 "   A  "   0       -           3.871478245321
+    -------------------------------------------------------
+
+    irreps                 A
+    occupied inactive     14
+    occupied active        0
+    virtual active         0
+    virtual inactive      42
+
+
+				*****************
+				** Sector 0h0p **
+				*****************
+
+
+ Integral sorting routine (version 21 Feb 2019): integrals for the 0h0p sector
+ -----------------------------------------------------------------------------
+   diagrams to be sorted: [hh/00] [hp/00] [ph/00] [pp/00] [hhpp/0000] [pphh/0000] [hhhh/0000] [phhp/0000] [pppp/0000] [pphp/0000] [phpp/0000] [phhh/0000] [hhhp/0000] [hphh/0000] [hphp/0000] 
+   number of spinor blocks: 1
+   tile size: 100
+   max spinor block length: 56
+   i/o buffers size, bytes: 262144 (indices) + 131072 (integrals) [384.00 KB total]
+   estimated max memory required for the straightforward algorithm (not used!): 0.15 GB
+   size of working arrays, bytes: 157351936 (indices) + 158782408 (integrals) [301.49 MB total]
+   sorting two-electron integrals ...
+   sorting one-electron integrals ...
+     Fock matrix construction ...
+     max deviation of the diagonal elements of the reconstructed Fock matrix and orbital energies = 1.116046e-08
+     fill 1-electron diagrams ... hh hp ph pp done
+   reorder diagrams (if required): phhp[2431] done
+   save sorted diagrams to disk: hh hp ph pp hhpp pphh hhhh phhp ppppr pphp phpp phhh hhhp hphh hphp done
+   number of blocks read from disk: 1
+   total number of integrals read from disk: 34811472
+   total number of bytes read from disk: 835483828 (0.78 GB)
+   sorting performance, Mb/sec: 30.69
+   time for 2-e integrals sorting, sec: 25.96
+   time for DIRAC interface (integral extraction & write), sec: 30.11
+   total time for sorting operations, sec: 56.07
+   deallocating memory ...
+   done
+
+ Initial guess
+ -------------
+ MP2 correlation energy =      -0.290892396007
+       Total MP2 energy =    -113.111372623138
+
+ Solution of amplitude equations (sector 0h0p)
+ --------------------------------------------------------------------
+ it.            E(corr)              diffmax(T1)         diffmax(T2)
+ --------------------------------------------------------------------
+   1      -0.284551234222767      0.031599091285      0.011710349193
+   2      -0.296893224494529      0.003704490657      0.007692961209
+   3      -0.296261717472413      0.006451819693      0.001924697601
+   4      -0.297838634404228      0.000852232585      0.001614438105
+   5      -0.297777673952751      0.001266252202      0.000435529243
+   6      -0.298044160104150      0.000227065332      0.000379885711
+   7      -0.298047200546855      0.000264513997      0.000117878742
+   8      -0.298097673219167      0.000059432845      0.000093367023
+   9      -0.298102037825578      0.000059659879      0.000035001813
+  10      -0.298112356815095      0.000015639191      0.000023605927
+  11      -0.298114144381297      0.000014418887      0.000010030384
+  12      -0.298116396685436      0.000004811923      0.000006095927
+  13      -0.298116980179290      0.000003681291      0.000002798762
+  14      -0.298117500600012      0.000001490848      0.000001599311
+  15      -0.298117674540337      0.000000978898      0.000000770662
+  16      -0.298117800568977      0.000000445155      0.000000424520
+  17      -0.298117850200991      0.000000268218      0.000000210866
+  18      -0.298117881849652      0.000000130903      0.000000113654
+  19      -0.298117895696441      0.000000075239      0.000000057544
+  20      -0.298117903859055      0.000000038394      0.000000030620
+  21      -0.298117907677395      0.000000021549      0.000000015694
+  22      -0.298117909822885      0.000000011331      0.000000008287
+  23      -0.298117910869754      0.000000006442      0.000000004283
+  24      -0.298117911441159      0.000000004580      0.000000002250
+  25      -0.298117911727463      0.000000003257      0.000000001170
+  26      -0.298117911881046      0.000000002316      0.000000000614
+  27      -0.298117911959290      0.000000001646      0.000000000320
+  28      -0.298117912000841      0.000000001171      0.000000000199
+  29      -0.298117912022234      0.000000000832      0.000000000200
+ --------------------------------------------------------------------
+	converged in 29 iterations
+
+          SCF reference energy =    -112.820480227131
+       CCSD correlation energy =      -0.298117912022
+             Total CCSD energy =    -113.118598139153
+
+ average time per iteration = 4.398 sec
+ (absolute values)
+ Max T1 amplitude (t_ia) [ 4 -> 7 ] = 0.03561254
+   [   4] eps=     -0.63456349 rep=   A inactive occ
+   [   7] eps=      0.15459199 rep=   A inactive virt
+ Max T2 amplitude (t_ijab) [ 32 33 -> 35 36 ] = 0.06304261
+   [  32] eps=     -0.63456349 rep=   A inactive occ
+   [  33] eps=     -0.63371053 rep=   A inactive occ
+   [  35] eps=      0.15459199 rep=   A inactive virt
+   [  36] eps=      0.15490377 rep=   A inactive virt
+
+
+ time for (sec):
+ -------------------------------------------------------
+  Total time of execution                       184.465
+  Diagram contraction (mult) for <PP||PP>        56.668
+  DIRAC interface (MRCONEE/MDCINT)               30.106
+  Diagram template constr (tmplt)                 0.715
+  Sorting of integrals                           25.959
+  Multidim transposition (reorder)               10.273
+  Energy denominators (diveps)                    0.441
+  0h0p -- Singles equations (T1)                  3.530
+  Diagram contraction (mult)                    111.984
+  mult M <- M x M                                53.983
+  mult M <- D x M                                56.543
+  Diagram addition (update)                       1.859
+  0h0p -- Doubles equations (T2)                122.836
+ -------------------------------------------------------
+
+
+ memory in usage  = 83689824 bytes = 79.8 Mb = 0.08 Gb
+ max memory usage = 427582816 bytes = 407.8 Mb = 0.40 Gb
+
+ Disk I/O:
+   files created: 2203   files removed: 0
+   read        3772975032 bytes = 3.514 Gb
+   write       3889829993 bytes = 3.623 Gb
+
+ EXP-T terminated normally at Mon Feb 24 15:56:18 2020
+ Total run time: 0 days 0 hours 3 minutes 4 seconds 465 milliseconds

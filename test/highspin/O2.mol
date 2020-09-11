@@ -1,0 +1,10 @@
+test of open-shell CCSD calculation
+molecular oxygen at eq distance taken from NIST
+automatic symmetry detection: will identify the Dinfh group
+C   1              A
+       8.    2
+O      0.0       0.0      0.60376
+O      0.0       0.0     -0.60376
+LARGE BASIS cc-pVDZ
+FINISH
+

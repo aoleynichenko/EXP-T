@@ -1,0 +1,13 @@
+water molecule
+at experimental geometry R(OH) = 0.9578, Ang(HOH) = 104.478
+exper-l IP = 12.621
+C   2              A 
+        8.    1
+O     0.00000000           0.00000000        0.1173
+LARGE BASIS cc-pVTZ
+        1.    2
+H1    0.0000               0.7572           -0.4692
+H2    0.0000              -0.7572           -0.4692
+LARGE BASIS cc-pVTZ
+FINISH
+
