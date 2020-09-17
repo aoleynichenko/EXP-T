@@ -22,6 +22,6 @@ The OpenBLAS library v0.3.9 is used as an internal implementation of BLAS/LAPACK
 
 We kindly ask you to acknowledge any use of the EXP-T program system that results in published material using the following citation:
 
-A. V. Oleynichenko, A. Zaitsevskii, E. Eliav, Towards High Performance Relativistic Electronic Structure Modelling: The EXP-T Program Package. arXiv:2004.03682 [physics.comp-ph] (2020)
+*A. V. Oleynichenko, A. Zaitsevskii, E. Eliav, Towards High Performance Relativistic Electronic Structure Modelling: The EXP-T Program Package. arXiv:2004.03682 [physics.comp-ph] (2020)*
 
 
