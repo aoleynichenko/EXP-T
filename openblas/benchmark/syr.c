@@ -144,7 +144,7 @@ int main(int argc, char *argv[]){
     fprintf(stderr,"Out of Memory!!\n");exit(1);
   }
 
-#ifdef linux
+#ifdef __linux
   srandom(getpid());
 #endif
 
@@ -173,11 +173,9 @@ int main(int argc, char *argv[]){
 
     time1 = (double)(stop.tv_sec - start.tv_sec) + (double)((stop.tv_usec - start.tv_usec)) * 1.e-6;
 
-    gettimeofday( &start, (struct timezone *)0);
-
     fprintf(stderr,
 	    " %10.2f MFlops\n",
-	    COMPSIZE * COMPSIZE * 1. * (double)m * (double)m * (double)m / time1 * 1.e-6);
+	    COMPSIZE * COMPSIZE * 1. * (double)m * (double)m / time1 * 1.e-6);
 
   }
 

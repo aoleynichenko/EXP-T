@@ -46,6 +46,11 @@ SBLAS3OBJS    = \
 		somatcopy.$(SUFFIX) simatcopy.$(SUFFIX)\
 		sgeadd.$(SUFFIX)
 
+ifeq ($(BUILD_HALF),1)
+SHBLAS1OBJS    = shdot.$(SUFFIX)
+SHBLAS3OBJS    = shgemm.$(SUFFIX)
+SHEXTOBJS      = shstobf16.$(SUFFIX) shdtobf16.$(SUFFIX) sbf16tos.$(SUFFIX) dbf16tod.$(SUFFIX)
+endif
 
 DBLAS1OBJS    = \
 		daxpy.$(SUFFIX) dswap.$(SUFFIX) \
@@ -277,6 +282,12 @@ CSBLAS3OBJS   = \
 	cblas_ssyrk.$(SUFFIX) cblas_ssyr2k.$(SUFFIX) cblas_somatcopy.$(SUFFIX)  cblas_simatcopy.$(SUFFIX)\
 	cblas_sgeadd.$(SUFFIX)
 
+ifeq ($(BUILD_HALF),1)
+CSHBLAS1OBJS = cblas_shdot.$(SUFFIX)
+CSHBLAS3OBJS = cblas_shgemm.$(SUFFIX)
+CSHEXTOBJS   = cblas_shstobf16.$(SUFFIX) cblas_shdtobf16.$(SUFFIX) cblas_sbf16tos.$(SUFFIX) cblas_dbf16tod.$(SUFFIX)
+endif
+
 CDBLAS1OBJS   = \
 	cblas_idamax.$(SUFFIX) cblas_idamin.$(SUFFIX) cblas_dasum.$(SUFFIX) cblas_daxpy.$(SUFFIX) \
 	cblas_dcopy.$(SUFFIX) cblas_ddot.$(SUFFIX) \
@@ -360,13 +371,15 @@ CZBLAS3OBJS   +=  cblas_zgemm3m.$(SUFFIX)
 endif
 
 
-ifndef NO_CBLAS
+ifneq ($(NO_CBLAS), 1)
 
 override CFLAGS += -I.
 
 SBLAS1OBJS   += $(CSBLAS1OBJS)
 SBLAS2OBJS   += $(CSBLAS2OBJS)
 SBLAS3OBJS   += $(CSBLAS3OBJS)
+SHBLAS1OBJS  += $(CSHBLAS1OBJS)
+SHBLAS3OBJS  += $(CSHBLAS3OBJS)
 DBLAS1OBJS   += $(CDBLAS1OBJS)
 DBLAS2OBJS   += $(CDBLAS2OBJS)
 DBLAS3OBJS   += $(CDBLAS3OBJS)
@@ -377,9 +390,11 @@ ZBLAS1OBJS   += $(CZBLAS1OBJS)
 ZBLAS2OBJS   += $(CZBLAS2OBJS)
 ZBLAS3OBJS   += $(CZBLAS3OBJS)
 
+SHEXTOBJS     += $(CSHEXTOBJS)
 endif
 
 SBLASOBJS    = $(SBLAS1OBJS) $(SBLAS2OBJS) $(SBLAS3OBJS)
+SHBLASOBJS   = $(SHBLAS1OBJS) $(SHBLAS3OBJS)
 DBLASOBJS    = $(DBLAS1OBJS) $(DBLAS2OBJS) $(DBLAS3OBJS)
 QBLASOBJS    = $(QBLAS1OBJS) $(QBLAS2OBJS) $(QBLAS3OBJS)
 CBLASOBJS    = $(CBLAS1OBJS) $(CBLAS2OBJS) $(CBLAS3OBJS)
@@ -454,7 +469,7 @@ ZBLASOBJS += $(ZLAPACKOBJS)
 
 endif
 
-FUNCOBJS    = $(SBLASOBJS) $(DBLASOBJS) $(CBLASOBJS) $(ZBLASOBJS)
+FUNCOBJS    = $(SHEXTOBJS) $(SHBLASOBJS) $(SBLASOBJS) $(DBLASOBJS) $(CBLASOBJS) $(ZBLASOBJS)
 
 ifdef EXPRECISION
 FUNCOBJS   += $(QBLASOBJS) $(XBLASOBJS)
@@ -482,16 +497,16 @@ endif
 clean ::
 	@rm -f functable.h
 
-level1 : $(SBLAS1OBJS) $(DBLAS1OBJS) $(QBLAS1OBJS) $(CBLAS1OBJS) $(ZBLAS1OBJS) $(XBLAS1OBJS)
+level1 : $(BEXTOBJS) $(SHBLAS1OBJS) $(SBLAS1OBJS) $(DBLAS1OBJS) $(QBLAS1OBJS) $(CBLAS1OBJS) $(ZBLAS1OBJS) $(XBLAS1OBJS)
 	$(AR) $(ARFLAGS) -ru $(TOPDIR)/$(LIBNAME) $^
 
 level2 : $(SBLAS2OBJS) $(DBLAS2OBJS) $(QBLAS2OBJS) $(CBLAS2OBJS) $(ZBLAS2OBJS) $(XBLAS2OBJS)
 	$(AR) $(ARFLAGS) -ru $(TOPDIR)/$(LIBNAME) $^
 
-level3 : $(SBLAS3OBJS) $(DBLAS3OBJS) $(QBLAS3OBJS) $(CBLAS3OBJS) $(ZBLAS3OBJS) $(XBLAS3OBJS)
+level3 : $(SHBLAS3OBJS) $(SBLAS3OBJS) $(DBLAS3OBJS) $(QBLAS3OBJS) $(CBLAS3OBJS) $(ZBLAS3OBJS) $(XBLAS3OBJS)
 	$(AR) $(ARFLAGS) -ru $(TOPDIR)/$(LIBNAME) $^
 
-$(CSBLASOBJS) $(CSBLASOBJS_P) $(CDBLASOBJS) $(CDBLASOBJS_P) $(CQBLASOBJS) $(CQBLASOBJS_P) \
+$(CSHBLASOBJS) $(CSHBLASOBJS_P) $(CSBLASOBJS) $(CSBLASOBJS_P) $(CDBLASOBJS) $(CDBLASOBJS_P) $(CQBLASOBJS) $(CQBLASOBJS_P) \
 $(CCBLASOBJS) $(CCBLASOBJS_P) $(CZBLASOBJS) $(CZBLASOBJS_P) $(CXBLASOBJS) $(CXBLASOBJS_P) : override CFLAGS += -DCBLAS
 
 srot.$(SUFFIX) srot.$(PSUFFIX) : rot.c
@@ -715,6 +730,19 @@ sdsdot.$(SUFFIX) sdsdot.$(PSUFFIX) : sdsdot.c
 
 dsdot.$(SUFFIX) dsdot.$(PSUFFIX) : dsdot.c
 	$(CC) $(CFLAGS) -c $< -o $(@F)
+
+ifeq ($(BUILD_HALF),1)
+shdot.$(SUFFIX) shdot.$(PSUFFIX) : bf16dot.c
+	$(CC) $(CFLAGS) -c $< -o $(@F)
+shstobf16.$(SUFFIX) shstobf16.$(PSUFFIX) : tobf16.c
+	$(CC) $(CFLAGS) -DSINGLE_PREC -UDOUBLE_PREC -c $< -o $(@F)
+shdtobf16.$(SUFFIX) shdtobf16.$(PSUFFIX) : tobf16.c
+	$(CC) $(CFLAGS) -USINGLE_PREC -DDOUBLE_PREC -c $< -o $(@F)
+sbf16tos.$(SUFFIX)  sbf16tos.$(PSUFFIX) : bf16to.c
+	$(CC) $(CFLAGS) -DSINGLE_PREC -UDOUBLE_PREC -c $< -o $(@F)
+dbf16tod.$(SUFFIX)  dbf16tod.$(PSUFFIX) : bf16to.c
+	$(CC) $(CFLAGS) -USINGLE_PREC -DDOUBLE_PREC -c $< -o $(@F)
+endif
 
 sdot.$(SUFFIX) sdot.$(PSUFFIX) : dot.c
 	$(CC) $(CFLAGS) -c $< -o $(@F)
@@ -1209,6 +1237,11 @@ zhpr2.$(SUFFIX) zhpr2.$(PSUFFIX) : zhpr2.c
 xhpr2.$(SUFFIX) xhpr2.$(PSUFFIX) : zhpr2.c
 	$(CC) -c $(CFLAGS) $< -o $(@F)
 
+ifeq ($(BUILD_HALF),1)
+shgemm.$(SUFFIX) shgemm.$(PSUFFIX) : gemm.c ../param.h
+	$(CC) -c $(CFLAGS) $< -o $(@F)
+endif
+
 sgemm.$(SUFFIX) sgemm.$(PSUFFIX) : gemm.c ../param.h
 	$(CC) -c $(CFLAGS) $< -o $(@F)
 
@@ -1448,6 +1481,19 @@ cblas_sdsdot.$(SUFFIX) cblas_sdsdot.$(PSUFFIX) : sdsdot.c
 
 cblas_dsdot.$(SUFFIX) cblas_dsdot.$(PSUFFIX) : dsdot.c
 	$(CC) $(CFLAGS) -DCBLAS -c $< -o $(@F)
+
+ifeq ($(BUILD_HALF),1)
+cblas_shdot.$(SUFFIX) cblas_shdot.$(PSUFFIX) : bf16dot.c
+	$(CC) $(CFLAGS) -DCBLAS -c $< -o $(@F)
+cblas_shstobf16.$(SUFFIX) cblas_shstobf16.$(PSUFFIX) : tobf16.c
+	$(CC) $(CFLAGS) -DCBLAS -DSINGLE_PREC -UDOUBLE_PREC -c $< -o $(@F)
+cblas_shdtobf16.$(SUFFIX) cblas_shdtobf16.$(PSUFFIX) : tobf16.c
+	$(CC) $(CFLAGS) -DCBLAS -USINGLE_PREC -DDOUBLE_PREC -c $< -o $(@F)
+cblas_sbf16tos.$(SUFFIX)  cblas_sbf16tos.$(PSUFFIX) : bf16to.c
+	$(CC) $(CFLAGS) -DCBLAS -DSINGLE_PREC -UDOUBLE_PREC -c $< -o $(@F)
+cblas_dbf16tod.$(SUFFIX)  cblas_dbf16tod.$(PSUFFIX) : bf16to.c
+	$(CC) $(CFLAGS) -DCBLAS -USINGLE_PREC -DDOUBLE_PREC -c $< -o $(@F)
+endif
 
 cblas_sdot.$(SUFFIX) cblas_sdot.$(PSUFFIX) : dot.c
 		$(CC) $(CFLAGS) -DCBLAS -c $< -o $(@F)
@@ -1769,6 +1815,11 @@ cblas_zhemv.$(SUFFIX) cblas_zhemv.$(PSUFFIX) : zhemv.c
 
 cblas_sgemm.$(SUFFIX) cblas_sgemm.$(PSUFFIX) : gemm.c ../param.h
 	$(CC) -DCBLAS -c $(CFLAGS) $< -o $(@F)
+
+ifeq ($(BUILD_HALF),1)
+cblas_shgemm.$(SUFFIX) cblas_shgemm.$(PSUFFIX) : gemm.c ../param.h
+	$(CC) -DCBLAS -c $(CFLAGS) $< -o $(@F)
+endif
 
 cblas_dgemm.$(SUFFIX) cblas_dgemm.$(PSUFFIX) : gemm.c ../param.h
 	$(CC) -DCBLAS -c $(CFLAGS) $< -o $(@F)

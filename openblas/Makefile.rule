@@ -3,7 +3,7 @@
 #
 
 # This library's version
-VERSION = 0.3.9
+VERSION = 0.3.10.dev
 
 # If you set the suffix, the library name will be libopenblas_$(LIBNAMESUFFIX).a
 # and libopenblas_$(LIBNAMESUFFIX).so. Meanwhile, the soname in shared library
@@ -272,7 +272,18 @@ COMMON_PROF = -pg
 # work at all.
 #
 # CPP_THREAD_SAFETY_TEST = 1
-
 #
+# use this to run only the less memory-hungry GEMV test
+# CPP_THREAD_SAFETY_GEMV = 1
+
+
+# If you want to enable the experimental BFLOAT16 support
+# BUILD_HALF = 1
+#
+# the below is not yet configurable, use cmake if you need to build only select types
+BUILD_SINGLE = 1
+BUILD_DOUBLE = 1
+BUILD_COMPLEX = 1
+BUILD_COMPLEX16 = 1
 #  End of user configuration
 #

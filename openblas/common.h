@@ -257,6 +257,12 @@ typedef long BLASLONG;
 typedef unsigned long BLASULONG;
 #endif
 
+#ifndef BFLOAT16
+#include <stdint.h>
+typedef uint16_t bfloat16;
+#define HALFCONVERSION 1
+#endif
+
 #ifdef USE64BITINT
 typedef BLASLONG blasint;
 #if defined(OS_WINDOWS) && defined(__64BIT__)
@@ -297,6 +303,13 @@ typedef int blasint;
 #define SIZE	8
 #define  BASE_SHIFT 3
 #define ZBASE_SHIFT 4
+#elif defined(HALF)
+#define IFLOAT	bfloat16
+#define XFLOAT IFLOAT
+#define FLOAT	float
+#define SIZE   2
+#define BASE_SHIFT 1
+#define ZBASE_SHIFT 2
 #else
 #define FLOAT	float
 #define SIZE    4
@@ -306,6 +319,10 @@ typedef int blasint;
 
 #ifndef XFLOAT
 #define XFLOAT	FLOAT
+#endif
+
+#ifndef IFLOAT
+#define IFLOAT	FLOAT
 #endif
 
 #ifndef COMPLEX
@@ -344,13 +361,8 @@ typedef int blasint;
 #endif
 #endif
 
-#ifdef POWER8
-#ifndef YIELDING
-#define YIELDING        __asm__ __volatile__ ("nop;nop;nop;nop;nop;nop;nop;nop;\n");
-#endif
-#endif
 
-#ifdef POWER9
+#if defined(POWER8) || defined(POWER9) || defined(POWER10)
 #ifndef YIELDING
 #define YIELDING        __asm__ __volatile__ ("nop;nop;nop;nop;nop;nop;nop;nop;\n");
 #endif
@@ -657,6 +669,8 @@ void gotoblas_dynamic_init(void);
 void gotoblas_dynamic_quit(void);
 void gotoblas_profile_init(void);
 void gotoblas_profile_quit(void);
+	
+int support_avx512(void);	
 
 #ifdef USE_OPENMP
 
@@ -668,7 +682,7 @@ __declspec(dllimport) int __cdecl omp_in_parallel(void);
 __declspec(dllimport) int __cdecl omp_get_num_procs(void);
 #endif
 
-#if (__STDC_VERSION__ >= 201112L)
+#ifdef HAVE_C11
 #if defined(C_GCC) && ( __GNUC__ < 7) 
 // workaround for GCC bug 65467
 #ifndef _Atomic
