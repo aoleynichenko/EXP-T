@@ -1,0 +1,1 @@
+/usr/bin/gfortran    -fbounds-check   -O3 -march=native -g -fbounds-check   -O3 -march=native CMakeFiles/heffman.x.dir/src/heffman/heff.f.o CMakeFiles/heffman.x.dir/src/heffman/hefflib.f.o CMakeFiles/heffman.x.dir/src/heffman/puma.f.o CMakeFiles/heffman.x.dir/src/heffman/readheff.f.o  -o heffman.x openblas/lib/libopenblas.a -lgomp -lpthread 
