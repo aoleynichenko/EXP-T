@@ -1,0 +1,1 @@
+/usr/bin/gfortran     -Wall -frecursive -fno-optimize-sibling-calls -m64 -fPIC -g CMakeFiles/dblat3.dir/dblat3.f.o  -o dblat3 ../lib/libopenblas.a -lpthread 

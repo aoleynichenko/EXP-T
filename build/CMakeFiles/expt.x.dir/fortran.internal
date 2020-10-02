@@ -1,0 +1,6 @@
+# The fortran modules provided by this target.
+provides
+ dirac_32_64_compatibility.mod
+ general.mod
+ output_buffers.mod
+ spinor_blocks.mod
