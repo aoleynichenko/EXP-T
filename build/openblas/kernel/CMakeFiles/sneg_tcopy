@@ -1,7 +1,0 @@
-#define ASMNAME sneg_tcopy
-#define ASMFNAME sneg_tcopy_
-#define NAME sneg_tcopy_
-#define CNAME sneg_tcopy
-#define CHAR_NAME "sneg_tcopy_"
-#define CHAR_CNAME "sneg_tcopy"
-#include "/home/alexander/Science/expt/github/openblas/kernel/x86_64/_8"
