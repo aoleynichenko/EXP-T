@@ -22,6 +22,39 @@ find_program(BASH NAMES bash bash.exe
         )
 message("#BASH ${BASH}")
 
+############################## Fortran compilers ###############################
+
+if (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+    #set(dialect "-ffree-form -std=f2008 -fimplicit-none")
+    set(bounds "-fbounds-check")
+    set(aux, "")
+    set(foptim " -O3 -march=native")
+endif ()
+if (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+    #set(dialect "-stand f08 -free -implicitnone")
+    set(bounds "-check bounds")
+    set(aux "-nofor_main")
+    set(foptim "-g -O3 -xHost") # -profile-loops -profile-functions
+endif ()
+set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${bounds} ${aux} ${foptim}")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${bounds} ${aux} ${foptim}")
+
+################################# C compilers ##################################
+
+if (CMAKE_C_COMPILER_ID MATCHES "GNU")
+    set(cflags "-g")
+    #set(cflags "")
+    set(coptim " -O3 -pg -march=native -std=c99 ${OpenMP_C_FLAGS}")
+endif ()
+if (CMAKE_C_COMPILER_ID MATCHES "Intel")
+    set(cflags "-mkl")
+    set(coptim "-g -O3 -xHost -std=c11 ${OpenMP_C_FLAGS}")
+endif ()
+set(CMAKE_C_FLAGS_DEBUG "")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${cflags} ${coptim} ${cdefcuda} ${BLAS_LIBRARY_MACROS}")
+
+
+
 #################################### OpenMP ####################################
 
 # OpenMP
@@ -183,37 +216,6 @@ if (CUDA_FOUND)
     set(CUDA_SEPARABLE_COMPILATION, ON)
     set(CUDA_NVCC_FLAGS, "-Wno-error=unknown-warning")
 endif ()
-
-############################## Fortran compilers ###############################
-
-if (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-    #set(dialect "-ffree-form -std=f2008 -fimplicit-none")
-    set(bounds "-fbounds-check")
-    set(aux, "")
-    set(foptim " -O3 -march=native")
-endif ()
-if (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
-    #set(dialect "-stand f08 -free -implicitnone")
-    set(bounds "-check bounds")
-    set(aux "-nofor_main")
-    set(foptim "-g -O3 -xHost") # -profile-loops -profile-functions
-endif ()
-set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${bounds} ${aux} ${foptim}")
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${bounds} ${aux} ${foptim}")
-
-################################# C compilers ##################################
-
-if (CMAKE_C_COMPILER_ID MATCHES "GNU")
-    set(cflags "-g")
-    #set(cflags "")
-    set(coptim " -O3 -pg -march=native -std=c99 ${OpenMP_C_FLAGS}")
-endif ()
-if (CMAKE_C_COMPILER_ID MATCHES "Intel")
-    set(cflags "-mkl")
-    set(coptim "-g -O3 -xHost -std=c99 ${OpenMP_C_FLAGS}")
-endif ()
-set(CMAKE_C_FLAGS_DEBUG "")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${cflags} ${coptim} ${cdefcuda} ${BLAS_LIBRARY_MACROS}")
 
 ################################ Source files ##################################
 
