@@ -22,6 +22,18 @@ find_program(BASH NAMES bash bash.exe
         )
 message("#BASH ${BASH}")
 
+#################################### OpenMP ####################################
+
+# OpenMP
+find_package(OpenMP)
+if (CMAKE_C_COMPILER_ID MATCHES "GNU")
+    set(OpenMP_LIBRARIES gomp)
+endif ()
+if (CMAKE_C_COMPILER_ID MATCHES "Intel")
+    set(OpenMP_LIBRARIES iomp5)
+endif ()
+
+
 ############################## Fortran compilers ###############################
 
 if (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
@@ -54,17 +66,6 @@ set(CMAKE_C_FLAGS_DEBUG "")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${cflags} ${coptim} ${cdefcuda} ${BLAS_LIBRARY_MACROS}")
 
 
-
-#################################### OpenMP ####################################
-
-# OpenMP
-find_package(OpenMP REQUIRED)
-if (CMAKE_C_COMPILER_ID MATCHES "GNU")
-    set(OpenMP_LIBRARIES gomp)
-endif ()
-if (CMAKE_C_COMPILER_ID MATCHES "Intel")
-    set(OpenMP_LIBRARIES iomp5)
-endif ()
 
 ################################## BLAS library ###################################
 
