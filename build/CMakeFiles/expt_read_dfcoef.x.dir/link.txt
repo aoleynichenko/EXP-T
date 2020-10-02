@@ -1,1 +1,0 @@
-/usr/bin/gfortran    -fbounds-check   -O3 -march=native -g -fbounds-check   -O3 -march=native CMakeFiles/expt_read_dfcoef.x.dir/src/read_dfcoef/read_dfcoef.f90.o  -o expt_read_dfcoef.x 

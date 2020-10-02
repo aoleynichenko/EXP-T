@@ -1,1 +1,0 @@
-/usr/bin/gfortran     -Wall -frecursive -fno-optimize-sibling-calls -m64 -fPIC -g CMakeFiles/xdcblat2.dir/c_dblat2.f.o CMakeFiles/xdcblat2.dir/c_dblas2.c.o CMakeFiles/xdcblat2.dir/c_d2chke.c.o CMakeFiles/xdcblat2.dir/auxiliary.c.o CMakeFiles/xdcblat2.dir/c_xerbla.c.o CMakeFiles/xdcblat2.dir/constant.c.o  -o xdcblat2 ../lib/libopenblas.a -lpthread 
