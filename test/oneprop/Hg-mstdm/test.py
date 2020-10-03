@@ -11,7 +11,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 from minitest import Test, Filter, execute
 
-print '>>> oneprop/Hg atom TDMs (ms-tdm)'
+print('>>> oneprop/Hg atom TDMs (ms-tdm)')
 
 dirac_inp = "TRA.inp"
 dirac_mol = "Hg.mol"

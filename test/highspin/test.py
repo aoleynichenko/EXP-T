@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from minitest import Test, Filter, execute
 
-print '>>> highspin/O2 triplet'
+print('>>> highspin/O2 triplet')
 
 dirac_inp = "TRA.inp"
 dirac_mol = "O2.mol"

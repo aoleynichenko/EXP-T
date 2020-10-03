@@ -1,14 +1,12 @@
+!
 **DIRAC         
 .TITLE          
 N2 molecule
 .WAVE FUNCTION  
 .4INDEX
 .ANALYZE
-#**HAMILTONIAN   
-#.NONREL     
 **WAVE FUNCTION 
 .SCF            
-#.RELCCSD        
 *SCF            
 .CLOSED         
 14         

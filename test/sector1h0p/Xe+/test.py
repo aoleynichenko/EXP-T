@@ -9,7 +9,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 from minitest import Test, Filter, execute
 
-print '>>> sector(1,0)/Xe->Xe+/SOREP'
+print('>>> sector(1,0)/Xe->Xe+/SOREP')
 
 # all symmetries to be tested
 symmetries = ['C2v', 'D2h', 'Cinfv', 'Dinfh']

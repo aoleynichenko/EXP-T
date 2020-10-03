@@ -1,3 +1,4 @@
+!
 **DIRAC         
 .TITLE          
 N2 molecule
@@ -8,7 +9,6 @@ N2 molecule
 .NONREL     
 **WAVE FUNCTION 
 .SCF            
-#.RELCCSD        
 *SCF            
 .CLOSED         
 14         

@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from minitest import Test, Filter, execute
 
-print '>>> atoms/Pb/relativistic(SO-REP)'
+print('>>> atoms/Pb/relativistic(SO-REP)')
 
 # all symmetries to be tested
 symmetries = ['C1', 'Ci', 'C2', 'Cs', 'C2v', 'C2h', 'D2', 'D2h', 'Cinfv', 'Dinfh']

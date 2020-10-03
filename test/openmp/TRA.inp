@@ -1,3 +1,4 @@
+!
 **DIRAC         
 .TITLE          
 CO molecule
@@ -6,8 +7,7 @@ CO molecule
 #**HAMILTONIAN   
 #.NONREL
 **WAVE FUNCTION 
-.SCF            
-.RELCCSD        
+.SCF                  
 *SCF            
 .CLOSED         
 14          

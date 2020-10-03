@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from minitest import Test, Filter, execute
 
-print '>>> openmp/CO-C2v/R'
+print('>>> openmp/CO-C2v/R')
 
 sym = 'C2v'
 nthreads = [1,2,4,8]

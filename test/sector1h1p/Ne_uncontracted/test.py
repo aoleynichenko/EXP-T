@@ -9,7 +9,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 from minitest import Test, Filter, execute
 
-print '>>> sector(1,1)/Ne/nonrel'
+print('>>> sector(1,1)/Ne/nonrel')
 
 # all symmetries to be tested
 symmetries = ['C1', 'C2', 'Cs', 'C2v', 'Ci', 'C2h', 'D2', 'D2h', 'Cinfv', 'Dinfh']

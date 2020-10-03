@@ -10,7 +10,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 from minitest import Test, Filter, execute
 
-print '>>> oneprop/K atom HFS constant'
+print('>>> oneprop/K atom HFS constant')
 
 dirac_inp = "TRA.inp"
 dirac_mol = "K.mol"

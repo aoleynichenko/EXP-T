@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from minitest import Test, Filter, execute
 
-print '>>> diatomic/N2/relativistic(4c)'
+print('>>> diatomic/N2/relativistic(4c)')
 
 # all symmetries to be tested
 symmetries = ['C1', 'Ci', 'Cs', 'C2', 'C2v', 'D2', 'D2h', 'Cinfv', 'Dinfh']

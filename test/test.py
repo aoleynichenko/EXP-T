@@ -23,7 +23,7 @@ if len(sys.argv) > 1:
 		elif arg == 'full':
 			do_test_full= True
 		else:
-			print 'wrong argument ', arg, ' (allowed arguments: quick, omp, cuda, full)'
+			print('wrong argument ', arg, ' (allowed arguments: quick, omp, cuda, full)')
 else:
 	# perform all test: full testing
 	do_test_full = True
@@ -44,7 +44,7 @@ if do_test_omp:
 
 test_dirs = list(set(test_dirs))  # only unique items
 
-print 'directories with tests to be executed:', test_dirs
+print('directories with tests to be executed:', test_dirs)
 
 for tdir in test_dirs:
 	os.chdir(tdir)

@@ -10,7 +10,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 from minitest import Test, Filter, execute
 
-print '>>> cuda: Hg in C1 symmetry'
+print('>>> cuda: Hg in C1 symmetry')
 
 # cuda or no cuda
 calctype = ['nocuda', 'cuda']

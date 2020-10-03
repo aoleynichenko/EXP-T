@@ -1,3 +1,4 @@
+!
 **DIRAC         
 .TITLE          
 Carbon atom in external electric field
@@ -9,7 +10,6 @@ Carbon atom in external electric field
 .GAUNT
 **WAVE FUNCTION
 .SCF 
-#.RELCCSD
 *SCF            
 .CLOSED         
 4 0

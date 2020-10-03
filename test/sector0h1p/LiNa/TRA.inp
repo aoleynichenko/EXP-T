@@ -1,3 +1,4 @@
+!
 **DIRAC         
 .TITLE          
 LiNa+ molecule
@@ -5,7 +6,6 @@ LiNa+ molecule
 .4INDEX
 **WAVE FUNCTION          
 .SCF
-#.RELCCSD        
 *SCF            
 .CLOSED         
  12          

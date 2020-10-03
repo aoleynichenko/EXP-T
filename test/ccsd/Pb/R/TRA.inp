@@ -1,3 +1,4 @@
+!
 **DIRAC         
 .TITLE          
 Pb atom
@@ -7,7 +8,6 @@ Pb atom
 .ECP
 **WAVE FUNCTION 
 .SCF            
-.RELCCSD        
 *SCF            
 .CLOSED         
 20      

@@ -9,7 +9,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from minitest import Test, Filter, execute
 
-print '>>> efield/LiNa/relativistic(4c-DC)'
+print('>>> efield/LiNa/relativistic(4c-DC)')
 
 symmetries = ['C1', 'C2', 'Cs', 'C2v']
 

@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from minitest import Test, Filter, execute
 
-print '>>> denom shifts/HgH2+/2c-ECP/Cinfv'
+print('>>> denom shifts/HgH2+/2c-ECP/Cinfv')
 
 sym = 'Cinfv'
 shifts = ['real', 'realimag', 'imag']

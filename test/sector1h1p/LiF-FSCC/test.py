@@ -13,7 +13,7 @@ from minitest import Test, Filter, execute
 # non-relativistic
 #=======================================================================
 
-print '>>> sector(1,1)/LiF/nonrel'
+print('>>> sector(1,1)/LiF/nonrel')
 
 # all symmetries to be tested
 symmetries = ['C1', 'Cinfv']
@@ -41,7 +41,7 @@ for sym in symmetries:
 # relativistic
 #=======================================================================
 
-print '>>> sector(1,1)/LiF/rel'
+print('>>> sector(1,1)/LiF/rel')
 
 for sym in symmetries:
 	dirac_inp = 'TRA_R.inp'

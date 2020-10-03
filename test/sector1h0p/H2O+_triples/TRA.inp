@@ -1,3 +1,4 @@
+!
 **GENERAL                                                                                           
 .PCMOUT                                                                                             
 **DIRAC                                                                                             
@@ -9,7 +10,6 @@ H2O ionization potential
 .NONREL                                                                                             
 **WAVE FUNCTION
 .SCF
-#.RELCCSD
 **MOLTRA                                                                                            
 .ACTIVE                                                                                             
 energy -100. 20.0 0.1                                                                                

@@ -1,3 +1,4 @@
+!
 **DIRAC         
 .TITLE          
 O atom
@@ -5,7 +6,6 @@ O atom
 .4INDEX
 **WAVE FUNCTION          
 .SCF
-#.RELCCSD        
 *SCF            
 .CLOSED         
  10          
