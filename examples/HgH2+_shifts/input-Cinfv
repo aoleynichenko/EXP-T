@@ -7,7 +7,7 @@
 title "Test HgH3+ -> HgH2+/gatchina ECP/Cinfv"
 maxiter 200
 conv 1e-9
-active -10 -0.5
+active energy -10 -0.5
 sector 0h1p
 
 # import integrals from:
@@ -18,7 +18,7 @@ integrals MRCONEE-Cinfv MDCINT-Cinfv
 
 # I. shift type
 # real shift:
-shifttype real
+shifttype imag
 
 # II. shift parameters:
 # 1. <n>  -- compensation power (here: 3)

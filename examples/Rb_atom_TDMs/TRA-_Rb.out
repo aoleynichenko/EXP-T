@@ -179,7 +179,7 @@ Operating system         | Linux-3.10.0-1062.4.1.el7.x86_64
 CMake version            | 3.15.3
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2019-11-02 15:01:22.098594
+Configuration time       | 2020-03-24 18:06:18.519378
 Python version           | 2.7.5
 Fortran compiler         | /usr/bin/gfortran
 Fortran compiler version | 4.8.5
@@ -194,7 +194,7 @@ Static linking           | False
 64-bit integers          | True
 MPI parallelization      | False
 MPI launcher             | unknown
-Math libraries           | -Wl,--start-group;/home/alexander/Software/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64/libmkl_lapack95_ilp64.a;/home/alexander/Software/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64/libmkl_gf_ilp64.so;-fopenmp;-Wl,--end-group;-Wl,--start-group;/home/alexander/Software/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64/libmkl_gf_ilp64.so;/home/alexander/Software/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64/libmkl_gnu_thread.so;/home/alexander/Software/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-fopenmp;-Wl,--end-group
+Math libraries           | -Wl,--start-group;/home/alexander/Software/intel/compilers_and_libraries_2020.0.166/linux/mkl/lib/intel64/libmkl_lapack95_ilp64.a;/home/alexander/Software/intel/compilers_and_libraries_2020.0.166/linux/mkl/lib/intel64/libmkl_gf_ilp64.so;-fopenmp;-Wl,--end-group;-Wl,--start-group;/home/alexander/Software/intel/compilers_and_libraries_2020.0.166/linux/mkl/lib/intel64/libmkl_gf_ilp64.so;/home/alexander/Software/intel/compilers_and_libraries_2020.0.166/linux/mkl/lib/intel64/libmkl_gnu_thread.so;/home/alexander/Software/intel/compilers_and_libraries_2020.0.166/linux/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-fopenmp;-Wl,--end-group
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
@@ -207,7 +207,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Sun Dec 29 23:29:10 2019
+     Date and time (Linux)  : Thu Oct  8 12:28:52 2020
      Host name              : alexander                               
 
 
@@ -931,10 +931,10 @@ Total no. of orbitals           (NORB):    92
      ************************************************************************
 
 
- Transformation started at : Sun Dec 29 23:29:10 2019
+ Transformation started at : Thu Oct  8 12:28:52 2020
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -23.6574739370869231
-* Heading :Rb+ ion -- SCF step, zero field                   Sun Dec 29 23:28:28 2019
+* Heading :Rb+ ion -- SCF step, zero field                   Thu Oct  8 12:28:30 2020
      Energy selection of active orbitals :     -100.00 < Eps. <        20.00 with a mininum gap of     0.5000 au.
      Energy selection of active orbitals :     -100.00 < Eps. <        20.00 with a mininum gap of     0.5000 au.
      Energy selection of active orbitals :     -100.00 < Eps. <        20.00 with a mininum gap of     0.5000 au.
@@ -1009,10 +1009,10 @@ Total no. of orbitals           (NORB):    92
       **********************************************************************
 
 
- Transformation started at : Sun Dec 29 23:29:10 2019
+ Transformation started at : Thu Oct  8 12:28:52 2020
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -23.6574739370869231
-* Heading :Rb+ ion -- SCF step, zero field                   Sun Dec 29 23:28:28 2019
+* Heading :Rb+ ion -- SCF step, zero field                   Thu Oct  8 12:28:30 2020
      Energy selection of active orbitals :     -100.00 < Eps. <        20.00 with a mininum gap of     0.5000 au.
      Energy selection of active orbitals :     -100.00 < Eps. <        20.00 with a mininum gap of     0.5000 au.
 
@@ -1056,10 +1056,10 @@ Total no. of orbitals           (NORB):    92
        ********************************************************************
 
 
- Transformation started at : Sun Dec 29 23:29:10 2019
+ Transformation started at : Thu Oct  8 12:28:52 2020
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -23.6574739370869231
-* Heading :Rb+ ion -- SCF step, zero field                   Sun Dec 29 23:28:28 2019
+* Heading :Rb+ ion -- SCF step, zero field                   Thu Oct  8 12:28:30 2020
 *** WARNING *** GTCFC1: No 1-Fock found. Regenerating.
 
 
@@ -1074,30 +1074,30 @@ Total no. of orbitals           (NORB):    92
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
  - Integral class 1 : (LL|??)
    - Beginning task   1 of   5 after      0. seconds and      0. CPU-seconds
-   - Beginning task   2 of   5 after      1. seconds and      1. CPU-seconds
-   - Beginning task   3 of   5 after      5. seconds and      2. CPU-seconds
-   - Beginning task   4 of   5 after     11. seconds and      4. CPU-seconds
-   - Beginning task   5 of   5 after     15. seconds and      6. CPU-seconds
+   - Beginning task   2 of   5 after     10. seconds and      1. CPU-seconds
+   - Beginning task   3 of   5 after     16. seconds and      2. CPU-seconds
+   - Beginning task   4 of   5 after     22. seconds and      4. CPU-seconds
+   - Beginning task   5 of   5 after     33. seconds and      6. CPU-seconds
 * Screening statistics:
    (LL|LL)ints :   0.00%
    Total       :   0.00%
 
- - Starting symmetrization after          19.57 seconds
- - Finished symmetrization after          21.32 seconds
+ - Starting symmetrization after          45.33 seconds
+ - Finished symmetrization after          48.36 seconds
 
  - Binary  file MDCINT was written.
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Initializing MS4IND file            0.293 seconds
- Time in  Computing+transform. integral       9.073 seconds
- Time in  Symmetrizing MO integrals           1.482 seconds
+ Time in  Initializing MS4IND file            0.278 seconds
+ Time in  Computing+transform. integral       9.239 seconds
+ Time in  Symmetrizing MO integrals           1.522 seconds
 
 
- Total wall time used in PAMTRA :   00:00:23
+ Total wall time used in PAMTRA :   00:00:50
  Total CPU  time used in PAMTRA (master only) :   00:00:11
 
- Transformation ended at : Sun Dec 29 23:29:33 2019
+ Transformation ended at : Thu Oct  8 12:29:42 2020
 
 
 *****************************************************
@@ -1106,11 +1106,11 @@ Total no. of orbitals           (NORB):    92
 
 
  
-     Date and time (Linux)  : Sun Dec 29 23:29:33 2019
+     Date and time (Linux)  : Thu Oct  8 12:29:42 2020
      Host name              : alexander                               
 
->>>> Node 0, utime: 8, stime: 2, minflt: 19847, majflt: 0, nvcsw: 785, nivcsw: 88, maxrss: 75820
->>>> Total WALL time used in DIRAC: 23s
+>>>> Node 0, utime: 9, stime: 2, minflt: 19064, majflt: 0, nvcsw: 3668, nivcsw: 42, maxrss: 101400
+>>>> Total WALL time used in DIRAC: 50s
   
   Dynamical Memory Usage Summary for Master
   
@@ -1137,4 +1137,4 @@ Total no. of orbitals           (NORB):    92
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/alexander/Science/expt/examples/Rb_atom_TDMs_new
+DIRAC pam run in /home/alexander/Science/expt/examples/Rb_atom_TDMs

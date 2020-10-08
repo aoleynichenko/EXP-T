@@ -1,6 +1,6 @@
 
     ---- effective hamiltonian manip program ----
-    ----         le 12 mai 2019, az      ----
+    ----       le 24 avril 2019, az          ----
 
     finite-field transition dipole calculations
     effective hamiltonian 1 in HEFF1                                                       
@@ -11,32 +11,32 @@
     rep no.                            1
     heff size                          3
     target states                1 -   3
-    complex arithmetic                 T
+    complex arithmetic                 F
     heff des cloizeaux                 T
     
-      heff eigenvecs smallest overlap eigenvalue   0.99992274
+      heff eigenvecs smallest overlap eigenvalue   0.99992267
 
-      heff eigenvecs smallest overlap eigenvalue   0.99992274
+      heff eigenvecs smallest overlap eigenvalue   0.99992267
 
 
                  eigenenergies, au      relative energies, cm-1 
                  left file right file    left file  right file 
 
-            1  -0.1531234  -0.1531234       -0.00        0.00
+            1  -0.1531234  -0.1531234        0.00        0.00
             2  -0.0959180  -0.0959180    12555.14    12555.14
             3  -0.0948636  -0.0948636    12786.56    12786.56
  
 
  transition  energy, cm^-1   Re(d)      Im(d)      |d|^2        |d|       osc str   A,10^6 s-1
 
-  1 ->  2     12555.138   -1.620961   0.000000    2.627515    1.620961    0.100205   10.536014
-  1 ->  3     12786.559   -2.274254   0.000000    5.172233    2.274254    0.200889   21.908151
-  2 ->  3       231.421   -0.000012   0.000000    0.000000    0.000012    0.000000    0.000000
+  1 ->  2     12555.140   -1.621082   0.000000    2.627906    1.621082    0.100220   10.537585
+  1 ->  3     12786.560   -2.274437   0.000000    5.173062    2.274437    0.200921   21.911669
+  2 ->  3       231.420   -0.000012   0.000000    0.000000    0.000012    0.000000    0.000000
     
 
  transition  energy, cm^-1   Re(d)      Im(d)      |d|^2        |d|       osc str   A,10^6 s-1
 
-  2 ->  1     12555.138    1.620961   0.000000    2.627515    1.620961    0.100205   10.536014
-  3 ->  1     12786.559    2.274254   0.000000    5.172233    2.274254    0.200889   21.908151
-  3 ->  2       231.421   -0.000012   0.000000    0.000000    0.000012    0.000000    0.000000
+  2 ->  1     12555.140    1.621082   0.000000    2.627906    1.621082    0.100220   10.537585
+  3 ->  1     12786.560    2.274437   0.000000    5.173062    2.274437    0.200921   21.911669
+  3 ->  2       231.420   -0.000012   0.000000    0.000000    0.000012    0.000000    0.000000
     

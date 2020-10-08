@@ -26,13 +26,13 @@
  * ======
  *
  * Fock-Space Multireference coupled cluster program.
- * Version 1.5.0
+ * Version 1.5.1
  *
  * Authors:
  *   Alexander Oleynichenko (Lomonosov Moscow State University)
  * Mailto:
  *   alexvoleynichenko@gmail.com
- * Date: 17 Jul 2020
+ * Date: 8 Oct 2020
  *
  ******************************************************************************/
 
@@ -45,11 +45,11 @@
 // version: MAJOR.MINOR.REVISION
 #define CC_VERSION_MAJOR      1
 #define CC_VERSION_MINOR      5
-#define CC_VERSION_REVISION   0
+#define CC_VERSION_REVISION   1
 
 // date of release:
-#define CC_VERSION_DAY        17
-#define CC_VERSION_MONTH      "Jul"
+#define CC_VERSION_DAY        8
+#define CC_VERSION_MONTH      "Oct"
 #define CC_VERSION_YEAR       2020
 
 #include "platform.h"
@@ -316,8 +316,20 @@ void banner()
 
     printf("\n");
     printf("\t\t**********************************************************************************\n");
+    printf("\t\t**                                                                              **\n");
     printf("\t\t**                                   E X P - T                                  **\n");
     printf("\t\t**        Relativistic Fock-Space Multireference Coupled Cluster Program        **\n");
+    printf("\t\t**                                                                              **\n");
+#ifdef VERSION_DEVEL
+    printf("\t\t**                     version %d.%d.%d (%d %s %d) development                   **\n",
+            CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
+            CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
+#else
+    printf("\t\t**                       version %d.%d.%d (%d %s %d) public                      **\n",
+            CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
+            CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
+#endif
+    printf("\t\t**                                                                              **\n");
     printf("\t\t**********************************************************************************\n");
     printf("\t\t**                                                                              **\n");
     printf("\t\t** EXP-T is free software: you can redistribute it and/or modify                **\n");
@@ -336,7 +348,7 @@ void banner()
     printf("\t\t**********************************************************************************\n");
     printf("\t\t**                                                                              **\n");
     printf("\t\t** For more information about the EXP-T program system see                      **\n");
-    printf("\t\t** http://www.qchem.pnpi.spb.ru/ru/expt                                         **\n");
+    printf("\t\t** http://www.qchem.pnpi.spb.ru/expt                                            **\n");
     printf("\t\t**                                                                              **\n");
     printf("\t\t** This is an experimental code. The authors accept no responsibility           **\n");
     printf("\t\t** for the performance of the code or for the correctness of the results.       **\n");
@@ -354,8 +366,6 @@ void banner()
     printf("\t\t**********************************************************************************\n");
     printf("\n");
 
-    printf("Version: %d.%d.%d\n", CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION);
-    printf("Release date: %d %s %d\n", CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
     printf("Authors:\n");
     printf("  Alexander Oleynichenko [alexvoleynichenko@gmail.com]\n");
     printf("  Andrei Zaitsevskii\n");
