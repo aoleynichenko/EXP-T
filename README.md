@@ -16,7 +16,7 @@ The public version of the EXP-T source code is available under LGPLv3.
 
 # Libraries used
 
-The OpenBLAS library v0.3.9 is used as an internal implementation of BLAS/LAPACK; see https://www.openblas.net/.
+The OpenBLAS library v0.3.10 is used as an internal implementation of BLAS/LAPACK; see https://www.openblas.net/.
 
 # Citation
 
