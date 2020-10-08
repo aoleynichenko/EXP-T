@@ -14,9 +14,13 @@ https://groups.google.com/d/forum/exp-t-program
 
 The public version of the EXP-T source code is available under LGPLv3.
 
-# Libraries used
+# External libraries used
+
+EXP-T uses some external libraries as a part of its source code.
 
 The OpenBLAS library v0.3.10 is used as an internal implementation of BLAS/LAPACK; see https://www.openblas.net/.
+
+The LZ4 library v1.9.0 is used in the I/O subsystem for data compression; see https://github.com/lz4/lz4
 
 # Citation
 
