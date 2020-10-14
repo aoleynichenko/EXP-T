@@ -9,13 +9,13 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> oneprop/Hg atom TDMs (ms-tdm)')
 
 dirac_inp = "TRA.inp"
 dirac_mol = "Hg.mol"
-execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
+execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
 t1_scf  = Filter("Total SCF energy = ",         -152.233275912798, 1e-7)
 t1_mp2c = Filter("MP2 correlation energy = ",     -0.411901595843, 1e-7)
 t1_mp2  = Filter("Total MP2 energy = ",         -152.645177508641, 1e-7)

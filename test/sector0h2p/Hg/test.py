@@ -7,7 +7,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> sector(0,2)/Hg/SOREP')
 
@@ -20,7 +20,7 @@ for sym in symmetries:
 	else:
 		dirac_inp = 'TRAi.inp'
 	dirac_mol = "Hg-%s.mol" % (sym)
-	execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
+	execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
 	execute("mv MRCONEE MRCONEE-" + sym)
 	execute("mv MDCINT MDCINT-" + sym)
 	t1_scf  = Filter("Total SCF energy = ",       -152.230646138773693, 1e-7)

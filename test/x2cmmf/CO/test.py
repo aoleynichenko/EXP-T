@@ -6,7 +6,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> diatomic/CO/relativistic/x2cmmf+gaunt')
 
@@ -16,7 +16,7 @@ symmetries = ['C1', 'Cs', 'C2', 'C2v', 'Cinfv']
 for sym in symmetries:
 	dirac_inp = "TRA.inp"
 	dirac_mol = "CO-%s.mol" % (sym)
-	execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
+	execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
 	execute("mv MRCONEE MRCONEE-" + sym)
 	execute("mv MDCINT MDCINT-" + sym)
 	t1_scf  = Filter("Total SCF energy = ",       -112.809800818586581, 1e-7)

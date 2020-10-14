@@ -6,7 +6,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> denom shifts/HgH2+/2c-ECP/Cinfv')
 
@@ -15,7 +15,7 @@ shifts = ['real', 'realimag', 'imag']
 
 dirac_inp = "TRA.inp"
 dirac_mol = "hgh+.mol"
-execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
+execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
 execute("mv MRCONEE MRCONEE-" + sym)
 execute("mv MDCINT MDCINT-" + sym)
 

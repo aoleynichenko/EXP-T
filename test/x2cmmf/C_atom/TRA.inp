@@ -16,6 +16,8 @@ Carbon atom in external electric field
 .ERGCNV         
 1E-12       
 **MOLTRA        
+.SCHEME
+ 4
 .ACTIVE         
 all
 **RELCCSD

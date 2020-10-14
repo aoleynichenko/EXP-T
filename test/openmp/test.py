@@ -6,7 +6,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> openmp/CO-C2v/R')
 
@@ -16,7 +16,7 @@ nthreads = [1,2,4,8]
 for nth in nthreads:
 	dirac_inp = "TRA.inp"
 	dirac_mol = "CO-C2v.mol"
-	execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
+	execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
 	execute("mv MRCONEE MRCONEE-" + sym)
 	execute("mv MDCINT MDCINT-" + sym)
 	t1_scf  = Filter("Total SCF energy = ",       -112.820480227130517, 1e-7)

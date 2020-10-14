@@ -11,6 +11,8 @@ H2O ionization potential
 **WAVE FUNCTION
 .SCF
 **MOLTRA                                                                                            
+.SCHEME
+ 4
 .ACTIVE                                                                                             
 energy -100. 20.0 0.1                                                                                
 .PRINT                                                                                              

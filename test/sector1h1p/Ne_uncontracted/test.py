@@ -7,7 +7,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> sector(1,1)/Ne/nonrel')
 
@@ -20,7 +20,7 @@ for sym in symmetries:
 	else:
 		dirac_inp = 'TRAi.inp'
 	dirac_mol = "Ne-%s.mol" % (sym)
-	execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
+	execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
 	t1_scf  = Filter("Total SCF energy = ",        -128.52777688911166, 1e-7)
 	t1_mp2c = Filter("MP2 correlation energy = ",      -0.270756916860, 1e-7)
 	t1_mp2  = Filter("Total MP2 energy = ",          -128.798533805971, 1e-7)

@@ -6,14 +6,14 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> C atom with X2cmmf+Gaunt')
 
 dirac_inp = "TRA.inp"
 dirac_mol = "C.mol"
 
-execute("pam --nobackup --noarch --inp=TRA --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
+execute(DIRAC_PATH + " --nobackup --noarch --inp=TRA --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
 
 t_scf         = Filter("Total SCF energy = ",              -36.422201451037, 1e-8)
 t_scf_ref     = Filter("SCF reference energy = ",          -36.422201451037, 1e-8)

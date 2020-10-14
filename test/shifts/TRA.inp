@@ -14,6 +14,8 @@ FS-MRCC calculation: HgH3+ -> HgH2+
 .CLOSED SHELL
  18
 **MOLTRA
+.SCHEME
+ 4
 .ACTIVE
 all
 *END OF DIRAC                                                                                       

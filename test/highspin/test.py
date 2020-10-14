@@ -6,13 +6,13 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> highspin/O2 triplet')
 
 dirac_inp = "TRA.inp"
 dirac_mol = "O2.mol"
-execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
+execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
 
 t1_scf_read   = Filter("Total SCF energy = ",       -149.686661451845, 1e-7)
 t1_scf_recalc = Filter("SCF reference energy = ",   -149.718144633814, 1e-7)

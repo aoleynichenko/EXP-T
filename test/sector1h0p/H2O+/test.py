@@ -7,13 +7,13 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> sector(1,0)/H2O->H2O+/cc-pVTZ/nonrel')
 
 dirac_mol = "H2O-C2v.mol"
 dirac_inp = "TRA.inp"
-execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
+execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
 
 t1_scf  = Filter("Total SCF energy = ",       -76.057114619775, 1e-7)
 t1_mp2c = Filter("MP2 correlation energy = ",  -0.275116992297, 1e-7)

@@ -7,7 +7,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> efield/LiNa/relativistic(4c-DC)')
 
@@ -17,8 +17,8 @@ for sym in symmetries:
     dirac_scf = "scf.inp"
     dirac_tra = "TRA.inp"
     dirac_mol = "LiNa-%s.mol" % (sym)
-    execute("pam --nobackup --noarch --inp=" + dirac_scf + " --mol=" + dirac_mol + " --outcmo")
-    execute("pam --nobackup --noarch --inp=" + dirac_tra + " --mol=" + dirac_mol + " --incmo --get=\"MRCONEE MDCINT\"")
+    execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_scf + " --mol=" + dirac_mol + " --outcmo")
+    execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_tra + " --mol=" + dirac_mol + " --incmo --get=\"MRCONEE MDCINT\"")
     execute("mv MRCONEE MRCONEE-%s" % (sym))
     execute("mv MDCINT MDCINT-%s" % (sym))
     t1_scf  = Filter("SCF reference energy = ",   -169.073977054460   , 1e-8)

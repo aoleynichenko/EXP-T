@@ -17,6 +17,8 @@ Ne6+ ion
 .ERGCNV         
 1E-11        
 **MOLTRA        
+.SCHEME
+ 4
 .ACTIVE         
 all
 **RELCC         

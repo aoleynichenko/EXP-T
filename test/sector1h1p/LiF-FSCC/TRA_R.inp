@@ -17,6 +17,8 @@ LiF molecule
 .ERGCNV         
 1E-10           
 **MOLTRA        
+.SCHEME
+ 4
 .ACTIVE         
 all
 .PRPTRA

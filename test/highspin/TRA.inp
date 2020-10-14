@@ -16,5 +16,8 @@ molecular oxygen -- ground state
 .OPEN SHELL
 1
 2/4,0
+**MOLTRA
+.SCHEME
+ 4
 *END OF
 

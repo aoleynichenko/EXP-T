@@ -13,6 +13,8 @@ FS-MRCC calculation: Hg2+ -> Hg+
 .CLOSED SHELL
  18
 **MOLTRA
+.SCHEME
+ 4
 .ACTIVE
 all
 **RELCC

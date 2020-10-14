@@ -7,7 +7,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 #=======================================================================
 # non-relativistic
@@ -21,7 +21,7 @@ symmetries = ['C1', 'Cinfv']
 for sym in symmetries:
 	dirac_inp = 'TRA_NR.inp'
 	dirac_mol = "LiF-%s.mol" % (sym)
-	execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
+	execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
 	execute("expt.x --no-clean input-0h0p > expt_LiF_%s_NR_0h0p.out" % (sym))
 	t1_scf    = Filter("Total SCF energy = ",          -106.964946434870, 1e-7)
 	t1_cc_tot = Filter("Total CCSD energy = ",         -107.194656109696, 1e-7)
@@ -46,7 +46,7 @@ print('>>> sector(1,1)/LiF/rel')
 for sym in symmetries:
 	dirac_inp = 'TRA_R.inp'
 	dirac_mol = "LiF-%s.mol" % (sym)
-	execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
+	execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
 	execute("expt.x --no-clean input-0h0p > expt_LiF_%s_R_0h0p.out" % (sym))
 	t1_scf    = Filter("Total SCF energy = ",          -107.057122389929, 1e-7)
 	t1_cc_tot = Filter("Total CCSD energy = ",         -107.286923405332, 1e-7)

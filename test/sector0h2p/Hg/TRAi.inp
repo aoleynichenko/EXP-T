@@ -17,6 +17,8 @@ FS-MRCC calculation: Hg2+ -> Hg+ -> Hg
 **ANALYZE
 .PRIVEC
 **MOLTRA
+.SCHEME
+ 4
 .ACTIVE
 all
 **RELCC

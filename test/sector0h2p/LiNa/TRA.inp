@@ -27,6 +27,8 @@ LiNa+ molecule
 .VECPRI
 all
 **MOLTRA        
+.SCHEME
+ 4
 .PRPTRA
 .ACTIVE         
 all

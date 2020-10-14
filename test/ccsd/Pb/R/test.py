@@ -6,7 +6,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> atoms/Pb/relativistic(SO-REP)')
 
@@ -19,7 +19,7 @@ for sym in symmetries:
 	dirac_mol = "Pb-%s.mol" % (sym)
 	if sym == 'Ci' or sym == 'D2h' or sym == 'C2h' or sym == 'Dinfh':
 		dirac_inp = "TRAi.inp"
-	execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
+	execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
 	execute("mv MRCONEE MRCONEE-" + sym)
 	execute("mv MDCINT MDCINT-" + sym)
 	t1_scf  = Filter("Total SCF energy = ",       -191.730398371209787, 1e-7)

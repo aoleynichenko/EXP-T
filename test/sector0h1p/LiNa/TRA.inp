@@ -14,6 +14,8 @@ LiNa+ molecule
 **PROPERTIES
 .DIPOLE         
 **MOLTRA        
+.SCHEME
+ 4
 .PRPTRA
 .ACTIVE         
 all

@@ -8,13 +8,13 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> oneprop/K atom HFS constant')
 
 dirac_inp = "TRA.inp"
 dirac_mol = "K.mol"
-execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
+execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
 t1_scf  = Filter("Total SCF energy = ",         -601.371625198165, 1e-7)
 t1_mp2c = Filter("MP2 correlation energy = ",     -0.330143371715, 1e-7)
 t1_mp2  = Filter("Total MP2 energy = ",         -601.701768569880, 1e-7)

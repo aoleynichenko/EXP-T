@@ -17,7 +17,7 @@ import subprocess
 # main options
 VERBOSE = 0
 FSCC_PATH = "expt.x"
-
+DIRAC_PATH = "pam"
 
 def clean():
     files = ["scratch DFCOEF AOINTS* VINT* HINT HEFF *.sb *.dg sb_* t1c t2c s1c s2c modelvectors*dat"]

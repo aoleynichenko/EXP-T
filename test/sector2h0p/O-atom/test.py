@@ -10,7 +10,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
-from minitest import Test, Filter, execute
+from minitest import Test, Filter, execute, DIRAC_PATH
 
 print('>>> sector(2,0)/O atom/4c')
 
@@ -22,7 +22,7 @@ for sym in symmetries:
     if sym == 'Ci' or sym == 'D2h' or sym == 'C2h' or sym == 'Dinfh':
         dirac_inp = "TRAi.inp"
     dirac_mol = "O-%s.mol" % (sym)
-    execute("pam --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
+    execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT\"")
     execute("mv MRCONEE MRCONEE-" + sym)
     execute("mv MDCINT MDCINT-" + sym)
     t1_scf  = Filter("SCF reference energy = ",    -74.235483635912, 1e-7)

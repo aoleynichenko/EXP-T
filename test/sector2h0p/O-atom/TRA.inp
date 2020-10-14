@@ -12,6 +12,8 @@ O atom
 .ERGCNV         
 1E-12           
 **MOLTRA        
+.SCHEME
+ 4
 .ACTIVE         
 all
 **RELCC         
