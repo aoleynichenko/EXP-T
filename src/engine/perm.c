@@ -46,6 +46,23 @@ void reorder_block_double_complex_t(block_t *, block_t *, int *);
 void reverse_perm(int n, int *a, int *ainv);
 
 
+/**
+ * simple hand-coded strncpy implementation.
+ * to prevent usage of compiler intrinsics and buffer overflow bugs.
+ *
+ * @param dst destination buffer
+ * @param src source buffer
+ * @param n number of chars to be copied
+ */
+void safe_strncpy(char *dst, char *src, size_t n)
+{
+    for (size_t i = 0; i < n; i++) {
+        dst[i] = src[i];
+    }
+    dst[n] = '\0';
+}
+
+
 /*
  * works only with elementary permutations of types
  * (xx), (x/xx), (xxx)
@@ -74,7 +91,7 @@ void elementary_perm(char *src_name, char *perm_str)
         p[i2] = t;
         n_perm_tasks = 1;
         perm_tasks[0].sign = -1;
-        strcpy(perm_tasks[0].perm_str, p);
+        safe_strncpy(perm_tasks[0].perm_str, p, 4);
     }
         // rank-6 && '(xx)'
     else if (rank(src_name) == 6 &&
@@ -87,7 +104,7 @@ void elementary_perm(char *src_name, char *perm_str)
         p[i2] = t;
         n_perm_tasks = 1;
         perm_tasks[0].sign = -1;
-        strcpy(perm_tasks[0].perm_str, p);
+        safe_strncpy(perm_tasks[0].perm_str, p, 6);
     }
         // '(x/xx)'
     else if (rank(src_name) == 6 &&
@@ -106,9 +123,9 @@ void elementary_perm(char *src_name, char *perm_str)
         p2[i3] = t;
         n_perm_tasks = 2;
         perm_tasks[0].sign = -1;
-        strcpy(perm_tasks[0].perm_str, p1);
+        safe_strncpy(perm_tasks[0].perm_str, p1, 6);
         perm_tasks[1].sign = -1;
-        strcpy(perm_tasks[1].perm_str, p2);
+        safe_strncpy(perm_tasks[1].perm_str, p2, 6);
     }
         // '(xxx)'
     else if (rank(src_name) == 6 &&
@@ -117,28 +134,28 @@ void elementary_perm(char *src_name, char *perm_str)
         if (strcmp(perm_str, "(456)") == 0) {
             n_perm_tasks = 5;
             perm_tasks[0].sign = -1;
-            strcpy(perm_tasks[0].perm_str, "123465");
+            safe_strncpy(perm_tasks[0].perm_str, "123465", 6);
             perm_tasks[1].sign = -1;
-            strcpy(perm_tasks[1].perm_str, "123546");
+            safe_strncpy(perm_tasks[1].perm_str, "123546", 6);
             perm_tasks[2].sign = 1;
-            strcpy(perm_tasks[2].perm_str, "123564");
+            safe_strncpy(perm_tasks[2].perm_str, "123564", 6);
             perm_tasks[3].sign = 1;
-            strcpy(perm_tasks[3].perm_str, "123645");
+            safe_strncpy(perm_tasks[3].perm_str, "123645", 6);
             perm_tasks[4].sign = -1;
-            strcpy(perm_tasks[4].perm_str, "123654");
+            safe_strncpy(perm_tasks[4].perm_str, "123654", 6);
         }
         else if (strcmp(perm_str, "(123)") == 0) {
             n_perm_tasks = 5;
             perm_tasks[0].sign = -1;
-            strcpy(perm_tasks[0].perm_str, "213456");
+            safe_strncpy(perm_tasks[0].perm_str, "213456", 6);
             perm_tasks[1].sign = 1;
-            strcpy(perm_tasks[1].perm_str, "231456");
+            safe_strncpy(perm_tasks[1].perm_str, "231456", 6);
             perm_tasks[2].sign = -1;
-            strcpy(perm_tasks[2].perm_str, "132456");
+            safe_strncpy(perm_tasks[2].perm_str, "132456", 6);
             perm_tasks[3].sign = 1;
-            strcpy(perm_tasks[3].perm_str, "312456");
+            safe_strncpy(perm_tasks[3].perm_str, "312456", 6);
             perm_tasks[4].sign = -1;
-            strcpy(perm_tasks[4].perm_str, "321456");
+            safe_strncpy(perm_tasks[4].perm_str, "321456", 6);
         }
         else {
             errquit("permute(): wrong permutation: %s", perm_str);
