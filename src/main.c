@@ -384,7 +384,7 @@ void banner()
     printf("Hostname: %s", host_name);
     printf("\n");
 
-    print_sizeof_types();
+    //print_sizeof_types();
 
     // CUDA settings
 #ifdef CUDA_FOUND

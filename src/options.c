@@ -247,8 +247,9 @@ void delete_options(cc_options_t *opts)
 void print_options(cc_options_t *opts)
 {
     printf("\n");
-    printf("\t\t\t\tOptions\n");
-    printf("\t\t\t\t-------\n");
+    printf("\t\t\t\t*************\n");
+    printf("\t\t\t\t** Options **\n");
+    printf("\t\t\t\t*************\n\n");
     printf(" %-15s  %-40s  %s\n", "title", "title string - comment", opts->title);
     printf(" %-15s  %-40s  %s\n", "scratch_dir", "scratch directory for tmp files", opts->scratch_dir);
     printf(" %-15s  %-40s  %s\n", "--no-clean", "retain scratch directory on exit", opts->clean_scratch ? "yes" : "no");
@@ -565,7 +566,7 @@ void print_options(cc_options_t *opts)
     if (opts->diis_enabled) {
         printf(" %-15s  %-40s  %s\n", "diis", "DIIS technique for convergence", "enabled");
         printf(" %-15s  %-40s  %d\n", "diis <n>", "DIIS subspace dimension", opts->diis_dim);
-        printf(" %-15s  %-40s  %d\n", "diis triples", "DIIS for triples amplitudes", opts->diis_triples ? "enabled" : "disabled");
+        printf(" %-15s  %-40s  %s\n", "diis triples", "DIIS for triples amplitudes", opts->diis_triples ? "enabled" : "disabled");
     }
     else {
         printf(" %-15s  %-40s  %s\n", "diis", "DIIS technique for convergence", "disabled");
@@ -573,60 +574,59 @@ void print_options(cc_options_t *opts)
     for (int h = 0; h < MAX_SECTOR_RANK; h++) {
         for (int p = 0; p < MAX_SECTOR_RANK; p++) {
             if (opts->damping[h][p].enabled) {
-                printf(" damping  %-40s  ", "damping for amplitudes", "disabled");
-                printf("    %dh%dp            stop at iter %d, old ampl factor %.2f\n",
-                       h,p, opts->damping[h][p].stop, opts->damping[h][p].factor);
+                printf(" %-7s %dh%dp     %-30s%dh%dp     ", "damping", h, p,
+                        "damping for amplitudes, sector ", h, p);
+                printf("  stop at iter %d, old ampl factor %.2f\n",
+                       opts->damping[h][p].stop, opts->damping[h][p].factor);
             }
         }
     }
 
-
-    printf("\n");
-
-
-
-
-    // interface to the OneProp code by L. V. Skripnikov (one-elec properties)
-    printf("  int-face OneProp  %s\n", opts->oneprop_on ? "enabled" : "disabled");
+    // interface to one-electron properties by L. V. Skripnikov
+    printf(" %-15s  %-40s  %s\n", "oneprop", "interface to OneProp (by L.V.Skripnikov)",
+            opts->oneprop_on ? "enabled" : "disabled");
     if (opts->oneprop_on) {
         for (int i = 0; i < opts->n_oneprop; i++) {
-            printf("   [%1d] OneProp re   %s\n", i, opts->oneprop_file_re[i]);
-            printf("               im   %s\n", opts->oneprop_file_im[i]);
-            printf("           lambda %12.4e %12.4e\n",
-                   creal(opts->oneprop_lambda[i]), cimag(opts->oneprop_lambda[i]));
+            printf(" %-15s  [%1d] %-36s  re=%s im=%s lambda=(%12.4e,%12.4e)\n",
+                    "", i, "one-electron property",opts->oneprop_file_re[i], opts->oneprop_file_im[i],
+                    creal(opts->oneprop_lambda[i]), cimag(opts->oneprop_lambda[i]));
         }
     }
-
     // interface to two-electron properties by D. E. Maison and L. V. Skripnikov
-    printf("  int-face TwoProp  %s\n", opts->twoprop_on ? "enabled" : "disabled");
+    printf(" %-15s  %-40s  %s\n", "twoprop", "interface to TwoProp (by D.E.Maison)",
+            opts->twoprop_on ? "enabled" : "disabled");
     if (opts->twoprop_on) {
         for (int i = 0; i < opts->n_twoprop; i++) {
-            printf("   [%1d] TwoProp file %s\n", i, opts->twoprop_file[i]);
-            printf("           lambda %12.4e %12.4e\n",
+            printf(" %-15s  [%1d] %-36s  file=%s lambda=(%12.4e,%12.4e)\n",
+                   "", i, "two-electron property",opts->twoprop_file[i],
                    creal(opts->twoprop_lambda[i]), cimag(opts->twoprop_lambda[i]));
         }
     }
 
     // interface to the MDPROP files
-    printf("  int-face MDPROP   %s\n", (opts->n_mdprop > 0) ? "enabled" : "disabled");
+    printf(" %-15s  %-40s  %s\n", "oneprop", "interface to the MDPROP file",
+           (opts->n_mdprop > 0) ? "enabled" : "disabled");
     if (opts->n_mdprop > 0) {
         for (int i = 0; i < opts->n_mdprop; i++) {
-            printf("   [%1d] MDPROP name  %s\n", i, opts->mdprop_file[i]);
-            printf("          lambda  %12.4e %12.4e\n",
+            printf(" %-15s  [%1d] %-36s  property=%s lambda=(%12.4e,%12.4e)\n",
+                   "", i, "one-electron property from MDPROP",opts->mdprop_file[i],
                    creal(opts->mdprop_lambda[i]), cimag(opts->mdprop_lambda[i]));
         }
     }
 
     // perform hermitization or not?
-    printf("  hermitization     %s\n", opts->do_hermit ? "enabled" : "disabled");
+    printf(" %-15s  %-40s  %s\n", "nohermit", "hermitization of effective Hamiltonians",
+            opts->do_hermit ? "enabled" : "disabled");
 
     // perform Dipole-Length (DL) estimation of TDMs or not
-    printf("  calculate DL-TDMs %s\n", opts->do_diplen_tdm ? "enabled" : "disabled");
+    printf(" %-15s  %-40s  %s\n", "dltdm", "model-space estimates of tran dipoles",
+           opts->do_diplen_tdm ? "enabled" : "disabled");
 
     // calculation of density matrices and natural orbitals
     if (opts->n_denmat > 0) {
-        printf("  natural orbitals  enabled\n");
-        printf("    target states (sector:rep:state): ");
+        printf(" %-15s  %-40s  %s\n", "natorb", "model-space natural orbitals", "enabled");
+        printf(" %-15s  %-40s\n", "", "target states (sector:rep:state):");
+
         for (int i = 0; i < opts->n_denmat; i++){
             cc_denmat_query_t *q = opts->denmat_query + i;
             int *sect1 = q->sect1;
@@ -636,21 +636,20 @@ void print_options(cc_options_t *opts)
             int state1 = q->state1;
             int state2 = q->state2;
             if (strcmp(rep1_name, rep2_name) == 0 && state1 == state2) {
-                printf("%dh%dp:%s:%d (NO) ", sect1[0], sect1[1], rep1_name, state1);
+                printf(" %-15s  %dh%dp:%s:%d (NO)\n", "", sect1[0], sect1[1], rep1_name, state1);
             }
             else{
-                printf("%dh%dp:%s:%d-%dh%dp:%s:%d (NTO) ", sect1[0], sect1[1],
+                printf(" %-15s  %dh%dp:%s:%d-%dh%dp:%s:%d (NTO)\n", "", sect1[0], sect1[1],
                        rep1_name, state1, sect2[0], sect2[1], rep2_name, state2);
             }
         }
-        printf("\n");
     }
     else{
-        printf("  natural orbitals  disabled\n");
+        printf(" %-15s  %-40s  %s\n", "natorb", "model-space natural orbitals", "disabled");
     }
 
     if (opts->n_props > 0) {
-        printf("  model-space props");
+        printf(" %-15s  %-40s  %s", "prop", "model-space estimates of properties", "enabled,");
         for (int i = 0; i < opts->n_props; i++) {
             printf(" %s", opts->prop_queries[i].prop_name);
             if (opts->prop_queries[i].swap_re_im) {
@@ -660,10 +659,10 @@ void print_options(cc_options_t *opts)
         printf("\n");
     }
     else {
-        printf("  model-space props disabled\n");
+        printf(" %-15s  %-40s  %s\n", "prop", "model-space estimates of properties", "disabled");
     }
 
-    printf("\n");
+    printf("\n\n");
 }
 
 

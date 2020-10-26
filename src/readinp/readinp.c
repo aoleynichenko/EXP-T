@@ -114,10 +114,14 @@ int readinp(char *file_name, cc_options_t *opts)
     }
 
     printf("Reading input file: %s\n\n", file_name);
-    printf("----------------------------- echo of input file -----------------------------\n");
-    echo(file_name, stdout);
-    printf("------------------------------------------------------------------------------\n");
     printf("\n");
+    printf("\t\t\t\t****************\n");
+    printf("\t\t\t\t** Input file **\n");
+    printf("\t\t\t\t****************\n\n");
+    printf(" -----\n");
+    echo(file_name, stdout);
+    printf(" -----\n");
+    printf("\n\n");
 
     set_input_file_name(file_name);
 
@@ -325,7 +329,7 @@ int echo(char *file_name, FILE *dst)
     }
 
     while (fgets(line, MAX_LINE_LEN, f) != NULL) {
-        fprintf(dst, "%s", line);
+        fprintf(dst, " %s", line);
     }
 
     return 0;
