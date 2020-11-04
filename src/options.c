@@ -218,7 +218,7 @@ cc_options_t *new_options()
     //          not very physical
     // des Cloizeaux => (Loewdin) orthogonal model vectors =>
     //                  much more meaningful TDMs and properties
-    opts->do_hermit = 1;
+    opts->do_hermit = 0;
 
     // perform Dipole-Length (DL) estimation of TDMs or not
     opts->do_diplen_tdm = 0;

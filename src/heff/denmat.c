@@ -58,6 +58,74 @@ void sort_vectors(int n, double complex *ev, double complex *vl, double complex 
                   int (*cmp)(double complex, double complex));
 
 
+/*
+ * @param dm (output) density matrix, size n_active x n_active
+ * @param dim_dm (output) n_active
+ */
+void construct_ms_density_matrix(int sect_h, int sect_p,
+        int dim_bra, double complex *coef_bra, slater_det_t *dets_bra,
+        int dim_ket, double complex *coef_ket, slater_det_t *dets_ket,
+        double complex *dm, size_t *dim_dm)
+{
+    // only 'valence' parts of DMs are be constructed
+    // dim DMs = n_active x n_active
+    int n_active = 0;
+    int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
+
+    // TODO: refactor, separate utility function (move to spinors.c)
+    for (int i = 0; i < nspinors; i++){
+        if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
+            active_spinors[n_active] = i;
+            n_active++;
+        }
+    }
+
+    for (int p = 0; p < n_active; p++){
+        for (int q = 0; q < n_active; q++){
+            double complex d_pq = 0.0 + 0.0 * I;
+            // loops over model vectors
+            for (size_t i = 0; i < dim_bra; i++){
+                for (size_t j = 0; j < dim_ket; j++){
+                    slater_det_t *bra = &dets_bra[i];
+                    slater_det_t *ket = &dets_ket[j];
+                    int bra_d_ket = density_matrix_element(sect_h, sect_p, active_spinors[p], active_spinors[q], bra, ket);
+                    d_pq += conj(coef_bra[i]) * coef_ket[j] * bra_d_ket;
+                }
+            }
+            dm[p * n_active + q] = d_pq;
+        }
+    }
+
+    *dim_dm = n_active;
+}
+
+
+double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, double complex *dm, double complex *prp)
+{
+    int n_active = 0;
+    int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
+
+    // TODO: refactor, separate utility function (move to spinors.c)
+    for (int i = 0; i < nspinors; i++){
+        if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
+            active_spinors[n_active] = i;
+            n_active++;
+        }
+    }
+
+    double complex sum = 0.0 + 0.0*I;
+    for (int i = 0; i < n_active; i++) {
+        for (int j = 0; j < n_active; j++) {
+            int p = active_spinors[i];
+            int q = active_spinors[j];
+            sum += dm[i * n_active + j] * prp[q * nspinors + p];  // I don't know, why prp[q,p], not prp[p,q]
+        }
+    }
+
+    return sum;
+}
+
+
 /*******************************************************************************
  * density_matrix
  *
@@ -92,6 +160,8 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
 {
     int nrep;
     struct mv_block mv_blocks[64];
+    int nrep_0011;
+    struct mv_block mv_blocks_0011[64];
     double const occ_thresh = 1e-6;   // threshold for printing natural orbitals
     double const coef_thresh = 1e-4;   // threshold for printing model vec-s coeff-s
     // for state 1
@@ -136,7 +206,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
 
     // TODO: refactor, separate utility function (move to spinors.c)
     for (int i = 0; i < nspinors; i++){
-        if (is_act_hole(i) && sect_h > 0 || is_act_part(i) && sect_p > 0) {
+        if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
         }
@@ -146,8 +216,8 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     // 0h0p => state 1
     // 1h1p => states 2, 3, ...
     // (only in the irrep containing the 0h0p state)
-    if (sect_h == 1 && sect_p == 1) {
-        int vac_irrep = get_vacuum_irrep();
+    int vac_irrep = get_vacuum_irrep();
+    /*if (sect_h == 1 && sect_p == 1) {
         if (rep1 == vac_irrep) {
             state1 -= 1;
         }
@@ -158,7 +228,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
             printf(" Calculation of approximate natural orbitals for the vacuum state (0h0p)\n");
             printf(" is meaningless and will be ignored\n");
         }
-    }
+    }*/
 
     // allocate working arrays
     denmat  = zzeros(n_active, n_active);
@@ -168,26 +238,46 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     natorb_right = zzeros(n_active, n_active);
 
     // extract model vectors and eigenvalues from the MVCOEF* unformatted file
-    read_model_vectors_unformatted(sect_h, sect_p, &nrep, mv_blocks);
+    read_model_vectors_unformatted(sect_h, sect_p, NULL, &nrep, mv_blocks);
     struct mv_block *mvb1 = NULL, *mvb2 = NULL;
+    struct mv_block *b0011 = NULL;
+    // vectors with the intermediate normalization restored (0h0p and 1h1p are mixed)
+    // to be used for 00->11, 11->00 and 11->11 matrix elements by default
+    if (sect_h == 1 && sect_p == 1) {
+        read_model_vectors_unformatted(1, 1, "MVCOEF0011", &nrep_0011, mv_blocks_0011);
+        b0011 = &mv_blocks_0011[0];
+    }
     for (size_t ib = 0; ib < nrep; ib++){
         if (strcmp(mv_blocks[ib].rep_name, rep_name1) == 0) {
-            mvb1 = mv_blocks + ib;
+            if (sect_h == 1 && sect_p == 1 && rep1 == vac_irrep) {
+                printf(" Mixed 0h0p+1h1p vectors will be used in <bra|\n");
+                mvb1 = b0011;
+            }
+            else {
+                mvb1 = mv_blocks + ib;
+            }
         }
         if (strcmp(mv_blocks[ib].rep_name, rep_name2) == 0) {
-            mvb2 = mv_blocks + ib;
+            if (sect_h == 1 && sect_p == 1 && rep2 == vac_irrep) {
+                printf(" Mixed 0h0p+1h1p vectors will be used in |ket>\n");
+                mvb2 = b0011;
+            }
+            else {
+                mvb2 = mv_blocks + ib;
+            }
         }
     }
 
+
     // extract data for state 1
-    if (state1 != -1) {
+    //if (state1 != -1) {
         ms_size1 = mvb1->ms_size;
         dets1 = mvb1->dets;
         eigval_1 = creal(mvb1->eigval[state1]);
         energy_cm_1 = mvb1->energy_cm[state1];
         coef_left1 = mvb1->vl + ms_size1 * state1;
         coef_right1 = mvb1->vr + ms_size1 * state1;
-    }
+    /*}
     else{
         ms_size1 = 1;
         dets1 = (slater_det_t *) cc_malloc(sizeof(slater_det_t) * 1);
@@ -196,45 +286,31 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         energy_cm_1 = 0.0;
         coef_left1 = zzeros(1, 1);
         coef_left1[0] = 1.0 + 0.0 * I;
-    }
+    }*/
     // extract data for state 2 (if tran == 0 => the same as for state 1)
-    if (state2 != -1) {
+    //if (state2 != -1) {
         ms_size2 = mvb2->ms_size;
         dets2 = mvb2->dets;
         eigval_2 = creal(mvb2->eigval[state2]);
         energy_cm_2 = mvb2->energy_cm[state2];
         coef_left2 = mvb2->vl + ms_size2 * state2;
         coef_right2 = mvb2->vr + ms_size2 * state2;
-    }
+    /*}
     else{
         ms_size2 = 1;
-        dets1 = (slater_det_t *) cc_malloc(sizeof(slater_det_t) * 1);
-        set_vacuum_det(dets1);
+        dets2 = (slater_det_t *) cc_malloc(sizeof(slater_det_t) * 1);
+        set_vacuum_det(dets2);
         eigval_2 = 0.0 + 0.0 * I;
         energy_cm_2 = 0.0;
         coef_right2 = zzeros(1, 1);
         coef_right2[0] = 1.0 + 0.0 * I;
-    }
+    }*/
 
     // density matrix (DM) construction
     // the same code for both cases of DMs and transition DMs
-    // TODO: separate routine ?
-    for (int p = 0; p < n_active; p++){
-        for (int q = 0; q < n_active; q++){
-            double complex d_pq = 0.0 + 0.0 * I;
-            // loops over model vectors
-            for (size_t i = 0; i < ms_size1; i++){
-                for (size_t j = 0; j < ms_size2; j++){
-                    slater_det_t *bra = &dets1[i];
-                    slater_det_t *ket = &dets2[j];
-                    int bra_d_ket = density_matrix_element(sect_h, sect_p, active_spinors[p], active_spinors[q], bra,
-                                                           ket);
-                    d_pq += conj(coef_left1[i]) * coef_right2[j] * bra_d_ket;
-                }
-            }
-            denmat[p * n_active + q] = d_pq;
-        }
-    }
+    printf(" Model density matrix construction...\n");
+    construct_ms_density_matrix(sect_h, sect_p, ms_size1, coef_left1, dets1, ms_size2, coef_right2, dets2, denmat, &n_active);
+    //xprimat(CC_COMPLEX, denmat, n_active, n_active, "DM");
 
     // just in order to check correctness: calculate transition dipole moment
     double complex tdm[] = {0.0 + 0.0 * I, 0.0 + 0.0 * I, 0.0 + 0.0 * I};
@@ -299,14 +375,15 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         printf("  dy = %10.6f%10.6f     |dy| = %10.6f\n", creal(dy), cimag(dy), cabs(dy));
         printf("  dz = %10.6f%10.6f     |dz| = %10.6f\n", creal(dz), cimag(dz), cabs(dz));
         printf("                                |d|  = %10.6f\n", tranmom);
-        double sum_lambda = 0.0;  // trace
+        double sum_lambda_sq = 0.0;  // sum of weights
+        int count = 1;
         for (int i = 0; i < n_active; i++){
-            sum_lambda += lambda[i];
-            if (lambda[i] < occ_thresh) {
+            sum_lambda_sq += lambda[i]*lambda[i];
+            if (lambda[i]*lambda[i] < occ_thresh) {
                 continue;
             }
 
-            printf(" Singular value = %.6f\n", lambda[i]);
+            printf(" [%d] Squared singular value (weight) = %.6f\n", count++, lambda[i]*lambda[i]);
             printf("    from:\n");
             for (size_t j = 0; j < n_active; j++){
                 double complex coef = natorb_left[n_active * i + j];
@@ -330,7 +407,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
                        spinor_info[ispinor].eps);
             }
         }
-        printf(" Sum of singular values lambda = %.6f\n", sum_lambda);
+        printf(" Sum of weights = %.6f\n", sum_lambda_sq);
 
         // flush full information about NOs to the formatted file
         char natorb_file_name[256];
@@ -347,6 +424,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         printf(" Symmetry of this electronic state: %s\n", rep_name1);
         printf(" Eigenvalue   = %.8f a.u.\n", eigval_1);
         printf(" Energy level = %.2f cm^-1\n", energy_cm_1);
+        int count = 1;
         double complex sum_occ = 0.0 + 0.0 * I;  // trace
         for (int i = 0; i < n_active; i++){
             sum_occ += nat_occ[i];
@@ -357,7 +435,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
                 continue;
             }
 
-            printf(" Occ number = %.6f\n", creal(nat_occ[i]));
+            printf(" [%d] Occ number = %.6f\n", count++, creal(nat_occ[i]));
             for (size_t j = 0; j < n_active; j++){
                 double complex coef = natorb_right[n_active * i + j];
                 if (cabs(coef) < coef_thresh) {
@@ -380,7 +458,6 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         }
         write_NO(natorb_file_name, sect_h, sect_p, n_active, lambda, natorb_right, occ_thresh);
     }
-
 
     // cleanup
     cc_free(denmat);
@@ -528,7 +605,19 @@ int density_matrix_element(int sect_h, int sect_p, int p, int q, slater_det_t *b
         return density_matrix_element_1h0p(p, q, bra, ket);
     }
     else if (sect_h == 1 && sect_p == 1) {
-        if (is_vacuum_det(bra)) {
+        if (is_vacuum_det(bra) && is_vacuum_det(ket)) {
+            // < vac | ap^+ ap | vac > = occ(p)
+            if (p != q) {
+                return 0;
+            }
+            if (is_act_hole(p)) {
+                return 1;
+            }
+            if (is_act_part(p)) {
+                return 0;
+            }
+        }
+        else if (is_vacuum_det(bra)) {
             return density_matrix_element_0h0p_1h1p(p, q, bra, ket);
         }
         else if (is_vacuum_det(ket)) {
@@ -584,6 +673,7 @@ int density_matrix_element_1h1p(int p, int q, slater_det_t *bra, slater_det_t *k
 }
 
 
+// bra = vac
 int density_matrix_element_0h0p_1h1p(int p, int q, slater_det_t *bra, slater_det_t *ket)
 {
     int j = ket->indices[0];
@@ -595,6 +685,7 @@ int density_matrix_element_0h0p_1h1p(int p, int q, slater_det_t *bra, slater_det
 }
 
 
+// ket = vac
 int density_matrix_element_1h1p_0h0p(int p, int q, slater_det_t *bra, slater_det_t *ket)
 {
     int i = bra->indices[0];

@@ -45,11 +45,11 @@
 // version: MAJOR.MINOR.REVISION
 #define CC_VERSION_MAJOR      1
 #define CC_VERSION_MINOR      5
-#define CC_VERSION_REVISION   1
+#define CC_VERSION_REVISION   2
 
 // date of release:
-#define CC_VERSION_DAY        8
-#define CC_VERSION_MONTH      "Oct"
+#define CC_VERSION_DAY        4
+#define CC_VERSION_MONTH      "Nov"
 #define CC_VERSION_YEAR       2020
 
 #include "platform.h"

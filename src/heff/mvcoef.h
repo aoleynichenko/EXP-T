@@ -55,6 +55,6 @@ void mvcoef_close(int file_descr, double eigval_0);
 void mvcoef_write_vectors_unformatted(int file_descr, char *rep_name,
                                       size_t nroots, size_t dim, slater_det_t *det_list,
                                       double complex *ev, double complex *vl, double complex *vr);
-void read_model_vectors_unformatted(int sect_h, int sect_p, int *nrep, struct mv_block *mv_blocks);
+void read_model_vectors_unformatted(int sect_h, int sect_p, char *file_name, int *nrep, struct mv_block *mv_blocks);
 
 #endif /* CC_MVCOEF_H_INCLUDED */

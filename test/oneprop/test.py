@@ -3,7 +3,7 @@
 import sys
 import os
 
-test_dirs = ['K-hfs', 'Hg-mstdm']
+test_dirs = ['K-hfs', 'Hg-mstdm-0h2p', 'Hg-mstdm-1h1p']
 
 for tdir in test_dirs:
 	os.chdir(tdir)

@@ -96,9 +96,12 @@ void mvcoef_write_vectors_unformatted(int file_descr, char *rep_name,
  * unformatted file. All data will be collected as the array of struct_mvcoef type
  * entries.
  *
+ * You can set the name of the file (char *file_name). If file_name == NULL,
+ * the name of the file for the (h,p) FS sector will be MVCOEF<h><p>, example: MVCOEF01
+ *
  * @note: this function allocates arrays! they must be deallocated!
  */
-void read_model_vectors_unformatted(int sect_h, int sect_p, int *nrep, struct mv_block *mv_blocks)
+void read_model_vectors_unformatted(int sect_h, int sect_p, char *file_name, int *nrep, struct mv_block *mv_blocks)
 {
     char mvcoef_file_name[64];
     double eigval_0;
@@ -106,7 +109,12 @@ void read_model_vectors_unformatted(int sect_h, int sect_p, int *nrep, struct mv
 
     *nrep = 0;
 
-    sprintf(mvcoef_file_name, "MVCOEF%d%d", sect_h, sect_p);
+    if (file_name == NULL) {
+        sprintf(mvcoef_file_name, "MVCOEF%d%d", sect_h, sect_p);
+    }
+    else {
+        sprintf(mvcoef_file_name, "%s", file_name);
+    }
 
     // read model vectors from unformatted file
     int f_mvcoef = io_open(mvcoef_file_name, "r");

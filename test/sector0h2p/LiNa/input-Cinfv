@@ -13,7 +13,7 @@ nactp 8
 model ccsd
 shifttype real
 shift 0h2p 3 -2.0
-#dltdm
+mstdm
 
 # import integrals from
 integrals MRCONEE-Cinfv MDCINT-Cinfv

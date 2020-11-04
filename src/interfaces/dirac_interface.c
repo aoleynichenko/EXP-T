@@ -412,7 +412,8 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
         }
     }
     // C2v nonrel
-    if (strcmp(rep_names[0], "A1 a") == 0 && strcmp(rep_names[1], "B2 a") == 0) {
+    if (strcmp(rep_names[0], "A1 a") == 0 && strcmp(rep_names[1], "B2 a") == 0 ||
+        strcmp(rep_names[0], "A1 a") == 0 && strcmp(rep_names[1], "B1 a") == 0) {
         char *translation[] = {
                 "A1_a", "B2_a", "B1_a", "A2_a",
                 "A1_b", "B2_b", "B1_b", "A2_b",
@@ -480,6 +481,36 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
         for (int irep = 0; irep < nsym; irep++){
             strcpy(rep_names[irep], translation[irep]);
         }
+    }
+    // C1 rel
+    if (strcmp(rep_names[0], "   A") == 0 && strcmp(rep_names[1], "   a") == 0) {
+        strcpy(rep_names[0], "A");
+        strcpy(rep_names[1], "a");
+    }
+    // Ci rel
+    if (strcmp(rep_names[0], "  AG") == 0 && strcmp(rep_names[1], "  AU") == 0) {
+        strcpy(rep_names[0], "AG");
+        strcpy(rep_names[1], "AU");
+        strcpy(rep_names[2], "ag");
+        strcpy(rep_names[3], "au");
+    }
+    // C2, Cs, C2v, D2 rel
+    if (strcmp(rep_names[0], "  1E") == 0 && strcmp(rep_names[1], "  2E") == 0) {
+        strcpy(rep_names[0], "1E");
+        strcpy(rep_names[1], "2E");
+        strcpy(rep_names[2], "a");
+        strcpy(rep_names[3], "b");
+    }
+    // C2h, D2h rel
+    if (strcmp(rep_names[0], " 1Eg") == 0 && strcmp(rep_names[1], " 2Eg") == 0) {
+        strcpy(rep_names[0], "1Eg");
+        strcpy(rep_names[1], "2Eg");
+        strcpy(rep_names[2], "1Eu");
+        strcpy(rep_names[3], "2Eu");
+        strcpy(rep_names[4], "ag");
+        strcpy(rep_names[5], "bg");
+        strcpy(rep_names[6], "au");
+        strcpy(rep_names[7], "bu");
     }
     // nonrel Cinfv = C2v, nonrel Dinfh = D2h
     // subgroups of the D2h point group, relativistic case -- nothing to do

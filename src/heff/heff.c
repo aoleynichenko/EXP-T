@@ -65,7 +65,8 @@ void print_model_vector(
         size_t len, double complex *coeffs, slater_det_t *det_list
 );
 int get_nroots_for_irrep(char *irrep_name);
-void renormalize_wave_operator_0h0p_0h1p(size_t dim, slater_det_t *det_list, double complex *heff, double complex *heff_prime);
+void renormalize_wave_operator_0h0p_0h1p(size_t dim, slater_det_t *det_list,
+        double complex *heff, double complex *heff_prime, double complex *omega);
 
 
 /*******************************************************************************
@@ -277,6 +278,7 @@ void create_model_dets(int sect_h, int sect_p, size_t *ms_rep_sizes, slater_det_
                     int rep_ab = mulrep2_abelian(rep_a, rep_b);
                     int rep_abc = mulrep2_abelian(rep_ab, rep_c);
                     detlist[ndet].sym = rep_abc;
+
                     ms_rep_sizes[rep_abc]++;
                     ndet++;
                 }
@@ -349,6 +351,12 @@ void diag_heff(int sect_h, int sect_p, ...)
     int tot_sym_rep = get_totally_symmetric_irrep();
     int vac_det_rep = get_totally_symmetric_irrep();
 
+    // for transition moments 0h0p -> 1h1p
+    size_t heff_0h0p_1h1p_prime_dim;
+    double complex *heff_0h0p_1h1p_prime = NULL;
+    double complex *p_omega_p = NULL;
+    slater_det_t *rep_dets_0011 = NULL;
+
     printf("\n");
     printf(" Effective Hamiltonian analysis\n");
 
@@ -371,7 +379,7 @@ void diag_heff(int sect_h, int sect_p, ...)
     // (not so for open-shell references, however).
     // here we just allocate place for the 0h0p determinant
 
-    if (cc_opts->print_level >= CC_PRINT_HIGH) {
+    if (cc_opts->print_level >= CC_PRINT_MEDIUM) {
         printf("\n List of model space determinants:\n");
         for (size_t i = 0; i < ms_size; i++){
             printf(" %3d  ", i);
@@ -458,6 +466,7 @@ void diag_heff(int sect_h, int sect_p, ...)
                 errquit("in diag_heff(): diagram '%s' not found", dg_name);
             }
             setup_slater(dg_veff, (matrix_getter_fun) diagram_get, sect_h, sect_p, sect_h, sect_p, rank(dg_name) / 2);
+
             // construct matrix of the effective interaction (Veff) in the basis
             // of Slater determinants
             //
@@ -480,22 +489,19 @@ void diag_heff(int sect_h, int sect_p, ...)
         }
         va_end(vargs);
 
-        // 0h0p-1h1p: transformation of the Heff to with the (P\OmegaP)^-1 matrix
-        // + write this 0h0p+1h1p block of Heff to the formatted file
-#ifdef VERSION_DEVEL
+        // 0h0p-1h1p: transformation of the Heff to with the (P\OmegaP)^-1 matrix.
+        // + store this 0h0p+1h1p block; it will be written to the formatted file
+        // AFTER all blocks belonging to the "pure" 1h1p sector
         if (sect_h == 1 && sect_p == 1 && irep == vac_det_rep) {
-            double complex *heff_0h0p_1h1p_prime = zzeros(ms_size + 1, ms_size + 1);
-            renormalize_wave_operator_0h0p_0h1p(ms_size, rep_dets, heff, heff_0h0p_1h1p_prime);
-            hefff_write_block(hefff, carith, irep + 1 - rep0, ms_size+1, heff_0h0p_1h1p_prime);
-            cc_free(heff_0h0p_1h1p_prime);
+            heff_0h0p_1h1p_prime_dim = ms_size + 1;
+            heff_0h0p_1h1p_prime = zzeros(ms_size + 1, ms_size + 1);
+            p_omega_p = zzeros(ms_size + 1, ms_size + 1);
+            renormalize_wave_operator_0h0p_0h1p(ms_size, rep_dets, heff, heff_0h0p_1h1p_prime, p_omega_p);
+            rep_dets_0011 = rep_dets;
         }
-        else {
-            // write this block of the effective Hamiltonian to the formatted file 'HEFF'
-            hefff_write_block(hefff, carith, irep + 1 - rep0, ms_size, heff);
-        }
-#else
+
+        // write this block of the effective Hamiltonian to the formatted file 'HEFF'
         hefff_write_block(hefff, carith, irep + 1 - rep0, ms_size, heff);
-#endif
 
         // diagonalization:
         // 1. eigenvalues are sorted in ascending order
@@ -548,6 +554,58 @@ void diag_heff(int sect_h, int sect_p, ...)
                -eigval_0, -eigval_0 * 27.21138602, -eigval_0 * 219474.6313702);
     }
 
+    // write the 0h0p+1h1p transformed Heff block
+    // together with the transformation P \Omega P matrix
+    if (sect_h == 1 && sect_p == 1) {
+        fprintf(hefff, "0011         # sector\n");
+        // heff block
+        hefff_write_block(hefff, carith, vac_det_rep + 1 - rep0, heff_0h0p_1h1p_prime_dim, heff_0h0p_1h1p_prime);
+        // P \omega P
+        size_t dim = heff_0h0p_1h1p_prime_dim;
+        for (int i = 0; i < dim * dim; i++) {
+            if (carith) {
+                fprintf(hefff, "%21.12E%21.12E", creal(p_omega_p[i]), cimag(p_omega_p[i]));
+                if (i > 0 && i % 2 != 0) fprintf(hefff, "\n");
+            }
+            else {
+                fprintf(hefff, "%21.12E", creal(p_omega_p[i]));
+                if (i > 0 && (i+1) % 4 == 0) fprintf(hefff, "\n");
+            }
+        }
+        if (dim * dim % 2 != 0) fprintf(hefff, "\n");
+
+        // diagonalize the 00-11 block
+        double complex *vl_0011 = zzeros(dim, dim);
+        double complex *vr_0011 = zzeros(dim, dim);
+        double complex *ev_0011 = zzeros(dim, 1);
+        int irep = vac_det_rep;
+        char *irrep_name = get_irrep_name(irep);
+        int nroots_irep = get_nroots_for_irrep(irrep_name);
+        size_t nroots = cc_opts->nroots_specified ? nroots_irep : dim;
+
+        eig(dim, heff_0h0p_1h1p_prime, ev_0011, vl_0011, vr_0011);
+        if (cc_opts->do_hermit == 1) {
+            loewdin_orth(dim, vr_0011, vr_0011, cc_opts->print_level == CC_PRINT_DEBUG ? 5 : 0);
+            memcpy(vl_0011, vr_0011, dim * dim * sizeof(double complex));
+        }
+
+        // print model vectors to the unformatted file MVCOEF**
+        slater_det_t *det_list_0011 = (slater_det_t *) cc_malloc(sizeof(slater_det_t) * dim);
+        det_list_0011[0].indices[0] = 0;
+        det_list_0011[0].indices[1] = 0;
+        det_list_0011[0].sym = vac_det_rep;
+        memcpy(det_list_0011+1, rep_dets_0011, sizeof(slater_det_t)*(dim-1));
+        ev_0011[0] = 0.0 + 0.0*I;
+
+        int f_mvcoef_0011 = io_open("MVCOEF0011", "w");
+        mvcoef_write_vectors_unformatted(f_mvcoef_0011, rep_names[irep], nroots+1, dim, det_list_0011, ev_0011, vl_0011, vr_0011);
+
+        mvcoef_close(f_mvcoef_0011, eigval_0);
+        cc_free(vl_0011);
+        cc_free(vr_0011);
+        cc_free(ev_0011);
+    }
+
     mvcoef_close(f_mvcoef, eigval_0);
     hefff_close(hefff);
     cc_free(eigenvalues);
@@ -556,9 +614,17 @@ void diag_heff(int sect_h, int sect_p, ...)
     cc_free(vr);
     cc_free(vl);
     cc_free(dets);
+    if (heff_0h0p_1h1p_prime != NULL) {
+        cc_free(heff_0h0p_1h1p_prime);
+    }
+    if (p_omega_p != NULL) {
+        cc_free(p_omega_p);
+    }
 
     // calculation of density matrices and natural orbitals
-    if (cc_opts->n_denmat) {
+    // for the target sector only
+    if (cc_opts->sector_h == sect_h && cc_opts->sector_p == sect_p &&
+        cc_opts->n_denmat) {
         for (int ipair = 0; ipair < cc_opts->n_denmat; ipair++){
             int sect2_h = cc_opts->denmat_query[ipair].sect2[0];
             int sect2_p = cc_opts->denmat_query[ipair].sect2[1];
@@ -577,7 +643,9 @@ void diag_heff(int sect_h, int sect_p, ...)
     }
 
     // transition dipole moments via the DL-TDM techniques
-    if (cc_opts->do_diplen_tdm) {
+    // for the target sector only
+    if (cc_opts->sector_h == sect_h && cc_opts->sector_p == sect_p &&
+        cc_opts->do_diplen_tdm) {
         dipole_length_tdms(sect_h, sect_p);
     }
 
@@ -768,3 +836,125 @@ int get_nroots_for_irrep(char *irrep_name)
 
     return nroots_irep;
 }
+
+
+/*
+ * For transition moments between different Fock space sectors.
+ * When using this code, please, cite the following paper:
+ *
+ * A. Zaitsevskii, A. V. Oleynichenko, E. Eliav,
+ * Finite-field calculations of transition properties by the fock space
+ * relativistic coupled cluster method: transitions between different
+ * Fock space sectors.
+ * Symmetry, 2020 (submitted).
+ */
+
+
+/**
+ * constructs matrix of the model-space projection of the wave operator \Omega
+ * in the basis of 0h0p (vacuum) and 1h1p (singly excited) determinants:
+ * P \Omega P, P=0h0p+1h1p
+ * note that the vacuum and 1h1p determinants must be of the same symmetry.
+ *
+ * T1 = exc cluster oper (0h0p)
+ * S1 = de-exc cluster oper (1h1p)
+ */
+void omega_0h0p_0h1p(size_t dim, slater_det_t *det_list_1h1p, double complex *omega,
+                     char *exc_oper_name, char *deexc_oper_name)
+{
+    diagram_t *dg_exc   = diagram_stack_find(exc_oper_name);
+    diagram_t *dg_deexc = diagram_stack_find(deexc_oper_name);
+    assert(dg_exc != NULL && dg_deexc != NULL);
+
+    // < 0h0p | Omega | 0h0p > = 1
+    omega[0] = 1.0 + 0.0*I;
+
+    // < 0h0p | Omega | 1h1p > = S1[a,i]
+    for (size_t iket = 0; iket < dim; iket++) {
+        slater_det_t *det_ia = det_list_1h1p + iket;
+        int i = det_ia->indices[0];
+        int a = det_ia->indices[1];
+        //omega[iket+1] = diagram_get_2(dg_deexc, a, i);
+        omega[(dim+1)*(iket+1)] = diagram_get_2(dg_deexc, a, i);
+    }
+
+    // < 1h1p | Omega | 0h0p > = T1[i,a]
+    for (size_t ibra = 0; ibra < dim; ibra++) {
+        slater_det_t *det_ia = det_list_1h1p + ibra;
+        int i = det_ia->indices[0];
+        int a = det_ia->indices[1];
+        //omega[(dim+1)*(ibra+1)] = diagram_get_2(dg_exc, i, a);
+        omega[ibra+1] = diagram_get_2(dg_exc, i, a);
+    }
+
+    // < 1h1p i,a | Omega | 1h1p j,b > = \delta_ij \delta_ab + T1[i,a] * S1[j,b]
+    for (size_t ibra = 0; ibra < dim; ibra++) {
+        for (size_t iket = 0; iket < dim; iket++) {
+            slater_det_t *det_ia = det_list_1h1p + ibra;
+            slater_det_t *det_jb = det_list_1h1p + iket;
+            int i = det_ia->indices[0];
+            int a = det_ia->indices[1];
+            int j = det_jb->indices[0];
+            int b = det_jb->indices[1];
+            //omega[(dim+1) * (ibra+1) + iket + 1] = (i==j)*(a==b) + diagram_get_2(dg_exc, i, a) * diagram_get_2(dg_deexc, b, j);
+            omega[(dim+1) * (iket+1) + ibra + 1] = (i==j)*(a==b) + diagram_get_2(dg_exc, i, a) * diagram_get_2(dg_deexc, b, j);
+        }
+    }
+}
+
+
+/**
+ * Performs renormalization of the wave operator \Omega in order to force
+ * intermediate normalization P\OmegaP=P in the P=0h0p+1h1p model space.
+ *
+ * @param dim dimension of the Heff block in the 1h1p subspace
+ * @param det_list list of Slater determinants; their symmetry
+ *      must coincide with the symmetry of the vacuum determinant
+ * @param heff Heff block in the 1h1p subspace
+ * @param heff_prime Heff block in the 0h0p+1h1p subspace, transformed
+ *      accordingly with renormalized wave operator \Omega
+ *      dim(heff') = dim(heff)+1
+ * @param omega transformation matrix (model-space part of the wave operator)
+ *      dim(omega) = dim(heff)+1
+ */
+void renormalize_wave_operator_0h0p_0h1p(size_t dim, slater_det_t *det_list,
+        double complex *heff, double complex *heff_prime, double complex *omega)
+{
+    size_t dimx = dim + 1;  // dimension of eXtended (0h0p+1h1p) matrices
+    double complex alpha = 1.0 + 0.0 * I;
+    double complex beta = 0.0 + 0.0 * I;
+
+    // allocate working arrays, init with zeros
+    memset(omega, 0, sizeof(double complex) * dimx * dimx);
+    double complex *omega_inv      = zzeros(dimx, dimx);
+    double complex *heff_0h0p_1h1p = zzeros(dimx, dimx);
+    double complex *buf            = zzeros(dimx, dimx);
+
+    // construct 0h0p+1h1p (extended) block-diagonal Heff matrix
+    // Heff 1h1p block will be placed into the right lower angle.
+    // Ecorr is subtracted from the whole diagonal.
+    for (size_t i = 0; i < dim; i++) {
+        for (size_t j = 0; j < dim; j++) {
+            heff_0h0p_1h1p[dimx * (i + 1) + j + 1] = heff[dim * i + j];
+        }
+    }
+
+    // construct P \Omega P matrix (P=0h0p+1h1p)
+    omega_0h0p_0h1p(dim, det_list, omega, "t1c", "e1c");
+
+    // construct inverse matrix (P \Omega P)^{-1}
+    inv(dimx, omega, omega_inv);
+
+    // Heff' = { (P\OmegaP) * { Heff * (P\OmegaP)^-1 } }
+    // two matrix multiplications
+    cblas_zgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                dimx, dimx, dimx, &alpha, heff_0h0p_1h1p, dimx, omega_inv, dimx, &beta, buf, dimx);
+    cblas_zgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                dimx, dimx, dimx, &alpha, omega, dimx, buf, dimx, &beta, heff_prime, dimx);
+
+    // deallocate working arrays
+    cc_free(omega_inv);
+    cc_free(heff_0h0p_1h1p);
+    cc_free(buf);
+}
+

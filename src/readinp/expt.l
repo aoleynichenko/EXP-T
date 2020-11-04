@@ -50,7 +50,7 @@ active          { inc_col(); return KEYWORD_ACTIVE;       }
 nactp           { inc_col(); return KEYWORD_NACTP;        }
 nacth           { inc_col(); return KEYWORD_NACTH;        }
 nohermit        { inc_col(); return KEYWORD_NOHERMIT;     }
-dltdm           { inc_col(); return KEYWORD_DLTDM;        }
+mstdm           { inc_col(); return KEYWORD_MSTDM;        }
 natorb          { inc_col(); return KEYWORD_NATORB;       }
 nroots          { inc_col(); return KEYWORD_NROOTS;       }
 maxiter         { inc_col(); return KEYWORD_MAXITER;      }

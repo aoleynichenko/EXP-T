@@ -164,7 +164,7 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_NOHERMIT:
                 opts->do_hermit = 0;
                 break;
-            case KEYWORD_DLTDM:
+            case KEYWORD_MSTDM:
                 opts->do_diplen_tdm = 1;
                 break;
             case KEYWORD_NATORB:
