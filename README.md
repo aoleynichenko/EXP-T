@@ -26,6 +26,6 @@ The LZ4 library v1.9.0 is used in the I/O subsystem for data compression; see ht
 
 We kindly ask you to acknowledge any use of the EXP-T program system that results in published material using the following citation:
 
-*A. V. Oleynichenko, A. Zaitsevskii, E. Eliav, Towards High Performance Relativistic Electronic Structure Modelling: The EXP-T Program Package. arXiv:2004.03682 [physics.comp-ph] (2020)*
+*A. V. Oleynichenko, A. Zaitsevskii, E. Eliav, Towards High Performance Relativistic Electronic Structure Modelling: The EXP-T Program Package. Commun. Comp. Inf. Sci. 1331, 375-386 (2020)*
 
 
