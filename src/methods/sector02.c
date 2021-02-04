@@ -58,6 +58,7 @@
 #include "diis.h"
 #include "engine.h"
 #include "heff.h"
+#include "methods.h"
 #include "options.h"
 #include "sort.h"
 #include "spinors.h"
@@ -69,17 +70,19 @@ void const_terms_0h2p();
 
 void t3corr_0h2p();
 
+void sector_0h2p_ccsd_t3();
+
 void calc_X2();
 
-void calc_X3();
+void calc_X3(int pt_order);
 
 void folded_0h2p();
 
-void t3_0h2p_const_contrib_to_doubles();
+void t3_0h2p_const_contrib_to_triples(int pt_order);
 
-void t3_0h2p_contrib_to_doubles();
+void t3_0h2p_contrib_to_doubles(int pt_order);
 
-void t3_0h2p_contrib_to_folded();
+void t3_0h2p_contrib_to_folded(int pt_order);
 
 
 /*******************************************************************************
@@ -128,9 +131,15 @@ int sector02(cc_options_t *opts)
         diagram_stack_print();
     }
 
+    printf(" Construction of S^(0,2)-independent contributions to the FSCC-equations ...\n");
     const_terms_0h2p();
 
     init_amplitudes_0h2p();
+
+    predict_intruders("x2c", 5);
+    if (triples) {
+        predict_intruders("x3c", 5);
+    }
 
     printf(" Solution of amplitude equations (sector 0h2p)\n");
     print_asctime();
@@ -152,12 +161,17 @@ int sector02(cc_options_t *opts)
         double it_t1, it_t2;
         it_t1 = abs_time();
 
+        if (opts->skip_sector[0][2]) {
+            converged = 1;
+            break;
+        }
+
         reorder("x2c", "x2cr", "3412");
 
         calc_X2();
 #ifdef VERSION_DEVEL
         if (triples) {
-            calc_X3();
+            calc_X3(PT_INF);
         }
 #endif
 
@@ -171,6 +185,10 @@ int sector02(cc_options_t *opts)
         }
 
 #ifdef VERSION_DEVEL
+        apply_selections(0, 2, "x2nw");
+        if (triples) {
+            apply_selections(0, 2, "x3nw");
+        }
         if (opts->do_relax) {
             remove_core_correlation("x2nw");
             if (triples) {
@@ -305,15 +323,23 @@ int sector02(cc_options_t *opts)
     }
     diagram_write(diagram_stack_find("veff02"), "veff02.dg");
 
+    /*print_ampl_vs_denom("x2c", "x2c_eps.dat");
+    if (triples) {
+        print_ampl_vs_denom("x3c", "x3c_eps.dat");
+    }*/
+
     // construct and diagonalize effective Hamiltonian
     // analyze its eigenvectors & eigenvalues
     diag_heff(0, 2, "veff01", "veff02");
 
     // perturbative correction to the effective interaction
     // Heff will be re-constructed and diagonalized again with corrections added
-#ifdef VERSION_TRIPLES
+#ifdef VERSION_DEVEL
     if (cc_opts->cc_model == CC_MODEL_CCSD_T3) {
-        t3corr_0h2p();
+        sector_0h2p_ccsd_t3();
+    }
+    else if (cc_opts->cc_model == CC_MODEL_CCSD_T4) {
+        sector_0h2p_ccsd_t4();
     }
 #endif
 
@@ -403,11 +429,8 @@ void const_terms_0h2p()
 {
     double t1, t2;
 
-    printf(" Construction of S^(0,2)-independent contributions to the FSCC-equations ...\n");
     timer_new_entry("const_s02", "Constant part of 0h2p amplitudes");
     timer_start("const_s02");
-
-    t1 = abs_time();
 
     copy("vvpp", "x2_0");
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
@@ -610,12 +633,9 @@ void const_terms_0h2p()
 
 #ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
-        t3_0h2p_const_contrib_to_doubles();
+        t3_0h2p_const_contrib_to_triples(PT_INF);
     }
 #endif
-
-    t2 = abs_time();
-    printf(" done in %.2f sec\n", t2-t1);
 
     timer_stop("const_s02");
 }
@@ -711,7 +731,7 @@ void calc_X2()
     // Triples contribution to Doubles
 #ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
-        t3_0h2p_contrib_to_doubles();
+        t3_0h2p_contrib_to_doubles(PT_INF);
     }
 #endif
 }
@@ -762,7 +782,7 @@ void folded_0h2p()
 
 #ifdef VERSION_DEVEL
     if (triples) {
-        t3_0h2p_contrib_to_folded();
+        t3_0h2p_contrib_to_folded(PT_INF);
     }
 #endif
 }

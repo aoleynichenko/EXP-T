@@ -132,6 +132,11 @@ int sector20(cc_options_t *opts)
         double it_t1, it_t2;
         it_t1 = abs_time();
 
+        if (opts->skip_sector[2][0]) {
+            converged = 1;
+            break;
+        }
+
         reorder("g2c", "g2cr", "3412");
 
         calc_G2();

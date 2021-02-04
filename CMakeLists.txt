@@ -237,7 +237,9 @@ set(BASIC_SOURCE
         src/engine/add.c          # addition of diagrams
         src/engine/reorder.c      # reordering of dimensions
         src/engine/scapro.c       # dot product of two diagrams
-
+        src/engine/intruders.c    # analysis of possible intruder states
+        src/engine/selection.c    # selection of cluster amplitudes
+        
         src/heff/dipole.c         # dipole-length TDM calculations
         src/heff/heff.c           # construction & analysis of Heff and eigenvalues
         src/heff/denmat.c         # density matrices and natural orbitals
@@ -332,12 +334,14 @@ add_executable(
 
 link_libraries("-static")
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
-    target_link_libraries(expt.x -pg m ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
+    target_link_libraries(expt.x m ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
     target_link_libraries(heffman.x ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
+    target_link_libraries(expt2pam.x m)
 endif ()
 if (CMAKE_C_COMPILER_ID MATCHES "Intel")
     target_link_libraries(expt.x m ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
     target_link_libraries(heffman.x ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
+    target_link_libraries(expt2pam.x m)
 endif ()
 if (CUDA_FOUND)
     target_link_libraries(expt.x ${CUDA_LIBRARIES} -L${CUDA_TOOLKIT_ROOT_DIR}/lib64 -lcublas)

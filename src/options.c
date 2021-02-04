@@ -87,6 +87,7 @@ cc_options_t *new_options()
     opts->cuda_enabled = 0;
     opts->maxiter = 50;
     opts->conv = 1e-9;
+    opts->div_thresh = 1e3;
     opts->int_source = CC_INTEGRALS_DIRAC;
     strcpy(opts->integral_file_1, "MRCONEE");
     strcpy(opts->integral_file_2, "MDCINT");
@@ -142,6 +143,7 @@ cc_options_t *new_options()
     opts->reuse_1h1p = 0;
     opts->reuse_0h2p = 0;
     opts->reuse_2h0p = 0;
+    opts->reuse_0h3p = 0;
 
     // flush non-converged amplitudes to disk
     opts->do_flush_iter = 0;
@@ -165,6 +167,9 @@ cc_options_t *new_options()
 
     // damping
     memset(opts->damping, 0, sizeof(opts->damping));
+
+    // skip some FS sectors
+    memset(opts->skip_sector, 0, sizeof(opts->skip_sector));
 
     // DIIS -- convergence acceleration
     opts->diis_enabled = 1;
@@ -228,6 +233,9 @@ cc_options_t *new_options()
 
     // calculation of properties (model-space estimation)
     opts->n_props = 0;
+
+    // selection of amplitudes
+    opts->n_select = 0;
 
     return opts;
 }
@@ -298,6 +306,7 @@ void print_options(cc_options_t *opts)
     printf(" %-15s  %-40s  %s\n", "cuda", "calculations on GPU (CUDA)", opts->cuda_enabled ? "enabled" : "disabled");
     printf(" %-15s  %-40s  %d\n", "maxiter", "maximum number of CC iterations", opts->maxiter);
     printf(" %-15s  %-40s  %g\n", "conv", "convergence threshold (by amplitudes)", opts->conv);
+    printf(" %-15s  %-40s  %g\n", "div_thresh", "divergence threshold (by amplitudes)", opts->div_thresh);
     printf(" %-15s  %-40s  ", "reuse", "reuse amplitudes and/or integrals");
     if (opts->reuse_0h0p == 0 &&
         opts->reuse_0h1p == 0 &&
@@ -305,6 +314,7 @@ void print_options(cc_options_t *opts)
         opts->reuse_1h1p == 0 &&
         opts->reuse_0h2p == 0 &&
         opts->reuse_2h0p == 0 &&
+        opts->reuse_0h3p == 0 &&
         opts->reuse_integrals_1 == 0 &&
         opts->reuse_integrals_2 == 0) {
         printf("nothing ");
@@ -333,7 +343,21 @@ void print_options(cc_options_t *opts)
     if (opts->reuse_2h0p) {
         printf("2h0p ");
     }
+    if (opts->reuse_0h3p) {
+        printf("0h3p ");
+    }
     printf("\n");
+
+    printf(" %-15s  %-40s  ", "skip", "skip computations in sectors:");
+    for (int i = 0; i < MAX_SECTOR_RANK; i++) {
+        for (int j = 0; j < MAX_SECTOR_RANK; j++) {
+            if (opts->skip_sector[i][j] != 0) {
+                printf("%dh%dp ", i, j);
+            }
+        }
+    }
+    printf("\n");
+
     printf(" %-15s  %-40s  ", "flush", "flush amplitudes");
     if (opts->do_flush_iter > 0) {
         printf("each %d iterations\n", opts->do_flush_iter);
@@ -394,13 +418,13 @@ void print_options(cc_options_t *opts)
             printf("CCSD+T(3)");
             break;
         case CC_MODEL_CCSDT_1A:
-            printf("CCSDT-1a");
+            printf("CCSDT-1a (dressed Veff)");
             break;
         case CC_MODEL_CCSDT_1B:
-            printf("CCSDT-1b");
+            printf("CCSDT-1b (dressed Veff)");
             break;
         case CC_MODEL_CCSDT_1B_PRIME:
-            printf("CCSDT-1b\'");
+            printf("CCSDT-1b\' (undressed Veff)");
             break;
         case CC_MODEL_CCSDT_2:
             printf("CCSDT-2");
@@ -660,6 +684,36 @@ void print_options(cc_options_t *opts)
     }
     else {
         printf(" %-15s  %-40s  %s\n", "prop", "model-space estimates of properties", "disabled");
+    }
+
+    if (opts->n_select == 0) {
+        printf(" %-15s  %-40s  %s\n", "select", "selection of cluster amplitudes", "disabled");
+    }
+    else {
+        printf(" %-15s  %-40s  %s\n", "select", "selection of cluster amplitudes", "enabled");
+        for (int i = 0; i < opts->n_select; i++) {
+            printf(" %-15s  %dh%dp t%d ", "", opts->selects[i].sect_h, opts->selects[i].sect_p, opts->selects[i].rank/2);
+            switch (opts->selects[i].rule) {
+                case CC_SELECTION_ALL:
+                    printf("all ");
+                    break;
+                case CC_SELECTION_SPECTATOR:
+                    printf("spectator ");
+                    break;
+                case CC_SELECTION_ACT_TO_ACT:
+                    printf("act_to_act ");
+                    break;
+                case CC_SELECTION_EXC_WINDOW:
+                    printf("exc_window [%g;%g] ", opts->selects[i].e1, opts->selects[i].e2);
+                    break;
+                case CC_SELECTION_EPS_WINDOW:
+                    printf("eps_window [%g;%g] ", opts->selects[i].e1, opts->selects[i].e2);
+                    break;
+                default:
+                    break;
+            }
+            printf("%s 0\n", opts->selects[i].task == CC_SELECTION_SET_ZERO ? "=" : "!=");
+        }
     }
 
     printf("\n\n");

@@ -32,6 +32,15 @@
 
 #include "options.h"
 
+// orders of perturbation theory
+enum {
+    PT_2 = 2,
+    PT_3 = 3,
+    PT_4 = 4,
+    PT_5 = 5,
+    PT_INF = 100
+};
+
 int sector00(cc_options_t *opts);
 
 int sector01(cc_options_t *opts);

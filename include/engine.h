@@ -77,6 +77,9 @@ void prt(char *name);
 // brief summary about the diagram
 void summary(char *name);
 
+// renames diagram in the stack
+void rename_diagram(char *old_name, char *new_name);
+
 // creates a copy of a diagram
 void copy(char *src, char *target);
 
@@ -124,5 +127,9 @@ void remove_inner_core_correlation(char *diag);
 void clear_non_unique(char *name);
 
 void check_unique(char *name);
+
+void predict_intruders(char *diagram_name, int nmax);
+
+void print_ampl_vs_denom(char *name, char *out_file);
 
 #endif /* CC_ENGINE_H_INCLUDED */

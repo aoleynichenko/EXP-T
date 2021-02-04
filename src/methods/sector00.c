@@ -60,19 +60,8 @@ double cc_energy();
 
 void initial_guess();
 
-void t3_0h0p_contrib_to_doubles();
-void diag_T3_0h0p_c_ab();
-void diag_T3_0h0p_a_bc();
-void diag_T3_0h0p_abc();
-void diag_T3_0h0p_k_ij_c_ab();
-void diag_T3_0h0p_i_jk();
-void diag_T3_0h0p_ijk();
-void diag_T3_0h0p_k_ij();
-void diag_T3_0h0p_k_ij_a_bc();
-void diag_T3_0h0p_k_ij_abc();
-void diag_T3_0h0p_i_jk_c_ab();
-void diag_T3_0h0p_ijk_c_ab();
-
+void t3_0h0p_contrib_to_singles(int pt_order);
+void t3_0h0p_contrib_to_doubles(int pt_order);
 
 
 /*******************************************************************************
@@ -105,7 +94,7 @@ int sector00(cc_options_t *opts)
     opts->curr_sector_p = 0;
 
     triples = (opts->cc_model < CC_MODEL_CCSDT_1A) ? 0 : 1;
-    if (opts->cc_model == CC_MODEL_CCSD_T3) {  // for CCSD(T)
+    if (opts->cc_model == CC_MODEL_CCSD_T3 || opts->cc_model == CC_MODEL_CCSD_T4) {  // for CCSD(T)
         strcpy(cc_model_str, "CCSD");
     }
     else {
@@ -130,7 +119,7 @@ int sector00(cc_options_t *opts)
     request_sorting("hhhp", "hhhp", "0000", "1234");
     request_sorting("hphh", "hphh", "0000", "1234");  // for Fock matrix only
     request_sorting("hphp", "hphp", "0000", "1234");  // for Fock matrix only
-    if (triples || opts->cc_model == CC_MODEL_CCSD_T3) {
+    if (triples || opts->cc_model == CC_MODEL_CCSD_T3 || opts->cc_model == CC_MODEL_CCSD_T4) {
         request_sorting("ppph", "ppph", "0000", "1234");
     }
 
@@ -172,11 +161,20 @@ int sector00(cc_options_t *opts)
         double it_t1, it_t2;
         it_t1 = abs_time();
 
+        if (opts->skip_sector[0][0]) {
+            printf(" solution will be skipped\n");
+            copy("t1c", "t1nw");
+            copy("t2c", "t2nw");
+            ecorr = cc_energy();
+            converged = 1;
+            break;
+        }
+
         calc_T1();
         calc_T2();
 #ifdef VERSION_DEVEL
         if (triples) {
-            calc_T3();
+            calc_T3(PT_INF);
         }
 #endif
 
@@ -187,6 +185,12 @@ int sector00(cc_options_t *opts)
         }
 
 #ifdef VERSION_DEVEL
+        apply_selections(0, 0, "t1nw");
+        apply_selections(0, 0, "t2nw");
+        if (triples) {
+            apply_selections(0, 0, "t3nw");
+        }
+
         if (opts->do_remove_inner_core_corr) {
             remove_inner_core_correlation("t2nw");
         }
@@ -315,6 +319,12 @@ end_iter:
         diagram_write(diagram_stack_find("t3c"), "t3c.dg");
     }
 
+    /*print_ampl_vs_denom("t1c", "t1c_eps.dat");
+    print_ampl_vs_denom("t2c", "t2c_eps.dat");
+    if (triples) {
+        print_ampl_vs_denom("t3c", "t3c_eps.dat");
+    }*/
+
     strcpy(total_energy_str, " Total ");
     strcat(total_energy_str, cc_model_str);
     printf("\n");
@@ -371,7 +381,7 @@ end_iter:
 
     // [T] and (T) perturbative corrections
 #ifdef VERSION_DEVEL
-    if (opts->cc_model == CC_MODEL_CCSD_T3) {
+    if (opts->cc_model == CC_MODEL_CCSD_T3 || opts->cc_model == CC_MODEL_CCSD_T4) {
         t3corr();
     }
 #endif
@@ -635,7 +645,7 @@ void calc_T1()
     // Triples contribution to Singles
 #ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
-        t3_0h0p_contrib_to_singles();
+        t3_0h0p_contrib_to_singles(PT_INF);
     }
 #endif
 
@@ -956,7 +966,7 @@ void calc_T2()
     // Triples contribution to Doubles
 #ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
-        t3_0h0p_contrib_to_doubles();
+        t3_0h0p_contrib_to_doubles(PT_INF);
     }
 #endif
 

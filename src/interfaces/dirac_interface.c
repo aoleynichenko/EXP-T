@@ -114,6 +114,17 @@ void c_asctime()
 }
 
 
+int rep_name_exists(int nrep, char **list, char *query)
+{
+    for (int i = 0; i < nrep; i++) {
+        if (strcmp(list[i], query) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
 // reads info about spinors and transformed MO integrals from formatted file
 // NOTE: no error checking at all!
 void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file_prop, cc_options_t *opts)
@@ -396,7 +407,13 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
         }
     }
     // Ci nonrel
-    if (strcmp(rep_names[0], "Ag a") == 0 && strcmp(rep_names[1], "Au a") == 0) {
+    if (rep_name_exists(nsym,rep_names,"Ag a") &&
+        rep_name_exists(nsym,rep_names,"Au a") &&
+        rep_name_exists(nsym,rep_names,"Ag b") &&
+        rep_name_exists(nsym,rep_names,"Au b") &&
+        !rep_name_exists(nsym,rep_names,"Bg a") &&   // not C2h
+        !rep_name_exists(nsym,rep_names,"B3ua")      // not D2h
+        ) {
         char *translation[] = {
                 "Ag_a", "Au_a",
                 "Ag_b", "Au_b",
@@ -429,7 +446,14 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
         }
     }
     // C2h nonrel
-    if (strcmp(rep_names[0], "Ag a") == 0 && strcmp(rep_names[1], "Bg a") == 0) {
+    if (rep_name_exists(nsym,rep_names,"Ag a") &&
+        rep_name_exists(nsym,rep_names,"Au a") &&
+        rep_name_exists(nsym,rep_names,"Ag b") &&
+        rep_name_exists(nsym,rep_names,"Au b") &&
+        rep_name_exists(nsym,rep_names,"Bg a") &&
+        rep_name_exists(nsym,rep_names,"Bu a") &&
+        rep_name_exists(nsym,rep_names,"Bg b") &&
+        rep_name_exists(nsym,rep_names,"Bu b")) {
         char *translation[] = {
                 "Ag_a", "Bg_a", "Bu_a", "Au_a",
                 "Ag_b", "Bg_b", "Bu_b", "Au_b",
@@ -440,7 +464,7 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
                 "Ag_+1", "Bg_+1", "Bu_+1", "Au_+1",
                 "Ag_-1", "Bg_-1", "Bu_-1", "Au_-1"
         };
-        for (int irep = 0; irep < nsym; irep++){
+        for (int irep = 0; irep < nsym; irep++) {
             strcpy(rep_names[irep], translation[irep]);
         }
     }

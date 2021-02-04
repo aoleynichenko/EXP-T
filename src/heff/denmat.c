@@ -69,7 +69,7 @@ void construct_ms_density_matrix(int sect_h, int sect_p,
 {
     // only 'valence' parts of DMs are be constructed
     // dim DMs = n_active x n_active
-    int n_active = 0;
+    size_t n_active = 0;
     int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
 
     // TODO: refactor, separate utility function (move to spinors.c)
@@ -95,8 +95,6 @@ void construct_ms_density_matrix(int sect_h, int sect_p,
             dm[p * n_active + q] = d_pq;
         }
     }
-
-    *dim_dm = n_active;
 }
 
 
@@ -198,7 +196,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
 
     // only 'valence' parts of DMs are be constructed
     // dim DMs = n_active x n_active
-    int n_active = 0;
+    size_t n_active = 0;
     int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
     double complex *denmat;
     double complex *nat_occ, *natorb_left, *natorb_right;
@@ -448,6 +446,18 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
             }
         }
         printf(" Sum of occ numbers = %.6f (must be = %d)\n", creal(sum_occ), -sect_h + sect_p);
+        printf(" Configuration (weights):\n");
+        for (size_t j = 0; j < n_active; j++) {
+            double weight = 0.0;
+            for (size_t i = 0; i < n_active; i++) {
+                double complex coef = natorb_right[n_active * i + j];
+                weight += nat_occ[i] * cabs(coef) * cabs(coef);
+            }
+            printf("  %12.6f", weight);
+            int ispinor = active_spinors[j];
+            printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+                   spinor_info[ispinor].eps);
+        }
 
         // flush full information about NOs to the formatted file
         char natorb_file_name[256];
@@ -537,8 +547,16 @@ void write_NO(char *natorb_file_name, int sect_h, int sect_p,
         // write coefficients (all)
         for (size_t j = 0; j < n_active; j++){
             double complex coef = nat_orbs[n_active * i + j];
+            double coef_re = creal(coef);
+            double coef_im = cimag(coef);
             int ispinor = active_spinors[j];
-            fprintf(f, "%4d  %20.12e%20.12e\n", ispinor + 1, creal(coef), cimag(coef));
+            if (fabs(coef_re) < 1e-16) {
+                coef_re = 0.0;
+            }
+            if (fabs(coef_im) < 1e-16) {
+                coef_im = 0.0;
+            }
+            fprintf(f, "%4d  %24.12e%24.12e\n", ispinor + 1, coef_re, coef_im);
         }
     }
     printf(" written to file: %s\n", natorb_file_name);
@@ -595,6 +613,7 @@ int density_matrix_element_0h0p_1h1p(int p, int q, slater_det_t *bra, slater_det
 
 int density_matrix_element_1h1p_0h0p(int p, int q, slater_det_t *bra, slater_det_t *ket);
 
+int density_matrix_element_0h3p(int p, int q, slater_det_t *bra, slater_det_t *ket);
 
 int density_matrix_element(int sect_h, int sect_p, int p, int q, slater_det_t *bra, slater_det_t *ket)
 {
@@ -629,6 +648,9 @@ int density_matrix_element(int sect_h, int sect_p, int p, int q, slater_det_t *b
     }
     else if (sect_h == 0 && sect_p == 2) {
         return density_matrix_element_0h2p(p, q, bra, ket);
+    }
+    else if (sect_h == 0 && sect_p == 3) {
+        return density_matrix_element_0h3p(p, q, bra, ket);
     }
     else if (sect_h == 2 && sect_p == 0) {
         return density_matrix_element_2h0p(p, q, bra, ket);
@@ -735,4 +757,55 @@ int density_matrix_element_2h0p(int p, int q, slater_det_t *bra, slater_det_t *k
             + (j == q) * (i == l) * (k == p)
             + (j == k) * (i == q) * (l == p)
             - (j == l) * (i == q) * (k == p);
+}
+
+
+int density_matrix_element_0h3p(int p, int q, slater_det_t *bra, slater_det_t *ket)
+{
+    int a = bra->indices[0];
+    int b = bra->indices[1];
+    int c = bra->indices[2];
+    int d = ket->indices[0];
+    int e = ket->indices[1];
+    int f = ket->indices[2];
+
+    /*
+    - d_cp d_bd d_ae d_fq
+    + d_cp d_bd d_af d_eq
+    + d_cp d_be d_ad d_fq
+    - d_cp d_be d_af d_dq
+    - d_cp d_bf d_ad d_eq
+    + d_cp d_bf d_ae d_dq
+    + d_cd d_bp d_ae d_fq
+    - d_cd d_bp d_af d_eq
+    - d_cd d_be d_ap d_fq
+    + d_cd d_bf d_ap d_eq
+    - d_ce d_bp d_ad d_fq
+    + d_ce d_bp d_af d_dq
+    + d_ce d_bd d_ap d_fq
+    - d_ce d_bf d_ap d_dq
+    + d_cf d_bp d_ad d_eq
+    - d_cf d_bp d_ae d_dq
+    - d_cf d_bd d_ap d_eq
+    + d_cf d_be d_ap d_dq
+    */
+
+    return - (c==p) * (b==d) * (a==e) * (f==q)
+           + (c==p) * (b==d) * (a==f) * (e==q)
+           + (c==p) * (b==e) * (a==d) * (f==q)
+           - (c==p) * (b==e) * (a==f) * (d==q)
+           - (c==p) * (b==f) * (a==d) * (e==q)
+           + (c==p) * (b==f) * (a==e) * (d==q)
+           + (c==d) * (b==p) * (a==e) * (f==q)
+           - (c==d) * (b==p) * (a==f) * (e==q)
+           - (c==d) * (b==e) * (a==p) * (f==q)
+           + (c==d) * (b==f) * (a==p) * (e==q)
+           - (c==e) * (b==p) * (a==d) * (f==q)
+           + (c==e) * (b==p) * (a==f) * (d==q)
+           + (c==e) * (b==d) * (a==p) * (f==q)
+           - (c==e) * (b==f) * (a==p) * (d==q)
+           + (c==f) * (b==p) * (a==d) * (e==q)
+           - (c==f) * (b==p) * (a==e) * (d==q)
+           - (c==f) * (b==d) * (a==p) * (e==q)
+           + (c==f) * (b==e) * (a==p) * (d==q);
 }

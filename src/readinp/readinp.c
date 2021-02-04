@@ -67,6 +67,7 @@ void directive_natorb(cc_options_t *opts);
 void directive_nroots(cc_options_t *opts);
 void directive_maxiter(cc_options_t *opts);
 void directive_conv(cc_options_t *opts);
+void directive_div_thresh(cc_options_t *opts);
 void directive_damping(cc_options_t *opts);
 void directive_diis(cc_options_t *opts);
 void directive_shifttype(cc_options_t *opts);
@@ -74,6 +75,7 @@ void directive_orbshift(cc_options_t *opts);
 void directive_orbshift00(cc_options_t *opts);
 void directive_shift(cc_options_t *opts);
 void directive_reuse(cc_options_t *opts);
+void directive_skip(cc_options_t *opts);
 void directive_flush(cc_options_t *opts);
 void directive_integrals(cc_options_t *opts);
 void directive_gaunt(cc_options_t *opts);
@@ -85,7 +87,7 @@ void directive_disk_usage(cc_options_t *opts);
 void directive_nthreads(cc_options_t *opts);
 void directive_arith(cc_options_t *opts);
 void directive_prop(cc_options_t *opts);
-void directive_singles(cc_options_t *opts);
+void directive_select(cc_options_t *opts);
 void directive_no_inner_core_corr(cc_options_t *opts);
 
 void yyerror(char *s);
@@ -179,6 +181,9 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_CONV:
                 directive_conv(opts);
                 break;
+            case KEYWORD_DIV_THRESH:
+                directive_div_thresh(opts);
+                break;
             case KEYWORD_DAMPING:
                 directive_damping(opts);
                 break;
@@ -199,6 +204,9 @@ int readinp(char *file_name, cc_options_t *opts)
                 break;
             case KEYWORD_REUSE:
                 directive_reuse(opts);
+                break;
+            case KEYWORD_SKIP:
+                directive_skip(opts);
                 break;
             case KEYWORD_FLUSH:
                 directive_flush(opts);
@@ -242,9 +250,6 @@ int readinp(char *file_name, cc_options_t *opts)
                 break;
             case KEYWORD_PROP:
                 directive_prop(opts);
-                break;
-            case KEYWORD_SINGLES:
-                directive_singles(opts);
                 break;
             case KEYWORD_NOINNER:
                 directive_no_inner_core_corr(opts);
@@ -428,16 +433,16 @@ void directive_sector(cc_options_t *opts)
 
 /**
  * Syntax:
- * model ( ccs || ccd || ccsd || ccsd(t) || ccsd+t(3) || ccsdt-1 || ccsdt-1' || ccsdt-2 || ccsdt-3 )
+ * one of: ( ccs || ccd || ccsd || ccsd(t) || ccsd+t(3) || ccsdt-1 || ccsdt-1' || ccsdt-2 || ccsdt-3 )
  */
-void directive_model(cc_options_t *opts)
+void parse_cc_model(cc_options_t *opts)
 {
     static char *msg = "wrong coupled cluster model!\n"
                        "Possible values: ccs, ccd, ccsd, ccsd+t(3)=ccsd(t), ccsdt-1a, ccsdt-1b=ccsdt-1, ccsdt-2, ccsdt-3";
 
-    if (!match(TT_WORD)) {
+    /*if (!match(TT_WORD)) {
         yyerror(msg);
-    }
+    }*/
     str_tolower(yytext);
     if (strcmp(yytext, "ccs") == 0) {
         opts->cc_model = CC_MODEL_CCS;
@@ -454,6 +459,18 @@ void directive_model(cc_options_t *opts)
     else if (strcmp(yytext, "ccsd+t(3)") == 0) {
         opts->cc_model = CC_MODEL_CCSD_T3;
         strcpy(opts->cc_model_str, "CCSD(T)/CCSD+T(3)");
+    }
+    else if (strcmp(yytext, "ccsd+t*(3)") == 0) {
+        opts->cc_model = CC_MODEL_CCSD_T3_STAR;
+        strcpy(opts->cc_model_str, "CCSD(T)/CCSD+T*(3)");
+    }
+    else if (strcmp(yytext, "ccsd+t(4)") == 0) {
+        opts->cc_model = CC_MODEL_CCSD_T4;
+        strcpy(opts->cc_model_str, "CCSD(T)/CCSD+T(4)");
+    }
+    else if (strcmp(yytext, "ccsd+t*(4)") == 0) {
+        opts->cc_model = CC_MODEL_CCSD_T4_STAR;
+        strcpy(opts->cc_model_str, "CCSD(T)/CCSD+T*(4)");
     }
     else if (strcmp(yytext, "ccsd(t)") == 0) {
         opts->cc_model = CC_MODEL_CCSD_T3;
@@ -854,6 +871,30 @@ void directive_conv(cc_options_t *opts)
 
 /**
  * Syntax:
+ * div_thresh <real thresh>
+ */
+void directive_div_thresh(cc_options_t *opts)
+{
+    static char *msg = "wrong specification of the divergence threshold!\n"
+                       "A positive real is expected";
+    double thresh;
+    int token_type;
+
+    token_type = next_token();
+    if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
+        yyerror(msg);
+    }
+
+    thresh = atof(yytext);
+    if (thresh <= 0) {
+        yyerror(msg);
+    }
+    opts->div_thresh = thresh;
+}
+
+
+/**
+ * Syntax:
  * damping [<H>h<P>p] <integer last_step> <real factor>
  */
 void directive_damping(cc_options_t *opts)
@@ -1188,6 +1229,7 @@ void directive_reuse(cc_options_t *opts)
             opts->reuse_0h2p = 1;
             opts->reuse_1h0p = 1;
             opts->reuse_2h0p = 1;
+            opts->reuse_0h3p = 1;
         }
         else if (strcmp(yytext, "0h0p") == 0) {
             opts->reuse_0h0p = 1;
@@ -1207,9 +1249,43 @@ void directive_reuse(cc_options_t *opts)
         else if (strcmp(yytext, "2h0p") == 0) {
             opts->reuse_2h0p = 1;
         }
-        else{
+        else if (strcmp(yytext, "0h3p") == 0) {
+            opts->reuse_0h3p = 1;
+        }
+        else {
             yyerror(msg);
         }
+
+        token_type = next_token();
+    }
+    put_back(token_type);
+}
+
+
+
+/**
+ * Syntax:
+ * skip <list of FS sector symbols>
+ *
+ * Example:
+ * skip 0h0p 0h1p
+ */
+void directive_skip(cc_options_t *opts)
+{
+    static char *msg = "wrong parameter of the 'skip' directive!\n"
+                       "Fock space sector symbol is expected";
+    int token_type;
+    int h, p;
+
+    token_type = next_token();
+    while (token_type != END_OF_LINE && token_type != END_OF_FILE) {
+        if (token_type != TT_SECTOR) {
+            yyerror(msg);
+        }
+        str_tolower(yytext);
+
+        parse_sector(yytext, &h, &p);
+        opts->skip_sector[h][p] = 1;
 
         token_type = next_token();
     }
@@ -1632,45 +1708,144 @@ void read_space_specification(cc_space_t *space)
 
 
 /**
- * Syntax:
- * singles
- *   [core    <space specification>]
- *   [virtual <space specification>]
+ * Syntax (example):
+ * model
+ *   ccsdt
+ *   0h0p triples off     # set T3 = 0
+ *   0h1p doubles -5 20   # T2 != 0 only for excitations with energy in the given range
+ *   0h2p triples spectator   # only spectator triples in 0h2p are nonzero
+ *   ...
  * end
+ *
+ * (or)
+ *
+ * model (ccsd||ccsdt||...)
  */
-void directive_singles(cc_options_t *opts)
+void directive_model(cc_options_t *opts)
 {
     int token_type;
+    int sect_h, sect_p;
     int spaces_defined = 0;
 
-    // "end of line" after the opening keyword
+    // "end of line" or "ccsd... etc" after the opening keyword
     token_type = next_token();
     if (token_type != END_OF_LINE) {
-        yyerror("end of line is expected");
+        parse_cc_model(opts);
+        return;
     }
 
     while (1) {
-        token_type = next_token();
 
-        if (token_type == KEYWORD_CORE) {
-            read_space_specification(&opts->relax_core);
-            spaces_defined = 1;
-        }
-        else if (token_type == KEYWORD_VIRTUAL) {
-            read_space_specification(&opts->relax_virtual);
-            spaces_defined = 1;
-        }
-        else if (token_type == END_OF_LINE) {
-            /* empty line, nothing to do */
-            continue;
-        }
-        else if (token_type == KEYWORD_END) {
-            opts->do_relax = spaces_defined ? 1 : 0;
+        // sector of the cluster operator
+        token_type = next_token();
+        if (token_type == KEYWORD_END) {
             return;
         }
-        else {
-            yyerror("unexpected token");
+        if (token_type == TT_WORD) {
+            parse_cc_model(opts);
+            token_type = next_token();
+            if (token_type != END_OF_LINE) {
+                yyerror("end of line is expected");
+            }
+            continue;
         }
+
+        if (token_type != TT_SECTOR) {
+            yyerror("Fock space sector symbol is expected");
+        }
+        parse_sector(yytext, &sect_h, &sect_p);
+        opts->selects[opts->n_select].sect_h = sect_h;
+        opts->selects[opts->n_select].sect_p = sect_p;
+
+        // excitation level of the cluster operator
+        token_type = next_token();
+        if (token_type == TT_WORD && strcmp(yytext, "t1") == 0) {
+            opts->selects[opts->n_select].rank = 2;
+        }
+        else if (token_type == TT_WORD && strcmp(yytext, "t2") == 0) {
+            opts->selects[opts->n_select].rank = 4;
+        }
+        else if (token_type == TT_WORD && strcmp(yytext, "t3") == 0) {
+            opts->selects[opts->n_select].rank = 6;
+        }
+        else {
+            yyerror("tag [t1|t2|t3] is expected");
+        }
+
+        // selection rule
+        token_type = next_token();
+        // short form
+        if (token_type == TT_EQ || token_type == TT_NEQ) {
+            opts->selects[opts->n_select].task =
+                    (token_type == TT_EQ) ? CC_SELECTION_SET_ZERO : CC_SELECTION_SET_ZERO_EXCEPT;
+            token_type = next_token();
+            if (token_type != TT_INTEGER || atoi(yytext) != 0) {
+                yyerror("'0' (zero) is expected");
+            }
+            opts->selects[opts->n_select].rule = CC_SELECTION_ALL;
+            opts->n_select++;
+            // each subdirective must end with end of line!
+            token_type = next_token();
+            if (token_type != END_OF_LINE) {
+                yyerror("end of line is expected");
+            }
+            continue;
+        }
+        // full form
+        else if (token_type == TT_WORD && strcmp(yytext, "all") == 0) {
+            opts->selects[opts->n_select].rule = CC_SELECTION_ALL;
+        }
+        else if (token_type == TT_WORD && strcmp(yytext, "spectator") == 0) {
+            opts->selects[opts->n_select].rule = CC_SELECTION_SPECTATOR;
+        }
+        else if (token_type == TT_WORD && strcmp(yytext, "act_to_act") == 0) {
+            opts->selects[opts->n_select].rule = CC_SELECTION_ACT_TO_ACT;
+        }
+        else if (token_type == TT_WORD &&
+            (strcmp(yytext, "exc_window") == 0 ||
+             strcmp(yytext, "eps_window") == 0)) {
+            if (strcmp(yytext, "exc_window") == 0) {
+                opts->selects[opts->n_select].rule = CC_SELECTION_EXC_WINDOW;
+            }
+            else {
+                opts->selects[opts->n_select].rule = CC_SELECTION_EPS_WINDOW;
+            }
+            token_type = next_token();
+            if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
+                yyerror("float number is expected");
+            }
+            opts->selects[opts->n_select].e1 = atof(yytext);
+            token_type = next_token();
+            if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
+                yyerror("float number is expected");
+            }
+            opts->selects[opts->n_select].e2 = atof(yytext);
+        }
+        else {
+            yyerror("keyword [all|spectator|act_to_act|exc_window|eps_window] is expected");
+        }
+
+        // what to do: set to zero or not?
+        token_type = next_token();
+        if (token_type == TT_EQ) {
+            opts->selects[opts->n_select].task = CC_SELECTION_SET_ZERO;
+            token_type = next_token();
+            if (token_type != TT_INTEGER || atoi(yytext) != 0) {
+                yyerror("'0' (zero) is expected");
+            }
+        }
+        else if (token_type == TT_NEQ) {
+            opts->selects[opts->n_select].task = CC_SELECTION_SET_ZERO_EXCEPT;
+            token_type = next_token();
+            if (token_type != TT_INTEGER || atoi(yytext) != 0) {
+                yyerror("'0' (zero) is expected");
+            }
+        }
+        else {
+            yyerror("'=' or '!=' sign is expected");
+        }
+
+        opts->n_select++;
 
         // each subdirective must end with end of line!
         token_type = next_token();

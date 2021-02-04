@@ -163,3 +163,17 @@ void copy(char *src, char *target)
         diagram_stack_push(dg_tgt);
     }
 }
+
+
+/**
+ * Renames diagram in the stack.
+ */
+void rename_diagram(char *old_name, char *new_name)
+{
+    diagram_t *dg = diagram_stack_find(old_name);
+    if (dg == NULL) {
+        errquit("rename_diagram(): diagram '%s' not found", old_name);
+    }
+
+    strcpy(dg->name, new_name);
+}

@@ -26,13 +26,13 @@
  * ======
  *
  * Fock-Space Multireference coupled cluster program.
- * Version 1.5.1
+ * Version 1.5.3
  *
  * Authors:
  *   Alexander Oleynichenko (Lomonosov Moscow State University)
  * Mailto:
  *   alexvoleynichenko@gmail.com
- * Date: 8 Oct 2020
+ * Date: 27 Dec 2020
  *
  ******************************************************************************/
 
@@ -45,11 +45,11 @@
 // version: MAJOR.MINOR.REVISION
 #define CC_VERSION_MAJOR      1
 #define CC_VERSION_MINOR      5
-#define CC_VERSION_REVISION   2
+#define CC_VERSION_REVISION   3
 
 // date of release:
-#define CC_VERSION_DAY        4
-#define CC_VERSION_MONTH      "Nov"
+#define CC_VERSION_DAY        27
+#define CC_VERSION_MONTH      "Dec"
 #define CC_VERSION_YEAR       2020
 
 #include "platform.h"
@@ -499,7 +499,25 @@ void setup_scratch()
 
 void display_version()
 {
-    printf("expt %d.%d.%d\n", CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION);
+#ifdef VERSION_DEVEL
+    printf("expt v. %d.%d.%d (%d %s %d) development\n",
+            CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
+            CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
+#else
+    printf("expt v. %d.%d.%d (%d %s %d) public\n",
+           CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
+           CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
+#endif
+
+#if defined __ICC
+    printf("Intel C Compiler %d (%s)\n", __ICC, __VERSION__);
+#elif defined __GNUC__
+    printf("GNU C Compiler %d.%d.%d\n", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+#else
+    printf("undetected compiler\n");
+#endif
+    print_blas_info();
+    printf("Build date: %s %s\n", __DATE__, __TIME__);
     exit(0);
 }
 

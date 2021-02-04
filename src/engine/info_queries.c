@@ -37,6 +37,7 @@
 
 #include "error.h"
 #include "datamodel.h"
+#include "spinors.h"
 
 
 /**
@@ -92,4 +93,70 @@ void prt(char *name)
     }
 
     diagram_print(dg);
+}
+
+
+void print_ampl_vs_denom(char *name, char *out_file)
+{
+    diagram_t *dg;
+    FILE *f = fopen(out_file, "w");
+
+    dg = diagram_stack_find(name);
+    if (dg == NULL) {
+        errquit("print_ampl_vs_denom(): diagram '%s' not found", name);
+    }
+
+    int rank = dg->rank;
+
+    for (size_t ib = 0; ib < dg->n_blocks; ib++) {
+        if (dg->blocks[ib]->is_unique == 0) {
+            continue;
+        }
+
+        block_t *block = dg->blocks[ib];
+
+        size_t i, j;
+        int *indices = (int *) cc_malloc(block->size * block->rank * sizeof(int));
+
+        symblock_load(block);
+        symblock_gen_indices(block, indices);
+
+        for (i = 0; i < block->size; i++) {
+            double t;
+            int *idx = indices + block->rank * i;
+            if (arith == CC_ARITH_COMPLEX) {
+                t = cabs(block->buf[i]);
+            }
+            else {
+                t = fabs(((double *)block->buf)[i]);
+            }
+
+            if (t >= cc_opts->conv) {
+                double denom = 0.0;
+                double esum1 = 0.0;
+                double esum2 = 0.0;
+                for (j = 0; j < block->rank/2; j++) {
+                    double eps = spinor_info[idx[j]].eps;
+                    esum1 += eps;
+                }
+                for (j = block->rank/2; j < block->rank; j++) {
+                    double eps = spinor_info[idx[j]].eps;
+                    esum2 -= eps;
+                }
+                denom = esum1 + esum2;
+                for (int j = 0; j < block->rank; j++) {
+                    fprintf(f, "%5d", idx[j]);
+                }
+                fprintf(f,"%16.8f%16.8f%16.8f%20.12f\n", esum1, esum2, -denom, t);
+            }
+        }
+
+        symblock_unload(block);
+
+        cc_free(indices);
+
+    }
+
+    fclose(f);
+
 }

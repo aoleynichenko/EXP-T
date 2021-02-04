@@ -231,14 +231,14 @@ endif()
 
 if (NOT MSVC AND NOT NOFORTRAN)
   # Build test and ctest
-  #  add_subdirectory(test)
-  #if(NOT NO_CBLAS)
-  #  add_subdirectory(ctest)
-  #endif()
-  #add_subdirectory(lapack-netlib/TESTING)
-  #	  if (CPP_THREAD_SAFETY_TEST OR CPP_THREAD_SAFETY_GEMV)
-  #	  	add_subdirectory(cpp_thread_test)
-  # 	  endif()
+#  add_subdirectory(test)
+#  if(NOT NO_CBLAS)
+#    add_subdirectory(ctest)
+#  endif()
+#  add_subdirectory(lapack-netlib/TESTING)
+#	  if (CPP_THREAD_SAFETY_TEST OR CPP_THREAD_SAFETY_GEMV)
+#	  	add_subdirectory(cpp_thread_test)
+ #   	  endif()
 endif()
 
 set_target_properties(${OpenBLAS_LIBNAME} PROPERTIES

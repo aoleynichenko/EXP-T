@@ -55,6 +55,7 @@ natorb          { inc_col(); return KEYWORD_NATORB;       }
 nroots          { inc_col(); return KEYWORD_NROOTS;       }
 maxiter         { inc_col(); return KEYWORD_MAXITER;      }
 conv            { inc_col(); return KEYWORD_CONV;         }
+div_thresh      { inc_col(); return KEYWORD_DIV_THRESH;   }
 damping         { inc_col(); return KEYWORD_DAMPING;      }
 diis            { inc_col(); return KEYWORD_DIIS;         }
 shifttype       { inc_col(); return KEYWORD_SHIFTTYPE;    }
@@ -75,15 +76,16 @@ openmp          { inc_col(); return KEYWORD_OPENMP;       }
 cuda            { inc_col(); return KEYWORD_CUDA;         }
 arith           { inc_col(); return KEYWORD_ARITH;        }
 prop            { inc_col(); return KEYWORD_PROP;         }
-singles         { inc_col(); return KEYWORD_SINGLES;      }
 no_inner_core_corr { inc_col(); return KEYWORD_NOINNER;   }
 end             { inc_col(); return KEYWORD_END;          }
-core            { inc_col(); return KEYWORD_CORE;         }
-virtual         { inc_col(); return KEYWORD_VIRTUAL;      }
+select          { inc_col(); return KEYWORD_SELECT;       }
 hptt            { inc_col(); return KEYWORD_HPTT;         }
 gaunt           { inc_col(); return KEYWORD_GAUNT;        }
+skip            { inc_col(); return KEYWORD_SKIP;         }
 breit           { inc_col(); return KEYWORD_BREIT;        }
 x2cmmf          { inc_col(); return KEYWORD_X2CMMF;       }
+!=              { inc_col(); return TT_NEQ;               }
+=               { inc_col(); return TT_EQ;                }
 \".*\"          { inc_col(); return TT_QUOTE;             }
 [0-9]h[0-9]p    { inc_col(); return TT_SECTOR;            }
 [-]             { inc_col(); return TT_HYPHEN;            }

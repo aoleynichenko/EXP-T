@@ -172,11 +172,13 @@ int check_divergence(char *dg_name)
 
     findmax(dg_name, &max_t, max_idx);
 
-    if (max_t > 1.0) {
+    if (max_t > cc_opts->div_thresh) {
         return 1;
     }
     else{
         return 0;
     }
 }
+
+
 

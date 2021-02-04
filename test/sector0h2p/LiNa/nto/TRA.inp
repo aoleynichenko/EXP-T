@@ -1,0 +1,40 @@
+!
+**GENERAL
+.PCMOUT
+**DIRAC         
+.TITLE          
+LiNa+ molecule
+.WAVE FUNCTION  
+.4INDEX
+.ANALYZE
+**HAMILTONIAN
+.OPERATOR
+ ZDIPLEN
+ COMFACTOR
+ 0.0
+**WAVE FUNCTION          
+.SCF        
+*SCF            
+.MAXITR
+200
+.CLOSED         
+ 12          
+.ERGCNV         
+1E-12     
+**ANALYZE
+.PRIVEC      
+*PRIVEC
+.VECPRI
+all
+**MOLTRA        
+.SCHEME
+ 4
+.PRPTRA
+.ACTIVE         
+all
+.SCHEME
+4
+**PROPERTIES
+.DIPOLE
+*END OF INPUT   
+				

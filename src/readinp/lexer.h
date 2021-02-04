@@ -36,6 +36,8 @@ int yylex();
 enum {
     /* token types */
     TT_QUOTE = 0,
+    TT_EQ,
+    TT_NEQ,
     TT_SECTOR,
     TT_STAR,
     TT_HYPHEN,
@@ -61,6 +63,7 @@ enum {
     KEYWORD_NROOTS,
     KEYWORD_MAXITER,
     KEYWORD_CONV,
+    KEYWORD_DIV_THRESH,
     KEYWORD_DAMPING,
     KEYWORD_SHIFTTYPE,
     KEYWORD_ORBSHIFT,
@@ -82,16 +85,15 @@ enum {
     KEYWORD_CUDA,
     KEYWORD_ARITH,
     KEYWORD_PROP,
-    KEYWORD_SINGLES,
-    KEYWORD_CORE,
-    KEYWORD_VIRTUAL,
     KEYWORD_END,
+    KEYWORD_SELECT,
     KEYWORD_HPTT,
     KEYWORD_DIIS,
     KEYWORD_GAUNT,
     KEYWORD_BREIT,
     KEYWORD_X2CMMF,
     KEYWORD_NOINNER,
+    KEYWORD_SKIP,
     /* special */
     END_OF_LINE,
     END_OF_FILE

@@ -39,12 +39,14 @@
 
 #include "comdef.h"
 #include "linalg.h"
+#include "selection.h"
 
 #define CC_ARITH_REAL    0
 #define CC_ARITH_COMPLEX 1
 
 // maximum number of queues for properties calculations
 #define CC_MAX_NPROP 64
+#define CC_MAX_SELECTION 64
 
 // boolean constants
 enum {
@@ -79,12 +81,15 @@ typedef enum {
     CC_MODEL_CCS,
     CC_MODEL_CCD,
     CC_MODEL_CCSD,
-    CC_MODEL_CCSD_T3,   // CCSD+T(3)
-    CC_MODEL_CCSDT_1A,  // CCSDT-1a
-    CC_MODEL_CCSDT_1B,  // CCSDT-1b
-    CC_MODEL_CCSDT_1B_PRIME,  // CCSDT-1b'
-    CC_MODEL_CCSDT_2,   // CCSDT-2
-    CC_MODEL_CCSDT_3,   // CCSDT-3
+    CC_MODEL_CCSD_T3,        // CCSD+T(3)
+    CC_MODEL_CCSD_T3_STAR,   // CCSD+T*(3)
+    CC_MODEL_CCSD_T4,        // CCSD+T(4)
+    CC_MODEL_CCSD_T4_STAR,   // CCSD+T*(4)
+    CC_MODEL_CCSDT_1A,       // CCSDT-1a
+    CC_MODEL_CCSDT_1B,       // CCSDT-1b
+    CC_MODEL_CCSDT_1B_PRIME, // CCSDT-1b'
+    CC_MODEL_CCSDT_2,        // CCSDT-2
+    CC_MODEL_CCSDT_3,        // CCSDT-3
     CC_MODEL_CCSDT
 } cc_model_t;
 
@@ -158,6 +163,7 @@ typedef enum {
     CC_COMPRESS_LZ4
 } cc_compression_type_t;
 
+
 // sizeof(double) or sizeof(double complex)
 extern int SIZEOF_WORKING_TYPE;
 
@@ -204,6 +210,7 @@ struct cc_options {
     // convergence options
     int maxiter;    // max number of iterations
     double conv;    // convergence threshold (by amplitudes)
+    double div_thresh; // divergence threshold (by amplitudes)
 
     // CC model: CCSD, CCSD-T(3), CCSDT-1, etc
     cc_model_t cc_model;
@@ -259,6 +266,7 @@ struct cc_options {
     int reuse_1h1p;
     int reuse_0h2p;
     int reuse_2h0p;
+    int reuse_0h3p;
 
     // flush non-converged amplitudes to disk
     int do_flush_iter;
@@ -296,6 +304,9 @@ struct cc_options {
 
     // damping
     cc_damping_params_t damping[MAX_SECTOR_RANK][MAX_SECTOR_RANK];
+
+    // skip calculations in some sectors
+    int skip_sector[MAX_SECTOR_RANK][MAX_SECTOR_RANK];
 
     // how many roots should be processed
     int nroots_specified;  // is 'nroots' option was specified in input file
@@ -342,6 +353,11 @@ struct cc_options {
     // for model-space estimation of properties
     int n_props;
     cc_property_query_t prop_queries[CC_MAX_NPROP];
+
+    // selection of amplitudes
+    // (does not affect performance, just for fast implementation of new approximate schemes)
+    int n_select;
+    ampl_selection_t selects[CC_MAX_SELECTION];
 };
 
 typedef struct cc_options cc_options_t;

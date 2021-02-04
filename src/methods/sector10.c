@@ -170,6 +170,11 @@ int sector10(cc_options_t *opts)
         double it_t1, it_t2;
         it_t1 = abs_time();
 
+        if (opts->skip_sector[1][0]) {
+            converged = 1;
+            break;
+        }
+
         reorder("h2c", "h2cr", "3412");
         reorder("h1c", "h1cr", "21");
 

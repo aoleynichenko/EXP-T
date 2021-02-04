@@ -49,6 +49,7 @@
 #include "engine.h"
 #include "datamodel.h"
 #include "options.h"
+#include "methods.h"
 #include "sort.h"
 #include "heff.h"
 #include "spinors.h"
@@ -62,17 +63,19 @@ void calc_S1();
 
 void calc_S2();
 
-void calc_S3();
+void calc_S3(int pt_order);
 
 void t3corr_0h1p();
 
 void folded_0h1p();
 
-void t3_0h1p_contrib_to_folded();
+void t3_0h1p_contrib_to_folded(int pt_order);
 
-void t3_0h1p_contrib_to_singles();
+void t3_0h1p_contrib_to_singles(int pt_order);
 
-void t3_0h1p_contrib_to_doubles();
+void t3_0h1p_contrib_to_doubles(int pt_order);
+
+void t3_0h1p_const_contrib_to_triples(int pt_order);
 
 
 /*******************************************************************************
@@ -141,6 +144,11 @@ int sector01(cc_options_t *opts)
 
     init_amplitudes_0h1p();
 
+    predict_intruders("s2c", 5);
+    if (triples) {
+        predict_intruders("s3c", 5);
+    }
+
     printf(" Solution of amplitude equations (sector 0h1p)\t\t");
     print_asctime();
     if (triples == 0) {
@@ -160,13 +168,18 @@ int sector01(cc_options_t *opts)
         double it_t1, it_t2;
         it_t1 = abs_time();
 
+        if (opts->skip_sector[0][1]) {
+            converged = 1;
+            break;
+        }
+
         reorder("s2c", "s2cr", "3412");
 
         calc_S1();
         calc_S2();
 #ifdef VERSION_DEVEL
         if (triples) {
-            calc_S3();
+            calc_S3(PT_INF);
         }
 #endif
 
@@ -181,6 +194,12 @@ int sector01(cc_options_t *opts)
         }
 
 #ifdef VERSION_DEVEL
+        apply_selections(0, 1, "s1nw");
+        apply_selections(0, 1, "s2nw");
+        if (triples) {
+            apply_selections(0, 1, "s3nw");
+        }
+
         if (opts->do_relax) {
             remove_core_correlation("s2nw");
             if (triples) {
@@ -325,6 +344,12 @@ int sector01(cc_options_t *opts)
     }
     diagram_write(diagram_stack_find("veff01"), "veff01.dg");
 
+    /*print_ampl_vs_denom("s1c", "s1c_eps.dat");
+    print_ampl_vs_denom("s2c", "s2c_eps.dat");
+    if (triples) {
+        print_ampl_vs_denom("s3c", "s3c_eps.dat");
+    }*/
+
     // construct and diagonalize effective Hamiltonian
     // analyze its eigenvectors & eigenvalues
     diag_heff(0, 1, "veff01");
@@ -333,7 +358,10 @@ int sector01(cc_options_t *opts)
     // Heff will be re-constructed and diagonalized again with corrections added
 #ifdef VERSION_DEVEL
     if (cc_opts->cc_model == CC_MODEL_CCSD_T3) {
-        t3corr_0h1p();
+        sector_0h1p_ccsd_t3();
+    }
+    else if (cc_opts->cc_model == CC_MODEL_CCSD_T4) {
+        sector_0h1p_ccsd_t4();
     }
 #endif
 
@@ -576,7 +604,7 @@ void const_terms_0h1p()
     // triples
 #ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
-        t3_0h1p_const_contrib_to_triples();
+        t3_0h1p_const_contrib_to_triples(PT_INF);
     }
 #endif
 
@@ -662,7 +690,7 @@ void calc_S1()
     // Triples contribution to Singles; for CCSDT-1a, ... only
 #ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
-        t3_0h1p_contrib_to_singles();
+        t3_0h1p_contrib_to_singles(PT_INF);
     }
 #endif
 }
@@ -962,7 +990,7 @@ void calc_S2()
     // Triples contribution to Doubles
 #ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
-        t3_0h1p_contrib_to_doubles();
+        t3_0h1p_contrib_to_doubles(PT_INF);
     }
 #endif
 }
@@ -997,7 +1025,7 @@ void folded_0h1p()
     // this folded diagram appears in PT3 and hence is excluded in the CCSDT-n models
 #ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT) {
-        t3_0h1p_contrib_to_folded();
+        t3_0h1p_contrib_to_folded(PT_INF);
     }
 #endif
 }
