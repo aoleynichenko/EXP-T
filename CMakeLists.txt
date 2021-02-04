@@ -302,10 +302,11 @@ else ()
 endif ()
 
 set(HEFFMAN_SOURCE
-        src/heffman/heff.f
-        src/heffman/hefflib.f
-        src/heffman/puma.f
-        src/heffman/readheff.f
+        src/heffman/nombres_mod.f90
+        src/heffman/heff.f90
+        src/heffman/hefflib.f90
+        src/heffman/puma.f90
+        src/heffman/readheff.f90
         )
 
 set(READ_DFCOEF_SOURCE

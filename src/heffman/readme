@@ -6,28 +6,27 @@
 #
 #
 #
-#        to install dirac 17 / exp-t -compatible version:
-#
+#        to install dirac 17+ / exp-t -compatible version:
+#           -------
 #        edit Makefile if required,
 #
 #        make 
 #
 #        (hope that lapack & blas are installed)
-#        and put heff executable somewhere on your path
+#        and put heffman executable somewhere on your path
 #       
 #
 #
 #
 #        usage
-#
-#        to compute finite-field transition moments you have to have
-#        two files with effective hamiltonians, 
-#        with field 1 and field 2
+#        -----
+#        to compute finite-field transition moments 
+#        you have to have two files with effective hamiltonians, 
+#        computed with field value 1 and field value 2
 #
 #        to separate spin-orbit interactions by projection,
-#        you have to have
-#        two files with effective hamiltonians, 
-#        with spin-orbit (nearly) switched off and another with
+#        you have to have two files with effective hamiltonians, 
+#        one with spin-orbit (nearly) switched off and another with
 #        spin-orbit switched on
 #        important! in this case you cannot freeze spinors at the fscc
 #        stage!
@@ -58,13 +57,18 @@ file: first_file_name
 #
 file: second_file_name (optional)
 #
-#             heff for another field value, or
-#             heff for spin-orbit switched on,
-#             respectively
+#       heff for another field value, or
+#       heff for spin-orbit switched on,
+#       respectively
 #
-#             if there is no second file, the effective hamiltonian  
-#             eigenvectors and eigenvalues are written to the
-#             formatted file HEFFEVF  
+#       if there is no second file, the effective hamiltonian  
+#       eigenvectors and eigenvalues are written to the
+#       formatted file HEFFEVF  
+#       and eigenvalues with symmetry data are added (!) to the
+#       formatted file FULLSPECTRUM
+#       keep FULLSPECTRUM when repeating the calculations for a new rep 
+#       but do not forget to kill FULLSPECTRUM when starting calculations
+#
 #       ----------------------------------------------------------------      
 #
 sector: 0h1p
@@ -90,8 +94,9 @@ main: <number>
 #     or main: <number1>-<number2> 
 #
 #       ff_tdm or one-point pade approximation: simply the number 
-#       of lowest states or the range of states of given sector and
-#       symmetry you want to see
+#       of lowest states <number> or the range of states of given sector 
+#       <number1>-<number2> and symmetry you want to see
+#       
 #       
 #       so separation, projected approximant construction:
 #       subspace used for projection
@@ -99,7 +104,17 @@ main: <number>
 #       e.g.   main: 10  (equivalently, main: 1-10)
 #       or     main: 6-7
 #
-# 
+#       to perform calculations for several representations simultaneously,
+#       you can repeat this couple of lines, e.g.
+#              rep: 1
+#              main: 2-13
+#              rep: 2
+#              main: 11
+#
+#       or, equivalently (and better)
+#              rep: 1   main: 2-13
+#              rep: 2   main: 11
+#       
 #
 #       ----------------------------------------------------------------      
 #
@@ -108,31 +123,59 @@ main: <number>
 [0/1]  
 #       (optional)
 #
-#      (or [1/1], [0/2] etc; you should have L+M+2 heff's to
-#       build the [L/M] approximant  
+#      (or [1/1], [0/2] etc; you should have L+M+2 consecutive heff's to
+#       build the [L/M] approximant for the series formed by the differences  
 #
 #       to cut off the states outside of the "main:" subset before 
 #       the extrapolation, indicate 
 #       [0/1] cut
 #
+#       very useful when using lagre model spaces
+#
+#       ----------------------------------------------------------------      
 #
 #       if you know how to make the series more 'taylor-like', add
 #       a description of the pre-transformation of the series
 #       in the following way:
+#
 arrange: h1=h1+h3,h2=h2-h3,h3=h3, 
-#       (optional)
+#       (optional, only in the case you know what you do!)
 #       new terms are given in terms of old ones
 #       h2 means heff(n=2)-heff(n=1)
-#       ascending order of indices
+#       ascending order of indices is 
 #       the expression above can be used for the three-term part
 #       of series obtained from 4 effective hamiltonians computed with
 #       attenuation parameters 0, 1, 2, 3. For the sequence 0,1,2,3,4
-#       one can use e.g.
+#       one can try to use e.g.
+#
 #       h1=h1+h3-h5,h2=h2-h3+h4,h3=h3-h4,h4=h4,
 #       numerical factors can be placed before h's, without * symbol, e.g.
 #       h1=h1+0.5 h3,h2=h2-0.5h3,h3=h3,
+#
+#       the same options can be used for composite schemes to combine
+#       several effective Hamiltonians for the same model space basis. 
+#       For instance, if you had computed heff_CCSD with no core / virtual
+#       spinors frozen, heff_CCSD_FR and heff_CCSDT_FR with some spinors 
+#       frozen, you can obtain a better heff as
+#       heff_CCSD + heff_CCSDT_FR - heff_CCSD_FR
+#       in this case, you can concatenate the relevant files
+#
+#       cat heff_CCSD heff_CCSDT_FR heff_CCSD_FR > first_file_name
+# 
+#       and use
+#
+#       arrange: H = H1 + H2 - H3
+#     
+#       (note that 
+#       i. cap H stand for the terms of sequence and are used withot 
+#       extrapolation, small h stand for the series and are used 
+#       within the extrapolation scheme
+#       ii. spinor sets and model spaces must be strictly the same
+#       )
+#       
 # 
 #       ----------------------------------------------------------------      
+#
 #       only to perform ff tdm calculations, add
 #
 step: <step length> 
@@ -149,7 +192,7 @@ step: <step length>
 scale: <small number>
 #
 #       fraction of effective spin-orbit retained in "scalar"
-#       calculations to arrange properly 
+#       calculations to arrange eigenvectors properly 
 #       e.g. scale: 0.0001
 #       delete this line if you do not want to diabatize anything
 #
@@ -170,10 +213,10 @@ print: <integer>
 #
 #
 Bloch
-#       activates the computation of finite-field
+#       activates the evaluation of finite-field
 #       transition dipoles with Bloch effective Hamiltonian
 #       eigenvectors. otherwise, ff computations are 
-#       performed with des Cloizeaux effective Hamiltonian
+#       performed with the symmetrized effective Hamiltonian
 #       eigenvectors  
 #
 #
@@ -181,14 +224,15 @@ Bloch
 #
 #
 #
-#        citations
+#        please cite when using the code 
 #
 #        for finite-field transition dipole moment calculations:
 #        
-#        A.V. Zaitsevskii, L.V. Skripnikov, A.V. Kudrin, A.V. Oleinichenko, 
-#        E. Eliav, A.V. Stolyarov. Electronic Transition Dipole Moments 
-#        in Relativistic Coupled-Cluster Theory: the Finite-Field Method
-#        Optics and Spectroscopy, 124, 4, 451-456 (2018)
+#        A. Zaitsevskii, A. V. Oleynichenko, and E. Eliav. Finite-field 
+#        calculations of transition properties by the Fock space 
+#        relativistic coupled cluster method: Transitions between
+#        different Fock space sectors. 
+#        Symmetry, 12, 1845 (2020) doi: 10.3390/sym12111845
 #
 #        for quasidiabatization by projection:
 #
@@ -196,14 +240,14 @@ Bloch
 #        Approximate relativistic coupled-cluster calculations on heavy 
 #        alkali-metal diatomics: Application to the spin-orbit-coupled 
 #        A1Sigma+ and b3Pi states of RbCs and Cs2.
-#        Phys. Rev. A, 96, 022516 (2017)
+#        Phys. Rev. A, 96, 022516 (2017) doi: 10.1103/PhysRevA.96.022516
 #
 #        for Pade extrapolation:
 #
 #        A. Zaitsevskii, E. Eliav
 #        Pade extrapolated effective Hamiltonians in the Fock space 
 #        relativistic coupled cluster method
-#        Int. J. Quantum Chem. 118 (23), e25772 (2018)
+#        Int. J. Quantum Chem. 118 (23), e25772 (2018) doi: 10.1002/qua.25772
 #        
 #
 #        ---------------------------------------------
