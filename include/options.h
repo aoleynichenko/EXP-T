@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
 * Options: all data read from the input file.
 * See the code for detailed description of every option.
 *
-* 2018-2019 Alexander Oleynichenko
+* 2018-2021 Alexander Oleynichenko
 ******************************************************************************/
 
 #ifndef CC_OPTIONS_H_INCLUDED
@@ -101,20 +101,18 @@ typedef enum {
     CC_SHIFT_TAYLOR
 } cc_shifttype_t;
 
-
 // damping parameters
 typedef struct {
     bool enabled;   // flag
-    int  stop;      // stop damping at this step
+    int stop;      // stop damping at this step
     double factor;  // damping factor
 } cc_damping_params_t;
-
 
 // dynamic denominator shifts
 typedef struct {
     bool enabled;         // flag
     cc_shifttype_t type;  // formula of the shift: real, taylor, etc
-    int  power;           // "attenuation parameter"
+    int power;           // "attenuation parameter"
     double shifts[CC_DIAGRAM_MAX_RANK];  // shifts for singles, doubles, triples, ...
 } cc_shift_params_t;
 
@@ -154,7 +152,7 @@ typedef struct {
 // for calculation of properties
 typedef struct {
     char prop_name[32];
-    int  swap_re_im;     // in DIRAC some properties are stored in the Im^T+Re*i form
+    int swap_re_im;     // in DIRAC some properties are stored in the Im^T+Re*i form
 } cc_property_query_t;
 
 // data compression algorithm
@@ -162,7 +160,6 @@ typedef enum {
     CC_COMPRESS_NONE,
     CC_COMPRESS_LZ4
 } cc_compression_type_t;
-
 
 // sizeof(double) or sizeof(double complex)
 extern int SIZEOF_WORKING_TYPE;
@@ -378,6 +375,5 @@ cc_options_t *new_options();
 void delete_options(cc_options_t *);
 
 void print_options(cc_options_t *);
-
 
 #endif /* CC_OPTIONS_H_INCLUDED */

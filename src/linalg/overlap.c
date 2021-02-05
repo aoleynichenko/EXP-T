@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -23,6 +23,7 @@
 
 #include "linalg.h"
 
+
 /**
  * Calculates overlap matrix S = <C1|C2>, where C1, C2 -- n x n square matrices
  * (matrix version of the dot product operation)
@@ -42,10 +43,10 @@ void overlap(size_t n, double complex *C1, double complex *C2, double complex *S
 {
     size_t i, j, k;
 
-    for (i = 0; i < n; i++){
-        for (j = 0; j < n; j++){
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
             double complex s = 0.0 + 0.0 * I;
-            for (k = 0; k < n; k++){
+            for (k = 0; k < n; k++) {
                 s = s + conj(C1[i * n + k]) * C2[j * n + k];
             }
             S[i * n + j] = s;

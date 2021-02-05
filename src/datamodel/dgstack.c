@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,7 +26,7 @@
  *
  * Operations with the "diagram stack".
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <stdlib.h>
@@ -95,12 +95,14 @@ dg_stack_pos_t get_stack_pos()
 
 #include "memory.h"
 
+
 void print_mem_usage()
 {
     double curr_usage = cc_get_current_memory_usage() / (1024.0 * 1024.0 * 1024.0);
     double peak_usage = cc_get_peak_memory_usage() / (1024.0 * 1024.0 * 1024.0);
     printf(" $ current memory usage = %.3f Gb; peak memory usage = %.3f Gb\n", curr_usage, peak_usage);
 }
+
 
 /**
  * all diagrams with index >= pos are deleted
@@ -109,7 +111,7 @@ void restore_stack_pos(dg_stack_pos_t pos)
 {
     int i;
 
-    for (i = pos; i < dg_stack_top; i++){
+    for (i = pos; i < dg_stack_top; i++) {
         diagram_delete(dg_stack[i]);
     }
     dg_stack_top = pos;
@@ -125,7 +127,7 @@ int diagram_stack_find_index(char *name)
 {
     int i;
 
-    for (i = 0; i < dg_stack_top; i++){
+    for (i = 0; i < dg_stack_top; i++) {
         if (strcmp(name, dg_stack[i]->name) == 0) {
             return i;
         }
@@ -145,13 +147,13 @@ void diagram_stack_erase(char *name)
     int i;
     diagram_t *diag = NULL;
 
-    for (i = 0; i < dg_stack_top; i++){
+    for (i = 0; i < dg_stack_top; i++) {
         if (strcmp(name, dg_stack[i]->name) == 0) {
             diag = dg_stack[i];
 
             // shift diagrams in the stack by 1
-            for (int j = i; j < dg_stack_top-1; j++) {
-                dg_stack[j] = dg_stack[j+1];
+            for (int j = i; j < dg_stack_top - 1; j++) {
+                dg_stack[j] = dg_stack[j + 1];
             }
             dg_stack_top--;
 
@@ -173,7 +175,7 @@ diagram_t *diagram_stack_find(char *name)
 {
     int i;
 
-    for (i = 0; i < dg_stack_top; i++){
+    for (i = 0; i < dg_stack_top; i++) {
         if (strcmp(name, dg_stack[i]->name) == 0) {
             return dg_stack[i];
         }
@@ -205,7 +207,7 @@ void diagram_stack_print()
     printf("\ndiagram stack:\n");
     printf("     <name>      iii     iiv     iiu       #sb mem   #sb disk   #sb tot  size, GB\n");
 
-    for (int i = 0; i < dg_stack_top; i++){
+    for (int i = 0; i < dg_stack_top; i++) {
         dg = dg_stack[i];
         diagram_get_quasiparticles(dg, s_qparts);
         diagram_get_valence(dg, s_valence);
@@ -215,12 +217,12 @@ void diagram_stack_print()
         nsb_mem = 0;
         nsb_disk = 0;
         int nsb_uniq = 0;
-        for (isb = 0; isb < dg->n_blocks; isb++){
+        for (isb = 0; isb < dg->n_blocks; isb++) {
             sb = dg->blocks[isb];
             if (sb->storage_type == CC_DIAGRAM_ON_DISK) {
                 nsb_disk++;
             }
-            else{
+            else {
                 nsb_mem++;
             }
             if (sb->is_unique) {
@@ -229,8 +231,10 @@ void diagram_stack_print()
         }
 
         diagram_get_memory_used(dg_stack[i], &ram_used, &disk_used);
-        printf("[%2d] %-12s%-8s%-8s%-8s%10ld%10ld%10ld%10.3f%4d/%d\n", i, dg_stack[i]->name, s_qparts, s_valence, s_order,
-               nsb_mem, nsb_disk, dg->n_blocks, (ram_used + disk_used) / (1024.0 * 1024.0 * 1024.0), nsb_uniq, dg_stack[i]->n_blocks);
+        printf("[%2d] %-12s%-8s%-8s%-8s%10ld%10ld%10ld%10.3f%4d/%d\n", i, dg_stack[i]->name, s_qparts, s_valence,
+               s_order,
+               nsb_mem, nsb_disk, dg->n_blocks, (ram_used + disk_used) / (1024.0 * 1024.0 * 1024.0), nsb_uniq,
+               dg_stack[i]->n_blocks);
     }
     printf("end of diagram stack\n");
 }

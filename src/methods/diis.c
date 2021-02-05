@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -32,7 +32,7 @@
  * But the actually implemented algorithm is taken from:
  * https://github.com/psi4/psi4numpy/tree/master/Coupled-Cluster/Spin_Orbitals/CCSD
  *
- * 2020 Alexander Oleynichenko
+ * 2020-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "diis.h"
@@ -114,10 +114,10 @@ void delete_diis_queue(diis_queue_t *q)
  * @todo 'iter' is unnecessary, we can count iteration inside the queue object
  */
 void diis_put(diis_queue_t *q,
-        char *diag_t1new, char *diag_t1old,
-        char *diag_t2new, char *diag_t2old,
-        char *diag_t3new, char *diag_t3old,
-        int iter)
+              char *diag_t1new, char *diag_t1old,
+              char *diag_t2new, char *diag_t2old,
+              char *diag_t3new, char *diag_t3old,
+              int iter)
 {
     char buf[CC_DIAGRAM_MAX_NAME];
     char buf_err[CC_DIAGRAM_MAX_NAME];
@@ -185,7 +185,7 @@ void diis_truncate(diis_queue_t *q, int len)
     timer_new_entry("diis", "DIIS extrapolation");
     timer_start("diis");
 
-    if (q->n <= len) return;
+    if (q->n <= len) { return; }
 
     int offs = q->n - len;
 
@@ -275,15 +275,16 @@ void diis_extrapolate(diis_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
             B[i * bdim + j] = s1 + s2 + s3;
             B[j * bdim + i] = s1 + s2 + s3;
         }
-        B[i*bdim+j] = -1.0;
+        B[i * bdim + j] = -1.0;
     }
 
     //printf("\nend of scapros\n");
 
     // -1 -1 -1 ... 0
-    for (int i = 0; i < bdim-1; i++)
-        B[(bdim-1)*bdim+i] = -1.0;
-    B[bdim*bdim-1] = 0.0;
+    for (int i = 0; i < bdim - 1; i++) {
+        B[(bdim - 1) * bdim + i] = -1.0;
+    }
+    B[bdim * bdim - 1] = 0.0;
 
     // normalize Pulay matrix by abs max
     double absmax = 0.0;
@@ -301,9 +302,10 @@ void diis_extrapolate(diis_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
     }
 
     // r.h.s. of linear equations
-    for (int i = 0; i < bdim; i++)
+    for (int i = 0; i < bdim; i++) {
         right[i] = 0.0;
-    right[bdim-1] = -1;
+    }
+    right[bdim - 1] = -1;
 
     // solve system of linear equations for weights
     info = LAPACKE_dgesv(CblasRowMajor, bdim, 1, B, bdim, ipiv, right, 1);
@@ -311,7 +313,7 @@ void diis_extrapolate(diis_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
     if (info != 0) {
         printf(" DIIS:\n");
         printf(" The diagonal element of the triangular factor of A, "
-               "U(%i,%i) is zero, so that A is singular;\n", info, info );
+               "U(%i,%i) is zero, so that A is singular;\n", info, info);
         printf(" the solution could not be computed."
                " DIIS will be turned off\n");
         cc_opts->diis_enabled = 0;
@@ -348,7 +350,7 @@ void diis_extrapolate(diis_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
         }
     }
 
-finalize:
+    finalize:
     cc_free(B);
     cc_free(right);
     cc_free(ipiv);

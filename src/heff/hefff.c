@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -25,12 +25,13 @@
  * Operations with formatted files containing effective Hamiltonians.
  * The format of formatted HEFFF files was primarily introduced by
  * A. Zaitsevskii.
- * 2019-2020 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  */
 
 #include <complex.h>
 #include <stdio.h>
 #include <string.h>
+
 
 /**
  * Opens formatted HEFF file.
@@ -70,12 +71,12 @@ void hefff_write_block(FILE *hefff, int carith, int rep_no, size_t dim, double c
     for (int i = 0; i < dim * dim; i++) {
         if (carith) {
             fprintf(hefff, "%21.12E%21.12E", creal(heff[i]), cimag(heff[i]));
-            if (i > 0 && i % 2 != 0) fprintf(hefff, "\n");
+            if (i > 0 && i % 2 != 0) { fprintf(hefff, "\n"); }
         }
         else {
             fprintf(hefff, "%21.12E", creal(heff[i]));
-            if (i > 0 && (i+1) % 4 == 0) fprintf(hefff, "\n");
+            if (i > 0 && (i + 1) % 4 == 0) { fprintf(hefff, "\n"); }
         }
     }
-    if (dim * dim % 2 != 0) fprintf(hefff, "\n");
+    if (dim * dim % 2 != 0) { fprintf(hefff, "\n"); }
 }

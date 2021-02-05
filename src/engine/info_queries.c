@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,11 +28,12 @@
  * It is a part of the user-friendly interface to diagrams which does not
  * require to know anything about the data model employed.
  *
- * @author 2018-2020 Alexander Oleynichenko
+ * @author 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "engine.h"
 
+#include <math.h>
 #include <stdio.h>
 
 #include "error.h"
@@ -128,18 +129,18 @@ void print_ampl_vs_denom(char *name, char *out_file)
                 t = cabs(block->buf[i]);
             }
             else {
-                t = fabs(((double *)block->buf)[i]);
+                t = fabs(((double *) block->buf)[i]);
             }
 
             if (t >= cc_opts->conv) {
                 double denom = 0.0;
                 double esum1 = 0.0;
                 double esum2 = 0.0;
-                for (j = 0; j < block->rank/2; j++) {
+                for (j = 0; j < block->rank / 2; j++) {
                     double eps = spinor_info[idx[j]].eps;
                     esum1 += eps;
                 }
-                for (j = block->rank/2; j < block->rank; j++) {
+                for (j = block->rank / 2; j < block->rank; j++) {
                     double eps = spinor_info[idx[j]].eps;
                     esum2 -= eps;
                 }
@@ -147,7 +148,7 @@ void print_ampl_vs_denom(char *name, char *out_file)
                 for (int j = 0; j < block->rank; j++) {
                     fprintf(f, "%5d", idx[j]);
                 }
-                fprintf(f,"%16.8f%16.8f%16.8f%20.12f\n", esum1, esum2, -denom, t);
+                fprintf(f, "%16.8f%16.8f%16.8f%20.12f\n", esum1, esum2, -denom, t);
             }
         }
 

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,14 +26,15 @@
 #include <assert.h>
 #include <math.h>
 
+
 double xabs(data_type_t type, void *x)
 {
     assert(type == CC_DOUBLE || type == CC_DOUBLE_COMPLEX);
 
     if (type == CC_DOUBLE) {
-        return fabs(*((double *)x));
+        return fabs(*((double *) x));
     }
     else { // CC_DOUBLE_COMPLEX
-        return cabs(*((double complex *)x));
+        return cabs(*((double complex *) x));
     }
 }

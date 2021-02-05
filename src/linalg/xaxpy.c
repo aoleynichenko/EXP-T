@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -55,7 +55,7 @@ void xaxpy(data_type_t type, size_t n,
     if (type == CC_DOUBLE) {
         my_daxpy(n, alpha, (double *) x, (double *) y);
     }
-    else{ // CC_DOUBLE_COMPLEX
+    else { // CC_DOUBLE_COMPLEX
         my_zaxpy(n, alpha, (double complex *) x, (double complex *) y);
     }
 }
@@ -63,7 +63,7 @@ void xaxpy(data_type_t type, size_t n,
 
 void my_daxpy(size_t n, double alpha, const double *x, double *y)
 {
-    for (size_t i = 0; i < n; i++){
+    for (size_t i = 0; i < n; i++) {
         y[i] = alpha * x[i] + y[i];
     }
     // void cblas_daxpy(const int N, const double alpha, const double *X,
@@ -75,7 +75,7 @@ void my_daxpy(size_t n, double alpha, const double *x, double *y)
 void my_zaxpy(size_t n, double alpha,
               const double complex *x, double complex *y)
 {
-    for (size_t i = 0; i < n; i++){
+    for (size_t i = 0; i < n; i++) {
         y[i] = alpha * x[i] + y[i];
     }
     //double complex a = alpha + 0.0*I;
@@ -106,7 +106,7 @@ void xaxpby(data_type_t type, size_t n, const void *alpha,
         double b = *((double *) beta);
         my_daxpby(n, a, (double *) x, b, (double *) y, (double *) z);
     }
-    else{ // CC_DOUBLE_COMPLEX
+    else { // CC_DOUBLE_COMPLEX
         double complex a = *((double complex *) alpha);
         double complex b = *((double complex *) beta);
         my_zaxpby(n, a, (double complex *) x, b, (double complex *) y, (double complex *) z);
@@ -115,18 +115,18 @@ void xaxpby(data_type_t type, size_t n, const void *alpha,
 
 
 void my_daxpby(size_t n, double alpha, const double *x,
-            double beta, const double *y, double *z)
+               double beta, const double *y, double *z)
 {
-    for (size_t i = 0; i < n; i++){
+    for (size_t i = 0; i < n; i++) {
         z[i] = alpha * x[i] + beta * y[i];
     }
 }
 
 
 void my_zaxpby(size_t n, double complex alpha, const double complex *x,
-            double complex beta, const double complex *y, double complex *z)
+               double complex beta, const double complex *y, double complex *z)
 {
-    for (size_t i = 0; i < n; i++){
+    for (size_t i = 0; i < n; i++) {
         z[i] = alpha * x[i] + beta * y[i];
     }
 }

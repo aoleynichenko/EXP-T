@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -75,7 +75,7 @@ void xmatcopy(data_type_t type, char op, size_t rows, size_t cols, void *A, void
             domatcopy(op, rows, cols, (double *) A, (double *) B);
         }
     }
-    else{
+    else {
         if (A == B) {
             zimatcopy(op, rows, cols, (double complex *) A);
         }
@@ -97,7 +97,7 @@ void dimatcopy(char op, size_t rows, size_t cols, double *A)
     if (op == 'n') {
         return;
     }
-    else{
+    else {
         transpose_inplace_double(A, rows, cols);
     }
 }
@@ -117,7 +117,7 @@ void zimatcopy(char op, size_t rows, size_t cols, double complex *A)
     }
         // conjugation only
     else if (op == 'r') {
-        for (size_t i = 0; i < rows * cols; i++){
+        for (size_t i = 0; i < rows * cols; i++) {
             A[i] = conj(A[i]);
         }
     }
@@ -126,9 +126,9 @@ void zimatcopy(char op, size_t rows, size_t cols, double complex *A)
         transpose_inplace_double_complex(A, rows, cols);
     }
         // conjugate transpose
-    else{
+    else {
         transpose_inplace_double_complex(A, rows, cols);
-        for (size_t i = 0; i < rows * cols; i++){
+        for (size_t i = 0; i < rows * cols; i++) {
             A[i] = conj(A[i]);
         }
     }
@@ -147,9 +147,9 @@ void domatcopy(char op, size_t rows, size_t cols, double *A, double *B)
     if (op == 'n') {
         memcpy(B, A, sizeof(double) * rows * cols);
     }
-    else{
-        for (size_t i = 0; i < rows; i++){
-            for (size_t j = 0; j < cols; j++){
+    else {
+        for (size_t i = 0; i < rows; i++) {
+            for (size_t j = 0; j < cols; j++) {
                 // B_ji = A_ij
                 B[j * rows + i] = A[i * cols + j];
             }
@@ -173,23 +173,23 @@ void zomatcopy(char op, size_t rows, size_t cols, double complex *A, double comp
     }
         // conjugation only
     else if (op == 'r') {
-        for (size_t i = 0; i < rows * cols; i++){
+        for (size_t i = 0; i < rows * cols; i++) {
             B[i] = conj(A[i]);
         }
     }
         // transpose
     else if (op == 't') {
-        for (size_t i = 0; i < rows; i++){
-            for (size_t j = 0; j < cols; j++){
+        for (size_t i = 0; i < rows; i++) {
+            for (size_t j = 0; j < cols; j++) {
                 // B_ji = A_ij
                 B[j * rows + i] = A[i * cols + j];
             }
         }
     }
         // conjugate transpose
-    else{
-        for (size_t i = 0; i < rows; i++){
-            for (size_t j = 0; j < cols; j++){
+    else {
+        for (size_t i = 0; i < rows; i++) {
+            for (size_t j = 0; j < cols; j++) {
                 // B_ji = (A_ij)^{*}
                 B[j * rows + i] = conj(A[i * cols + j]);
             }
@@ -208,14 +208,14 @@ void transpose_inplace_double(double *m, int w, int h)
     int start, next, i;
     double tmp;
 
-    for (start = 0; start <= w * h - 1; start++){
+    for (start = 0; start <= w * h - 1; start++) {
         next = start;
         i = 0;
         do {
             i++;
             next = (next % h) * w + next / h;
         } while (next > start);
-        if (next < start || i == 1) continue;
+        if (next < start || i == 1) { continue; }
 
         tmp = m[next = start];
         do {
@@ -226,19 +226,20 @@ void transpose_inplace_double(double *m, int w, int h)
     }
 }
 
+
 void transpose_inplace_double_complex(double complex *m, int w, int h)
 {
     int start, next, i;
     double complex tmp;
 
-    for (start = 0; start <= w * h - 1; start++){
+    for (start = 0; start <= w * h - 1; start++) {
         next = start;
         i = 0;
         do {
             i++;
             next = (next % h) * w + next / h;
         } while (next > start);
-        if (next < start || i == 1) continue;
+        if (next < start || i == 1) { continue; }
 
         tmp = m[next = start];
         do {

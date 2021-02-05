@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,7 +27,7 @@
  *
  * Platform-independent I/O Unix-like interface.
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #ifndef CC_IO_H_INCLUDED
@@ -44,7 +44,6 @@ typedef struct io_stat {
     size_t n_created;
     size_t n_removed;
 } io_stat_t;
-
 
 int io_open(char *path, char *mode);
 

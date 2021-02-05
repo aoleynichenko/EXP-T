@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -29,14 +29,15 @@
  * For more details on the "template technique" employed, see
  * arnold.uthar.net/index.php?n=Work.TemplatesC
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  */
 
 #ifdef TYPENAME
+
 #include "templates.h"
 
 
-void TEMPLATE(reorder_block,TYPENAME)(block_t *src, block_t *tgt, int *perm)
+void TEMPLATE(reorder_block, TYPENAME)(block_t *src, block_t *tgt, int *perm)
 {
     int dims1[CC_DIAGRAM_MAX_RANK];
     int dims2[CC_DIAGRAM_MAX_RANK];
@@ -98,7 +99,7 @@ void TEMPLATE(reorder_block,TYPENAME)(block_t *src, block_t *tgt, int *perm)
         int to[4];
         reverse_perm(4, perm, to);
 
-#pragma omp parallel for schedule(static) shared(coef2,v1)
+#pragma omp parallel for schedule(static) shared(coef2, v1)
         for (int i0 = 0; i0 < dim0; i0++) {
             size_t index = i0 * dim1 * dim2 * dim3;
             size_t index2 = i0 * coef2[to[0]];
@@ -131,7 +132,7 @@ void TEMPLATE(reorder_block,TYPENAME)(block_t *src, block_t *tgt, int *perm)
         int to[6];  // на каком месте окажется данное измерение?
         reverse_perm(6, perm, to);
 
-#pragma omp parallel for schedule(static) shared(coef2,v1)
+#pragma omp parallel for schedule(static) shared(coef2, v1)
         for (int i0 = 0; i0 < dim0; i0++) {
             size_t index = i0 * dim1 * dim2 * dim3 * dim4 * dim5;
             size_t index2 = i0 * coef2[to[0]];
@@ -184,5 +185,6 @@ void TEMPLATE(reorder_block,TYPENAME)(block_t *src, block_t *tgt, int *perm)
     symblock_unload(src);
     symblock_store(tgt);
 }
+
 
 #endif /* TYPENAME defined */

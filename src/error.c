@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,7 +26,7 @@
  *
  * Error handling.
  *
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <stdarg.h>
@@ -34,7 +34,6 @@
 #include <stdlib.h>
 
 #define MAX_ERR_LEN 1024
-
 
 // writes error message & aborts execution
 void errquit(char *fmt, ...)
@@ -46,6 +45,7 @@ void errquit(char *fmt, ...)
     vsprintf(errbuf, fmt, args);
     errbuf[MAX_ERR_LEN - 1] = '\0';
     va_end(args);
+
     printf("\nERROR:\n");
     printf("%s\n", errbuf);
 

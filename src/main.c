@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,13 +26,13 @@
  * ======
  *
  * Fock-Space Multireference coupled cluster program.
- * Version 1.5.3
+ * Version 1.5.4
  *
  * Authors:
  *   Alexander Oleynichenko (Lomonosov Moscow State University)
  * Mailto:
  *   alexvoleynichenko@gmail.com
- * Date: 27 Dec 2020
+ * Date: 5 Feb 2021
  *
  ******************************************************************************/
 
@@ -45,12 +45,12 @@
 // version: MAJOR.MINOR.REVISION
 #define CC_VERSION_MAJOR      1
 #define CC_VERSION_MINOR      5
-#define CC_VERSION_REVISION   3
+#define CC_VERSION_REVISION   4
 
 // date of release:
-#define CC_VERSION_DAY        27
-#define CC_VERSION_MONTH      "Dec"
-#define CC_VERSION_YEAR       2020
+#define CC_VERSION_DAY        5
+#define CC_VERSION_MONTH      "Feb"
+#define CC_VERSION_YEAR       2021
 
 #include "platform.h"
 #include "engine.h"
@@ -137,20 +137,12 @@ int main(int argc, char **argv)
         tm2c_interface(opts->integral_file_1, opts->integral_file_2, opts->integral_file_prop, opts);
     }
 #endif
-    else{
+    else {
         printf("unknown integral interface\n");
         return 1;
     }
 
-    if (opts->mixed) {
-#ifdef VERSION_DEVEL
-        errquit("todo: mixed-sector model");
-        mixed_00_11(opts);
-#else
-        errquit("mixed-sector model is not part of the public release");
-#endif
-    }
-    else if (opts->sector_h == 0 && opts->sector_p == 0) {
+    if (opts->sector_h == 0 && opts->sector_p == 0) {
         exit_code = sector00(opts);
     }
     else if (opts->sector_h == 0 && opts->sector_p == 1) {
@@ -241,7 +233,7 @@ int main(int argc, char **argv)
         errquit("mixed-sector model is not part of the public release");
 #endif
     }
-    else{
+    else {
         errquit("Fock space sector %dh%dp is not implemented yet", opts->sector_h, opts->sector_p);
     }
 
@@ -285,8 +277,8 @@ void print_footer_banner(int exit_code)
     io_statistics(&io_st);
     printf(" Disk I/O:\n");
     printf("   files created: %ld   files removed: %ld\n", io_st.n_created, io_st.n_removed);
-    printf("   read   %15ld bytes = %.3f Gb\n", io_st.n_read,    io_st.n_read/(1024.0*1024.0*1024.0));
-    printf("   write  %15ld bytes = %.3f Gb\n", io_st.n_written, io_st.n_written/(1024.0*1024.0*1024.0));
+    printf("   read   %15ld bytes = %.3f Gb\n", io_st.n_read, io_st.n_read / (1024.0 * 1024.0 * 1024.0));
+    printf("   write  %15ld bytes = %.3f Gb\n", io_st.n_written, io_st.n_written / (1024.0 * 1024.0 * 1024.0));
     printf("\n");
 
     // calculate number of days, hours, minutes, seconds, milliseconds
@@ -322,8 +314,8 @@ void banner()
     printf("\t\t**                                                                              **\n");
 #ifdef VERSION_DEVEL
     printf("\t\t**                     version %d.%d.%d (%d %s %d) development                   **\n",
-            CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
-            CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
+           CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
+           CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
 #else
     printf("\t\t**                       version %d.%d.%d (%d %s %d) public                      **\n",
             CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
@@ -415,7 +407,7 @@ void setup_scratch()
                     "(errno = %d, strerror = %s)", errno, strerror(errno));
         }
     }
-    else{
+    else {
         printf(" Scratch directory '%s' exists\n", scratch_dir);
     }
 
@@ -501,8 +493,8 @@ void display_version()
 {
 #ifdef VERSION_DEVEL
     printf("expt v. %d.%d.%d (%d %s %d) development\n",
-            CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
-            CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
+           CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
+           CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
 #else
     printf("expt v. %d.%d.%d (%d %s %d) public\n",
            CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,

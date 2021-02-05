@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,7 +27,7 @@
  * Dipole-length transition moments calculations.
  * Model-space estimation of properties.
  *
- * 2019 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <complex.h>
@@ -69,10 +69,10 @@ void read_property_formatted(char *file_name, int nspinors, double complex *matr
     }
     while (fscanf(f, "%d%d%lf%lf", &idx1, &idx2, &re, &im) == 4) {
         if (!swap_re_im) {
-            matrix[(idx1 - 1) * nspinors + (idx2 - 1)] = re + im*I;
+            matrix[(idx1 - 1) * nspinors + (idx2 - 1)] = re + im * I;
         }
         else {
-            matrix[(idx1 - 1) * nspinors + (idx2 - 1)] = im + re*I; // re <-> im
+            matrix[(idx1 - 1) * nspinors + (idx2 - 1)] = im + re * I; // re <-> im
         }
     }
     fclose(f);
@@ -95,8 +95,8 @@ void read_property_formatted(char *file_name, int nspinors, double complex *matr
  * @param ket_dets    the same, but for ket
  */
 void matrix_slater_basis(int sect_h, int sect_p, int nspinors,
-        double complex *prp_spinor, double complex *prp_slater,
-        slater_det_t *bra_dets, size_t n_det_bra, slater_det_t *ket_dets, size_t n_det_ket)
+                         double complex *prp_spinor, double complex *prp_slater,
+                         slater_det_t *bra_dets, size_t n_det_bra, slater_det_t *ket_dets, size_t n_det_ket)
 {
     setup_slater(prp_spinor, (matrix_getter_fun) get_dm, sect_h, sect_p, sect_h, sect_p, 1);
 
@@ -121,7 +121,7 @@ void matrix_slater_basis(int sect_h, int sect_p, int nspinors,
                 size_t i2 = bra->indices[1];
                 prp_ij = prp_spinor[i2 * nspinors + i1];
             }
-            else{
+            else {
                 prp_ij = slater(bra, ket);
             }
             prp_slater[i * n_det_ket + j] = prp_ij;
@@ -160,8 +160,8 @@ void model_space_property(char *prop_name, int swap_re_im)
     // read property matrix elements (in the basis of molecular spinors)
     read_property_formatted(prop_name, nspinors, prp_spinor, swap_re_im);
 
-    for (int irep1 = 0; irep1 < nrep; irep1++){
-        for (int irep2 = 0; irep2 < nrep; irep2++){
+    for (int irep1 = 0; irep1 < nrep; irep1++) {
+        for (int irep2 = 0; irep2 < nrep; irep2++) {
             struct mv_block *block1 = &mv_blocks[irep1];
             struct mv_block *block2 = &mv_blocks[irep2];
             printf(" < %-4s | prop | %-4s >", block1->rep_name, block2->rep_name);
@@ -171,7 +171,7 @@ void model_space_property(char *prop_name, int swap_re_im)
 
             // construct property matrix in the basis of Slater determinants
             matrix_slater_basis(sect_h, sect_p, nspinors, prp_spinor, prp_slater,
-                    block1->dets, block1->ms_size, block2->dets, block2->ms_size);
+                                block1->dets, block1->ms_size, block2->dets, block2->ms_size);
 
             // construct property matrix in the basis of model vectors
             size_t nroots_i = block1->nroots;
@@ -245,8 +245,10 @@ void construct_ms_density_matrix(int sect_h, int sect_p,
                                  double complex *dm, size_t *dim_dm);
 
 void model_space_tdms(int sect_h, int sect_p, double complex **dip_mat,
-                      char *bra_rep_name, size_t bra_ms_size, slater_det_t *bra_dets, size_t bra_nroots, double complex *bra_vecs, double *bra_energies_cm,
-                      char *ket_rep_name, size_t ket_ms_size, slater_det_t *ket_dets, size_t ket_nroots, double complex *ket_vecs, double *ket_energies_cm
+                      char *bra_rep_name, size_t bra_ms_size, slater_det_t *bra_dets, size_t bra_nroots,
+                      double complex *bra_vecs, double *bra_energies_cm,
+                      char *ket_rep_name, size_t ket_ms_size, slater_det_t *ket_dets, size_t ket_nroots,
+                      double complex *ket_vecs, double *ket_energies_cm
 );
 
 
@@ -312,8 +314,10 @@ void dipole_length_tdms(int sect_h, int sect_p)
             struct mv_block *block2 = &mv_blocks[irep2];
 
             model_space_tdms(sect_h, sect_p, d_spinor,
-                    block1->rep_name, block1->ms_size, block1->dets, block1->nroots, block1->vl, block1->energy_cm,
-                    block2->rep_name, block2->ms_size, block2->dets, block2->nroots, block2->vr, block2->energy_cm
+                             block1->rep_name, block1->ms_size, block1->dets, block1->nroots, block1->vl,
+                             block1->energy_cm,
+                             block2->rep_name, block2->ms_size, block2->dets, block2->nroots, block2->vr,
+                             block2->energy_cm
             );
 
         }
@@ -333,10 +337,10 @@ void dipole_length_tdms(int sect_h, int sect_p)
         slater_det_t vac_det;
         vac_det.indices[0] = 0;
         vac_det.indices[1] = 0;
-        double complex vac_coef = 1.0 + 0.0*I;
+        double complex vac_coef = 1.0 + 0.0 * I;
         double energy_0 = 0.0;
 
-        for (size_t irep = 0; irep < nrep; irep++){
+        for (size_t irep = 0; irep < nrep; irep++) {
             struct mv_block *b = &mv_blocks[irep];
 
             /*tdms_ground_to_excited_1h1p(d_spinor,
@@ -365,7 +369,6 @@ void dipole_length_tdms(int sect_h, int sect_p)
         printf(" -----------------------------------------------------------------------------------------------------------\n");
         printf("\n");
 
-
         int nrep_0011;
         struct mv_block mv_blocks_0011[64];
 
@@ -376,16 +379,18 @@ void dipole_length_tdms(int sect_h, int sect_p)
         // ground -> excited
         model_space_tdms(1, 1, d_spinor,
                          b0011->rep_name, b0011->ms_size, b0011->dets, 1, b0011->vl, b0011->energy_cm,
-                         b0011->rep_name, b0011->ms_size, b0011->dets, b0011->nroots-1, b0011->vr+b0011->ms_size, b0011->energy_cm+1
+                         b0011->rep_name, b0011->ms_size, b0011->dets, b0011->nroots - 1, b0011->vr + b0011->ms_size,
+                         b0011->energy_cm + 1
         );
         // excited -> ground
         model_space_tdms(1, 1, d_spinor,
-                         b0011->rep_name, b0011->ms_size, b0011->dets, b0011->nroots-1, b0011->vl+b0011->ms_size, b0011->energy_cm+1,
+                         b0011->rep_name, b0011->ms_size, b0011->dets, b0011->nroots - 1, b0011->vl + b0011->ms_size,
+                         b0011->energy_cm + 1,
                          b0011->rep_name, b0011->ms_size, b0011->dets, 1, b0011->vr, b0011->energy_cm
         );
 
         // other irreps
-        for (size_t irep = 0; irep < nrep; irep++){
+        for (size_t irep = 0; irep < nrep; irep++) {
             struct mv_block *b = &mv_blocks[irep];
             if (strcmp(get_irrep_name(get_vacuum_irrep()), b->rep_name) == 0) {
                 continue;
@@ -409,7 +414,7 @@ void dipole_length_tdms(int sect_h, int sect_p)
     cc_free(d_spinor[0]);
     cc_free(d_spinor[1]);
     cc_free(d_spinor[2]);
-    for (size_t irep = 0; irep < nrep; irep++){
+    for (size_t irep = 0; irep < nrep; irep++) {
         struct mv_block *b = &mv_blocks[irep];
         cc_free(b->dets);
         cc_free(b->eigval);
@@ -427,9 +432,11 @@ void dipole_length_tdms(int sect_h, int sect_p)
 
 
 void model_space_tdms(int sect_h, int sect_p, double complex **dip_mat,
-        char *bra_rep_name, size_t bra_ms_size, slater_det_t *bra_dets, size_t bra_nroots, double complex *bra_vecs, double *bra_energies_cm,
-        char *ket_rep_name, size_t ket_ms_size, slater_det_t *ket_dets, size_t ket_nroots, double complex *ket_vecs, double *ket_energies_cm
-        )
+                      char *bra_rep_name, size_t bra_ms_size, slater_det_t *bra_dets, size_t bra_nroots,
+                      double complex *bra_vecs, double *bra_energies_cm,
+                      char *ket_rep_name, size_t ket_ms_size, slater_det_t *ket_dets, size_t ket_nroots,
+                      double complex *ket_vecs, double *ket_energies_cm
+)
 {
     double complex *dm;
     size_t dim_dm;
@@ -455,14 +462,15 @@ void model_space_tdms(int sect_h, int sect_p, double complex **dip_mat,
             double complex *coef_i = &bra_vecs[bra_ms_size * i];
             double complex *coef_f = &ket_vecs[ket_ms_size * f];
 
-            construct_ms_density_matrix(sect_h, sect_p, bra_ms_size, coef_i, bra_dets, ket_ms_size, coef_f, ket_dets, dm, &dim_dm);
+            construct_ms_density_matrix(sect_h, sect_p, bra_ms_size, coef_i, bra_dets, ket_ms_size, coef_f, ket_dets,
+                                        dm, &dim_dm);
             double complex dx = contract_prop_with_dm(sect_h, sect_p, dim_dm, dm, dip_mat[0]);
             double complex dy = contract_prop_with_dm(sect_h, sect_p, dim_dm, dm, dip_mat[1]);
             double complex dz = contract_prop_with_dm(sect_h, sect_p, dim_dm, dm, dip_mat[2]);
             double abs_dx = cabs(dx);
             double abs_dy = cabs(dy);
             double abs_dz = cabs(dz);
-            double d2 = abs_dx*abs_dx + abs_dy*abs_dy + abs_dz*abs_dz;
+            double d2 = abs_dx * abs_dx + abs_dy * abs_dy + abs_dz * abs_dz;
             double d = sqrt(d2);
             // intensity ? osc str I = 2/3 * |d|^2 * excitation energy
             // in atomic units
@@ -513,7 +521,7 @@ void tdms_ground_to_excited_1h1p(double complex **dip_mat,
     // FSCC effective is not Hermitian => <0|d|model vect> != <model vect|d|0>
     // "bra": <left model vect|d|0> (coef-s must be complex conjugated)
     // "ket": <0|d|right model vect>
-    for (iroot = 0; iroot < nroots; iroot++){
+    for (iroot = 0; iroot < nroots; iroot++) {
         double complex *coef_r = &vr[ms_size * iroot];
         double complex *coef_l = &vl[ms_size * iroot];
         double complex d_bra[3] = {0.0 + 0.0 * I, 0.0 + 0.0 * I, 0.0 + 0.0 * I};
@@ -521,8 +529,8 @@ void tdms_ground_to_excited_1h1p(double complex **dip_mat,
         double d2_bra = 0.0, d2_ket = 0.0;
         double d_e = fabs(energy_cm[iroot]) / AU2CM;
         //printf("\n");
-        for (icoord = 0; icoord < 3; icoord++){
-            for (idet = 0; idet < ms_size; idet++){
+        for (icoord = 0; icoord < 3; icoord++) {
+            for (idet = 0; idet < ms_size; idet++) {
                 slater_det_t *det = &dets[idet];
                 i = det->indices[0];
                 a = det->indices[1];
@@ -558,7 +566,7 @@ void tdms_ground_to_excited_1h1p(double complex **dip_mat,
     if (n_nonzero == 0) {
         printf("   forbidden\n");
     }
-    else{
+    else {
         printf("\n");
     }
 }

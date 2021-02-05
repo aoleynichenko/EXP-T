@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,12 +28,13 @@
 #include "memory.h"
 
 void sort_vectors(int n, double complex *ev, double complex *vl, double complex *vr,
-        int (*cmp)(double complex, double complex));
+                  int (*cmp)(double complex, double complex));
 
 void sort_record_order(double complex *arr, int32_t *order, size_t n,
-        int (*cmp)(double complex, double complex));
+                       int (*cmp)(double complex, double complex));
 
 int complex_cmp_descending(double complex a, double complex b);
+
 
 /**
  * Singular value decomposition.
@@ -77,11 +78,11 @@ void svd(int n, double complex *A, double *lambda, double complex *U, double com
     sort_vectors(n, lambda2, AAH /* buffer */, V, complex_cmp_descending);
 
     // calculate sqrt of eigenvalues in order to obtain singular values
-    for (int i = 0; i < n; i++){
+    for (int i = 0; i < n; i++) {
         if (creal(lambda2[i]) < 1e-15) {
             lambda[i] = 0.0;
         }
-        else{
+        else {
             lambda[i] = sqrt(creal(lambda2[i]));
         }
     }
@@ -99,7 +100,7 @@ void svd(int n, double complex *A, double *lambda, double complex *U, double com
  * using some function-comparator.
  ******************************************************************************/
 void sort_vectors(int n, double complex *ev, double complex *vl, double complex *vr,
-        int (*cmp)(double complex, double complex))
+                  int (*cmp)(double complex, double complex))
 {
     int32_t *order;
     double complex *vectmp;
@@ -109,19 +110,19 @@ void sort_vectors(int n, double complex *ev, double complex *vl, double complex 
     vectmp = (double complex *) cc_malloc(n * sizeof(double complex));
     sort_record_order(ev, order, n, cmp);
 
-    for (i = 0; i < n; i++){
+    for (i = 0; i < n; i++) {
         // reorder left eigenvectors
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             vectmp[j] = vl[n * order[j] + i];
         }
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             vl[n * j + i] = vectmp[j];
         }
         // reorder right eigenvectors
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             vectmp[j] = vr[n * order[j] + i];
         }
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             vr[n * j + i] = vectmp[j];
         }
     }
@@ -144,18 +145,18 @@ void sort_vectors(int n, double complex *ev, double complex *vl, double complex 
  *   cmp  --  comparator function
  ******************************************************************************/
 void sort_record_order(double complex *arr, int32_t *order, size_t n,
-        int (*cmp)(double complex, double complex))
+                       int (*cmp)(double complex, double complex))
 {
     double complex ztmp;
     size_t i, j;
     int32_t itmp;
 
-    for (i = 0; i < n; i++){
+    for (i = 0; i < n; i++) {
         order[i] = i;
     }
 
-    for (i = 0; i < n - 1; i++){
-        for (j = i + 1; j < n; j++){
+    for (i = 0; i < n - 1; i++) {
+        for (j = i + 1; j < n; j++) {
             if (cmp(arr[i], arr[j]) < 0) {
                 continue;
             }

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -49,7 +49,7 @@
  * all we need is to flip particle creation lines to turn them to valence hole
  * annihilation lines. See Kaldor, J. Comp. Chem. V. 8, P.448 (1987) for details.
  *
- * 2019 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "methods.h"
@@ -215,7 +215,7 @@ int sector20(cc_options_t *opts)
         printf("\tnot converged!\n");
         return EXIT_FAILURE;
     }
-    else{
+    else {
         printf("\tconverged in %d iterations\n", it);
     }
 
@@ -263,7 +263,7 @@ void init_amplitudes_2h0p()
             printf(" S{20}_2 amplitudes successfully read from disk\n");
             calc_t2 = 0;
         }
-        else{
+        else {
             printf(" S{20}_2 amplitudes will be calculated\n");
         }
         /*if (triples) {

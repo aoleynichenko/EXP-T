@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,7 +27,7 @@
  *
  * Direct Inversion in the Iterative Subspace for Coupled Cluster.
  *
- * 2020 Alexander Oleynichenko
+ * 2020-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #ifndef CC_DIIS_H_INCLUDED
@@ -36,7 +36,6 @@
 #include "datamodel.h"
 
 #define DIIS_MAX 1000
-
 
 /**
  * all the amplitudes to be used in extrapolation with corresponding error
@@ -67,10 +66,10 @@ diis_queue_t *new_diis_queue(int do_t1, int do_t2, int do_t3);
 void delete_diis_queue(diis_queue_t *q);
 
 void diis_put(diis_queue_t *q,
-        char *diag_t1new, char *diag_t1old,
-        char *diag_t2new, char *diag_t2old,
-        char *diag_t3new, char *diag_t3old,
-        int iter);
+              char *diag_t1new, char *diag_t1old,
+              char *diag_t2new, char *diag_t2old,
+              char *diag_t3new, char *diag_t3old,
+              int iter);
 
 void diis_truncate(diis_queue_t *q, int len);
 

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -29,7 +29,7 @@
  *  - intermediate Hamiltonians;
  *  + Andrei Zaitsevskii's dynamic shifts.
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <assert.h>
@@ -144,7 +144,7 @@ diagram_t *diagram_diveps(diagram_t *dg)
             // loop over matrix elements
             for (i = 0; i < size; i++) {
                 // if matrix element is zero we can skip it
-                double complex t = carith ? buf[i] : ((double *)buf)[i]+0.0*I;
+                double complex t = carith ? buf[i] : ((double *) buf)[i] + 0.0 * I;
                 if (cabs(t) < ZERO_THRESH) {
                     continue;
                 }
@@ -170,7 +170,7 @@ diagram_t *diagram_diveps(diagram_t *dg)
                 else if (do_orbshift == 2) {
                     // count number of valence indices
                     int nvalence = is_active(idx_0) + is_active(idx_1);
-                    double actual_shift = nvalence > 0 ? cc_opts->orbshift_0h0p[nvalence-1] : 0.0;
+                    double actual_shift = nvalence > 0 ? cc_opts->orbshift_0h0p[nvalence - 1] : 0.0;
                     divide_with_shift(&t, denom, shift_type, actual_shift, npower);
                 }
                 else {
@@ -203,7 +203,7 @@ diagram_t *diagram_diveps(diagram_t *dg)
             // loop over matrix elements
             for (i = 0; i < size; i++) {
                 // if matrix element is zero we can skip it
-                double complex t = carith ? buf[i] : ((double *)buf)[i]+0.0*I;
+                double complex t = carith ? buf[i] : ((double *) buf)[i] + 0.0 * I;
                 if (cabs(t) < ZERO_THRESH) {
                     continue;
                 }
@@ -239,7 +239,7 @@ diagram_t *diagram_diveps(diagram_t *dg)
                     // count number of valence indices
                     int nvalence = is_active(idx_0) + is_active(idx_1) +
                                    is_active(idx_2) + is_active(idx_3);
-                    double actual_shift = nvalence > 0 ? cc_opts->orbshift_0h0p[2 + nvalence-1] : 0.0;
+                    double actual_shift = nvalence > 0 ? cc_opts->orbshift_0h0p[2 + nvalence - 1] : 0.0;
                     divide_with_shift(&t, denom, shift_type, actual_shift, npower);
                 }
                 else {
@@ -296,7 +296,7 @@ diagram_t *diagram_diveps(diagram_t *dg)
                                     double denom = denom_4 - eps[idx_5];
 
                                     double complex t = carith ?
-                                            buf[index] : ((double *)buf)[index]+0.0*I;
+                                                       buf[index] : ((double *) buf)[index] + 0.0 * I;
                                     if (cabs(t) < ZERO_THRESH) {
                                         index++;
                                         continue;
@@ -408,7 +408,7 @@ void divide_with_shift(double complex *val, double denom, int shift_type, double
             // real simulation of imaginary shift
             // D' = D + S^2/D * (S^2/(D^2+S^2))^m
             denom = denom + (shift) * (shift) / denom *
-                    pow(shift * shift / (denom * denom + shift * shift), npower);
+                            pow(shift * shift / (denom * denom + shift * shift), npower);
             *val = *val / denom;
             break;
         case CC_SHIFT_IMAG:

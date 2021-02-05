@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -40,17 +40,17 @@ int inv(size_t n, double complex *A, double complex *Ainv)
     int *ipiv;
     int ret;
 
-    ipiv = (int *) cc_malloc(sizeof(int) * (n+1));
+    ipiv = (int *) cc_malloc(sizeof(int) * (n + 1));
 
     memmove(Ainv, A, sizeof(double complex) * n * n);
 
 #ifdef BLAS_MKL
-    ret =  LAPACKE_zgetrf(LAPACK_ROW_MAJOR, n, n, (MKL_Complex16 *) Ainv, n, ipiv);
+    ret = LAPACKE_zgetrf(LAPACK_ROW_MAJOR, n, n, (MKL_Complex16 *) Ainv, n, ipiv);
 #else
     ret =  LAPACKE_zgetrf(CblasRowMajor, n, n, Ainv, n, ipiv);
 #endif
 
-    if (ret !=0) {
+    if (ret != 0) {
         return ret;
     }
 

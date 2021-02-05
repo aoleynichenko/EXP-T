@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -34,7 +34,7 @@
  *   time_stop("fock");
  *   timer_stats();  // print statistics
  *
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  **********************************************************************/
 
 #include <string.h>
@@ -73,7 +73,7 @@ void timer_new_entry(char *key, char *label)
 {
     int i;
 
-    for (i = 0; i < n_entries; i++){
+    for (i = 0; i < n_entries; i++) {
         // found old entry
         if (strncmp(timer_entries[i].key, key, TIMER_MAX_KEY) == 0) {
             return;
@@ -117,7 +117,7 @@ void timer_start(char *key)
 {
     int i;
 
-    for (i = 0; i < n_entries; i++){
+    for (i = 0; i < n_entries; i++) {
         if (strncmp(timer_entries[i].key, key, TIMER_MAX_KEY) == 0) {
             timer_entries[i].on = 1;
             timer_entries[i].t0 = abs_time();
@@ -140,7 +140,7 @@ void timer_stop(char *key)
 {
     int i;
 
-    for (i = 0; i < n_entries; i++){
+    for (i = 0; i < n_entries; i++) {
         if (strncmp(timer_entries[i].key, key, TIMER_MAX_KEY) == 0) {
             timer_entries[i].on = 0;
             timer_entries[i].total += abs_time() - timer_entries[i].t0;
@@ -162,7 +162,7 @@ double timer_get(char *key)
 {
     int i;
 
-    for (i = 0; i < n_entries; i++){
+    for (i = 0; i < n_entries; i++) {
         if (strncmp(timer_entries[i].key, key, TIMER_MAX_KEY) == 0) {
             return timer_entries[i].total;
         }
@@ -186,7 +186,7 @@ void timer_stats()
     printf("\n");
     printf(" time for (sec):\n");
     printf(" -------------------------------------------------------\n");
-    for (i = 0; i < n_entries; i++){
+    for (i = 0; i < n_entries; i++) {
         printf("  %-40s%13.3f\n", timer_entries[i].label, timer_entries[i].total);
         total += timer_entries[i].total;
     }

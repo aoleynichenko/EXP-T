@@ -1,6 +1,6 @@
 !
 ! EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
-! Copyright (C) 2018-2020 The EXP-T developers.
+! Copyright (C) 2018-2021 The EXP-T developers.
 !
 ! This file is part of EXP-T.
 !
@@ -67,7 +67,7 @@
 ! (3) Dyall K., Faegri K. Introduction to Relativistic Quantum Chemistry.
 !     Oxford University Press, 2007.
 !
-! 2018-2019 Alexander Oleynichenko
+! 2018-2021 Alexander Oleynichenko
 ! ******************************************************************************
 
 
@@ -390,7 +390,7 @@ contains
                         end if
                         nint = buf_nint(ibuf)
                         write (filename, "(a,a1,i0,a1,i0,a1,i0,a1,i0,a1)") trim(files_prefix), &
-                         "-", sb1, "-", sb2, "-", sb3, "-", sb4
+                                "-", sb1, "-", sb2, "-", sb3, "-", sb4
                         if (.not. buf_flushed(ibuf)) then
                             open(unit = 1234, iostat = stat, file = filename, status = 'old')
                             if (stat == 0) close(1234, status = 'delete')
@@ -480,7 +480,7 @@ contains
         ! flush buffer if needed
         ! "VINT-*" file must be truncated if opened for the first time
         if (nint == BUF_SIZE) then
-            write (filename, "(a,a1,i0,a1,i0,a1,i0,a1,i0,a1)") trim(files_prefix),"-",sb1,"-",sb2,"-",sb3,"-",sb4
+            write (filename, "(a,a1,i0,a1,i0,a1,i0,a1,i0,a1)") trim(files_prefix), "-", sb1, "-", sb2, "-", sb3, "-", sb4
             if (.not. buf_flushed(ibuf)) then
                 open(unit = 1234, iostat = stat, file = filename, status = 'old')
                 if (stat == 0) close(1234, status = 'delete')
@@ -673,7 +673,7 @@ subroutine dirac_interface_binary(err) bind(C)
     integer(4) :: recommended_carith
     integer(4) :: skip_mdcint
     integer(4), parameter :: STDOUT = 6
-    character(len=256) :: twoprop_file_name
+    character(len = 256) :: twoprop_file_name
 
     common /dirac_data/ nspinors, breit, enuc, invsym, nz_arith, is_spinfree, norb_total, escf, &
             nsymrp, repnames, nactive, nstr, nfrozen, ndelete, nsymrpa, repanames, multb, nbsymrp, &
@@ -1031,8 +1031,8 @@ subroutine read_two_electron_prop(prop_name, file_name)
     implicit none
 
     ! argument
-    character(len=*) :: prop_name
-    character(len=*) :: file_name
+    character(len = *) :: prop_name
+    character(len = *) :: file_name
     ! names of integral files
     character(len = 1024) :: oneel_file   ! passed via the /mrconee_mdcint/ common
     character(len = 1024) :: twoel_file
@@ -1056,21 +1056,21 @@ subroutine read_two_electron_prop(prop_name, file_name)
     end interface
 
     print *
-    write (*,'(3a)'), ' *** ', trim(prop_name), ' FILE ***'
+    write (*, '(3a)'), ' *** ', trim(prop_name), ' FILE ***'
     call c_asctime()
     luint = 43
     open(unit = luint, file = trim(file_name), form = 'unformatted', access = 'stream')
     rewind(luint)
 
-10  continue
+    10  continue
     read (luint, end = 11) i2, j2, k2, l2, gint
     zgint = gint
     call put_integral(i2, l2, k2, j2, zgint)
     goto 10
-11  continue
+    11  continue
 
     call c_asctime()
-    write (*,'(3a)'), ' *** END OF ', trim(prop_name), ' FILE ***'
+    write (*, '(3a)'), ' *** END OF ', trim(prop_name), ' FILE ***'
     print *
 
 end subroutine read_two_electron_prop
@@ -1443,7 +1443,7 @@ subroutine read_mdprop()
     integer :: mdprop
     integer :: fprop   ! formatted file with integrals
     character(len = 32) :: achar
-    real(8), dimension(:,:,:), allocatable :: prop
+    real(8), dimension(:, :, :), allocatable :: prop
     integer :: i, j
 
     print *
@@ -1457,7 +1457,7 @@ subroutine read_mdprop()
     end if
 
     print *, "MDPROP file exists"
-    allocate(prop(2,n_spinors,n_spinors))
+    allocate(prop(2, n_spinors, n_spinors))
 
     mdprop = 10
     open(unit = mdprop, file = prop_file, form = "unformatted")
@@ -1570,7 +1570,7 @@ contains
         open(unit = fd, file = file, err = 13, status = 'old')
         31  continue
         read (fd, *, err = 30, end = 30) i, j, val_re, val_im
-        mat(i, j) = cmplx(val_re, val_im, kind=8)
+        mat(i, j) = cmplx(val_re, val_im, kind = 8)
         goto 31
         30  continue
         close(unit = fd)

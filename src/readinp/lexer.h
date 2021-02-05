@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -75,8 +75,6 @@ enum {
     KEYWORD_ONEPROP,
     KEYWORD_TWOPROP,
     KEYWORD_MEMORY,
-    KEYWORD_MEMORY_MB,
-    KEYWORD_MEMORY_GB,
     KEYWORD_TILESIZE,
     KEYWORD_DISK_USAGE,
     KEYWORD_COMPRESS,

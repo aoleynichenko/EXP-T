@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -54,7 +54,7 @@
  *    (like those in triples and quadruples)
  * 6. Asymptotic behaviour: O(N^{2n}) for the n-particle diagram.
  *
- * 2017-2018 Alexander Oleynichenko
+ * 2017-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <stdio.h>
@@ -122,10 +122,14 @@ void reorder(char *src, char *target, char *perm_str)
  * for real and complex numbers
  */
 #define TYPENAME double_complex_t
-    #include "reorder_block.c"
+
+#include "reorder_block.c"
+
 #undef TYPENAME
 #define TYPENAME double
-    #include "reorder_block.c"
+
+#include "reorder_block.c"
+
 #undef TYPENAME
 
 
@@ -147,9 +151,9 @@ diagram_t *diagram_reorder(diagram_t *dg, int *perm, int perm_unique)
         valence[i] = dg->valence[perm[i]] + '0';
         order[i] = dg->order[perm[i]] + '0';
     }
-    qparts [rank] = '\0';
+    qparts[rank] = '\0';
     valence[rank] = '\0';
-    order  [rank] = '\0';
+    order[rank] = '\0';
 
     tgt = diagram_new("rdr " /*dg->name*/, qparts, valence, order, perm_unique);
 
@@ -190,10 +194,10 @@ diagram_t *diagram_reorder(diagram_t *dg, int *perm, int perm_unique)
         }
 
         if (carith) {
-            TEMPLATE(reorder_block,double_complex_t)(sb_src, sb_tgt, perm);
+            TEMPLATE(reorder_block, double_complex_t)(sb_src, sb_tgt, perm);
         }
         else {
-            TEMPLATE(reorder_block,double)(sb_src, sb_tgt, perm);
+            TEMPLATE(reorder_block, double)(sb_src, sb_tgt, perm);
         }
 
     }  // end loop over blocks
@@ -230,6 +234,7 @@ void reverse_perm(int n, int *a, int *ainv)
     }
 }
 
+
 /**
  * restores permutationally non-unique block by reordering of its unique counterpart
  * @param dg diagram to which the block belongs
@@ -255,14 +260,14 @@ void restore_block(diagram_t *dg, block_t *b)
     b->buf = (double complex *) cc_calloc(b->size, SIZEOF_WORKING_TYPE);
 
     if (carith) {
-        TEMPLATE(reorder_block,double_complex_t)(uniq_block, b, b->perm_from_unique);
+        TEMPLATE(reorder_block, double_complex_t)(uniq_block, b, b->perm_from_unique);
         double complex *zbuf = b->buf;
         for (size_t i = 0; i < b->size; i++) {
             zbuf[i] *= b->sign;
         }
     }
     else {
-        TEMPLATE(reorder_block,double)(uniq_block, b, b->perm_from_unique);
+        TEMPLATE(reorder_block, double)(uniq_block, b, b->perm_from_unique);
         double *dbuf = (double *) b->buf;
         for (size_t i = 0; i < b->size; i++) {
             dbuf[i] *= b->sign;

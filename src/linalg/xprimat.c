@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -52,7 +52,7 @@ void xprimat(data_type_t type, const void *A, int n, int m, const char *comment)
     if (type == CC_DOUBLE) {
         dprimat((double *) A, n, m, comment);
     }
-    else{ // type == CC_DOUBLE_COMPLEX
+    else { // type == CC_DOUBLE_COMPLEX
         zprimat((double complex *) A, n, m, comment);
     }
 }
@@ -76,14 +76,14 @@ void dprimat(const double *A, int n, int m, const char *comment)
         ncol = (n_remain < maxcol) ? n_remain : maxcol;
         // print block's header
         printf("     ");
-        for (i = 0; i < ncol; i++){
+        for (i = 0; i < ncol; i++) {
             printf("              [%3d]           ", n_done + i);
         }
         printf("\n");
         // print block
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             printf(" [%3d] ", j);
-            for (i = 0; i < ncol; i++){
+            for (i = 0; i < ncol; i++) {
                 a_ij = A[j * n + n_done + i];
                 fabs(a_ij) < thresh ? printf("       .      ") : printf("%14.5e", a_ij);
                 printf("  ");
@@ -114,14 +114,14 @@ void zprimat(const double complex *A, int n, int m, const char *comment)
         ncol = (n_remain < maxcol) ? n_remain : maxcol;
         // print block's header
         printf("     ");
-        for (i = 0; i < ncol; i++){
+        for (i = 0; i < ncol; i++) {
             printf("              [%3d]           ", n_done + i);
         }
         printf("\n");
         // print block
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             printf(" [%3d] ", j);
-            for (i = 0; i < ncol; i++){
+            for (i = 0; i < ncol; i++) {
                 re = creal(A[j * n + n_done + i]);
                 im = cimag(A[j * n + n_done + i]);
                 fabs(re) < thresh ? printf("       .      ") : printf("%14.5e", re);

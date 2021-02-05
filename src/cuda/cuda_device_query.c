@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,7 +27,7 @@
  *
  * Extracts info about NVIDIA GPU(s) and prints them to stdout.
  *
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "cuda_code.h"
@@ -64,13 +64,13 @@ int cuda_device_query()
     if (device_count == 0) {
         printf("There are no available device(s) that support CUDA\n");
     }
-    else{
+    else {
         printf("Detected %d CUDA Capable device(s)\n", device_count);
     }
 
     // for each device: get device properties and print them to stdout
 
-    for (device = 0; device < device_count; device++){
+    for (device = 0; device < device_count; device++) {
         cudaSetDevice(device);
         cudaGetDeviceProperties(&dev_prop, device);
 

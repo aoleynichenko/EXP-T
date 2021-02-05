@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,7 +26,7 @@
  *
  * Analysis of possible intruder states.
  *
- * 2020 Alexander Oleynichenko
+ * 2020-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <assert.h>
@@ -48,7 +48,8 @@ typedef struct {
     double denom;
 } indexed_denom_t;
 
-void try_denom(indexed_denom_t *denoms, int ndenoms, int dim, int* idx, double d)
+
+void try_denom(indexed_denom_t *denoms, int ndenoms, int dim, int *idx, double d)
 {
     for (int i = 0; i < ndenoms; i++) {
         if (d > denoms[i].denom) {
@@ -58,7 +59,7 @@ void try_denom(indexed_denom_t *denoms, int ndenoms, int dim, int* idx, double d
             }
             return;
         }
-        // omit repeating max values
+            // omit repeating max values
         else if (fabs(d - denoms[i].denom) < 1e-6) {
             return;
         }
@@ -309,22 +310,22 @@ void predict_intruders(char *diagram_name, int nmax)
             continue;
         }
 
-        printf(" [%d] Denominator [ ", iden+1);
-        for (i = 0; i < rk / 2; i++){
-            printf("%d ", max_denoms[iden].idx[i]+1);
+        printf(" [%d] Denominator [ ", iden + 1);
+        for (i = 0; i < rk / 2; i++) {
+            printf("%d ", max_denoms[iden].idx[i] + 1);
         }
         printf("-> ");
-        for (i = rk / 2; i < rk; i++){
-            printf("%d ", max_denoms[iden].idx[i]+1);
+        for (i = rk / 2; i < rk; i++) {
+            printf("%d ", max_denoms[iden].idx[i] + 1);
         }
         printf("] = ");
         printf("%.4E\n", max_denoms[iden].denom);
 
         // print more information about these spinors in order to simplify analysis
-        for (i = 0; i < rk; i++){
+        for (i = 0; i < rk; i++) {
             get_spinor_info(max_denoms[iden].idx[i], &repno, &occ, &active, &spinor_e);
             printf("     [%4d] eps=%16.8f rep=%s %s %s\n",
-                   max_denoms[iden].idx[i]+1, spinor_e, get_irrep_name(repno),
+                   max_denoms[iden].idx[i] + 1, spinor_e, get_irrep_name(repno),
                    (active == 1) ? "active" : "inactive",
                    (occ == 1) ? "occ" : "virt");
         }

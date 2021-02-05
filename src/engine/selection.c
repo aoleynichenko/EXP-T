@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -29,7 +29,7 @@
  * These subroutines not affect performance; they are designed just for fast
  * construction and testing of new approximate schemes.
  *
- * 2020 Alexander Oleynichenko
+ * 2020-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "selection.h"
@@ -52,10 +52,10 @@
 void set_zero(double complex *t)
 {
     if (carith) {
-        *t = 0.0 + 0.0*I;
+        *t = 0.0 + 0.0 * I;
     }
     else {
-        *((double *)t) = 0.0;
+        *((double *) t) = 0.0;
     }
 }
 
@@ -73,10 +73,10 @@ void selection_all(ampl_selection_t *rule, int *idx, double complex *t)
 void selection_exc_window(ampl_selection_t *rule, int *idx, double complex *data)
 {
     double exc_energy = 0;  // sum eps{part} - sum eps{hole}, normally positive
-    for (int i = 0; i < rule->rank/2; i++) {
+    for (int i = 0; i < rule->rank / 2; i++) {
         exc_energy -= spinor_info[idx[i]].eps;
     }
-    for (int i = rule->rank/2; i < rule->rank; i++) {
+    for (int i = rule->rank / 2; i < rule->rank; i++) {
         exc_energy += spinor_info[idx[i]].eps;
     }
 
@@ -105,7 +105,6 @@ void selection_eps_window(ampl_selection_t *rule, int *idx, double complex *data
         }
     }
 
-
     if (in_window) {
         if (rule->task == CC_SELECTION_SET_ZERO) {
             set_zero(data);
@@ -126,12 +125,12 @@ void selection_spectator(ampl_selection_t *rule, int *idx, double complex *data)
 {
     int n_spect_lines = 0;
 
-    for (int i = 0; i < rule->rank/2; i++) {
+    for (int i = 0; i < rule->rank / 2; i++) {
         if (!is_active(idx[i])) {
             continue;
         }
-        for (int j = rule->rank/2; j < rule->rank; j++) {
-            if (idx[i] == idx[j])  {
+        for (int j = rule->rank / 2; j < rule->rank; j++) {
+            if (idx[i] == idx[j]) {
                 n_spect_lines++;
                 break;
             }
@@ -157,7 +156,7 @@ void selection_spectator(ampl_selection_t *rule, int *idx, double complex *data)
 void selection_act_to_act(ampl_selection_t *rule, int *idx, double complex *data)
 {
     int n_val_indices = 0;
-    for (int i = rule->rank/2; i < rule->rank; i++) {
+    for (int i = rule->rank / 2; i < rule->rank; i++) {
         if (is_active(idx[i])) {
             n_val_indices++;
         }
@@ -214,7 +213,7 @@ void apply_selections(int sect_h, int sect_p, char *diag_name)
 
             for (i = 0; i < block->size; i++) {
                 int *idx = indices + block->rank * i;
-                double complex *data = carith ? (block->buf + i) : (double complex *)((double*)block->buf + i);
+                double complex *data = carith ? (block->buf + i) : (double complex *) ((double *) block->buf + i);
 
                 switch (rule->rule) {
                     case CC_SELECTION_ALL:

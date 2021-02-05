@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
  * Tools for construction and diagonalization of the effective Hamiltonian
  * matrix and the subsequent analysis of its eigenvalues and eigenvectors.
  *
- * 2019 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #ifndef CC_HEFF_H_INCLUDED
@@ -46,7 +46,6 @@ typedef struct {
     double complex eigval;
     int repno;
 } eigval_t;
-
 
 void diag_heff(int sect_h, int sect_p, ...);
 

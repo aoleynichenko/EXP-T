@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,7 +24,7 @@
 /**
 * Utility functions for FSCC models.
 *
-* 2020 Alexander Oleynichenko
+* 2020-2021 Alexander Oleynichenko
 */
 
 #include "ccutils.h"
@@ -37,6 +37,7 @@
 #include "datamodel.h"
 #include "options.h"
 #include "symmetry.h"
+
 
 /**
  * flushes to file sizes of all blocks in the diagram
@@ -111,12 +112,12 @@ void print_max_ampl(char *label, char *dg_name)
     rk = rank(dg_name);
     findmax(dg_name, &max_t, max_idx);
     printf(" %s [ ", label);
-    for (i = 0; i < rk / 2; i++){
-        printf("%d ", max_idx[i]+1);
+    for (i = 0; i < rk / 2; i++) {
+        printf("%d ", max_idx[i] + 1);
     }
     printf("-> ");
-    for (i = rk / 2; i < rk; i++){
-        printf("%d ", max_idx[i]+1);
+    for (i = rk / 2; i < rk; i++) {
+        printf("%d ", max_idx[i] + 1);
     }
     printf("] = ");
     if (max_t > 1e-4) {
@@ -127,10 +128,10 @@ void print_max_ampl(char *label, char *dg_name)
     }
 
     // print more information about these spinors in order to simplify analysis
-    for (i = 0; i < rk; i++){
+    for (i = 0; i < rk; i++) {
         get_spinor_info(max_idx[i], &repno, &occ, &active, &eps);
         printf("   [%4d] eps=%16.8f rep=%s %s %s\n",
-                max_idx[i]+1, eps, get_irrep_name(repno),
+               max_idx[i] + 1, eps, get_irrep_name(repno),
                (active == 1) ? "active" : "inactive",
                (occ == 1) ? "occ" : "virt");
     }
@@ -146,11 +147,11 @@ double t1_diagnostic(char *dg_name, int nelec)
         errquit("t1_diagnostic(): diagram '%s' not found", dg_name);
     }
 
-    for (size_t isb = 0; isb < dg->n_blocks; isb++){
+    for (size_t isb = 0; isb < dg->n_blocks; isb++) {
         block_t *sb = dg->blocks[isb];
         symblock_load(sb);
-        for (size_t i = 0; i < sb->size; i++){
-            double abs_val = carith ? cabs(sb->buf[i]) : fabs(((double *)sb->buf)[i]);
+        for (size_t i = 0; i < sb->size; i++) {
+            double abs_val = carith ? cabs(sb->buf[i]) : fabs(((double *) sb->buf)[i]);
             t1diagn += abs_val * abs_val;
         }
         symblock_unload(sb);
@@ -175,7 +176,7 @@ int check_divergence(char *dg_name)
     if (max_t > cc_opts->div_thresh) {
         return 1;
     }
-    else{
+    else {
         return 0;
     }
 }

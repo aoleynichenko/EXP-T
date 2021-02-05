@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -30,6 +30,7 @@
 #include "memory.h"
 
 void eigher(double complex *A, double *eva, int32_t n);
+
 
 /**
  * Symmetric (Loewdin) orthogonalization
@@ -79,10 +80,10 @@ void loewdin_orth(size_t n, double complex *C, double complex *C_orth, int print
     // inverse transformation: S = U * S12_diag * U^H
     // but we store C in "transposed" manner => S = U^H * S_12 * U (why ?!)
     // "undiagonalization"
-    for (int i = 0; i < n; i++){
-        for (int j = 0; j < n; j++){
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
             double complex zzz = 0.0 + 0.0 * I;
-            for (int k = 0; k < n; k++){
+            for (int k = 0; k < n; k++) {
                 zzz += U[k * n + i] * conj(U[k * n + j]) / sqrt(s_eigval[k]);
             }
             S12[j * n + i] = zzz;
@@ -94,10 +95,10 @@ void loewdin_orth(size_t n, double complex *C, double complex *C_orth, int print
 
     // C' = S^{-1/2} * C
     // But in fact: C' = C^T S^{-1/2}
-    for (int i = 0; i < n; i++){
-        for (int j = 0; j < n; j++){
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
             double complex zzz = 0.0 + 0.0 * I;
-            for (int k = 0; k < n; k++){
+            for (int k = 0; k < n; k++) {
                 zzz = zzz + C[k * n + i] * S12[k * n + j];
             }
             U[j * n + i] = zzz;

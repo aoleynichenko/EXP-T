@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,7 +27,7 @@
  *
  * Permutation operators acting on diagrams.
  *
- * 2018-2019 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <ctype.h>
@@ -164,7 +164,6 @@ void elementary_perm(char *src_name, char *perm_str)
     else {
         errquit("permute(): wrong permutation: %s", perm_str);
     }
-
 
     timer_new_entry("permute", "Permutation operators");
     timer_start("permute");

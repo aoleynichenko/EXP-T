@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -34,7 +34,7 @@
  * all we need is to flip hole creation lines to turn them to valence particle
  * annihilation lines. See Kaldor, J. Comp. Chem. V. 8, P.448 (1987) for details.
  *
- * 2019 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <complex.h>
@@ -65,7 +65,9 @@ void calc_S2();
 
 void calc_S3(int pt_order);
 
-void t3corr_0h1p();
+void sector_0h1p_ccsd_t3();
+
+void sector_0h1p_ccsd_t4();
 
 void folded_0h1p();
 
@@ -156,7 +158,7 @@ int sector01(cc_options_t *opts)
         printf(" it.       diffmax(S1)       diffmax(S2)     max(S1)     max(S2)    t,sec       mem,Gb\n");
         printf(" ---------------------------------------------------------------------------------------\n");
     }
-    else{
+    else {
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
         printf(" it.       diffmax(S1)       diffmax(S2)       diffmax(S3)     max(S1)     max(S2)     max(S3)    t,sec       mem,Gb\n");
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
@@ -304,14 +306,14 @@ int sector01(cc_options_t *opts)
     if (triples == 0) {
         printf(" ---------------------------------------------------------------------------------------\n");
     }
-    else{
+    else {
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
     }
     if (converged == 0) {
         printf("\tnot converged!\n");
         return EXIT_FAILURE;
     }
-    else{
+    else {
         printf("\tconverged in %d iterations\n", it);
     }
 
@@ -388,21 +390,21 @@ void init_amplitudes_0h1p()
             printf(" S{01}_1 amplitudes successfully read from disk\n");
             calc_s1 = 0;
         }
-        else{
+        else {
             printf(" S{01}_1 amplitudes will be calculated\n");
         }
         if (diagram_read("s2c.dg") != NULL) {
             printf(" S{01}_2 amplitudes successfully read from disk\n");
             calc_s2 = 0;
         }
-        else{
+        else {
             printf(" S{01}_2 amplitudes will be calculated\n");
         }
         if (diagram_read("veff01.dg") != NULL) {
             printf(" Heff{01} diagram successfully read from disk\n");
             calc_veff = 0;
         }
-        else{
+        else {
             printf(" Heff{01} diagram will be calculated\n");
         }
         if (triples) {
@@ -410,7 +412,7 @@ void init_amplitudes_0h1p()
                 printf(" S{01}_3 amplitudes successfully read from disk\n");
                 calc_s3 = 0;
             }
-            else{
+            else {
                 printf(" S{01}_3 amplitudes will be calculated\n");
             }
         }
@@ -994,7 +996,6 @@ void calc_S2()
     }
 #endif
 }
-
 
 
 /*******************************************************************************

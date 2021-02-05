@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -43,7 +43,7 @@
  * => A. Shee, L. Visscher, T. Saue. J. Chem. Phys., V. 145, P. 184107 (2016)
  * => L. Visscher, T. Lee, K. Dyall. J. Chem. Phys., V. 105, P. 8769 (1996)
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #ifndef CC_DATAMODEL_H_INCLUDED
@@ -107,9 +107,9 @@ struct block {
 
 typedef struct block block_t;
 
-
 // constructor and destructor
-block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valence, int *order, int storage_type, int only_unique);
+block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valence, int *order, int storage_type,
+                      int only_unique);
 
 void symblock_gen_indices(block_t *block, int *indices);
 
@@ -140,7 +140,6 @@ void symblock_store(block_t *block);
 void symblock_write(int fd, block_t *block);
 
 block_t *symblock_read(int fd);
-
 
 struct diagram {
 

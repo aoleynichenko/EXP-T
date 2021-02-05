@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
  * All information about one-particle functions (spin-orbitals or spinors)
  * (and symmetry).
  *
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #ifndef CC_SPINORS_H_INCLUDED
@@ -112,7 +112,7 @@ void get_active_space(int *nacth, int *nactp, moindex_t *active_holes_indices, m
 void create_spinor_blocks();
 
 void classify_spinors(double actsp_min, double actsp_max,
-         int nacth, int nactp);
+                      int nacth, int nactp);
 
 void setup_singles_only_space(int *ccs_only_space);
 

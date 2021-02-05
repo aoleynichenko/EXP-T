@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,7 +27,7 @@
  * Calculation of density matrices and natural orbitals.
  * Associated header file: heff.h
  *
- * 2019 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <complex.h>
@@ -63,9 +63,9 @@ void sort_vectors(int n, double complex *ev, double complex *vl, double complex 
  * @param dim_dm (output) n_active
  */
 void construct_ms_density_matrix(int sect_h, int sect_p,
-        int dim_bra, double complex *coef_bra, slater_det_t *dets_bra,
-        int dim_ket, double complex *coef_ket, slater_det_t *dets_ket,
-        double complex *dm, size_t *dim_dm)
+                                 int dim_bra, double complex *coef_bra, slater_det_t *dets_bra,
+                                 int dim_ket, double complex *coef_ket, slater_det_t *dets_ket,
+                                 double complex *dm, size_t *dim_dm)
 {
     // only 'valence' parts of DMs are be constructed
     // dim DMs = n_active x n_active
@@ -73,22 +73,23 @@ void construct_ms_density_matrix(int sect_h, int sect_p,
     int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
 
     // TODO: refactor, separate utility function (move to spinors.c)
-    for (int i = 0; i < nspinors; i++){
+    for (int i = 0; i < nspinors; i++) {
         if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
         }
     }
 
-    for (int p = 0; p < n_active; p++){
-        for (int q = 0; q < n_active; q++){
+    for (int p = 0; p < n_active; p++) {
+        for (int q = 0; q < n_active; q++) {
             double complex d_pq = 0.0 + 0.0 * I;
             // loops over model vectors
-            for (size_t i = 0; i < dim_bra; i++){
-                for (size_t j = 0; j < dim_ket; j++){
+            for (size_t i = 0; i < dim_bra; i++) {
+                for (size_t j = 0; j < dim_ket; j++) {
                     slater_det_t *bra = &dets_bra[i];
                     slater_det_t *ket = &dets_ket[j];
-                    int bra_d_ket = density_matrix_element(sect_h, sect_p, active_spinors[p], active_spinors[q], bra, ket);
+                    int bra_d_ket = density_matrix_element(sect_h, sect_p, active_spinors[p], active_spinors[q], bra,
+                                                           ket);
                     d_pq += conj(coef_bra[i]) * coef_ket[j] * bra_d_ket;
                 }
             }
@@ -104,14 +105,14 @@ double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, doub
     int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
 
     // TODO: refactor, separate utility function (move to spinors.c)
-    for (int i = 0; i < nspinors; i++){
+    for (int i = 0; i < nspinors; i++) {
         if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
         }
     }
 
-    double complex sum = 0.0 + 0.0*I;
+    double complex sum = 0.0 + 0.0 * I;
     for (int i = 0; i < n_active; i++) {
         for (int j = 0; j < n_active; j++) {
             int p = active_spinors[i];
@@ -188,7 +189,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         printf("\n\n *** DENSITY MATRIX AND NATURAL ORBITALS FOR THE IRREP %d (%s) STATE %d ***\n", rep1 + 1, rep_name1,
                state1 + 1);
     }
-    else{
+    else {
         printf("\n\n ***   TRANSITION DENSITY MATRIX AND NATURAL TRANSITION ORBITALS   ***\n");
         printf(" *** FOR THE IRREP %2d (%s) STATE %2d  --->  IRREP %2d (%s) STATE %2d TRANSITION ***\n",
                rep1, rep_name1, state1 + 1, rep2, rep_name2, state2 + 1);
@@ -203,7 +204,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     double *lambda;
 
     // TODO: refactor, separate utility function (move to spinors.c)
-    for (int i = 0; i < nspinors; i++){
+    for (int i = 0; i < nspinors; i++) {
         if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
@@ -229,10 +230,10 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     }*/
 
     // allocate working arrays
-    denmat  = zzeros(n_active, n_active);
+    denmat = zzeros(n_active, n_active);
     nat_occ = zzeros(n_active, 1);  // NO occ numbers
-    lambda  = dzeros(n_active, 1);     // NTO singular values
-    natorb_left  = zzeros(n_active, n_active); // for NTOs too
+    lambda = dzeros(n_active, 1);     // NTO singular values
+    natorb_left = zzeros(n_active, n_active); // for NTOs too
     natorb_right = zzeros(n_active, n_active);
 
     // extract model vectors and eigenvalues from the MVCOEF* unformatted file
@@ -245,7 +246,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         read_model_vectors_unformatted(1, 1, "MVCOEF0011", &nrep_0011, mv_blocks_0011);
         b0011 = &mv_blocks_0011[0];
     }
-    for (size_t ib = 0; ib < nrep; ib++){
+    for (size_t ib = 0; ib < nrep; ib++) {
         if (strcmp(mv_blocks[ib].rep_name, rep_name1) == 0) {
             if (sect_h == 1 && sect_p == 1 && rep1 == vac_irrep) {
                 printf(" Mixed 0h0p+1h1p vectors will be used in <bra|\n");
@@ -269,12 +270,12 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
 
     // extract data for state 1
     //if (state1 != -1) {
-        ms_size1 = mvb1->ms_size;
-        dets1 = mvb1->dets;
-        eigval_1 = creal(mvb1->eigval[state1]);
-        energy_cm_1 = mvb1->energy_cm[state1];
-        coef_left1 = mvb1->vl + ms_size1 * state1;
-        coef_right1 = mvb1->vr + ms_size1 * state1;
+    ms_size1 = mvb1->ms_size;
+    dets1 = mvb1->dets;
+    eigval_1 = creal(mvb1->eigval[state1]);
+    energy_cm_1 = mvb1->energy_cm[state1];
+    coef_left1 = mvb1->vl + ms_size1 * state1;
+    coef_right1 = mvb1->vr + ms_size1 * state1;
     /*}
     else{
         ms_size1 = 1;
@@ -287,12 +288,12 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     }*/
     // extract data for state 2 (if tran == 0 => the same as for state 1)
     //if (state2 != -1) {
-        ms_size2 = mvb2->ms_size;
-        dets2 = mvb2->dets;
-        eigval_2 = creal(mvb2->eigval[state2]);
-        energy_cm_2 = mvb2->energy_cm[state2];
-        coef_left2 = mvb2->vl + ms_size2 * state2;
-        coef_right2 = mvb2->vr + ms_size2 * state2;
+    ms_size2 = mvb2->ms_size;
+    dets2 = mvb2->dets;
+    eigval_2 = creal(mvb2->eigval[state2]);
+    energy_cm_2 = mvb2->energy_cm[state2];
+    coef_left2 = mvb2->vl + ms_size2 * state2;
+    coef_right2 = mvb2->vr + ms_size2 * state2;
     /*}
     else{
         ms_size2 = 1;
@@ -307,13 +308,14 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     // density matrix (DM) construction
     // the same code for both cases of DMs and transition DMs
     printf(" Model density matrix construction...\n");
-    construct_ms_density_matrix(sect_h, sect_p, ms_size1, coef_left1, dets1, ms_size2, coef_right2, dets2, denmat, &n_active);
+    construct_ms_density_matrix(sect_h, sect_p, ms_size1, coef_left1, dets1, ms_size2, coef_right2, dets2, denmat,
+                                &n_active);
     //xprimat(CC_COMPLEX, denmat, n_active, n_active, "DM");
 
     // just in order to check correctness: calculate transition dipole moment
     double complex tdm[] = {0.0 + 0.0 * I, 0.0 + 0.0 * I, 0.0 + 0.0 * I};
     char *file_names[] = {"XDIPLEN", "YDIPLEN", "ZDIPLEN"};
-    for (int icoord = 0; icoord < 3; icoord++){
+    for (int icoord = 0; icoord < 3; icoord++) {
         double complex *d_spinor = zzeros(nspinors, nspinors);
         FILE *f = fopen(file_names[icoord], "r");
         if (f == NULL) {
@@ -328,8 +330,8 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         }
         fclose(f);
         tdm[icoord] = 0.0 + 0.0 * I;
-        for (int i = 0; i < n_active; i++){
-            for (int j = 0; j < n_active; j++){
+        for (int i = 0; i < n_active; i++) {
+            for (int j = 0; j < n_active; j++) {
                 idx1 = active_spinors[i];
                 idx2 = active_spinors[j];
                 tdm[icoord] += denmat[i * n_active + j] * d_spinor[idx1 * nspinors + idx2];
@@ -355,7 +357,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     }
         // calculate natural spinors (NOs)
         // diagonalize density matrix
-    else{
+    else {
         // тут происходит очень неустойчивая диагонализация матрицы с кучей нулевых собственных значений
         // но почему все нормально на неортогонализованных векторах?
         // потому что диагонализуемая матрица плотности неэрмитова!
@@ -375,15 +377,15 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         printf("                                |d|  = %10.6f\n", tranmom);
         double sum_lambda_sq = 0.0;  // sum of weights
         int count = 1;
-        for (int i = 0; i < n_active; i++){
-            sum_lambda_sq += lambda[i]*lambda[i];
-            if (lambda[i]*lambda[i] < occ_thresh) {
+        for (int i = 0; i < n_active; i++) {
+            sum_lambda_sq += lambda[i] * lambda[i];
+            if (lambda[i] * lambda[i] < occ_thresh) {
                 continue;
             }
 
-            printf(" [%d] Squared singular value (weight) = %.6f\n", count++, lambda[i]*lambda[i]);
+            printf(" [%d] Squared singular value (weight) = %.6f\n", count++, lambda[i] * lambda[i]);
             printf("    from:\n");
-            for (size_t j = 0; j < n_active; j++){
+            for (size_t j = 0; j < n_active; j++) {
                 double complex coef = natorb_left[n_active * i + j];
                 if (cabs(coef) < coef_thresh) {
                     continue;
@@ -394,7 +396,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
                        spinor_info[ispinor].eps);
             }
             printf("    to:\n");
-            for (size_t j = 0; j < n_active; j++){
+            for (size_t j = 0; j < n_active; j++) {
                 double complex coef = natorb_right[n_active * i + j];
                 if (cabs(coef) < coef_thresh) {
                     continue;
@@ -418,13 +420,13 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         str_replace(natorb_file_name, '/', '|');
         write_NO(natorb_file_name, sect_h, sect_p, n_active, lambda, natorb_right, occ_thresh);
     }
-    else{
+    else {
         printf(" Symmetry of this electronic state: %s\n", rep_name1);
         printf(" Eigenvalue   = %.8f a.u.\n", eigval_1);
         printf(" Energy level = %.2f cm^-1\n", energy_cm_1);
         int count = 1;
         double complex sum_occ = 0.0 + 0.0 * I;  // trace
-        for (int i = 0; i < n_active; i++){
+        for (int i = 0; i < n_active; i++) {
             sum_occ += nat_occ[i];
             if (cimag(nat_occ[i]) > 1e-13) {
                 printf(" Imaginary occupation number: %.3e %.3e\n", creal(nat_occ[i]), cimag(nat_occ[i]));
@@ -434,7 +436,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
             }
 
             printf(" [%d] Occ number = %.6f\n", count++, creal(nat_occ[i]));
-            for (size_t j = 0; j < n_active; j++){
+            for (size_t j = 0; j < n_active; j++) {
                 double complex coef = natorb_right[n_active * i + j];
                 if (cabs(coef) < coef_thresh) {
                     continue;
@@ -463,7 +465,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         char natorb_file_name[256];
         sprintf(natorb_file_name, "NATORB_%dh%dp_%s:%d.dat", sect_h, sect_p, rep_name1, state1 + 1);
         str_replace(natorb_file_name, '/', '|');  // for some irrep names with '/' in order to prevent bugs
-        for (int i = 0; i < n_active; i++){
+        for (int i = 0; i < n_active; i++) {
             lambda[i] = creal(nat_occ[i]);
         }
         write_NO(natorb_file_name, sect_h, sect_p, n_active, lambda, natorb_right, occ_thresh);
@@ -475,7 +477,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     cc_free(lambda);
     cc_free(natorb_left);
     cc_free(natorb_right);
-    for (size_t irep = 0; irep < nrep; irep++){
+    for (size_t irep = 0; irep < nrep; irep++) {
         struct mv_block *b = &mv_blocks[irep];
         cc_free(b->dets);
         cc_free(b->eigval);
@@ -487,7 +489,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     if (tran) {
         printf(" *** end of TRANSITION DENSITY MATRIX AND NATURAL TRANSITION ORBITALS module ***\n");
     }
-    else{
+    else {
         printf(" *** end of DENSITY MATRIX AND NATURAL ORBITALS module ***\n");
     }
 }
@@ -510,7 +512,7 @@ void write_NO(char *natorb_file_name, int sect_h, int sect_p,
 
     // construct 'local indices -> global indices' mapping
     n_active = 0;
-    for (int i = 0; i < nspinors; i++){
+    for (int i = 0; i < nspinors; i++) {
         if (is_act_hole(i) && sect_h > 0 || is_act_part(i) && sect_p > 0) {
             active_spinors[n_active] = i;
             n_active++;
@@ -521,14 +523,14 @@ void write_NO(char *natorb_file_name, int sect_h, int sect_p,
     f = fopen(natorb_file_name, "w");
     fprintf(f, "dim %d\n", n_active);
     fprintf(f, "spinor info:\n");
-    for (int i = 0; i < n_active; i++){
+    for (int i = 0; i < n_active; i++) {
         int ispinor = active_spinors[i];
         fprintf(f, "%4d%20.12f%10s\n", ispinor + 1, spinor_info[ispinor].eps, rep_names[spinor_info[ispinor].repno]);
     }
 
     // calculate number of NOs to be printed (with occ_no >= thresh)
     n_natorb = 0;
-    for (int i = 0; i < n_active; i++){
+    for (int i = 0; i < n_active; i++) {
         if (fabs(creal(occ_numbers[i])) >= occ_thresh) {
             n_natorb++;
         }
@@ -536,7 +538,7 @@ void write_NO(char *natorb_file_name, int sect_h, int sect_p,
     fprintf(f, "nspinors %d\n", n_natorb);
 
     // write NOs
-    for (int i = 0; i < n_active; i++){
+    for (int i = 0; i < n_active; i++) {
         double occ = occ_numbers[i];
         if (fabs(occ) < occ_thresh) {
             continue;
@@ -545,7 +547,7 @@ void write_NO(char *natorb_file_name, int sect_h, int sect_p,
         fprintf(f, "occ %.6f\n", occ);
 
         // write coefficients (all)
-        for (size_t j = 0; j < n_active; j++){
+        for (size_t j = 0; j < n_active; j++) {
             double complex coef = nat_orbs[n_active * i + j];
             double coef_re = creal(coef);
             double coef_im = cimag(coef);
@@ -584,7 +586,7 @@ int cmp_natorb_occupations(double complex occ1, double complex occ2)
     if (occ1_re * occ2_re < 0) {
         return sgn(occ1_re - occ2_re);  // ascending
     }
-    else{
+    else {
         return sgn(fabs(occ2_re) - fabs(occ1_re));  // descending
     }
 }
@@ -615,6 +617,7 @@ int density_matrix_element_1h1p_0h0p(int p, int q, slater_det_t *bra, slater_det
 
 int density_matrix_element_0h3p(int p, int q, slater_det_t *bra, slater_det_t *ket);
 
+
 int density_matrix_element(int sect_h, int sect_p, int p, int q, slater_det_t *bra, slater_det_t *ket)
 {
     if (sect_h == 0 && sect_p == 1) {
@@ -642,7 +645,7 @@ int density_matrix_element(int sect_h, int sect_p, int p, int q, slater_det_t *b
         else if (is_vacuum_det(ket)) {
             return density_matrix_element_1h1p_0h0p(p, q, bra, ket);
         }
-        else{
+        else {
             return density_matrix_element_1h1p(p, q, bra, ket);
         }
     }
@@ -655,7 +658,7 @@ int density_matrix_element(int sect_h, int sect_p, int p, int q, slater_det_t *b
     else if (sect_h == 2 && sect_p == 0) {
         return density_matrix_element_2h0p(p, q, bra, ket);
     }
-    else{
+    else {
         errquit("no density matrix elements implementation for the %dh%dp sector", sect_h, sect_p);
     }
 }
@@ -790,22 +793,22 @@ int density_matrix_element_0h3p(int p, int q, slater_det_t *bra, slater_det_t *k
     + d_cf d_be d_ap d_dq
     */
 
-    return - (c==p) * (b==d) * (a==e) * (f==q)
-           + (c==p) * (b==d) * (a==f) * (e==q)
-           + (c==p) * (b==e) * (a==d) * (f==q)
-           - (c==p) * (b==e) * (a==f) * (d==q)
-           - (c==p) * (b==f) * (a==d) * (e==q)
-           + (c==p) * (b==f) * (a==e) * (d==q)
-           + (c==d) * (b==p) * (a==e) * (f==q)
-           - (c==d) * (b==p) * (a==f) * (e==q)
-           - (c==d) * (b==e) * (a==p) * (f==q)
-           + (c==d) * (b==f) * (a==p) * (e==q)
-           - (c==e) * (b==p) * (a==d) * (f==q)
-           + (c==e) * (b==p) * (a==f) * (d==q)
-           + (c==e) * (b==d) * (a==p) * (f==q)
-           - (c==e) * (b==f) * (a==p) * (d==q)
-           + (c==f) * (b==p) * (a==d) * (e==q)
-           - (c==f) * (b==p) * (a==e) * (d==q)
-           - (c==f) * (b==d) * (a==p) * (e==q)
-           + (c==f) * (b==e) * (a==p) * (d==q);
+    return -(c == p) * (b == d) * (a == e) * (f == q)
+           + (c == p) * (b == d) * (a == f) * (e == q)
+           + (c == p) * (b == e) * (a == d) * (f == q)
+           - (c == p) * (b == e) * (a == f) * (d == q)
+           - (c == p) * (b == f) * (a == d) * (e == q)
+           + (c == p) * (b == f) * (a == e) * (d == q)
+           + (c == d) * (b == p) * (a == e) * (f == q)
+           - (c == d) * (b == p) * (a == f) * (e == q)
+           - (c == d) * (b == e) * (a == p) * (f == q)
+           + (c == d) * (b == f) * (a == p) * (e == q)
+           - (c == e) * (b == p) * (a == d) * (f == q)
+           + (c == e) * (b == p) * (a == f) * (d == q)
+           + (c == e) * (b == d) * (a == p) * (f == q)
+           - (c == e) * (b == f) * (a == p) * (d == q)
+           + (c == f) * (b == p) * (a == d) * (e == q)
+           - (c == f) * (b == p) * (a == e) * (d == q)
+           - (c == f) * (b == d) * (a == p) * (e == q)
+           + (c == f) * (b == e) * (a == p) * (d == q);
 }

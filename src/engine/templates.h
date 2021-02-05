@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,12 +26,13 @@
  * Idea from:
  * http://arnold.uthar.net/index.php?n=Work.TemplatesC
  *
+ * 2020-2021 Alexander Oleynichenko
  */
 
 #ifndef TEMPLATES_H_INCLUDED
 #define TEMPLATES_H_INCLUDED
 
-#define CAT(X,Y) X##_##Y
-#define TEMPLATE(X,Y) CAT(X,Y)
+#define CAT(X, Y) X##_##Y
+#define TEMPLATE(X, Y) CAT(X,Y)
 
 #endif /* TEMPLATES_H_INCLUDED */

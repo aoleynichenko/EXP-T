@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,7 +26,7 @@
  * =======
  *
  * Small utility functions.
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <ctype.h>
@@ -68,8 +68,8 @@ void decompose_time(double t, int *d, int *h, int *m, int *s, int *ms)
  ******************************************************************************/
 int sgn(double x)
 {
-    if (x > 0) return 1;
-    if (x < 0) return -1;
+    if (x > 0) { return 1; }
+    if (x < 0) { return -1; }
     return 0;
 }
 
@@ -82,8 +82,9 @@ int sgn(double x)
 int is_empty(const char *s)
 {
     while (*s != '\0') {
-        if (!isspace((unsigned char) *s))
+        if (!isspace((unsigned char) *s)) {
             return 0;
+        }
         s++;
     }
     return 1;
@@ -99,7 +100,7 @@ int imax(size_t count, int *values)
 {
     int themax = values[0];
 
-    for (size_t i = 1; i < count; ++i){
+    for (size_t i = 1; i < count; ++i) {
         themax = values[i] > themax ? values[i] : themax;
     }
 
@@ -135,10 +136,9 @@ int intcmp(size_t n, int *a, int *b)
 {
     size_t i;
 
+    return memcmp(a, b, sizeof(int) * n);
 
-    return memcmp(a, b, sizeof(int)*n);
-
-    for (i = 0; i < n; i++){
+    for (i = 0; i < n; i++) {
         if (a[i] != b[i]) {
             return a[i] - b[i];
         }
@@ -157,8 +157,9 @@ int64_t int_pow(int base, int exp)
 {
     int64_t result = 1;
     while (exp) {
-        if (exp & 1)
+        if (exp & 1) {
             result *= base;
+        }
         exp /= 2;
         base *= base;
     }
@@ -206,7 +207,7 @@ size_t run_id()
  ******************************************************************************/
 int int_search(size_t count, int *arr, int x)
 {
-    for (size_t i = 0; i < count; i++){
+    for (size_t i = 0; i < count; i++) {
         if (arr[i] == x) {
             return i;
         }
@@ -225,7 +226,7 @@ int in_range(double x, double a, double b)
     if (a <= x && x <= b) {
         return 1;
     }
-    else{
+    else {
         return 0;
     }
 }
@@ -270,7 +271,7 @@ void str_replace(char *s, char x, char y)
  ******************************************************************************/
 void int2str(int *dig, char *str, size_t n)
 {
-    for (size_t i = 0; i < n; i++){
+    for (size_t i = 0; i < n; i++) {
         str[i] = dig[i] + '0';
     }
     str[n] = '\0';
@@ -326,6 +327,7 @@ void print_hyphens(int offs, int len)
     }
     printf("\n");
 }
+
 
 /**
  * prints string with current date and time

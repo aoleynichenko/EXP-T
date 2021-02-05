@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
  *   OneProp (by L. V. Skripnikov)
  *   tm2c (Marburg group: S. Giessen, K. Gaul, R. Berger et al)
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  */
 
 #ifndef CC_INTERFACES_H_INCLUDED

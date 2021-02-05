@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
  * Slater rules: evaluation of matrix elements in the basis of Slater
  * determinants.
  *
- * 2019 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <stdlib.h>
@@ -75,7 +75,7 @@ int is_vacuum_det(slater_det_t *det)
     if (det->indices[0] == 0 && det->indices[1] == 0) {
         return 1;
     }
-    else{
+    else {
         return 0;
     }
 }
@@ -159,7 +159,7 @@ void setup_slater(void *source, double complex (*getter)(void *source, void *ind
         }
     }
 #endif
-    else{
+    else {
         printf("Cannot evaluate matrix element between Slater determinants of type |%dh%dp> and |%dh%dp>\n",
                bra_sect_h, bra_sect_p, ket_sect_h, ket_sect_p);
         printf("see %s for details, line %d\n", __FILE__, __LINE__);

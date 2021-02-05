@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,7 +27,7 @@
  *
  * Common definitions in types used in the EXP-T project.
  *
- * 2020 Alexander Oleynichenko
+ * 2020-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #ifndef CC_COMDEF_H_INCLUDED

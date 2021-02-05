@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -40,7 +40,7 @@
  * -> A. Shee, L. Visscher, T. Saue. J. Chem. Phys., V. 145, P. 184107 (2016)
  * -> L. Visscher, T. Lee, K. Dyall. J. Chem. Phys., V. 105, P. 8769 (1996)
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <assert.h>
@@ -653,9 +653,9 @@ void diagram_write(diagram_t *dg, char *file_name)
     io_write_compressed(f, &dg->only_unique, sizeof(dg->only_unique));
 
     // quasiparticle type list (h/p), valence, order
-    io_write(f, dg->qparts,  sizeof(int) * dg->rank);
+    io_write(f, dg->qparts, sizeof(int) * dg->rank);
     io_write(f, dg->valence, sizeof(int) * dg->rank);
-    io_write(f, dg->order,   sizeof(int) * dg->rank);
+    io_write(f, dg->order, sizeof(int) * dg->rank);
 
     // inverted index
     io_write(f, dg->inv_index, sizeof(size_t) * int_pow(n_spinor_blocks, dg->rank));

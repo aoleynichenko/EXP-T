@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
  * Tools for working with direct product tables (and other symmetry-related
  * things).
  *
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <assert.h>
@@ -63,6 +63,7 @@ int point_group_nz;
 char point_group_name[64] = {'\0'};
 
 void detect_point_group();
+
 
 /*******************************************************************************
  * get_irrep_name
@@ -319,7 +320,7 @@ void print_symmetry_info()
         }
     }
     for (i = 0; i < nsym; i++) {
-        printf(" %2d %-*s%s", i, repname_len+1, rep_names[i], (i+1)%8 == 0 ? "\n" : "");
+        printf(" %2d %-*s%s", i, repname_len + 1, rep_names[i], (i + 1) % 8 == 0 ? "\n" : "");
     }
 
     for (i = 0; i < repname_len; i++) {

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -40,7 +40,7 @@
  * (5) Construct Fock matrix (using the "hhhh" diagram and the "HINT" file)
  * (6) Construct 1-particle diagrams (requests are again in the queue)
  *
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <complex.h>
@@ -73,10 +73,8 @@ void finalize_sorting();
 void read_oneprop(int nspinors, char *file_re, char *file_im, double complex *prop_mat);
 void read_mdprop(int nspinors, char *prop_name, double complex *prop_mat);
 
-
 #define CC_MAX_SORTING_REQUESTS 64
 #define CC_SORTING_IO_BUF_SIZE 16384
-
 
 enum {
     INTS_COULOMB = 1,
@@ -118,7 +116,7 @@ void init_sorting()
     tile_size = cc_opts->tile_size;
 
     max_spinor_block_size = 0;
-    for (i = 0; i < n_spinor_blocks; i++){
+    for (i = 0; i < n_spinor_blocks; i++) {
         if (spinor_blocks[i].size > max_spinor_block_size) {
             max_spinor_block_size = spinor_blocks[i].size;
         }
@@ -133,11 +131,11 @@ void init_sorting()
     symblock_indices_size = sizeof(int32_t) * 4 * sz * sz * sz * sz;
     symblock_indices = (int32_t *) cc_malloc(symblock_indices_size);
     vint = (double complex ****) cc_malloc(sizeof(double complex ***) * sz);
-    for (i = 0; i < sz; i++){
+    for (i = 0; i < sz; i++) {
         vint[i] = (double complex ***) cc_malloc(sizeof(double complex **) * sz);
-        for (j = 0; j < sz; j++){
+        for (j = 0; j < sz; j++) {
             vint[i][j] = (double complex **) cc_malloc(sizeof(double complex *) * sz);
-            for (k = 0; k < sz; k++){
+            for (k = 0; k < sz; k++) {
                 vint[i][j][k] = (double complex *) cc_malloc(sizeof(double complex) * sz);
             }
         }
@@ -202,7 +200,7 @@ void request_sorting(char *name, char *qparts, char *valence, char *order)
     else if (strlen(qparts) == 4 && strlen(valence) == 4 && strlen(order) == 4) {
         rank = 4;
     }
-    else{
+    else {
         errquit("in request sorting(): cannot determine rank of the diagram "
                 "'%s' to be sorted: [%s/%s/%s]. Rank must be equal to 2 or 4\n",
                 name, qparts, valence, order);
@@ -216,7 +214,7 @@ void request_sorting(char *name, char *qparts, char *valence, char *order)
             printf(" Reuse 1-electron integrals file '%s'\n", name);
             return;
         }
-        else{
+        else {
             errquit(" 1-electron integrals file '%s' not found\n", name);
         }
     }
@@ -225,7 +223,7 @@ void request_sorting(char *name, char *qparts, char *valence, char *order)
             printf(" Reuse 2-electron integrals file '%s'\n", name);
             return;
         }
-        else{
+        else {
             errquit(" 2-electron integrals file '%s' not found\n", name);
         }
     }
@@ -239,7 +237,7 @@ void request_sorting(char *name, char *qparts, char *valence, char *order)
     else if (rank == 4) {
         tmplt(name, qparts, valence, "1234", IS_PERM_UNIQUE); // здесь нужно писать 'order'
     }
-    else{
+    else {
         errquit("in request sorting(): only diagrams with rank = 2 or 4 are allowed: %s[%s/%s/%s]\n",
                 name, qparts, valence, order);
     }
@@ -260,7 +258,8 @@ void request_sorting(char *name, char *qparts, char *valence, char *order)
  * Returns number of integrals read
  * vint_array = factor1 * vint_array + factor2 * new_integrals
  */
-int read_twoel_block_unformatted(char *vint_file_name, double complex ****vint_array, double complex factor1, double complex factor2, size_t *n_bytes_read)
+int read_twoel_block_unformatted(char *vint_file_name, double complex ****vint_array, double complex factor1,
+                                 double complex factor2, size_t *n_bytes_read)
 {
     int32_t nint;
     int32_t iint;
@@ -283,7 +282,7 @@ int read_twoel_block_unformatted(char *vint_file_name, double complex ****vint_a
         nloop++;
 
         if (nint == 0) {
-            if (nloop == 1) empty_file = 1;
+            if (nloop == 1) { empty_file = 1; }
             break;
         }
 
@@ -307,11 +306,11 @@ int read_twoel_block_unformatted(char *vint_file_name, double complex ****vint_a
 
             // "local" spinor indices (inside the spinor block under consideration)
             if (carith) {
-                vint_array[i][j][k][l] = factor1*vint_array[i][j][k][l] + factor2*buf_integrals[iint];
+                vint_array[i][j][k][l] = factor1 * vint_array[i][j][k][l] + factor2 * buf_integrals[iint];
             }
             else {
                 double d = ((double *) buf_integrals)[iint];
-                vint_array[i][j][k][l] = dfactor1*vint_array[i][j][k][l] + dfactor2*d + 0.0 * I;
+                vint_array[i][j][k][l] = dfactor1 * vint_array[i][j][k][l] + dfactor2 * d + 0.0 * I;
             }
         }
         n_integrals_read += nint;
@@ -363,12 +362,12 @@ void perform_sorting()
     // count numbers of 1-el and 2-el diagrams to be sorted
     int n_requests_1el = 0;
     int n_requests_2el = 0;
-    for (int ireq = 0; ireq < n_requests; ireq++){
+    for (int ireq = 0; ireq < n_requests; ireq++) {
         req = &sorting_requests[ireq];
         if (req->dg->rank == 2) {
             n_requests_1el++;
         }
-        else{
+        else {
             n_requests_2el++;
         }
     }
@@ -390,7 +389,7 @@ void perform_sorting()
     if (n_requests_2el > 0) {
         printf("   sorting two-electron integrals ...\n");
 
-        for (sign = -1; sign <= 1; sign += 2)
+        for (sign = -1; sign <= 1; sign += 2) {
             for (spinor_block_1 = 0; spinor_block_1 < n_spinor_blocks; spinor_block_1++) {
                 for (spinor_block_2 = 0; spinor_block_2 < n_spinor_blocks; spinor_block_2++) {
                     for (spinor_block_3 = 0; spinor_block_3 < n_spinor_blocks; spinor_block_3++) {
@@ -415,18 +414,21 @@ void perform_sorting()
                             int spb3_sz = spinor_blocks[spinor_block_3].size;
                             int spb4_sz = spinor_blocks[spinor_block_4].size;
                             // init tmp array with integrals
-                            for (int i = 0; i < spb1_sz; i++)
-                                for (int j = 0; j < spb2_sz; j++)
-                                    for (int k = 0; k < (sign == 1 ? spb3_sz : spb4_sz); k++)
+                            for (int i = 0; i < spb1_sz; i++) {
+                                for (int j = 0; j < spb2_sz; j++) {
+                                    for (int k = 0; k < (sign == 1 ? spb3_sz : spb4_sz); k++) {
                                         for (int l = 0; l < (sign == 1 ? spb4_sz : spb3_sz); l++) {
                                             vint[i][j][k][l] = 0.0 + 0.0 * I;
                                         }
+                                    }
+                                }
+                            }
 
                             if (sign == 1) {
                                 sprintf(vint_file_name, "VINT-%d-%d-%d-%d",
                                         spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_3 + 1, spinor_block_4 + 1);
                             }
-                            else{
+                            else {
                                 sprintf(vint_file_name, "VINT-%d-%d-%d-%d",
                                         spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_4 + 1, spinor_block_3 + 1);
                             }
@@ -437,7 +439,8 @@ void perform_sorting()
 
                             // load Coulomb integrals
                             size_t nbr = 0;
-                            n_integrals_read = read_twoel_block_unformatted(vint_file_name, vint, 0.0+0.0*I, 1.0+0.0*I, &nbr);
+                            n_integrals_read = read_twoel_block_unformatted(vint_file_name, vint, 0.0 + 0.0 * I,
+                                                                            1.0 + 0.0 * I, &nbr);
                             if (n_integrals_read == 0) {
                                 continue;
                             }
@@ -448,13 +451,16 @@ void perform_sorting()
                                 // read GINT* files
                                 if (sign == 1) {
                                     sprintf(vint_file_name, "GINT-%d-%d-%d-%d",
-                                            spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_3 + 1, spinor_block_4 + 1);
+                                            spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_3 + 1,
+                                            spinor_block_4 + 1);
                                 }
-                                else{
+                                else {
                                     sprintf(vint_file_name, "GINT-%d-%d-%d-%d",
-                                            spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_4 + 1, spinor_block_3 + 1);
+                                            spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_4 + 1,
+                                            spinor_block_3 + 1);
                                 }
-                                n_integrals_read = read_twoel_block_unformatted(vint_file_name, vint, 1.0+0.0*I, 1.0+0.0*I, &nbr);
+                                n_integrals_read = read_twoel_block_unformatted(vint_file_name, vint, 1.0 + 0.0 * I,
+                                                                                1.0 + 0.0 * I, &nbr);
                                 if (n_integrals_read == 0) {
                                     continue;
                                 }
@@ -465,15 +471,18 @@ void perform_sorting()
                             for (int iprop = 0; iprop < cc_opts->n_twoprop; iprop++) {
                                 // read TWOPROP* files
                                 if (sign == 1) {
-                                    sprintf(vint_file_name, "TWOPROP%d-%d-%d-%d-%d", iprop+1,
-                                            spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_3 + 1, spinor_block_4 + 1);
+                                    sprintf(vint_file_name, "TWOPROP%d-%d-%d-%d-%d", iprop + 1,
+                                            spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_3 + 1,
+                                            spinor_block_4 + 1);
                                 }
-                                else{
-                                    sprintf(vint_file_name, "TWOPROP%d-%d-%d-%d-%d", iprop+1,
-                                            spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_4 + 1, spinor_block_3 + 1);
+                                else {
+                                    sprintf(vint_file_name, "TWOPROP%d-%d-%d-%d-%d", iprop + 1,
+                                            spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_4 + 1,
+                                            spinor_block_3 + 1);
                                 }
                                 double complex lambda = cc_opts->twoprop_lambda[iprop];
-                                n_integrals_read = read_twoel_block_unformatted(vint_file_name, vint, 1.0+0.0*I, lambda, &nbr);
+                                n_integrals_read = read_twoel_block_unformatted(vint_file_name, vint, 1.0 + 0.0 * I,
+                                                                                lambda, &nbr);
                                 /*if (n_integrals_read == 0) {
                                     continue;
                                 }*/
@@ -484,13 +493,13 @@ void perform_sorting()
                             }
 
                             // process requests -- fill all diagrams
-                            for (ireq = 0; ireq < n_requests; ireq++){
+                            for (ireq = 0; ireq < n_requests; ireq++) {
                                 req = &sorting_requests[ireq];
                                 dg = req->dg;
                                 if (dg->rank != 4) { // one-electron diagrams will be sorted later
                                     continue;
                                 }
-                                for (isb = 0; isb < dg->n_blocks; isb++){
+                                for (isb = 0; isb < dg->n_blocks; isb++) {
                                     sb = dg->blocks[isb];
                                     if (sb->is_unique == 0) {  // skip permutationally unique block
                                         continue;
@@ -509,7 +518,7 @@ void perform_sorting()
                                     //if (sign==1 && antisym_inplace) memset(sb->buf, 0, sizeof(double complex)*sb->size);
                                     symblock_gen_indices(sb, symblock_indices);
                                     if (antisym_inplace) {
-                                        for (size_t i = 0; i < sb->size; i++){
+                                        for (size_t i = 0; i < sb->size; i++) {
                                             i1 = symblock_indices[sb->rank * i];  // sb->rank == 4
                                             i2 = symblock_indices[sb->rank * i + 1];
                                             i3 = symblock_indices[sb->rank * i + 2];
@@ -527,8 +536,8 @@ void perform_sorting()
                                             }
                                         }
                                     }
-                                    else{
-                                        for (size_t i = 0; i < sb->size; i++){
+                                    else {
+                                        for (size_t i = 0; i < sb->size; i++) {
                                             i1 = symblock_indices[sb->rank * i];  // sb->rank == 4
                                             i2 = symblock_indices[sb->rank * i + 1];
                                             i3 = symblock_indices[sb->rank * i + 2];
@@ -552,7 +561,7 @@ void perform_sorting()
                                     if (strcmp(req->hp, "pppp") == 0 &&
                                         strcmp(req->valence, "0000") == 0 &&
                                         strcmp(req->order, "3412") == 0 && sign == 1 && carith) {
-                                        for (size_t i = 0; i < sb->size; i++){
+                                        for (size_t i = 0; i < sb->size; i++) {
                                             sb->buf[i] = conj(sb->buf[i]);
                                         }
                                     }
@@ -564,7 +573,8 @@ void perform_sorting()
                         }
                     }
                 }
-            } // end of 4 nested 'for' loops over spinor blocks
+            }
+        } // end of 4 nested 'for' loops over spinor blocks
     } // end if (n_requests_2el > 0)
 
     printf("   sorting one-electron integrals ...\n");
@@ -575,7 +585,7 @@ void perform_sorting()
     // только для реально отсортированных в этом запуске запросов!
     // reorder some diagrams (if required)
     printf("   reorder diagrams (if required): ");
-    for (ireq = 0; ireq < n_requests; ireq++){
+    for (ireq = 0; ireq < n_requests; ireq++) {
         req = &sorting_requests[ireq];
         if (strcmp(req->order, "12") == 0 || strcmp(req->order, "1234") == 0) {
             // nothing to reorder, already in the required ("normal") order
@@ -600,7 +610,7 @@ void perform_sorting()
     // write diagrams to disk
     // только реально обработанные запросы!
     printf("   save sorted diagrams to disk: ");
-    for (ireq = 0; ireq < n_requests; ireq++){
+    for (ireq = 0; ireq < n_requests; ireq++) {
         char dg_file_name[CC_MAX_PATH_LENGTH];
         req = &sorting_requests[ireq];
         sprintf(dg_file_name, "%s.dg", req->dg_name);
@@ -753,7 +763,7 @@ void sort_onel()
         printf("     Fock matrix reconstruction will be skipped\n");
         memset(f_ints, 0, sizeof(double complex) * nspinors * nspinors);
         for (int i = 0; i < nspinors; i++) {
-            f_ints[i*nspinors+i] = spinor_info[i].eps;
+            f_ints[i * nspinors + i] = spinor_info[i].eps;
         }
     }
 
@@ -761,11 +771,11 @@ void sort_onel()
     if (!cc_opts->x2cmmf) {
         int idx4[4];
         double new_escf = cc_opts->enuc;
-        for (i = 0; i < nspinors; i++){
-            if (!is_hole(i)) continue;
+        for (i = 0; i < nspinors; i++) {
+            if (!is_hole(i)) { continue; }
             new_escf += h_ints[i * nspinors + i];
-            for (j = 0; j < nspinors; j++){
-                if (!is_hole(j)) continue;
+            for (j = 0; j < nspinors; j++) {
+                if (!is_hole(j)) { continue; }
                 idx4[0] = i;
                 idx4[1] = j;
                 idx4[2] = i;
@@ -790,7 +800,7 @@ void sort_onel()
     need_update_eps = 0;
     double eps_diff = 0.0;
     double max_eps_diff = 0.0;
-    for (i = 0; i < nspinors; i++){
+    for (i = 0; i < nspinors; i++) {
         double complex f_ii = f_ints[i * nspinors + i];
         if (cimag(f_ii) > 1e-13) {
             printf("     (!) in sort_onel(): imaginary value of the [%d,%d] diagonal "
@@ -816,7 +826,7 @@ void sort_onel()
             printf("\n");
             printf("     no    rep         occ    active     one-el energy        recalc energy            delta    \n");
             printf("    ---------------------------------------------------------------------------------------------\n");
-            for (i = 0; i < nspinors; i++){
+            for (i = 0; i < nspinors; i++) {
                 double eps = spinor_info[i].eps;
                 double f_ii = creal(f_ints[i * nspinors + i]);
                 printf("    %4d%4d \"%-6s\"%4d       %1s     %16.10f     %16.10f     %16.6e\n",
@@ -829,39 +839,42 @@ void sort_onel()
         printf("     max deviation of the diagonal elements of the reconstructed"
                " Fock matrix and orbital energies = %.6e\n", max_eps_diff);
         // recalculate energies
-        for (i = 0; i < nspinors; i++){
+        for (i = 0; i < nspinors; i++) {
             spinor_info[i].eps = creal(f_ints[i * nspinors + i]);
         }
     }
 
     // только запросы ?
     printf("     fill 1-electron diagrams ... ");
-    for (ireq = 0; ireq < n_requests; ireq++){
+    for (ireq = 0; ireq < n_requests; ireq++) {
         dg = sorting_requests[ireq].dg;
         if (dg->rank != 2) { // only one-electron diagrams
             continue;
         }
         printf("%s ", dg->name);
         // assign values of matrix elements
-        for (isb = 0; isb < dg->n_blocks; isb++){
+        for (isb = 0; isb < dg->n_blocks; isb++) {
             sb = dg->blocks[isb];
             symblock_load(sb);
             symblock_gen_indices(sb, symblock_indices);
             double *dbuf = (double *) sb->buf;
 
-            for (i = 0; i < sb->size; i++){
+            for (i = 0; i < sb->size; i++) {
                 idx1 = symblock_indices[sb->rank * i];  // sb->rank == 2
                 idx2 = symblock_indices[sb->rank * i + 1];
                 if (idx1 == idx2) {
-                    if (carith)
+                    if (carith) {
                         sb->buf[i] = 0.0 + 0.0 * I;
-                    else
+                    }
+                    else {
                         dbuf[i] = 0.0;
+                    }
                 }
                 else {
                     if (carith) {
                         sb->buf[i] = f_ints[idx1 * nspinors + idx2];//f_ints[idx1][idx2];
-                    } else {
+                    }
+                    else {
                         dbuf[i] = creal(f_ints[idx1 * nspinors + idx2]);
                     }
                 }
@@ -943,15 +956,15 @@ void read_mdprop(int nspinors, char *prop_name, double complex *prop_mat)
     double const zero_thresh = 1e-10;
     for (int i = 0; i < nspinors; i++) {
         for (int j = i; j < nspinors; j++) {
-            double re_ij = creal(prop_mat[i*nspinors+j]);
-            double re_ji = creal(prop_mat[j*nspinors+i]);
-            double im_ij = cimag(prop_mat[i*nspinors+j]);
-            double im_ji = cimag(prop_mat[j*nspinors+i]);
-            if (fabs(re_ij-re_ji) > zero_thresh) {
+            double re_ij = creal(prop_mat[i * nspinors + j]);
+            double re_ji = creal(prop_mat[j * nspinors + i]);
+            double im_ij = cimag(prop_mat[i * nspinors + j]);
+            double im_ji = cimag(prop_mat[j * nspinors + i]);
+            if (fabs(re_ij - re_ji) > zero_thresh) {
                 right_order = 0;
                 break;
             }
-            if (fabs(im_ij+im_ji) > zero_thresh) {
+            if (fabs(im_ij + im_ji) > zero_thresh) {
                 right_order = 0;
                 break;
             }
@@ -969,13 +982,13 @@ void read_mdprop(int nspinors, char *prop_name, double complex *prop_mat)
     if (right_order == 0) {
         for (int i = 0; i < nspinors; i++) {
             for (int j = i; j < nspinors; j++) {
-                double re_ij = creal(prop_mat[i*nspinors+j]);
-                double re_ji = creal(prop_mat[j*nspinors+i]);
-                double im_ij = cimag(prop_mat[i*nspinors+j]);
-                double im_ji = cimag(prop_mat[j*nspinors+i]);
+                double re_ij = creal(prop_mat[i * nspinors + j]);
+                double re_ji = creal(prop_mat[j * nspinors + i]);
+                double im_ij = cimag(prop_mat[i * nspinors + j]);
+                double im_ji = cimag(prop_mat[j * nspinors + i]);
 
-                prop_mat[i*nspinors+j] = im_ji + re_ji*I;
-                prop_mat[j*nspinors+i] = im_ij + re_ij*I;
+                prop_mat[i * nspinors + j] = im_ji + re_ji * I;
+                prop_mat[j * nspinors + i] = im_ij + re_ij * I;
             }
         }
     }
@@ -992,9 +1005,9 @@ void finalize_sorting()
     cc_free(f_ints);
     cc_free(symblock_indices);
 
-    for (i = 0; i < max_spinor_block_size; i++){
-        for (j = 0; j < max_spinor_block_size; j++){
-            for (k = 0; k < max_spinor_block_size; k++){
+    for (i = 0; i < max_spinor_block_size; i++) {
+        for (j = 0; j < max_spinor_block_size; j++) {
+            for (k = 0; k < max_spinor_block_size; k++) {
                 cc_free(vint[i][j][k]);
             }
             cc_free(vint[i][j]);

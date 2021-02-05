@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -43,7 +43,7 @@
  * annihilation lines. See Kaldor, J. Comp. Chem. V. 8, P.448 (1987) for details.
  * Only two-particle diagrams are required.
  *
- * 2019 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <complex.h>
@@ -83,6 +83,8 @@ void t3_0h2p_const_contrib_to_triples(int pt_order);
 void t3_0h2p_contrib_to_doubles(int pt_order);
 
 void t3_0h2p_contrib_to_folded(int pt_order);
+
+void sector_0h2p_ccsd_t4();
 
 
 /*******************************************************************************
@@ -148,7 +150,7 @@ int sector02(cc_options_t *opts)
         printf(" it.       diffmax(S2)     max(S2)    t,sec       mem,Gb\n");
         printf(" ---------------------------------------------------------\n");
     }
-    else{
+    else {
         printf(" ---------------------------------------------------------------------------------------\n");
         printf(" it.       diffmax(S2)       diffmax(S3)     max(S2)     max(S3)    t,sec       mem,Gb\n");
         printf(" ---------------------------------------------------------------------------------------\n");
@@ -156,7 +158,7 @@ int sector02(cc_options_t *opts)
     diis_queue_t *diis_queue = new_diis_queue(0, 1, opts->diis_triples);
     converged = 0;
     t1 = abs_time();
-    for (it = 1; it <= opts->maxiter; it++){
+    for (it = 1; it <= opts->maxiter; it++) {
 
         double it_t1, it_t2;
         it_t1 = abs_time();
@@ -221,7 +223,7 @@ int sector02(cc_options_t *opts)
                 goto end_iter;
             }
         }
-        // CCSDT
+            // CCSDT
         else {
             printf(" %3d%18.12f%18.12f%12.6f%12.6f", it, diff2, diff3, max_t2, max_t3);
             if (fabs(diff2) < opts->conv && fabs(diff3) < opts->conv) {
@@ -286,14 +288,14 @@ int sector02(cc_options_t *opts)
     if (triples == 0) {
         printf(" ---------------------------------------------------------\n");
     }
-    else{
+    else {
         printf(" ---------------------------------------------------------------------------------------\n");
     }
     if (converged == 0) {
         printf("\tnot converged!\n");
         return EXIT_FAILURE;
     }
-    else{
+    else {
         printf("\tconverged in %d iterations\n", it);
     }
 
@@ -366,7 +368,7 @@ void init_amplitudes_0h2p()
             printf(" S{02}_2 amplitudes successfully read from disk\n");
             calc_t2 = 0;
         }
-        else{
+        else {
             printf(" S{02}_2 amplitudes will be calculated\n");
         }
         if (triples) {
@@ -374,7 +376,7 @@ void init_amplitudes_0h2p()
                 printf(" S{02}_3 amplitudes successfully read from disk\n");
                 calc_t3 = 0;
             }
-            else{
+            else {
                 printf(" S{02}_3 amplitudes will be calculated\n");
             }
         }

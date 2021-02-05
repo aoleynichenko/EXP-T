@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
  * Lexical analysis is performed with the automatically generated code
  * (by lex, see expt.l)
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <ctype.h>
@@ -45,7 +45,7 @@
 #include "options.h"
 
 #define MAX_LINE_LEN 1024
-#define MAXIMUM2(x,y) (((x) > (y)) ? (x) : (y))
+#define MAXIMUM2(x, y) (((x) > (y)) ? (x) : (y))
 
 // functions defined in this file:
 int echo(char *file_name, FILE *dst);
@@ -284,7 +284,7 @@ int readinp(char *file_name, cc_options_t *opts)
     }
     // natural (transition) orbitals will be calculated only for the target sector
     // if the sector was not explicitly specified
-    for (int i = 0; i < opts->n_denmat; i++){
+    for (int i = 0; i < opts->n_denmat; i++) {
         cc_denmat_query_t *query = &opts->denmat_query[i];
         query->sect1[0] = opts->sector_h;
         query->sect1[1] = opts->sector_p;
@@ -360,12 +360,13 @@ void directive_title(cc_options_t *opts)
     }
     // copy string ignoring quotes
     size_t len = strlen(yytext) - 2;
-    strncpy(opts->title, yytext+1, bufsize-1);
-    opts->title[bufsize-1] = '\0';
-    if (len < bufsize-1) {
+    strncpy(opts->title, yytext + 1, bufsize - 1);
+    opts->title[bufsize - 1] = '\0';
+    if (len < bufsize - 1) {
         opts->title[len] = '\0';
     }
 }
+
 
 /**
  * Syntax:
@@ -674,8 +675,7 @@ void directive_nactp(cc_options_t *opts)
                 }
             }
             token_type = next_token();
-        }
-        while (token_type == TT_ELEC_STATE);
+        } while (token_type == TT_ELEC_STATE);
         put_back(token_type);
         opts->actsp_defined = 3;
     }
@@ -728,8 +728,7 @@ void directive_nacth(cc_options_t *opts)
                 }
             }
             token_type = next_token();
-        }
-        while (token_type == TT_ELEC_STATE);
+        } while (token_type == TT_ELEC_STATE);
         put_back(token_type);
         opts->actsp_defined = 3;
     }
@@ -938,15 +937,15 @@ void directive_damping(cc_options_t *opts)
         for (int h = 0; h < MAX_SECTOR_RANK; h++) {
             for (int p = 0; p < MAX_SECTOR_RANK; p++) {
                 opts->damping[h][p].enabled = 1;
-                opts->damping[h][p].stop    = last_step;
-                opts->damping[h][p].factor  = factor;
+                opts->damping[h][p].stop = last_step;
+                opts->damping[h][p].factor = factor;
             }
         }
     }
     else {
         opts->damping[h][p].enabled = 1;
-        opts->damping[h][p].stop    = last_step;
-        opts->damping[h][p].factor  = factor;
+        opts->damping[h][p].stop = last_step;
+        opts->damping[h][p].factor = factor;
     }
 }
 
@@ -960,7 +959,7 @@ void directive_diis(cc_options_t *opts)
     static char *msg = "wrong specification of DIIS!\n"
                        "Possible arguments: no arguments, 'off' or integer value";
     static char *msg2 = "wrong specification of DIIS!\n"
-                       "dimension of the DIIS subspace must be >= 2";
+                        "dimension of the DIIS subspace must be >= 2";
 
     int token_type = next_token();
     if (token_type == END_OF_LINE) {
@@ -1177,7 +1176,7 @@ void directive_shift(cc_options_t *opts)
     }
 
     // update option
-    int offs = MAXIMUM2(h,p) - 1; // to skip amplitudes which are absent in this sector
+    int offs = MAXIMUM2(h, p) - 1; // to skip amplitudes which are absent in this sector
     if (h == 0 && p == 0) {
         offs += 1;
     }
@@ -1260,7 +1259,6 @@ void directive_reuse(cc_options_t *opts)
     }
     put_back(token_type);
 }
-
 
 
 /**
@@ -1411,8 +1409,8 @@ void directive_oneprop(cc_options_t *opts)
         yyerror(msg2);
     }
     if (token_type == TT_QUOTE) {  // not file, but name of the property stored in the MDPROP file
-        yytext[strlen(yytext)-1] = '\0';  // remove quote
-        strcpy(opts->mdprop_file[opts->n_mdprop], yytext+1);
+        yytext[strlen(yytext) - 1] = '\0';  // remove quote
+        strcpy(opts->mdprop_file[opts->n_mdprop], yytext + 1);
         opts->mdprop_lambda[opts->n_mdprop] = lambda_re + lambda_im * I;
         opts->n_mdprop++;
         return;
@@ -1431,7 +1429,6 @@ void directive_oneprop(cc_options_t *opts)
     opts->oneprop_lambda[opts->n_oneprop] = lambda_re + lambda_im * I;
     opts->n_oneprop++;
 }
-
 
 
 /**
@@ -1473,7 +1470,6 @@ void directive_twoprop(cc_options_t *opts)
     opts->twoprop_lambda[opts->n_twoprop] = lambda_re + lambda_im * I;
     opts->n_twoprop++;
 }
-
 
 
 /**
@@ -1697,8 +1693,7 @@ void read_space_specification(cc_space_t *space)
                 }
             }
             token_type = next_token();
-        }
-        while (token_type == TT_ELEC_STATE);
+        } while (token_type == TT_ELEC_STATE);
         put_back(token_type);
     }
     else {
@@ -1791,7 +1786,7 @@ void directive_model(cc_options_t *opts)
             }
             continue;
         }
-        // full form
+            // full form
         else if (token_type == TT_WORD && strcmp(yytext, "all") == 0) {
             opts->selects[opts->n_select].rule = CC_SELECTION_ALL;
         }
@@ -1802,8 +1797,8 @@ void directive_model(cc_options_t *opts)
             opts->selects[opts->n_select].rule = CC_SELECTION_ACT_TO_ACT;
         }
         else if (token_type == TT_WORD &&
-            (strcmp(yytext, "exc_window") == 0 ||
-             strcmp(yytext, "eps_window") == 0)) {
+                 (strcmp(yytext, "exc_window") == 0 ||
+                  strcmp(yytext, "eps_window") == 0)) {
             if (strcmp(yytext, "exc_window") == 0) {
                 opts->selects[opts->n_select].rule = CC_SELECTION_EXC_WINDOW;
             }
@@ -1920,8 +1915,7 @@ void print_line_by_num(char *file_name, int required_lineno)
             do {
                 putchar(c);
                 c = fgetc(f);
-            }
-            while (c != '\n' && c != EOF);
+            } while (c != '\n' && c != EOF);
             printf("\n");
             fclose(f);
             return;
@@ -1934,6 +1928,7 @@ void print_line_by_num(char *file_name, int required_lineno)
     errquit("print_line_by_num(): no line number %d in '%s'", required_lineno, file_name);
     fclose(f);
 }
+
 
 void yyerror(char *s)
 {
@@ -1976,6 +1971,7 @@ void put_back(int token_type)
     pushed_back = token_type;
 }
 
+
 int match(int required_type)
 {
     int token_type = next_token();
@@ -1988,7 +1984,7 @@ int match(int required_type)
 
 void str_tolower(char *s)
 {
-    for ( ; *s; s++ ) {
+    for (; *s; s++) {
         *s = tolower(*s);
     }
 }

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,7 +27,7 @@
  *
  * Basic operations with diagrams
  *
- * 2019 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <assert.h>
@@ -159,7 +159,7 @@ void copy(char *src, char *target)
     if (diagram_stack_find(target) != NULL) {
         diagram_stack_replace(target, dg_tgt);
     }
-    else{
+    else {
         diagram_stack_push(dg_tgt);
     }
 }

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -30,7 +30,7 @@
 * These subroutines not affect performance; they are designed just for fast
 * construction and testing of new approximate schemes.
 *
-* 2020 Alexander Oleynichenko
+* 2020-2021 Alexander Oleynichenko
 ******************************************************************************/
 
 #ifndef CC_SELECTION_H_INCLUDED
@@ -57,7 +57,5 @@ typedef struct ampl_selection {
 } ampl_selection_t;
 
 void apply_selections(int sect_h, int sect_p, char *diag_name);
-
-
 
 #endif /* CC_SELECTION_H_INCLUDED */

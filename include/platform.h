@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
 * Functions and definitions which make the code more compatible with a variety
 * of compilers and platforms (platform- & compiler-specific code).
 *
-* 2018 Alexander Oleynichenko
+* 2018-2021 Alexander Oleynichenko
 ******************************************************************************/
 
 #ifndef CC_PLATFORM_H_INCLUDED
@@ -53,7 +53,9 @@
  || defined BLAS_Intel10_32  \
  || defined BLAS_Intel
 #define BLAS_MKL
+
 #include "mkl.h"
+
 #elif defined BLAS_OpenBLAS
 #define BLAS_OPENBLAS
 #include "cblas.h"

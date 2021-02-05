@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -44,6 +44,7 @@ extern void LAPACKE_zgeev(int matrix_layout, char jobvl, char jobvr, int n,
 
 void ascrea(double complex *arr, int32_t *order, size_t n);
 
+
 /**
  * Solves eigenproblem for complex non-hermitian matrix. See documentation for
  * the 'zgeev' routine from LAPACK for details.
@@ -73,9 +74,9 @@ int eig(int32_t n, double complex *A, double complex *ev, double complex *vl, do
     // Query and allocate the optimal workspace
     lwork = -1;
 #ifdef BLAS_MKL // in order to avoid warnings during compilation
-    zgeev_( "Vectors", "Vectors", &n, (MKL_Complex16 *)A, &lda,
-        (MKL_Complex16 *)ev, (MKL_Complex16 *)vl, &ldvl, (MKL_Complex16 *)vr, &ldvr,
-        (MKL_Complex16 *)&wkopt, &lwork, rwork, &info );
+    zgeev_("Vectors", "Vectors", &n, (MKL_Complex16 *) A, &lda,
+           (MKL_Complex16 *) ev, (MKL_Complex16 *) vl, &ldvl, (MKL_Complex16 *) vr, &ldvr,
+           (MKL_Complex16 *) &wkopt, &lwork, rwork, &info);
 #else
     zgeev_("Vectors", "Vectors", &n, A, &lda, ev, vl, &ldvl, vr, &ldvr, &wkopt, &lwork, rwork, &info);
 #endif
@@ -87,8 +88,8 @@ int eig(int32_t n, double complex *A, double complex *ev, double complex *vl, do
 #ifdef BLAS_MKL
     // what is the size of MKL_INT? 4 or 8? Seems to be 8
     LAPACKE_zgeev(CblasColMajor, 'V', 'V',
-            n, (MKL_Complex16 *)A, lda, (MKL_Complex16 *)ev,
-            (MKL_Complex16 *)vl, ldvl, (MKL_Complex16 *)vr, ldvr);
+                  n, (MKL_Complex16 *) A, lda, (MKL_Complex16 *) ev,
+                  (MKL_Complex16 *) vl, ldvl, (MKL_Complex16 *) vr, ldvr);
 #elif defined BLAS_OPENBLAS
     LAPACKE_zgeev(CblasColMajor, 'V', 'V', n, A, lda, ev, vl, ldvl, vr, ldvr);
 #else
@@ -111,30 +112,30 @@ int eig(int32_t n, double complex *A, double complex *ev, double complex *vl, do
     vectmp = (double complex *) cc_malloc(n * sizeof(double complex));
     ascrea(ev, order, n);
 
-    for (i = 0; i < n; i++){
+    for (i = 0; i < n; i++) {
         // reorder left eigenvectors
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             vectmp[j] = vl[n * order[j] + i];
         }
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             vl[n * j + i] = vectmp[j];
         }
         // reorder right eigenvectors
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             vectmp[j] = vr[n * order[j] + i];
         }
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             vr[n * j + i] = vectmp[j];
         }
     }
 
     // normalize vectors to get biorthonormal set
-    for (i = 0; i < n; i++){
+    for (i = 0; i < n; i++) {
         double complex c = 0.0 + 0.0 * I;
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             c += conj(vl[i * n + j]) * vr[i * n + j];
         }
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n; j++) {
             vl[i * n + j] /= conj(c);
         }
     }
@@ -161,14 +162,14 @@ void eigher(double complex *A, double *eva, int32_t n)
     double complex *A_buf;
     double complex *vl_buf;
 
-    A_buf   = zzeros(n, n);
-    vl_buf  = zzeros(n, n);
+    A_buf = zzeros(n, n);
+    vl_buf = zzeros(n, n);
     eva_buf = zzeros(n, 1);
     memcpy(A_buf, A, sizeof(double complex) * n * n);
 
     eig(n, A_buf, eva_buf, vl_buf, A);
 
-    for (int i = 0; i < n; i++){
+    for (int i = 0; i < n; i++) {
         eva[i] = creal(eva_buf[i]);
     }
 
@@ -192,12 +193,12 @@ void ascrea(double complex *arr, int32_t *order, size_t n)
     size_t i, j;
     int32_t itmp;
 
-    for (i = 0; i < n; i++){
+    for (i = 0; i < n; i++) {
         order[i] = i;
     }
 
-    for (i = 0; i < n - 1; i++){
-        for (j = i + 1; j < n; j++){
+    for (i = 0; i < n - 1; i++) {
+        for (j = i + 1; j < n; j++) {
             if (creal(arr[i]) <= creal(arr[j])) {
                 continue;
             }

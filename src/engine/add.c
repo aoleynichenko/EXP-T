@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -25,7 +25,7 @@
  * @file add.c
  * Subroutines for addition of Goldstone diagrams
  *
- * @author 2018-2020 Alexander Oleynichenko
+ * @author 2018-2021 Alexander Oleynichenko
  */
 
 #include <stdio.h>
@@ -38,6 +38,7 @@
 #include "options.h"
 
 #include "omp.h"
+
 
 /*******************************************************************************
  * add
@@ -78,7 +79,7 @@ void add(double fact1, char *name1, double fact2, char *name2, char *target)
     }
         // C = a*A + b*B
         // TODO: test this code
-    else{
+    else {
         copy(name1, target);
         clear(target);
         update(target, fact1, name1);
@@ -142,7 +143,7 @@ void update(char *dg1_name, double factor, char *dg2_name)
         restore_diagram(dg2);
     }*/
 
-    for (size_t isb1 = 0; isb1 < dg1->n_blocks; isb1++){
+    for (size_t isb1 = 0; isb1 < dg1->n_blocks; isb1++) {
         block1 = dg1->blocks[isb1];
 
         // diagram_get_block возвращает почему-то неправильный указатель, в котором
@@ -184,7 +185,7 @@ void update(char *dg1_name, double factor, char *dg2_name)
             errquit("update(): size mismatch");
         }
 
-        // enable internal threading
+            // enable internal threading
 #if defined BLAS_MKL
         mkl_set_num_threads_local(cc_opts->nthreads);
 #elif defined BLAS_OPENBLAS

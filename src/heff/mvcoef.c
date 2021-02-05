@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,7 +27,7 @@
  * Model vectors are stored on disk in binary files MVCOEF**.
  * This file provides interface for operating with the MVCOEF file format.
  *
- * 2020 Alexander Oleynichenko
+ * 2020-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "mvcoef.h"
@@ -72,8 +72,8 @@ void mvcoef_close(int file_descr, double eigval_0)
 
 
 void mvcoef_write_vectors_unformatted(int file_descr, char *rep_name,
-        size_t nroots, size_t dim, slater_det_t *det_list,
-        double complex *ev, double complex *vl, double complex *vr)
+                                      size_t nroots, size_t dim, slater_det_t *det_list,
+                                      double complex *ev, double complex *vl, double complex *vr)
 {
     size_t rep_name_len = strlen(rep_name) + 1;
     size_t nb = sizeof(double complex) * nroots * dim;
@@ -152,9 +152,9 @@ void read_model_vectors_unformatted(int sect_h, int sect_p, char *file_name, int
     io_close(f_mvcoef);
 
     // calculate energy of each state wrt ground state (eigval_0)
-    for (size_t irep = 0; irep < *nrep; irep++){
+    for (size_t irep = 0; irep < *nrep; irep++) {
         struct mv_block *b = &mv_blocks[irep];
-        for (size_t i = 0; i < b->nroots; i++){
+        for (size_t i = 0; i < b->nroots; i++) {
             b->energy_cm[i] = (creal(b->eigval[i]) - eigval_0) * AU2CM;
         }
     }

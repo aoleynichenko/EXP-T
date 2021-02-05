@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,7 +26,7 @@
  *
  * Extracts closed part of the diagram.
  *
- * 2019-2020 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <assert.h>
@@ -41,6 +41,7 @@
 #include "utils.h"
 
 void clear_valence(diagram_t *dg);
+
 
 /*******************************************************************************
  * restrict_valence
@@ -62,9 +63,9 @@ void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *
 {
     diagram_t *src, *tgt;
     char qparts[CC_DIAGRAM_MAX_RANK];
-    char order [CC_DIAGRAM_MAX_RANK];
+    char order[CC_DIAGRAM_MAX_RANK];
 
-    src  = diagram_stack_find(src_name);
+    src = diagram_stack_find(src_name);
     if (src == NULL) {
         errquit("restrict_valence(): diagram '%s' not found", src_name);
     }
@@ -120,7 +121,7 @@ void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *
             }
             else {
                 double v = creal(symblock_get(sb1, &tgt_indices[src->rank * i]));
-                ((double *)sb2->buf)[i] = v;
+                ((double *) sb2->buf)[i] = v;
             }
         }
 
@@ -181,10 +182,10 @@ void clear_valence(diagram_t *dg)
             if (nvalence == rank) {
                 // set value
                 if (carith) {
-                    block->buf[i] = 0.0 + 0.0*I;
+                    block->buf[i] = 0.0 + 0.0 * I;
                 }
                 else {
-                    ((double *)block->buf)[i] = 0.0;
+                    ((double *) block->buf)[i] = 0.0;
                 }
             }
         }
@@ -286,8 +287,8 @@ void expand_diagram(char *name_small, char *name_large)
         else {
             for (size_t i = 0; i < sb1->size; i++) {
                 int *idx = &indices[sb1->rank * i];
-                double val = ((double *)sb1->buf)[i];
-                symblock_set(sb2, val+0.0*I, idx);
+                double val = ((double *) sb1->buf)[i];
+                symblock_set(sb2, val + 0.0 * I, idx);
             }
         }
 

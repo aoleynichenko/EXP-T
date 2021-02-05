@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,7 +26,7 @@
  *
  * Matrix multiplication on GPU (for tensor contractions).
  *
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "cuda_code.h"
@@ -44,9 +44,9 @@
  * Performs matrix multiplication C = A * B^T on GPU using CUBLAS z/d-gemm.
  ******************************************************************************/
 int mulblocks_cuda(int carith,
-                    double complex *A, int ma, int na,
-                    double complex *B, int mb, int nb,
-                    double beta, double complex *C)
+                   double complex *A, int ma, int na,
+                   double complex *B, int mb, int nb,
+                   double beta, double complex *C)
 {
     int m = ma;
     int n = mb;
@@ -121,13 +121,13 @@ int mulblocks_cuda(int carith,
 
     if (carith) {
         cberr = cublasZgemm(handle, CUBLAS_OP_T, CUBLAS_OP_N, n, m, k,
-                            (cuDoubleComplex *) &zalpha, (cuDoubleComplex *) d_B, k, (cuDoubleComplex *) d_A, k,
-                            (cuDoubleComplex *) &zbeta,  (cuDoubleComplex *) d_C, n);
+                            (cuDoubleComplex * ) & zalpha, (cuDoubleComplex *) d_B, k, (cuDoubleComplex *) d_A, k,
+                            (cuDoubleComplex * ) & zbeta, (cuDoubleComplex *) d_C, n);
     }
     else {
         cberr = cublasDgemm(handle, CUBLAS_OP_T, CUBLAS_OP_N, n, m, k,
                             (double *) &zalpha, (double *) d_B, k, (double *) d_A, k,
-                            (double *) &zbeta,  (double *) d_C, n);
+                            (double *) &zbeta, (double *) d_C, n);
     }
     if (cberr != CUBLAS_STATUS_SUCCESS) {
         fprintf(stderr, "Error launching cublasZgemm (err code = %s)\n", cberr);

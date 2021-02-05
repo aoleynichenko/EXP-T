@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -30,7 +30,7 @@
  * For Unix-like systems the following routines are simply wrappers
  * for Unix system calls (open, close, read, write).
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "io.h"
@@ -54,6 +54,7 @@
 
 static struct io_stat IO_STAT = {0};
 
+
 // mode = "w", "r"
 int io_open(char *path, char *mode)
 {
@@ -75,7 +76,7 @@ int io_open(char *path, char *mode)
         md = O_RDONLY;
         ret = open(path, md);
     }
-    else{
+    else {
         printf("io_open(): wrong mode '%s'", mode);
         return -1;
     }
@@ -103,6 +104,7 @@ int io_close(int fd)
     IO_STAT.n_closed++;
     return status;
 }
+
 
 int64_t io_read(int fd, void *buf, size_t count)
 {
@@ -168,7 +170,7 @@ int io_directory_exists(char *dirname)
     if (stat(dirname, &st) == -1) {
         return 0;
     }
-    else{
+    else {
         return 1;
     }
 }
@@ -237,7 +239,7 @@ size_t io_fsize(char *pathname)
     if (stat(pathname, &st) == -1) {
         return 0;
     }
-    else{
+    else {
         return st.st_size;
     }
 }
@@ -247,6 +249,7 @@ void io_statistics(io_stat_t *st)
 {
     *st = IO_STAT;
 }
+
 
 #else
 #error "only Linux and Mac OS X platforms are currently supported"
@@ -413,10 +416,10 @@ void print_compression_stats()
 
     // build histogram
     int maxval = imax(20, histogram);
-    for (int i = 0; i < 20; i++){
+    for (int i = 0; i < 20; i++) {
         int nbars = ((double) histogram[i] / maxval) * 50;
         printf("   [%4.1f -%4.1f] |", 0.5 * i, 0.5 * i + 0.5);
-        for (int j = 0; j < nbars; j++){
+        for (int j = 0; j < nbars; j++) {
             printf("=");
         }
         printf("\n");
@@ -435,7 +438,7 @@ void grow_zbuf(size_t count)
         zbuf = (char *) cc_malloc(count);
         zbuf_len = count;
     }
-    else{  // realloc
+    else {  // realloc
         char *zbuf2 = (char *) cc_malloc(count);
         memcpy(zbuf2, zbuf, zbuf_len);
         cc_free(zbuf);

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -29,7 +29,7 @@
  * Current implementation can work only with 4-dim tensors
  * (extension is rather straightforward)
  *
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "cuda_code.h"
@@ -48,14 +48,13 @@ extern "C" {
 
 // constant memory
 __constant__ int64_t
-d_nsize;
+        d_nsize;
 __constant__ int32_t
-d_perm [ CC_DIAGRAM_MAX_RANK ] ;
+        d_perm[CC_DIAGRAM_MAX_RANK];
 __constant__ int64_t
-d_coef1 [ CC_DIAGRAM_MAX_RANK ] ;
+        d_coef1[CC_DIAGRAM_MAX_RANK];
 __constant__ int64_t
-d_coef2 [ CC_DIAGRAM_MAX_RANK ] ;
-
+        d_coef2[CC_DIAGRAM_MAX_RANK];
 
 /*******************************************************************************
  * reorder_kernel_rank4
@@ -76,7 +75,7 @@ __global__ void reorder_kernel_rank4_complex(cuDoubleComplex *v1, cuDoubleComple
     int64_t coef;
 
     int64_t i = threadIdx.x + blockIdx.x * blockDim.x;
-    if (i >= d_nsize) return;
+    if (i >= d_nsize) { return; }
 
     int64_t offs = 4 * threadIdx.x;
 
@@ -106,7 +105,6 @@ __global__ void reorder_kernel_rank4_complex(cuDoubleComplex *v1, cuDoubleComple
     i = threadIdx.x + blockIdx.x * blockDim.x;
     v2[coef /* index2 */] = v1[i];
 }
-
 
 __global__ void reorder_kernel_rank4_real(double *v1, double *v2)
 {
@@ -115,7 +113,7 @@ __global__ void reorder_kernel_rank4_real(double *v1, double *v2)
     int64_t coef;
 
     int64_t i = threadIdx.x + blockIdx.x * blockDim.x;
-    if (i >= d_nsize) return;
+    if (i >= d_nsize) { return; }
 
     int64_t offs = 4 * threadIdx.x;
 
@@ -145,7 +143,6 @@ __global__ void reorder_kernel_rank4_real(double *v1, double *v2)
     i = threadIdx.x + blockIdx.x * blockDim.x;
     v2[coef /* index2 */] = v1[i];
 }
-
 
 int reorder_cuda(int carith, int rank, int *perm, int *dims1, int *dims2, double _Complex *v1, double _Complex *v2)
 {
@@ -167,19 +164,19 @@ int reorder_cuda(int carith, int rank, int *perm, int *dims1, int *dims2, double
 
     // calculate total number of elements to be reordered
     nsize = 1;
-    for (idim = 0; idim < rank; idim++){
+    for (idim = 0; idim < rank; idim++) {
         nsize *= dims1[idim];
     }
 
     // prepare coefficients for recalculation: compound index <-> linear index
-    for (i = 0; i < rank; i++){
+    for (i = 0; i < rank; i++) {
         coef1[i] = 1;
         coef2[i] = 1;
     }
-    for (i = 0; i < rank - 1; i++){
+    for (i = 0; i < rank - 1; i++) {
         coef1[i] = 1;
         coef2[i] = 1;
-        for (j = i + 1; j < rank; j++){
+        for (j = i + 1; j < rank; j++) {
             coef1[i] *= dims1[j];
             coef2[i] *= dims2[j];
         }
@@ -237,10 +234,10 @@ int reorder_cuda(int carith, int rank, int *perm, int *dims1, int *dims2, double
     dim3 blocks = dim3((nsize + BLOCK_SIZE - 1) / BLOCK_SIZE, 1, 1);
 
     if (carith) {
-        reorder_kernel_rank4_complex <<< blocks, threads >>> (d_v1, d_v2);
+        reorder_kernel_rank4_complex <<< blocks, threads >>>(d_v1, d_v2);
     }
     else {
-        reorder_kernel_rank4_real <<< blocks, threads >>> ((double*)d_v1, (double*)d_v2);
+        reorder_kernel_rank4_real <<< blocks, threads >>>((double *) d_v1, (double *) d_v2);
     }
     cuerr = cudaGetLastError();
     if (cuerr != cudaSuccess) {

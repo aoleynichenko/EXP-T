@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -43,7 +43,7 @@
  *
  * This code was obtained by modification of the CC(0,0) program.
  *
- * 2019 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "methods.h"
@@ -152,7 +152,7 @@ int sector11(cc_options_t *opts)
         printf(" it.       diffmax(S1)       diffmax(S2)     max(S1)     max(S2)    t,sec       mem,Gb\n");
         printf(" ---------------------------------------------------------------------------------------\n");
     }
-    else{
+    else {
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
         printf(" it.       diffmax(S1)       diffmax(S2)       diffmax(S3)     max(S1)     max(S2)     max(S3)    t,sec       mem,Gb\n");
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
@@ -223,7 +223,7 @@ int sector11(cc_options_t *opts)
             }
         }
             // CCSDT
-        else{
+        else {
             printf(" %3d%18.12f%18.12f%18.12f%12.6f%12.6f%12.6f", it, diff1, diff2, diff3, max_t1, max_t2, max_t3);
             if (fabs(diff1) < opts->conv && fabs(diff2) < opts->conv && fabs(diff3) < opts->conv) {
                 converged = 1;
@@ -290,14 +290,14 @@ int sector11(cc_options_t *opts)
     if (!triples) {
         printf(" ---------------------------------------------------------------------------------------\n");
     }
-    else{
+    else {
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
     }
     if (converged == 0) {
         printf("\tnot converged!\n");
         return EXIT_FAILURE;
     }
-    else{
+    else {
         printf("\tconverged in %d iterations\n", it);
     }
 
@@ -358,7 +358,7 @@ void init_amplitudes_1h1p()
             printf(" S{11}_1 amplitudes successfully read from disk\n");
             calc_t1 = 0;
         }
-        else{
+        else {
             printf(" S{11}_1 amplitudes will be calculated\n");
         }
         // Doubles
@@ -366,7 +366,7 @@ void init_amplitudes_1h1p()
             printf(" S{11}_2 amplitudes successfully read from disk\n");
             calc_t2 = 0;
         }
-        else{
+        else {
             printf(" S{11}_2 amplitudes will be calculated\n");
         }
         // Effective interaction
@@ -374,7 +374,7 @@ void init_amplitudes_1h1p()
             printf(" Heff{11} diagram successfully read from disk\n");
             calc_veff = 0;
         }
-        else{
+        else {
             printf(" Heff{11} diagram will be calculated\n");
         }
         /*if (triples) {

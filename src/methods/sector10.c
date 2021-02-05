@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -41,7 +41,7 @@
  * all we need is to flip particle creation lines to turn them to valence hole
  * annihilation lines. See Kaldor, J. Comp. Chem. V. 8, P.448 (1987) for details.
  *
- * 2019 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "methods.h"
@@ -157,7 +157,7 @@ int sector10(cc_options_t *opts)
         printf(" it.       diffmax(S1)       diffmax(S2)     max(S1)     max(S2)    t,sec       mem,Gb\n");
         printf(" ---------------------------------------------------------------------------------------\n");
     }
-    else{
+    else {
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
         printf(" it.       diffmax(S1)       diffmax(S2)       diffmax(S3)     max(S1)     max(S2)     max(S3)    t,sec       mem,Gb\n");
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
@@ -237,7 +237,7 @@ int sector10(cc_options_t *opts)
             }
         }
             // CCSDT
-        else{
+        else {
             printf(" %3d%18.12f%18.12f%18.12f%12.6f%12.6f%12.6f", it, diff1, diff2, diff3, max_t1, max_t2, max_t3);
             if (fabs(diff1) < opts->conv && fabs(diff2) < opts->conv && fabs(diff3) < opts->conv) {
                 converged = 1;
@@ -303,14 +303,14 @@ int sector10(cc_options_t *opts)
     if (triples == 0) {
         printf(" ---------------------------------------------------------------------------------------\n");
     }
-    else{
+    else {
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
     }
     if (converged == 0) {
         printf("\tnot converged!\n");
         return EXIT_FAILURE;
     }
-    else{
+    else {
         printf("\tconverged in %d iterations\n", it);
     }
 
@@ -334,10 +334,6 @@ int sector10(cc_options_t *opts)
     printf("\n");
 
     delete_diis_queue(diis_queue);
-
-    //prt("h2c");
-    //print_spectator_amplitudes("h2c");
-    //vscc_update_spectator("h2c", "t1c");
 
     // flush amplitudes and effective interaction to disk
     diagram_write(diagram_stack_find("h1c"), "h1c.dg");
@@ -381,7 +377,7 @@ void init_amplitudes_1h0p()
             printf(" S{10}_1 amplitudes successfully read from disk\n");
             calc_s1 = 0;
         }
-        else{
+        else {
             printf(" S{10}_1 amplitudes will be calculated\n");
         }
         // Doubles
@@ -389,7 +385,7 @@ void init_amplitudes_1h0p()
             printf(" S{10}_2 amplitudes successfully read from disk\n");
             calc_s2 = 0;
         }
-        else{
+        else {
             printf(" S{10}_2 amplitudes will be calculated\n");
         }
         // Effective interaction
@@ -397,7 +393,7 @@ void init_amplitudes_1h0p()
             printf(" Heff{10} diagram successfully read from disk\n");
             calc_veff = 0;
         }
-        else{
+        else {
             printf(" Heff{10} diagram will be calculated\n");
         }
         // maybe Triples
@@ -406,7 +402,7 @@ void init_amplitudes_1h0p()
                 printf(" S{10}_3 amplitudes successfully read from disk\n");
                 calc_s3 = 0;
             }
-            else{
+            else {
                 printf(" S{10}_3 amplitudes will be calculated\n");
             }
         }
@@ -961,7 +957,6 @@ void calc_H2()
     }
 #endif
 }
-
 
 
 /*******************************************************************************

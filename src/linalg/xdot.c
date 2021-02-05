@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -53,7 +53,7 @@ double complex xdot(data_type_t type, char *conjx, char *conjy, size_t n, const 
     if (type == CC_DOUBLE) {
         return my_ddot(n, x, y) + 0.0 * I;
     }
-    else{ // CC_DOUBLE_COMPLEX
+    else { // CC_DOUBLE_COMPLEX
         return my_zdot(conjx, conjy, n, x, y);
     }
 }
@@ -63,8 +63,9 @@ double my_ddot(size_t n, const double *x, const double *y)
 {
     double prod = 0.0;
 
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < n; i++) {
         prod += x[i] * y[i];
+    }
 
     return prod;
 }
@@ -78,22 +79,22 @@ double complex my_zdot(char *conjx, char *conjy, size_t n, const double complex 
     double complex prod = 0.0 + 0.0 * I;
 
     if (!conjugate_x && !conjugate_y) {
-        for (size_t i = 0; i < n; i++){
+        for (size_t i = 0; i < n; i++) {
             prod += zx[i] * zy[i];
         }
     }
     else if (conjugate_x && !conjugate_y) {
-        for (size_t i = 0; i < n; i++){
+        for (size_t i = 0; i < n; i++) {
             prod += conj(zx[i]) * zy[i];
         }
     }
     else if (!conjugate_x && conjugate_y) {
-        for (size_t i = 0; i < n; i++){
+        for (size_t i = 0; i < n; i++) {
             prod += zx[i] * conj(zy[i]);
         }
     }
-    else{  // 'C' && 'C'
-        for (size_t i = 0; i < n; i++){
+    else {  // 'C' && 'C'
+        for (size_t i = 0; i < n; i++) {
             prod += conj(zx[i]) * conj(zy[i]);
         }
     }

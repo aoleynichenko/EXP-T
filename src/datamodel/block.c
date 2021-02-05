@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -41,7 +41,7 @@
  * -> A. Shee, L. Visscher, T. Saue. J. Chem. Phys., V. 145, P. 184107 (2016)
  * -> L. Visscher, T. Lee, K. Dyall. J. Chem. Phys., V. 105, P. 8769 (1996)
  *
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <assert.h>
@@ -71,6 +71,7 @@ static int64_t blocks_count = 0;
 
 void block_unique(block_t *b, int *qparts, int *valence, int *order);
 
+
 /*******************************************************************************
  * symblock_new
  *
@@ -82,7 +83,8 @@ void block_unique(block_t *b, int *qparts, int *valence, int *order);
  *                        composed from these spinors
  *                        (array of seq int numbers)
 *******************************************************************************/
-block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valence, int *order, int storage_type, int only_unique)
+block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valence, int *order, int storage_type,
+                      int only_unique)
 {
     size_t i, j;
     int bsize;
@@ -200,10 +202,11 @@ block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valen
 
 void transform(int n, int *idx, int *out, int *perm, int shift);
 
+
 int is_ascending_order(int n, int *a)
 {
     for (int i = 1; i < n; i++) {
-        if (a[i] < a[i-1]) {
+        if (a[i] < a[i - 1]) {
             return 0;
         }
     }
@@ -242,9 +245,9 @@ void block_unique(block_t *b, int *qparts, int *valence, int *order)
     int norm_order[CC_DIAGRAM_MAX_RANK];
     int norm_spinor_blocks[CC_DIAGRAM_MAX_RANK];
     for (int i = 0; i < rank; i++) {
-        norm_qparts[i]  = qparts[reverse_order[i]];
+        norm_qparts[i] = qparts[reverse_order[i]];
         norm_valence[i] = valence[reverse_order[i]];
-        norm_order[i]   = order[reverse_order[i]];
+        norm_order[i] = order[reverse_order[i]];
         norm_spinor_blocks[i] = b->spinor_blocks[reverse_order[i]];
     }
 
@@ -270,13 +273,13 @@ void block_unique(block_t *b, int *qparts, int *valence, int *order)
     int one_type_bra = 1;
     int one_type_ket = 1;
     for (int i = 1; i < n; i++) {
-        if (norm_types[i] != norm_types[i-1]) {
+        if (norm_types[i] != norm_types[i - 1]) {
             one_type_bra = 0;
             break;
         }
     }
     for (int i = 1; i < n; i++) {
-        if (norm_types[n+i] != norm_types[n+i-1]) {
+        if (norm_types[n + i] != norm_types[n + i - 1]) {
             one_type_ket = 0;
             break;
         }
@@ -299,21 +302,21 @@ void block_unique(block_t *b, int *qparts, int *valence, int *order)
     } perm_t;
 
     perm_t perms_2[] = {
-        {{0,1}, 1},
-        {{1,0}, -1}
+            {{0, 1}, 1},
+            {{1, 0}, -1}
     };
     perm_t perms_3[] = {
-        {{0,1,2}, 1},
-        {{0,2,1}, -1},
-        {{1,2,0}, 1},
-        {{1,0,2}, -1},
-        {{2,0,1}, 1},
-        {{2,1,0}, -1}
+            {{0, 1, 2}, 1},
+            {{0, 2, 1}, -1},
+            {{1, 2, 0}, 1},
+            {{1, 0, 2}, -1},
+            {{2, 0, 1}, 1},
+            {{2, 1, 0}, -1}
     };
 
     perm_t *perm_list;
     int len_perm_list;
-    int P[CC_DIAGRAM_MAX_RANK] = {0,1,2,3,4,5,6,7};
+    int P[CC_DIAGRAM_MAX_RANK] = {0, 1, 2, 3, 4, 5, 6, 7};
 
     if (rank == 4) {
         perm_list = perms_2;
@@ -401,7 +404,7 @@ void block_unique(block_t *b, int *qparts, int *valence, int *order)
             ket_sign = perm_list[iperm].sign;
         }
         for (int i = 0; i < n; i++) {
-            P[n+i] = n + perm_list[iperm].p[i];
+            P[n + i] = n + perm_list[iperm].p[i];
         }
 
         // count the number of blocks which are equal to this one
@@ -456,7 +459,7 @@ void transform(int n, int *idx, int *out, int *perm, int shift)
     int buf[CC_DIAGRAM_MAX_RANK];
 
     for (int i = 0; i < n; i++) {
-        buf[i] = idx[perm[i]-shift];
+        buf[i] = idx[perm[i] - shift];
     }
 
     for (int i = 0; i < n; i++) {
@@ -698,7 +701,7 @@ void symblock_set(block_t *block, double complex val, int *idx)
         block->buf[li] = val;
     }
     else {
-        ((double *)block->buf)[li] = creal(val);
+        ((double *) block->buf)[li] = creal(val);
     }
 }
 
@@ -735,7 +738,7 @@ double complex symblock_get(block_t *block, int *idx)
         return block->buf[li];
     }
     else {
-        return ((double *)block->buf)[li] + 0.0*I;
+        return ((double *) block->buf)[li] + 0.0 * I;
     }
 }
 
@@ -843,7 +846,7 @@ void symblock_print(block_t *block)
             printf("%2d", indices[block->rank * i + j]);
         }
         if (!carith) {
-            double val = ((double*)block->buf)[i];
+            double val = ((double *) block->buf)[i];
             printf("%12.4e ", (fabs(val) > 1e-10) ? val : 0.0);
             if ((i + 1) % 8 == 0) {
                 printf("\n");

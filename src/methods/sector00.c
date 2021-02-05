@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,7 +26,7 @@
  *
  * Single-reference coupled cluster method (Fock space sector 0h0p)
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include "methods.h"
@@ -269,7 +269,7 @@ int sector00(cc_options_t *opts)
             copy("t3nw", "t3c");
         }
 
-end_iter:
+        end_iter:
 
         // print time spent for iteration
         it_t2 = abs_time();

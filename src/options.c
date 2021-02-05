@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,7 +27,7 @@
  *
  * Functions for object-oriented-like operations with 'struct options'.
  *
- * 2018-2020 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <assert.h>
@@ -122,13 +122,13 @@ cc_options_t *new_options()
 
     // number of electrons in each irrep (for open-shell reference states)
     opts->nelec_defined = 0;
-    for (i = 0; i < CC_MAX_NUM_IRREPS; i++){
+    for (i = 0; i < CC_MAX_NUM_IRREPS; i++) {
         opts->nelec[i] = 0;
     }
 
     // occupation numbers for each spinor (for open-shell reference states)
     opts->occ_defined = 0;
-    for (i = 0; i < CC_MAX_SPINORS; i++){
+    for (i = 0; i < CC_MAX_SPINORS; i++) {
         opts->occ[i] = 0;
     }
 
@@ -274,10 +274,11 @@ void print_options(cc_options_t *opts)
     else if (opts->print_level == CC_PRINT_DEBUG) {
         printf("debug\n");
     }
-    else{
+    else {
         printf("\n");
     }
-    printf(" %-15s  %-40s  %s\n", "arith", "recommended arithmetic", opts->recommended_arith == CC_ARITH_REAL ? "real" : "complex");
+    printf(" %-15s  %-40s  %s\n", "arith", "recommended arithmetic",
+           opts->recommended_arith == CC_ARITH_REAL ? "real" : "complex");
     printf(" %-15s  %-40s  %.1f Mb\n", "memory", "max allowed RAM usage", opts->max_memory_size / (1024.0 * 1024.0));
     printf(" %-15s  %-40s  %s\n", "compress", "compression of integrals on disk", opts->compress ? "LZ4" : "disabled");
     printf(" %-15s  %-40s  ", "disk_usage", "disk usage level");
@@ -488,18 +489,22 @@ void print_options(cc_options_t *opts)
         printf("taylor\n");
     }
     if (opts->shift_type != CC_SHIFT_NONE) {
-        printf(" %-15s  %-40s  %s\n", "orbshift", "\"orbital\" shifts (non-trivial sectors)", opts->do_orbshift ? "yes" : "no");
+        printf(" %-15s  %-40s  %s\n", "orbshift", "\"orbital\" shifts (non-trivial sectors)",
+               opts->do_orbshift ? "yes" : "no");
         if (opts->do_orbshift) {
             printf(" %-15s  %-40s  %d\n", "", "\"orbital\" shift attenuation parameter", opts->orbshift_power);
             printf(" %-15s  %-40s  %f\n", "", "\"orbital\" shift amplitude", opts->orbshift);
         }
-        printf(" %-15s  %-40s  %s\n", "orbshift00", "\"orbital\" shifts (0h0p sector)", opts->do_orbshift_0h0p ? "yes" : "no");
+        printf(" %-15s  %-40s  %s\n", "orbshift00", "\"orbital\" shifts (0h0p sector)",
+               opts->do_orbshift_0h0p ? "yes" : "no");
         if (opts->do_orbshift_0h0p == 1) {
-            printf(" %-15s  %-40s  %d\n", "", "\"orbital\" shift (0h0p) attenuation parameter", opts->orbshift_0h0p_power);
+            printf(" %-15s  %-40s  %d\n", "", "\"orbital\" shift (0h0p) attenuation parameter",
+                   opts->orbshift_0h0p_power);
             printf(" %-15s  %-40s  %f\n", "", "\"orbital\" shift (0h0p) amplitude", opts->orbshift_0h0p[0]);
         }
         else if (opts->do_orbshift_0h0p == 2) {
-            printf(" %-15s  %-40s  %d\n", "", "\"orbital\" shift (0h0p) attenuation parameter", opts->orbshift_0h0p_power);
+            printf(" %-15s  %-40s  %d\n", "", "\"orbital\" shift (0h0p) attenuation parameter",
+                   opts->orbshift_0h0p_power);
             printf(" %-15s  \"orbital\" shift (0h0p) amplitudes\n", "");
             printf(" %-15s  singles     1 valence line   %f\n", "", opts->orbshift_0h0p[0]);
             printf(" %-15s              2 valence lines  %f\n", "", opts->orbshift_0h0p[1]);
@@ -547,7 +552,7 @@ void print_options(cc_options_t *opts)
     }
     else {
         printf("(by irreps) ");
-        for (int i = 0; i < 32; i++){
+        for (int i = 0; i < 32; i++) {
             printf("%d ", opts->nelec[i]);
         }
         printf("\n");
@@ -556,7 +561,7 @@ void print_options(cc_options_t *opts)
     if (opts->occ_defined == 0) {
         printf("default\n");
     }
-    else{
+    else {
         printf("defined for each spinor\n");
     }
     // restriction of triples amplitudes
@@ -590,7 +595,8 @@ void print_options(cc_options_t *opts)
     if (opts->diis_enabled) {
         printf(" %-15s  %-40s  %s\n", "diis", "DIIS technique for convergence", "enabled");
         printf(" %-15s  %-40s  %d\n", "diis <n>", "DIIS subspace dimension", opts->diis_dim);
-        printf(" %-15s  %-40s  %s\n", "diis triples", "DIIS for triples amplitudes", opts->diis_triples ? "enabled" : "disabled");
+        printf(" %-15s  %-40s  %s\n", "diis triples", "DIIS for triples amplitudes",
+               opts->diis_triples ? "enabled" : "disabled");
     }
     else {
         printf(" %-15s  %-40s  %s\n", "diis", "DIIS technique for convergence", "disabled");
@@ -599,7 +605,7 @@ void print_options(cc_options_t *opts)
         for (int p = 0; p < MAX_SECTOR_RANK; p++) {
             if (opts->damping[h][p].enabled) {
                 printf(" %-7s %dh%dp     %-30s%dh%dp     ", "damping", h, p,
-                        "damping for amplitudes, sector ", h, p);
+                       "damping for amplitudes, sector ", h, p);
                 printf("  stop at iter %d, old ampl factor %.2f\n",
                        opts->damping[h][p].stop, opts->damping[h][p].factor);
             }
@@ -608,21 +614,21 @@ void print_options(cc_options_t *opts)
 
     // interface to one-electron properties by L. V. Skripnikov
     printf(" %-15s  %-40s  %s\n", "oneprop", "interface to OneProp (by L.V.Skripnikov)",
-            opts->oneprop_on ? "enabled" : "disabled");
+           opts->oneprop_on ? "enabled" : "disabled");
     if (opts->oneprop_on) {
         for (int i = 0; i < opts->n_oneprop; i++) {
             printf(" %-15s  [%1d] %-36s  re=%s im=%s lambda=(%12.4e,%12.4e)\n",
-                    "", i, "one-electron property",opts->oneprop_file_re[i], opts->oneprop_file_im[i],
-                    creal(opts->oneprop_lambda[i]), cimag(opts->oneprop_lambda[i]));
+                   "", i, "one-electron property", opts->oneprop_file_re[i], opts->oneprop_file_im[i],
+                   creal(opts->oneprop_lambda[i]), cimag(opts->oneprop_lambda[i]));
         }
     }
     // interface to two-electron properties by D. E. Maison and L. V. Skripnikov
     printf(" %-15s  %-40s  %s\n", "twoprop", "interface to TwoProp (by D.E.Maison)",
-            opts->twoprop_on ? "enabled" : "disabled");
+           opts->twoprop_on ? "enabled" : "disabled");
     if (opts->twoprop_on) {
         for (int i = 0; i < opts->n_twoprop; i++) {
             printf(" %-15s  [%1d] %-36s  file=%s lambda=(%12.4e,%12.4e)\n",
-                   "", i, "two-electron property",opts->twoprop_file[i],
+                   "", i, "two-electron property", opts->twoprop_file[i],
                    creal(opts->twoprop_lambda[i]), cimag(opts->twoprop_lambda[i]));
         }
     }
@@ -633,14 +639,14 @@ void print_options(cc_options_t *opts)
     if (opts->n_mdprop > 0) {
         for (int i = 0; i < opts->n_mdprop; i++) {
             printf(" %-15s  [%1d] %-36s  property=%s lambda=(%12.4e,%12.4e)\n",
-                   "", i, "one-electron property from MDPROP",opts->mdprop_file[i],
+                   "", i, "one-electron property from MDPROP", opts->mdprop_file[i],
                    creal(opts->mdprop_lambda[i]), cimag(opts->mdprop_lambda[i]));
         }
     }
 
     // perform hermitization or not?
     printf(" %-15s  %-40s  %s\n", "nohermit", "hermitization of effective Hamiltonians",
-            opts->do_hermit ? "enabled" : "disabled");
+           opts->do_hermit ? "enabled" : "disabled");
 
     // perform Dipole-Length (DL) estimation of TDMs or not
     printf(" %-15s  %-40s  %s\n", "dltdm", "model-space estimates of tran dipoles",
@@ -651,7 +657,7 @@ void print_options(cc_options_t *opts)
         printf(" %-15s  %-40s  %s\n", "natorb", "model-space natural orbitals", "enabled");
         printf(" %-15s  %-40s\n", "", "target states (sector:rep:state):");
 
-        for (int i = 0; i < opts->n_denmat; i++){
+        for (int i = 0; i < opts->n_denmat; i++) {
             cc_denmat_query_t *q = opts->denmat_query + i;
             int *sect1 = q->sect1;
             int *sect2 = q->sect2;
@@ -662,13 +668,13 @@ void print_options(cc_options_t *opts)
             if (strcmp(rep1_name, rep2_name) == 0 && state1 == state2) {
                 printf(" %-15s  %dh%dp:%s:%d (NO)\n", "", sect1[0], sect1[1], rep1_name, state1);
             }
-            else{
+            else {
                 printf(" %-15s  %dh%dp:%s:%d-%dh%dp:%s:%d (NTO)\n", "", sect1[0], sect1[1],
                        rep1_name, state1, sect2[0], sect2[1], rep2_name, state2);
             }
         }
     }
-    else{
+    else {
         printf(" %-15s  %-40s  %s\n", "natorb", "model-space natural orbitals", "disabled");
     }
 
@@ -692,7 +698,8 @@ void print_options(cc_options_t *opts)
     else {
         printf(" %-15s  %-40s  %s\n", "select", "selection of cluster amplitudes", "enabled");
         for (int i = 0; i < opts->n_select; i++) {
-            printf(" %-15s  %dh%dp t%d ", "", opts->selects[i].sect_h, opts->selects[i].sect_p, opts->selects[i].rank/2);
+            printf(" %-15s  %dh%dp t%d ", "", opts->selects[i].sect_h, opts->selects[i].sect_p,
+                   opts->selects[i].rank / 2);
             switch (opts->selects[i].rule) {
                 case CC_SELECTION_ALL:
                     printf("all ");

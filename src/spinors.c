@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
  * All information about one-particle functions (spin-orbitals or spinors)
  * (and their symmetry).
  *
- * 2018 Alexander Oleynichenko
+ * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
 #include <math.h>
@@ -63,6 +63,7 @@ spinor_block_t *spb_hp01[2][2];
 
 // mapping "global spinor index -> local spinor index (in spinor block)"
 int spinor_index_global2local[CC_MAX_SPINORS];
+
 
 // info functions ("getters")
 inline int is_active(int idx)
@@ -120,7 +121,7 @@ void get_active_space_size(int *nacth, int *nactp)
     *nacth = 0;
     *nactp = 0;
 
-    for (int i = 0; i < nspinors; i++){
+    for (int i = 0; i < nspinors; i++) {
         if (is_act_hole(i)) {
             (*nacth)++;
         }
@@ -136,7 +137,7 @@ void get_active_space(int *nacth, int *nactp, moindex_t *active_holes_indices, m
     *nacth = 0;
     *nactp = 0;
 
-    for (int i = 0; i < nspinors; i++){
+    for (int i = 0; i < nspinors; i++) {
         if (is_act_hole(i)) {
             active_holes_indices[*nacth] = i;
             (*nacth)++;
@@ -159,7 +160,7 @@ int get_num_electrons()
 {
     int nelec = 0;
 
-    for (size_t i = 0; i < nspinors; i++){
+    for (size_t i = 0; i < nspinors; i++) {
         nelec += spinor_info[i].occ;
     }
 
@@ -188,15 +189,15 @@ void create_spinor_blocks(int tilesize)
     // count number of spinors in each irrep
     sizes = (int *) cc_malloc(nsym * sizeof(int));
     memset(sizes, 0, nsym * sizeof(int));
-    for (i = 0; i < nspinors; i++){
+    for (i = 0; i < nspinors; i++) {
         sizes[spinor_info[i].repno]++;
     }
 
     // count number of nonzero blocks
     n_spinor_blocks = 0;
-    for (i = 0; i < nsym; i++){
+    for (i = 0; i < nsym; i++) {
         if (sizes[i] > 0) {
-            for (j = 0; j < sizes[i]; j += tilesize){
+            for (j = 0; j < sizes[i]; j += tilesize) {
                 n_spinor_blocks++;
             }
         }
@@ -204,7 +205,7 @@ void create_spinor_blocks(int tilesize)
     if (cc_opts->print_level >= CC_PRINT_DEBUG) {
         printf("nsym = %d\n", nsym);
         printf("sizes = ");
-        for (i = 0; i < nsym; i++) printf("%d ", sizes[i]);
+        for (i = 0; i < nsym; i++) { printf("%d ", sizes[i]); }
         printf("\n");
         printf("number of nonzero blocks = %d\n", n_spinor_blocks);
     }
@@ -213,9 +214,9 @@ void create_spinor_blocks(int tilesize)
     spinor_blocks = (spinor_block_t *) cc_malloc(n_spinor_blocks * sizeof(spinor_block_t));
     int k;
     j = 0;
-    for (i = 0; i < nsym; i++){
+    for (i = 0; i < nsym; i++) {
         if (sizes[i] > 0) {
-            for (k = 0; k < sizes[i]; k += tilesize){
+            for (k = 0; k < sizes[i]; k += tilesize) {
                 int size = (k + tilesize > sizes[i]) ? (sizes[i] - k) : tilesize;
                 if (cc_opts->print_level >= CC_PRINT_DEBUG) {
                     printf("i = %d j = %d repno = %d size = %d\n", i, j, i, size);
@@ -229,8 +230,8 @@ void create_spinor_blocks(int tilesize)
     }
 
     // assign indices
-    for (i = 0; i < nspinors; i++){
-        for (j = 0; j < n_spinor_blocks; j++){
+    for (i = 0; i < nspinors; i++) {
+        for (j = 0; j < n_spinor_blocks; j++) {
             if (spinor_info[i].repno == spinor_blocks[j].repno) {
                 if (spinor_blocks[j].size == tilesize) {
                     continue;
@@ -252,9 +253,9 @@ void create_spinor_blocks(int tilesize)
 
     /* beautiful table with information about spinor blocks */
     printf(" Blocks of molecular spinors:\n");
-    print_hyphens(1,80);
+    print_hyphens(1, 80);
     printf("   #  size%*s%s\n", field_width, "irrep", "  spinor indices");
-    print_hyphens(1,80);
+    print_hyphens(1, 80);
     for (int i = 0; i < n_spinor_blocks; i++) {
         size_t sz = spinor_blocks[i].size;
         char *rep_name = get_irrep_name(spinor_blocks[i].repno);
@@ -264,11 +265,11 @@ void create_spinor_blocks(int tilesize)
             if (j != 0) {
                 printf(",");
             }
-            printf("%d", indices[j]+1);
+            printf("%d", indices[j] + 1);
 
             int nskip = 0;
-            for (int k = j+1; k < sz; k++) {
-                if (indices[k] == indices[k-1] + 1) {
+            for (int k = j + 1; k < sz; k++) {
+                if (indices[k] == indices[k - 1] + 1) {
                     nskip++;
                 }
                 else {
@@ -276,19 +277,19 @@ void create_spinor_blocks(int tilesize)
                 }
             }
             if (nskip > 0) {
-                printf("-%d", indices[j+nskip]+1);
+                printf("-%d", indices[j + nskip] + 1);
                 j += nskip;
             }
         }
         printf("\n");
     }
-    print_hyphens(1,80);
+    print_hyphens(1, 80);
     printf("\n");
 
     // construct mapping: "global spinor index -> local spinor index"
-    for (isp = 0; isp < nspinors; isp++){
-        for (i = 0; i < n_spinor_blocks; i++){
-            for (j = 0; j < spinor_blocks[i].size; j++){
+    for (isp = 0; isp < nspinors; isp++) {
+        for (i = 0; i < n_spinor_blocks; i++) {
+            for (j = 0; j < spinor_blocks[i].size; j++) {
                 if (spinor_blocks[i].indices[j] == isp) {
                     spinor_index_global2local[isp] = j;
                     goto contin;
@@ -301,10 +302,11 @@ void create_spinor_blocks(int tilesize)
 
     if (prt_lvl >= CC_PRINT_DEBUG) {
         printf("spinor indices, global to local mapping:\n");
-        for (i = 0; i < nspinors; i++){
+        for (i = 0; i < nspinors; i++) {
             printf("%3d->%3d ", i, spinor_index_global2local[i]);
-            if ((i + 1) % 10 == 0)
+            if ((i + 1) % 10 == 0) {
                 printf("\n");
+            }
         }
         printf("\n");
     }
@@ -329,16 +331,17 @@ int is_symblock_zero_rank2(int *spinor_blocks, int *qparts, int *valence)
     val = valence[0] == 1;
     arr = spb_hp01[hp][val];
     int sz1 = arr[spinor_blocks[0]].size;
-    if (sz1 == 0) return 1;
+    if (sz1 == 0) { return 1; }
 
     hp = (qparts[1] == 'h') ? 0 : 1;
     val = valence[1] == 1;
     arr = spb_hp01[hp][val];
     int sz2 = arr[spinor_blocks[1]].size;
-    if (sz2 == 0) return 1;
+    if (sz2 == 0) { return 1; }
 
     return 0;
 }
+
 
 int is_symblock_zero_rank4(int *spinor_blocks, int *qparts, int *valence)
 {
@@ -350,32 +353,34 @@ int is_symblock_zero_rank4(int *spinor_blocks, int *qparts, int *valence)
     val = valence[0] == 1;
     arr = spb_hp01[hp][val];
     sz = arr[spinor_blocks[0]].size;
-    if (sz == 0) return 1;
+    if (sz == 0) { return 1; }
 
     hp = (qparts[1] == 'h') ? 0 : 1;
     val = valence[1] == 1;
     arr = spb_hp01[hp][val];
     sz = arr[spinor_blocks[1]].size;
-    if (sz == 0) return 1;
+    if (sz == 0) { return 1; }
 
     hp = (qparts[2] == 'h') ? 0 : 1;
     val = valence[2] == 1;
     arr = spb_hp01[hp][val];
     sz = arr[spinor_blocks[2]].size;
-    if (sz == 0) return 1;
+    if (sz == 0) { return 1; }
 
     hp = (qparts[3] == 'h') ? 0 : 1;
     val = valence[3] == 1;
     arr = spb_hp01[hp][val];
     sz = arr[spinor_blocks[3]].size;
-    if (sz == 0) return 1;
+    if (sz == 0) { return 1; }
 
     return 0;
 }
 
+
 int (*is_symblock_zerox[CC_DIAGRAM_MAX_RANK])(int *spinor_blocks, int *qparts, int *valence) = {
         is_symblock_zero_rank2, is_symblock_zero_rank4, NULL, NULL, NULL
 };
+
 
 int is_symblock_zero(int rank, int *spinor_blocks, int *qparts, int *valence)
 {
@@ -403,7 +408,7 @@ int spinor_attr_cmp_by_eps(const void *i, const void *j)
     if (eps1 > eps2) {
         return 1;
     }
-    else{
+    else {
         return -1;
     }
 }
@@ -462,22 +467,22 @@ void classify_spinors(double actsp_min, double actsp_max,
 
     if (!cc_opts->occ_defined && cc_opts->nelec_defined) {
         int nelec[CC_MAX_NUM_IRREPS];
-        for (i = 0; i < CC_MAX_NUM_IRREPS; i++){
+        for (i = 0; i < CC_MAX_NUM_IRREPS; i++) {
             nelec[i] = cc_opts->nelec[i];
         }
-        for (i = 0; i < nspinors; i++){
+        for (i = 0; i < nspinors; i++) {
             int repno = spinor_info[i].repno;
             if (nelec[repno] > 0) {
                 spinor_info[i].occ = 1;
                 nelec[repno]--;
             }
-            else{
+            else {
                 spinor_info[i].occ = 0;
             }
         }
     }
     if (cc_opts->occ_defined) {
-        for (i = 0; i < nspinors; i++){
+        for (i = 0; i < nspinors; i++) {
             spinor_info[i].occ = cc_opts->occ[i];
         }
     }
@@ -490,7 +495,7 @@ void classify_spinors(double actsp_min, double actsp_max,
         memcpy(sorted_spinor_info, spinor_info, sizeof(spinor_attr_t) * nspinors);
         qsort(sorted_spinor_info, nspinors, sizeof(spinor_attr_t), spinor_attr_cmp_by_eps);
         nocc = 0;
-        for (i = 0; i < nspinors; i++){
+        for (i = 0; i < nspinors; i++) {
             if (sorted_spinor_info[i].occ == 1) {
                 nocc++;
             }
@@ -500,13 +505,13 @@ void classify_spinors(double actsp_min, double actsp_max,
     }
 
     if (cc_opts->actsp_defined == 1 || cc_opts->actsp_defined == 2) { // by energy or by total number: nactp/nacth
-        for (i = 0; i < nspinors; i++){
+        for (i = 0; i < nspinors; i++) {
             occ = spinor_info[i].occ;
             eps = spinor_info[i].eps;
             if (occ == 1) { // hole
                 act = (eps >= actsp_min) ? 1 : 0;
             }
-            else{ // particle
+            else { // particle
                 act = (eps <= actsp_max) ? 1 : 0;
             }
             spinor_info[i].active = act;
@@ -565,13 +570,13 @@ void classify_spinors(double actsp_min, double actsp_max,
         }
     }
     else if (cc_opts->actsp_defined == 4) {
-        for (i = 0; i < nspinors; i++){
+        for (i = 0; i < nspinors; i++) {
             spinor_info[i].active = cc_opts->active_each[i];
         }
     }
 
     // count spinors of each type
-    for (i = 0; i < nspinors; i++){
+    for (i = 0; i < nspinors; i++) {
         occ = spinor_info[i].occ;
         act = spinor_info[i].active;
 
@@ -585,8 +590,8 @@ void classify_spinors(double actsp_min, double actsp_max,
                 ih[nih++] = i;
             }
         }
-        // particle
-        else{
+            // particle
+        else {
             p[np++] = i;
             if (act == 1) {
                 ap[nap++] = i;
@@ -638,12 +643,10 @@ void classify_spinors(double actsp_min, double actsp_max,
     cc_free(ap);
     cc_free(sorted_spinor_info);
 
-
     spinor_blocks_h0 = (spinor_block_t *) cc_malloc(sizeof(spinor_block_t) * n_spinor_blocks);
     spinor_blocks_h1 = (spinor_block_t *) cc_malloc(sizeof(spinor_block_t) * n_spinor_blocks);
     spinor_blocks_p0 = (spinor_block_t *) cc_malloc(sizeof(spinor_block_t) * n_spinor_blocks);
     spinor_blocks_p1 = (spinor_block_t *) cc_malloc(sizeof(spinor_block_t) * n_spinor_blocks);
-
 
     for (size_t i = 0; i < n_spinor_blocks; i++) {
         spinor_blocks_h0[i].repno = spinor_blocks[i].repno;
@@ -701,7 +704,7 @@ void print_spinor_info()
     int ccs_only_space[CC_MAX_SPINORS];
 
     // set counters to zero
-    for (i = 0; i < nsym; i++){
+    for (i = 0; i < nsym; i++) {
         occ_i[i] = 0;
         occ_a[i] = 0;
         virt_a[i] = 0;
@@ -717,7 +720,7 @@ void print_spinor_info()
     printf("\n");
     printf("     no    rep         occ    active        one-el energy\n");
     printf("    -------------------------------------------------------\n");
-    for (i = 0; i < nspinors; i++){
+    for (i = 0; i < nspinors; i++) {
         printf("    %4d%4d \"%-6s\"%4d       %1s     %20.12f  %s\n",
                spinor_info[i].seqno + 1, spinor_info[i].repno,
                rep_names[spinor_info[i].repno], spinor_info[i].occ,
@@ -744,39 +747,39 @@ void print_spinor_info()
 
     // how many reps have non-zero number of spinors
     int to_be_printed[64];
-    for (int irep = 0; irep < nsym; irep++){
+    for (int irep = 0; irep < nsym; irep++) {
         if (occ_i[irep] == 0 && occ_a[irep] == 0 && virt_a[irep] == 0 && virt_i[irep] == 0) {
             to_be_printed[irep] = 0;
         }
-        else{
+        else {
             to_be_printed[irep] = 1;
         }
     }
 
     // print little statistics
     printf("    irreps            ");
-    for (i = 0; i < nsym; i++){
-        if (to_be_printed[i]) printf("%6s", rep_names[i]);
+    for (i = 0; i < nsym; i++) {
+        if (to_be_printed[i]) { printf("%6s", rep_names[i]); }
     }
     printf("\n");
     printf("    occupied inactive ");
-    for (i = 0; i < nsym; i++){
-        if (to_be_printed[i]) printf("%6d", occ_i[i]);
+    for (i = 0; i < nsym; i++) {
+        if (to_be_printed[i]) { printf("%6d", occ_i[i]); }
     }
     printf("\n");
     printf("    occupied active   ");
-    for (i = 0; i < nsym; i++){
-        if (to_be_printed[i]) printf("%6d", occ_a[i]);
+    for (i = 0; i < nsym; i++) {
+        if (to_be_printed[i]) { printf("%6d", occ_a[i]); }
     }
     printf("\n");
     printf("    virtual active    ");
-    for (i = 0; i < nsym; i++){
-        if (to_be_printed[i]) printf("%6d", virt_a[i]);
+    for (i = 0; i < nsym; i++) {
+        if (to_be_printed[i]) { printf("%6d", virt_a[i]); }
     }
     printf("\n");
     printf("    virtual inactive  ");
-    for (i = 0; i < nsym; i++){
-        if (to_be_printed[i]) printf("%6d", virt_i[i]);
+    for (i = 0; i < nsym; i++) {
+        if (to_be_printed[i]) { printf("%6d", virt_i[i]); }
     }
     printf("\n\n");
 }
@@ -788,7 +791,7 @@ void spinors_cleanup()
 
     cc_free(spinor_info);
 
-    for (i = 0; i < n_spinor_blocks; i++){
+    for (i = 0; i < n_spinor_blocks; i++) {
         cc_free(spinor_blocks[i].indices);
     }
     cc_free(spinor_blocks);
@@ -835,7 +838,7 @@ void setup_singles_only_space(int *ccs_only_space)
             space_core->total = nspinors;
         }
         core_emin = sorted_spinor_info[0].eps - 1e-7;
-        core_emax = sorted_spinor_info[space_core->total-1].eps + 1e-7;
+        core_emax = sorted_spinor_info[space_core->total - 1].eps + 1e-7;
     }
     if (space_core->deftype == CC_SPACE_BY_ENERGY) {
         core_emin = space_core->emin;
@@ -881,8 +884,8 @@ void setup_singles_only_space(int *ccs_only_space)
         if (space_virt->total > nspinors) {
             space_virt->total = nspinors;
         }
-        virt_emin = sorted_spinor_info[nspinors-space_virt->total].eps - 1e-7;
-        virt_emax = sorted_spinor_info[nspinors-1].eps + 1e-7;
+        virt_emin = sorted_spinor_info[nspinors - space_virt->total].eps - 1e-7;
+        virt_emax = sorted_spinor_info[nspinors - 1].eps + 1e-7;
     }
     if (space_virt->deftype == CC_SPACE_BY_ENERGY) {
         virt_emin = space_virt->emin;
@@ -908,7 +911,7 @@ void setup_singles_only_space(int *ccs_only_space)
             }
             // mark last N spinors in this irrep
             int n_spi = 0;
-            for (int j = nspinors-1; j >= 0; j--) {
+            for (int j = nspinors - 1; j >= 0; j--) {
                 if (spinor_info[j].repno == irep) {
                     n_spi++;
                     if (n_spi <= space_virt->dim[i]) {

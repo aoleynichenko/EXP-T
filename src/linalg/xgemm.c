@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2020 The EXP-T developers.
+ *  Copyright (C) 2018-2021 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -25,6 +25,7 @@
 
 #include <assert.h>
 #include <string.h>
+
 
 /**
  * Matrix-matrix multiplication. The choice of the actual BLAS
