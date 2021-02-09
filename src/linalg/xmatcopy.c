@@ -39,6 +39,19 @@ void transpose_inplace_double(double *m, int w, int h);
 
 void transpose_inplace_double_complex(double complex *m, int w, int h);
 
+/**
+ * In-place matrix transposition.
+ *
+ * @param type  CC_DOUBLE or CC_DOUBLE_COMPLEX
+ * @param rows  number of rows
+ * @param cols  number of columns
+ * @param A     matrix
+ */
+void xtranspose(data_type_t type, size_t rows, size_t cols, void *A)
+{
+    xmatcopy(type, 'T', rows, cols, A, A);
+}
+
 
 /**
  * Transposition/copying/conjugation of matrices:

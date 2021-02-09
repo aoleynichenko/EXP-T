@@ -75,7 +75,8 @@ nthreads        { inc_col(); return KEYWORD_NTHREADS;     }
 openmp          { inc_col(); return KEYWORD_OPENMP;       }
 cuda            { inc_col(); return KEYWORD_CUDA;         }
 arith           { inc_col(); return KEYWORD_ARITH;        }
-prop            { inc_col(); return KEYWORD_PROP;         }
+mdprop          { inc_col(); return KEYWORD_MDPROP;       }
+txtprop         { inc_col(); return KEYWORD_TXTPROP;      }
 no_inner_core_corr { inc_col(); return KEYWORD_NOINNER;   }
 end             { inc_col(); return KEYWORD_END;          }
 select          { inc_col(); return KEYWORD_SELECT;       }

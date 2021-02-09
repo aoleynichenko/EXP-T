@@ -141,7 +141,7 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
     for (i = 0; i < 1024; i++) {
         mrconee_mdcint.oneel_file[i] = ' ';
         mrconee_mdcint.twoel_file[i] = ' ';
-        mrconee_mdcint.prop_file[i] = ' ';
+        mrconee_mdcint.prop_file [i] = ' ';
         mrconee_mdcint.gaunt_file[i] = ' ';
         for (j = 0; j < CC_MAX_NPROP; j++) {
             mrconee_mdcint.twoprop_files[j][i] = ' ';

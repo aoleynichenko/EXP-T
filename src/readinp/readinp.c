@@ -86,8 +86,8 @@ void directive_tilesize(cc_options_t *opts);
 void directive_disk_usage(cc_options_t *opts);
 void directive_nthreads(cc_options_t *opts);
 void directive_arith(cc_options_t *opts);
-void directive_prop(cc_options_t *opts);
-void directive_select(cc_options_t *opts);
+void directive_mdprop(cc_options_t *opts);
+void directive_txtprop(cc_options_t *opts);
 void directive_no_inner_core_corr(cc_options_t *opts);
 
 void yyerror(char *s);
@@ -248,8 +248,11 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_ARITH:
                 directive_arith(opts);
                 break;
-            case KEYWORD_PROP:
-                directive_prop(opts);
+            case KEYWORD_MDPROP:
+                directive_mdprop(opts);
+                break;
+            case KEYWORD_TXTPROP:
+                directive_txtprop(opts);
                 break;
             case KEYWORD_NOINNER:
                 directive_no_inner_core_corr(opts);
@@ -1603,36 +1606,90 @@ void directive_arith(cc_options_t *opts)
 
 /**
  * Syntax:
- * prop <list of properties>
- * names of properties: without quotes
+ * mdprop "<property-name>" [transpose]
+ * Example:
+ * mdprop "ZDIPLEN"
  */
-void directive_prop(cc_options_t *opts)
+void directive_mdprop(cc_options_t *opts)
 {
-    static char *msg = "wrong parameter of the prop directive";
+    static char *msg_param = "wrong parameter of the mdprop directive";
+    static char *msg_trans = "the 'transpose' keyword is expected";
     int token_type;
 
+    // quotation mark + property_name + quotation mark
     token_type = next_token();
-    while (token_type != END_OF_LINE && token_type != END_OF_FILE) {
-        if (token_type != TT_WORD) {
-            yyerror(msg);
-        }
+    if (token_type != TT_QUOTE) {
+        yyerror(msg_param);
+    }
+    yytext[strlen(yytext) - 1] = '\0';  // remove quote
+    cc_ms_prop_query_t *q = &opts->prop_queries[opts->n_ms_props];
+    strcpy(q->prop_name, yytext + 1);
+    q->do_transpose = 0;
+    q->source = CC_PROP_FROM_MDPROP;
 
-        cc_property_query_t *q = &opts->prop_queries[opts->n_props];
-        strcpy(q->prop_name, yytext);
-
-        token_type = next_token();
-        if (token_type == TT_STAR) {
-            // real and imaginary part are to be interchanged + imag part is to be transposed
-            q->swap_re_im = 1;
+    // optional "transpose" keyword
+    token_type = next_token();
+    if (token_type == TT_WORD) {
+        if (strcmp(yytext, "transpose") == 0) {
+            q->do_transpose = 1;
         }
         else {
-            put_back(token_type);
+            yyerror(msg_trans);
         }
-
-        opts->n_props++;
-        token_type = next_token();
     }
-    put_back(token_type);
+    else {
+        put_back(token_type);
+    }
+
+    opts->n_ms_props++;
+}
+
+
+/**
+ * Syntax:
+ * txtprop <file_real_part> <file_imag_part> [transpose]
+ * Example:
+ * txtprop PropInts_Re.txt PropInts_Im.txt
+ */
+void directive_txtprop(cc_options_t *opts)
+{
+    static char *msg_param = "wrong parameter of the txtprop directive";
+    static char *msg_trans = "the 'transpose' keyword is expected";
+    int token_type;
+
+    cc_ms_prop_query_t *q = &opts->prop_queries[opts->n_ms_props];
+    q->source = CC_PROP_FROM_TXTPROP;
+    q->do_transpose = 0;
+
+    // path to file with real part
+    token_type = next_token();
+    if (token_type != TT_WORD) {
+        yyerror(msg_param);
+    }
+    strcpy(q->file_real, yytext);
+
+    // path to file with imag part
+    token_type = next_token();
+    if (token_type != TT_WORD) {
+        yyerror(msg_param);
+    }
+    strcpy(q->file_imag, yytext);
+
+    // optional "transpose" keyword
+    token_type = next_token();
+    if (token_type == TT_WORD) {
+        if (strcmp(yytext, "transpose") == 0) {
+            q->do_transpose = 1;
+        }
+        else {
+            yyerror(msg_trans);
+        }
+    }
+    else {
+        put_back(token_type);
+    }
+
+    opts->n_ms_props++;
 }
 
 

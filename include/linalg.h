@@ -54,6 +54,7 @@ double xabs(data_type_t type, void *x);
 
 // transposition/copying/conjugation of matrices
 void xmatcopy(data_type_t type, char op, size_t rows, size_t cols, void *A, void *B);
+void xtranspose(data_type_t type, size_t rows, size_t cols, void *A);
 
 // a constant times a vector plus a vector
 void xaxpy(data_type_t type, size_t n,

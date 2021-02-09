@@ -232,7 +232,7 @@ cc_options_t *new_options()
     opts->n_denmat = 0;
 
     // calculation of properties (model-space estimation)
-    opts->n_props = 0;
+    opts->n_ms_props = 0;
 
     // selection of amplitudes
     opts->n_select = 0;
@@ -678,12 +678,17 @@ void print_options(cc_options_t *opts)
         printf(" %-15s  %-40s  %s\n", "natorb", "model-space natural orbitals", "disabled");
     }
 
-    if (opts->n_props > 0) {
+    if (opts->n_ms_props > 0) {
         printf(" %-15s  %-40s  %s", "prop", "model-space estimates of properties", "enabled,");
-        for (int i = 0; i < opts->n_props; i++) {
-            printf(" %s", opts->prop_queries[i].prop_name);
-            if (opts->prop_queries[i].swap_re_im) {
-                printf("*");
+        for (int i = 0; i < opts->n_ms_props; i++) {
+            if (opts->prop_queries[i].source == CC_PROP_FROM_MDPROP) {
+                printf(" %s (md)", opts->prop_queries[i].prop_name);
+            }
+            else {
+                printf(" %s %s (txt)", opts->prop_queries[i].file_real, opts->prop_queries[i].file_imag);
+            }
+            if (opts->prop_queries[i].do_transpose) {
+                printf("^T");
             }
         }
         printf("\n");

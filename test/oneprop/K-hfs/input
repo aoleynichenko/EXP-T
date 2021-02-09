@@ -2,5 +2,6 @@ memory 4 gb
 sector 0h1p
 nactp 8
 oneprop 1e-7 0.0 "A_z"
-prop A_z
+msprop "A_z"
+disk_usage 0
 

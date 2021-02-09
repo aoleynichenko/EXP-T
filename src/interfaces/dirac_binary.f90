@@ -75,6 +75,7 @@ module general
     ! constants
     integer(4), parameter :: CC_MAX_SPINORS = 2048
     integer(4), parameter :: CC_MAX_NREP = 64
+    integer(4), parameter :: CC_MAX_NPROP = 256
     integer(4), parameter :: INTCLASS_NO_BARS = 0  ! all indices are unbarred
     integer(4), parameter :: INTCLASS_ONE_BAR = 1  ! one barred index (quaternion groups only)
     integer(4), parameter :: INTCLASS_TWO_BARS = 2  ! two barred indices
@@ -545,7 +546,7 @@ contains
         character(len = 1024) :: gaunt_file
         integer(8) :: gaunt_enabled
         integer(8) :: n_twoprop
-        character(len = 1024) :: twoprop_files(64)
+        character(len = 1024) :: twoprop_files(CC_MAX_NPROP)
         common /mrconee_mdcint/ oneel_file, twoel_file, prop_file, gaunt_file, gaunt_enabled, n_twoprop, twoprop_files
         bind(C) :: /mrconee_mdcint/
         logical(4) :: breit
@@ -619,7 +620,7 @@ subroutine dirac_interface_binary(err) bind(C)
     character(len = 1024) :: gaunt_file
     integer(8) :: gaunt_enabled
     integer(8) :: n_twoprop
-    character(len = 1024) :: twoprop_files(64)
+    character(len = 1024) :: twoprop_files(CC_MAX_NPROP)
     common /mrconee_mdcint/ oneel_file, twoel_file, prop_file, gaunt_file, gaunt_enabled, n_twoprop, twoprop_files
     bind(C) :: /mrconee_mdcint/
 
@@ -1040,7 +1041,7 @@ subroutine read_two_electron_prop(prop_name, file_name)
     character(len = 1024) :: gaunt_file
     integer(8) :: gaunt_enabled
     integer(8) :: n_twoprop
-    character(len = 1024) :: twoprop_files(64)
+    character(len = 1024) :: twoprop_files(CC_MAX_NPROP)
     common /mrconee_mdcint/ oneel_file, twoel_file, prop_file, gaunt_file, gaunt_enabled, n_twoprop, twoprop_files
     bind(C) :: /mrconee_mdcint/
 
@@ -1110,7 +1111,7 @@ subroutine read_mdcint(nz_arith, is_spinfree, nspinors)
     character(len = 1024) :: gaunt_file
     integer(8) :: gaunt_enabled
     integer(8) :: n_twoprop
-    character(len = 1024) :: twoprop_files(64)
+    character(len = 1024) :: twoprop_files(CC_MAX_NPROP)
     common /mrconee_mdcint/ oneel_file, twoel_file, prop_file, gaunt_file, gaunt_enabled, n_twoprop, twoprop_files
     bind(C) :: /mrconee_mdcint/
     integer :: luint   ! 2-el integrals file
@@ -1419,10 +1420,11 @@ end subroutine read_mdcint
 ! Reads properties integrals from the MDPROP file (if exists) and writes them
 ! to formatted files, format for matrix element <i|Op|j>:
 ! <i>   <j>   Re(<i|Op|j>)   Im(<i|Op|j>)
-! Names of formatted files:
-! XDIPLEN    x-component of the dipole moment operator (electronic part only)
-! YDIPLEN    y-component
-! ZDIPLEN    z-component
+!
+! Note that in DIRAC there are two types of operators:
+! (1) "right order": real part is symmetric, imag is antisymmetric
+! (2) "wrong order": real part is antisymm, imag is symm, and both are transposed
+! the latter case is to be casted to the former one.
 !*******************************************************************************
 subroutine read_mdprop()
 
@@ -1435,7 +1437,7 @@ subroutine read_mdprop()
     character(len = 1024) :: gaunt_file
     integer(8) :: gaunt_enabled
     integer(8) :: n_twoprop
-    character(len = 1024) :: twoprop_files(64)
+    character(len = 1024) :: twoprop_files(CC_MAX_NPROP)
     common /mrconee_mdcint/ oneel_file, twoel_file, prop_file, gaunt_file, gaunt_enabled, n_twoprop, twoprop_files
     bind(C) :: /mrconee_mdcint/
 
@@ -1444,7 +1446,7 @@ subroutine read_mdprop()
     integer :: fprop   ! formatted file with integrals
     character(len = 32) :: achar
     real(8), dimension(:, :, :), allocatable :: prop
-    integer :: i, j
+    integer :: i, j, normal_order
 
     print *
     print *, "*** MDPROP FILE ***"
@@ -1467,12 +1469,39 @@ subroutine read_mdprop()
     if (achar(25:32) .eq. 'EOFLABEL') goto 11
     print *, 'property = ', achar(25:32)
     read (mdprop, end = 12, err = 12) prop
+
+    ! normal order: real part is symmetric, imag is antisymmetric
+    ! else: real part is antisymm, imag is symm
+    normal_order = 1
+    do i = 1, n_spinors
+        do j = 1, n_spinors
+            ! real parts
+            if (abs(prop(1, i, j) - prop(1, j, i)) > 1d-10) then
+                normal_order = 0
+            end if
+            ! imag parts
+            if (abs(prop(2, i, j) + prop(2, j, i)) > 1d-10) then
+                normal_order = 0
+            end if
+        end do
+    end do
+    if (normal_order == 1) then
+        print *, 'order of parts: Re + i*Im'
+    else
+        print *, 'order of parts: Im + i*Re'
+    end if
+
     ! flush integrals to formatted file
+    ! together with transposition
     fprop = 12
     open(unit = fprop, file = trim(achar(25:32)))
     do i = 1, n_spinors
         do j = 1, n_spinors
-            write (fprop, *) i, j, prop(1, i, j), prop(2, i, j)
+            if (normal_order == 1) then
+                write (fprop, *) j, i, prop(1, i, j), prop(2, i, j)
+            else
+                write (fprop, *) j, i, prop(2, i, j), prop(1, i, j)
+            end if
         end do
     end do
     close (unit = fprop)

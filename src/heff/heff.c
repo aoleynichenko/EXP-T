@@ -652,10 +652,9 @@ void diag_heff(int sect_h, int sect_p, ...)
 
     // estimate properties: only for the target sector
     if (cc_opts->sector_h == sect_h && cc_opts->sector_p == sect_p &&
-        cc_opts->n_props > 0) {
-        for (int i = 0; i < cc_opts->n_props; i++) {
-            model_space_property(cc_opts->prop_queries[i].prop_name,
-                                 cc_opts->prop_queries[i].swap_re_im);
+        cc_opts->n_ms_props > 0) {
+        for (int i = 0; i < cc_opts->n_ms_props; i++) {
+            model_space_property(cc_opts->prop_queries + i);
         }
     }
 }

@@ -70,8 +70,8 @@ void sort_onel();
 
 void finalize_sorting();
 
-void read_oneprop(int nspinors, char *file_re, char *file_im, double complex *prop_mat);
-void read_mdprop(int nspinors, char *prop_name, double complex *prop_mat);
+int read_prop_two_files(int nspinors, char *file_re, char *file_im, double complex *prop_mat);
+int read_prop_single_file(int nspinors, char *prop_name, double complex *prop_mat);
 
 #define CC_MAX_SORTING_REQUESTS 64
 #define CC_SORTING_IO_BUF_SIZE 16384
@@ -635,11 +635,92 @@ void perform_sorting()
 }
 
 
+void reconstruct_fock()
+{
+    int idx4[4];
+
+    // get pointer to the diagrams required for the construction of the
+    // exchange-correlation part of the Fock matrix
+    diagram_t *dg_hhhh = diagram_stack_find("hhhh");
+    if (dg_hhhh == NULL) {
+        errquit("in sort_onel(): diagram 'hhhh' is required to construct Fock matrix, but it was not found");
+    }
+    diagram_t *dg_hphh = diagram_stack_find("hphh");
+    if (dg_hphh == NULL) {
+        errquit("in sort_onel(): diagram 'hphh' is required to construct Fock matrix, but it was not found");
+    }
+    diagram_t *dg_hhhp = diagram_stack_find("hhhp");
+    if (dg_hhhp == NULL) {
+        errquit("in sort_onel(): diagram 'hhhp' is required to construct Fock matrix, but it was not found");
+    }
+    diagram_t *dg_hphp = diagram_stack_find("hphp");
+    if (dg_hphp == NULL) {
+        errquit("in sort_onel(): diagram 'hphp' is required to construct Fock matrix, but it was not found");
+    }
+
+    printf("     Fock matrix reconstruction ...\n");
+    for (int i = 0; i < nspinors; i++) {
+        for (int j = 0; j < nspinors; j++) {
+            f_ints[i * nspinors + j] = h_ints[i * nspinors + j];
+            int nocc = spinor_types.holes[0];   // size of list of occ spinors
+            for (int p = 0; p < nocc; p++) {
+                int idx_p = spinor_types.holes[p + 1];
+                idx4[0] = idx_p;
+                idx4[1] = i;
+                idx4[2] = idx_p;
+                idx4[3] = j;
+                if (is_hole(i)) {
+                    if (is_hole(j)) {
+                        f_ints[i * nspinors + j] += diagram_get(dg_hhhh, idx4);
+                    }
+                    else { // 'j is particle'
+                        f_ints[i * nspinors + j] += diagram_get(dg_hhhp, idx4);
+                    }
+                }
+                else { // 'i' is particle
+                    if (is_hole(j)) {
+                        f_ints[i * nspinors + j] += diagram_get(dg_hphh, idx4);
+                    }
+                    else { // 'j is particle'
+                        f_ints[i * nspinors + j] += diagram_get(dg_hphp, idx4);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+double recalculate_scf_energy()
+{
+    int idx4[4];
+    double new_escf = cc_opts->enuc;
+
+    diagram_t *dg_hhhh = diagram_stack_find("hhhh");
+    if (dg_hhhh == NULL) {
+        errquit("in sort_onel(): diagram 'hhhh' is required to construct Fock matrix, but it was not found");
+    }
+
+    for (int i = 0; i < nspinors; i++) {
+        if (!is_hole(i)) { continue; }
+        new_escf += h_ints[i * nspinors + i];
+        for (int j = 0; j < nspinors; j++) {
+            if (!is_hole(j)) { continue; }
+            idx4[0] = i;
+            idx4[1] = j;
+            idx4[2] = i;
+            idx4[3] = j;
+            new_escf += 0.5 * diagram_get(dg_hhhh, idx4);
+        }
+    }
+
+    return new_escf;
+}
+
+
 void sort_onel()
 {
     int fd, i, j, ireq;
-    int idx4[4];
-    diagram_t *dg_hhhh, *dg_hphh, *dg_hhhp, *dg_hphp;
     diagram_t *dg;
     size_t isb;
     int idx1, idx2;
@@ -651,25 +732,6 @@ void sort_onel()
     fd = io_open("HINT", "r");
     io_read_compressed(fd, h_ints, sizeof(double complex) * nspinors * nspinors);
     io_close(fd);
-
-    // get pointer to the diagrams required for the construction of the
-    // exchange-correlation part of the Fock matrix
-    dg_hhhh = diagram_stack_find("hhhh");
-    if (dg_hhhh == NULL) {
-        errquit("in sort_onel(): diagram 'hhhh' is required to construct Fock matrix, but it was not found");
-    }
-    dg_hphh = diagram_stack_find("hphh");
-    if (dg_hphh == NULL) {
-        errquit("in sort_onel(): diagram 'hphh' is required to construct Fock matrix, but it was not found");
-    }
-    dg_hhhp = diagram_stack_find("hhhp");
-    if (dg_hhhp == NULL) {
-        errquit("in sort_onel(): diagram 'hhhp' is required to construct Fock matrix, but it was not found");
-    }
-    dg_hphp = diagram_stack_find("hphp");
-    if (dg_hphp == NULL) {
-        errquit("in sort_onel(): diagram 'hphp' is required to construct Fock matrix, but it was not found");
-    }
 
     // read one-electron operators from the OneProp code by Leonid V. Skripnikov
     if (cc_opts->oneprop_on) {
@@ -683,7 +745,11 @@ void sort_onel()
                    cc_opts->oneprop_file_re[ioper], cc_opts->oneprop_file_im[ioper]);
 
             // read files with (a) real part of the prop matrix (b) imaginary part
-            read_oneprop(nspinors, cc_opts->oneprop_file_re[ioper], cc_opts->oneprop_file_im[ioper], oper);
+            int status = read_prop_two_files(nspinors, cc_opts->oneprop_file_re[ioper], cc_opts->oneprop_file_im[ioper], oper);
+            if (status == EXIT_FAILURE) {
+                errquit("Cannot open OneProp files '%s' (re) '%s' (im)",
+                        cc_opts->oneprop_file_re[ioper], cc_opts->oneprop_file_im[ioper]);
+            }
 
             // add operator matrix to the Fock matrix:
             // F = F + lambda*Oper (lambda = perturbation parameter)
@@ -709,7 +775,10 @@ void sort_onel()
                    creal(lambda), cimag(lambda));
 
             // read file containing the prop matrix
-            read_mdprop(nspinors, cc_opts->mdprop_file[ioper], oper);
+            int status = read_prop_single_file(nspinors, cc_opts->mdprop_file[ioper], oper);
+            if (status == EXIT_FAILURE) {
+                errquit("Cannot open property matrix file '%s'", cc_opts->mdprop_file[ioper]);
+            }
 
             // add operator matrix to the Fock matrix:
             // F = F + lambda*Oper (lambda = perturbation parameter)
@@ -724,40 +793,9 @@ void sort_onel()
         cc_free(oper);
     }
 
-
     // construct Fock matrix
     if (!cc_opts->x2cmmf) {
-        printf("     Fock matrix reconstruction ...\n");
-        for (i = 0; i < nspinors; i++) {
-            for (j = 0; j < nspinors; j++) {
-                f_ints[i * nspinors + j] = h_ints[i * nspinors + j];
-                int nocc = spinor_types.holes[0];   // size of list of occ spinors
-                for (int p = 0; p < nocc; p++) {
-                    int idx_p = spinor_types.holes[p + 1];
-                    idx4[0] = idx_p;
-                    idx4[1] = i;
-                    idx4[2] = idx_p;
-                    idx4[3] = j;
-                    if (is_hole(i)) {
-                        if (is_hole(j)) {
-                            f_ints[i * nspinors + j] += diagram_get(dg_hhhh, idx4);
-                        }
-                        else { // 'j is particle'
-                            f_ints[i * nspinors + j] += diagram_get(dg_hhhp, idx4);
-                        }
-                    }
-                    else { // 'i' is particle
-                        if (is_hole(j)) {
-                            f_ints[i * nspinors + j] += diagram_get(dg_hphh, idx4);
-                        }
-                        else { // 'j is particle'
-                            f_ints[i * nspinors + j] += diagram_get(dg_hphp, idx4);
-                        }
-                    }
-                }
-                //printf("f[%d,%d] = %f %f\n", i, j, creal(f_ints[i*nspinors+j]), cimag(f_ints[i*nspinors+j]));
-            }
-        }
+        reconstruct_fock();
     }
     else {  // x2cmmf hamiltonian, no recompute fock matrix
         printf("     Fock matrix reconstruction will be skipped\n");
@@ -769,20 +807,7 @@ void sort_onel()
 
     // recalculate SCF energy (and update it if needed)
     if (!cc_opts->x2cmmf) {
-        int idx4[4];
-        double new_escf = cc_opts->enuc;
-        for (i = 0; i < nspinors; i++) {
-            if (!is_hole(i)) { continue; }
-            new_escf += h_ints[i * nspinors + i];
-            for (j = 0; j < nspinors; j++) {
-                if (!is_hole(j)) { continue; }
-                idx4[0] = i;
-                idx4[1] = j;
-                idx4[2] = i;
-                idx4[3] = j;
-                new_escf += 0.5 * diagram_get(dg_hhhh, idx4);
-            }
-        }
+        double new_escf = recalculate_scf_energy();
         if (fabs(cc_opts->escf - new_escf) > 1e-10) {
             printf("     SCF energy (energy of reference determinant) was updated:\n");
             printf("       old energy = %20.12f a.u.\n", cc_opts->escf);
@@ -872,7 +897,7 @@ void sort_onel()
                 }
                 else {
                     if (carith) {
-                        sb->buf[i] = f_ints[idx1 * nspinors + idx2];//f_ints[idx1][idx2];
+                        sb->buf[i] = f_ints[idx1 * nspinors + idx2];
                     }
                     else {
                         dbuf[i] = creal(f_ints[idx1 * nspinors + idx2]);
@@ -887,13 +912,15 @@ void sort_onel()
 
 
 /**
- * Reads pair of formatted files containing real square matrices of properties
+ * Reads pair of formatted files containing real square matrices of properties.
+ * NOTE: transposition is included to be able to use files from DIRAC.
+ *
  * @param nspinors number of spinors
  * @param file_re real part
  * @param file_im imag part
  * @param prop_mat (is returned) nspinors x nspinors complex matrix
  */
-void read_oneprop(int nspinors, char *file_re, char *file_im, double complex *prop_mat)
+int read_prop_two_files(int nspinors, char *file_re, char *file_im, double complex *prop_mat)
 {
     FILE *f_prop;
     int idx_i, idx_j;
@@ -904,94 +931,53 @@ void read_oneprop(int nspinors, char *file_re, char *file_im, double complex *pr
     // read files with (a) real part of the prop matrix
     f_prop = fopen(file_re, "r");
     if (f_prop == NULL) {
-        errquit("Enable to open OneProp file %s", file_re);
+        return EXIT_FAILURE;
     }
     while (fscanf(f_prop, "%d%d%lf", &idx_i, &idx_j, &value) == 3) {
-        prop_mat[(idx_i - 1) * nspinors + (idx_j - 1)] = value + 0.0 * I;
+        prop_mat[(idx_j - 1) * nspinors + (idx_i - 1)] = value + 0.0 * I;
     }
     fclose(f_prop);
 
     // (b) imaginary part
     f_prop = fopen(file_im, "r");
     if (f_prop == NULL) {
-        errquit("Cannot open OneProp file %s", file_im);
+        return EXIT_FAILURE;
     }
     while (fscanf(f_prop, "%d%d%lf", &idx_i, &idx_j, &value) == 3) {
-        prop_mat[(idx_i - 1) * nspinors + (idx_j - 1)] += 0.0 + value * I;
+        prop_mat[(idx_j - 1) * nspinors + (idx_i - 1)] += 0.0 + value * I;
     }
     fclose(f_prop);
+
+    return EXIT_SUCCESS;
 }
 
 
 /**
  * Reads property matrix from file 'prop_name' (extracted from MDPROP)
- * Note that in DIRAC there are two types of operators:
- * (1) "right order": real part is symmetric, imag is antisymmetric
- * (2) "wrong order": real part is antisymm, imag is symm, and both are transposed
- * the latter case is to be casted to the former one.
+ *
  * @param nspinors number of spinors
  * @param prop_name name of the property under consideration in the MDPROP file
  * @param prop_mat (is returned) nspinors x nspinors complex matrix
  */
-void read_mdprop(int nspinors, char *prop_name, double complex *prop_mat)
+int read_prop_single_file(int nspinors, char *prop_name, double complex *prop_mat)
 {
     FILE *f_prop;
     int idx_i, idx_j;
     double re_value, im_value;
-    int right_order = 1;
 
     memset(prop_mat, 0, nspinors * nspinors * sizeof(double complex));
 
     // read file with the prop matrix
     f_prop = fopen(prop_name, "r");
     if (f_prop == NULL) {
-        errquit("Cannot open property file %s", prop_name);
+        return EXIT_FAILURE;
     }
     while (fscanf(f_prop, "%d%d%lf%lf", &idx_i, &idx_j, &re_value, &im_value) == 4) {
         prop_mat[(idx_i - 1) * nspinors + (idx_j - 1)] = re_value + im_value * I;
     }
     fclose(f_prop);
 
-    // check if the property matrix is stored in "right order"
-    double const zero_thresh = 1e-10;
-    for (int i = 0; i < nspinors; i++) {
-        for (int j = i; j < nspinors; j++) {
-            double re_ij = creal(prop_mat[i * nspinors + j]);
-            double re_ji = creal(prop_mat[j * nspinors + i]);
-            double im_ij = cimag(prop_mat[i * nspinors + j]);
-            double im_ji = cimag(prop_mat[j * nspinors + i]);
-            if (fabs(re_ij - re_ji) > zero_thresh) {
-                right_order = 0;
-                break;
-            }
-            if (fabs(im_ij + im_ji) > zero_thresh) {
-                right_order = 0;
-                break;
-            }
-        }
-    }
-
-    if (right_order) {
-        printf("normal order\n");
-    }
-    else {
-        printf("real <-> imag + transpose\n");
-    }
-
-    // if needed: interchange real and imaginary parts and transpose matrix
-    if (right_order == 0) {
-        for (int i = 0; i < nspinors; i++) {
-            for (int j = i; j < nspinors; j++) {
-                double re_ij = creal(prop_mat[i * nspinors + j]);
-                double re_ji = creal(prop_mat[j * nspinors + i]);
-                double im_ij = cimag(prop_mat[i * nspinors + j]);
-                double im_ji = cimag(prop_mat[j * nspinors + i]);
-
-                prop_mat[i * nspinors + j] = im_ji + re_ji * I;
-                prop_mat[j * nspinors + i] = im_ij + re_ij * I;
-            }
-        }
-    }
+    return EXIT_SUCCESS;
 }
 
 

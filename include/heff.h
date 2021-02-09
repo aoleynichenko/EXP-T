@@ -40,6 +40,7 @@
 #include <stdint.h>
 
 #include "engine.h"
+#include "options.h"
 #include "../src/heff/slater.h"
 
 typedef struct {
@@ -57,6 +58,6 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
 
 void dipole_length_tdms(int sect_h, int sect_p);
 
-void model_space_property(char *prop_name, int swap_re_im);
+void model_space_property(cc_ms_prop_query_t *prop_query);
 
 #endif /* CC_HEFF_H_INCLUDED */

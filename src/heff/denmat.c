@@ -117,7 +117,7 @@ double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, doub
         for (int j = 0; j < n_active; j++) {
             int p = active_spinors[i];
             int q = active_spinors[j];
-            sum += dm[i * n_active + j] * prp[q * nspinors + p];  // I don't know, why prp[q,p], not prp[p,q]
+            sum += dm[i * n_active + j] * prp[p * nspinors + q];
         }
     }
 
@@ -216,18 +216,6 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     // 1h1p => states 2, 3, ...
     // (only in the irrep containing the 0h0p state)
     int vac_irrep = get_vacuum_irrep();
-    /*if (sect_h == 1 && sect_p == 1) {
-        if (rep1 == vac_irrep) {
-            state1 -= 1;
-        }
-        if (rep2 == vac_irrep) {
-            state2 -= 1;
-        }
-        if (state1 == -1 && state2 == -1) {
-            printf(" Calculation of approximate natural orbitals for the vacuum state (0h0p)\n");
-            printf(" is meaningless and will be ignored\n");
-        }
-    }*/
 
     // allocate working arrays
     denmat = zzeros(n_active, n_active);
@@ -268,49 +256,27 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     }
 
 
-    // extract data for state 1
-    //if (state1 != -1) {
+    // state 1
     ms_size1 = mvb1->ms_size;
     dets1 = mvb1->dets;
     eigval_1 = creal(mvb1->eigval[state1]);
     energy_cm_1 = mvb1->energy_cm[state1];
     coef_left1 = mvb1->vl + ms_size1 * state1;
     coef_right1 = mvb1->vr + ms_size1 * state1;
-    /*}
-    else{
-        ms_size1 = 1;
-        dets1 = (slater_det_t *) cc_malloc(sizeof(slater_det_t) * 1);
-        set_vacuum_det(dets1);
-        eigval_1 = 0.0 + 0.0 * I;
-        energy_cm_1 = 0.0;
-        coef_left1 = zzeros(1, 1);
-        coef_left1[0] = 1.0 + 0.0 * I;
-    }*/
-    // extract data for state 2 (if tran == 0 => the same as for state 1)
-    //if (state2 != -1) {
+
+    // state 2
     ms_size2 = mvb2->ms_size;
     dets2 = mvb2->dets;
     eigval_2 = creal(mvb2->eigval[state2]);
     energy_cm_2 = mvb2->energy_cm[state2];
     coef_left2 = mvb2->vl + ms_size2 * state2;
     coef_right2 = mvb2->vr + ms_size2 * state2;
-    /*}
-    else{
-        ms_size2 = 1;
-        dets2 = (slater_det_t *) cc_malloc(sizeof(slater_det_t) * 1);
-        set_vacuum_det(dets2);
-        eigval_2 = 0.0 + 0.0 * I;
-        energy_cm_2 = 0.0;
-        coef_right2 = zzeros(1, 1);
-        coef_right2[0] = 1.0 + 0.0 * I;
-    }*/
 
     // density matrix (DM) construction
     // the same code for both cases of DMs and transition DMs
     printf(" Model density matrix construction...\n");
     construct_ms_density_matrix(sect_h, sect_p, ms_size1, coef_left1, dets1, ms_size2, coef_right2, dets2, denmat,
                                 &n_active);
-    //xprimat(CC_COMPLEX, denmat, n_active, n_active, "DM");
 
     // just in order to check correctness: calculate transition dipole moment
     double complex tdm[] = {0.0 + 0.0 * I, 0.0 + 0.0 * I, 0.0 + 0.0 * I};

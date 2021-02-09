@@ -35,7 +35,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "error.h"
 #include "io.h"
 #include "linalg.h"
 #include "mvcoef.h"
@@ -44,39 +43,33 @@
 #include "spinors.h"
 #include "options.h"
 
-double complex get_dm(double complex *mat, int *indices);
-
-void tdms_ground_to_excited_1h1p(double complex **dip_mat,
-                                 char *rep_name, size_t ms_size, size_t nroots, slater_det_t *dets,
-                                 double complex *eigval, double *energy_cm,
-                                 double complex *vl, double complex *vr);
+double complex get_matrix_element(double complex *mat, int *indices);
 
 double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, double complex *dm, double complex *prp);
 
+int read_prop_single_file(int nspinors, char *prop_name, double complex *prop_mat);
 
-/**
- * Reads property matrix elements (in the basis of molecular spinors)
- */
-void read_property_formatted(char *file_name, int nspinors, double complex *matrix, int swap_re_im)
-{
-    FILE *f;
-    int idx1, idx2;
-    double re, im;
+int read_prop_two_files(int nspinors, char *file_re, char *file_im, double complex *prop_mat);
 
-    f = fopen(file_name, "r");
-    if (f == NULL) {
-        errquit("read_property_formatted(): file '%s' with property integrals not found", file_name);
-    }
-    while (fscanf(f, "%d%d%lf%lf", &idx1, &idx2, &re, &im) == 4) {
-        if (!swap_re_im) {
-            matrix[(idx1 - 1) * nspinors + (idx2 - 1)] = re + im * I;
-        }
-        else {
-            matrix[(idx1 - 1) * nspinors + (idx2 - 1)] = im + re * I; // re <-> im
-        }
-    }
-    fclose(f);
-}
+void print_property_matrix(int nroots_i, int nroots_f, double *energies_i, double *energies_f,
+                           char *rep_name_i, char *rep_name_f, double complex *prop_matrix);
+
+void construct_ms_density_matrix(int sect_h, int sect_p,
+                                 int dim_bra, double complex *coef_bra, slater_det_t *dets_bra,
+                                 int dim_ket, double complex *coef_ket, slater_det_t *dets_ket,
+                                 double complex *dm, size_t *dim_dm);
+
+void model_space_tdms(int sect_h, int sect_p, double complex **dip_mat,
+                      char *bra_rep_name, size_t bra_ms_size, slater_det_t *bra_dets, size_t bra_nroots,
+                      double complex *bra_vecs, double *bra_energies_cm,
+                      char *ket_rep_name, size_t ket_ms_size, slater_det_t *ket_dets, size_t ket_nroots,
+                      double complex *ket_vecs, double *ket_energies_cm
+);
+
+void msprop_transform_slater_to_model(size_t nroots_i, size_t nroots_f,
+                                      size_t ms_size_i, size_t ms_size_f,
+                                      double complex *coefs_bra, double complex *coefs_ket,
+                                      double complex *prop_slater, double complex *prop_model);
 
 
 /**
@@ -98,7 +91,9 @@ void matrix_slater_basis(int sect_h, int sect_p, int nspinors,
                          double complex *prp_spinor, double complex *prp_slater,
                          slater_det_t *bra_dets, size_t n_det_bra, slater_det_t *ket_dets, size_t n_det_ket)
 {
-    setup_slater(prp_spinor, (matrix_getter_fun) get_dm, sect_h, sect_p, sect_h, sect_p, 1);
+    setup_slater(prp_spinor, (matrix_getter_fun) get_matrix_element, sect_h, sect_p, sect_h, sect_p, 1);
+
+    memset(prp_slater, 0, sizeof(double complex) * n_det_bra * n_det_ket);
 
     for (size_t i = 0; i < n_det_bra; i++) {
         for (size_t j = 0; j < n_det_ket; j++) {
@@ -133,32 +128,53 @@ void matrix_slater_basis(int sect_h, int sect_p, int nspinors,
 /**
  * Model-space estimation of properties
  */
-void model_space_property(char *prop_name, int swap_re_im)
+void model_space_property(cc_ms_prop_query_t *prop_query)
 {
     int sect_h = cc_opts->sector_h;
     int sect_p = cc_opts->sector_p;
-
-    printf("\n");
-    printf("\t*********************************************************\n");
-    printf("\t*     MODEL-SPACE ESTIMATION OF PROPERTY: %-8s      *\n", prop_name);
-    printf("\t*********************************************************\n");
-    printf("\n");
-
-    if (!io_file_exists(prop_name)) {
-        printf(" Error: file with property integrals not found\n");
-        printf(" Calculation will be skipped\n");
-        return;
-    }
-
     int nrep = 0;
     struct mv_block mv_blocks[CC_MAX_NREP];
 
+    // banner
+    printf("\n");
+    printf("  **\n");
+    printf("  ** MODEL-SPACE ESTIMATION OF PROPERTY\n");
+    if (prop_query->source == CC_PROP_FROM_MDPROP) {
+        printf("  ** MDPROP: %s\n", prop_query->prop_name);
+    }
+    else {
+        printf("  ** From text files:\n");
+        printf("  ** (real part) %s\n", prop_query->file_real);
+        printf("  ** (imag part) %s\n", prop_query->file_imag);
+    }
+    printf("  **\n");
+    printf("\n");
+
+    // read model vectors
     read_model_vectors_unformatted(sect_h, sect_p, NULL, &nrep, mv_blocks);
 
-    double complex *prp_spinor = xzeros(CC_COMPLEX, nspinors, nspinors);
-
     // read property matrix elements (in the basis of molecular spinors)
-    read_property_formatted(prop_name, nspinors, prp_spinor, swap_re_im);
+    double complex *prp_spinor = xzeros(CC_COMPLEX, nspinors, nspinors);
+    if (prop_query->source == CC_PROP_FROM_MDPROP) {
+        int code = read_prop_single_file(nspinors, prop_query->prop_name, prp_spinor);
+        if (code == EXIT_FAILURE) {
+            printf(" Error: file '%s' with property integrals not found\n", prop_query->prop_name);
+            printf(" Calculation will be skipped\n");
+            goto cleanup;
+        }
+    }
+    else { // from 2 txt formatted files
+        int code = read_prop_two_files(nspinors, prop_query->file_real, prop_query->file_imag, prp_spinor);
+        if (code == EXIT_FAILURE) {
+            printf(" Error: files '%s' (real) and '%s' (imag) with property integrals not found\n",
+                   prop_query->file_real, prop_query->file_imag);
+            printf(" Calculation will be skipped\n");
+            goto cleanup;
+        }
+    }
+    if (prop_query->do_transpose) {
+        xtranspose(CC_COMPLEX, nspinors, nspinors, prp_spinor);
+    }
 
     for (int irep1 = 0; irep1 < nrep; irep1++) {
         for (int irep2 = 0; irep2 < nrep; irep2++) {
@@ -174,51 +190,15 @@ void model_space_property(char *prop_name, int swap_re_im)
                                 block1->dets, block1->ms_size, block2->dets, block2->ms_size);
 
             // construct property matrix in the basis of model vectors
-            size_t nroots_i = block1->nroots;
-            size_t nroots_f = block2->nroots;
-            size_t ms_size_1 = block1->ms_size;
-            size_t ms_size_2 = block2->ms_size;
-            double complex *c_bra = block1->vl;
-            double complex *c_ket = block2->vr;
+            msprop_transform_slater_to_model(block1->nroots, block2->nroots,
+                                             block1->ms_size, block2->ms_size,
+                                             block1->vl, block2->vr,
+                                             prp_slater, prop);
 
-            for (size_t i = 0; i < nroots_i; i++) {
-                for (size_t j = 0; j < nroots_f; j++) {
-                    double complex prop_if = 0.0 + 0.0 * I;
-                    for (size_t a = 0; a < ms_size_2; a++) {
-                        for (size_t b = 0; b < ms_size_1; b++) {
-                            prop_if += conj(c_bra[ms_size_1 * i + b]) * c_ket[ms_size_2 * j + a] *
-                                       prp_slater[ms_size_2 * a + b];
-                        }
-                    }
-                    prop[i * nroots_f + j] = prop_if;
-                }
-            }
-
-            // print property matrix
-            int non_zero = 0;
-            for (size_t i = 0; i < nroots_i; i++) {
-                for (size_t f = 0; f < nroots_f; f++) {
-                    double e_i = block1->energy_cm[i];
-                    double e_f = block2->energy_cm[f];
-
-                    double complex prop_if = prop[i * nroots_f + f];
-                    if (cabs(prop_if) < 1e-6) {
-                        continue;
-                    }
-                    non_zero++;
-                    if (non_zero == 1) {
-                        printf("  E1(cm-1)  E2(cm-1)         Re            Im          |prop|\n");
-                    }
-                    printf("%2d (%-4s) -> %2d (%-4s) %10.2f%10.2f%14.6f%14.6f%14.6f\n",
-                           i + 1, block1->rep_name, f + 1, block2->rep_name, e_i, e_f,
-                           creal(prop_if), cimag(prop_if), cabs(prop_if));
-                }
-            }
-
-            if (non_zero == 0) {
-                printf("     no allowed transitions\n");
-            }
-            printf("\n");
+            // print smart table of matrix elements
+            print_property_matrix(block1->nroots, block2->nroots,
+                                  block1->energy_cm, block2->energy_cm,
+                                  block1->rep_name, block2->rep_name, prop);
 
             // cleanup
             cc_free(prp_slater);
@@ -226,7 +206,7 @@ void model_space_property(char *prop_name, int swap_re_im)
         }
     }
 
-    // cleanup
+    cleanup:
     cc_free(prp_spinor);
     for (size_t irep = 0; irep < nrep; irep++) {
         struct mv_block *b = &mv_blocks[irep];
@@ -239,17 +219,79 @@ void model_space_property(char *prop_name, int swap_re_im)
 }
 
 
-void construct_ms_density_matrix(int sect_h, int sect_p,
-                                 int dim_bra, double complex *coef_bra, slater_det_t *dets_bra,
-                                 int dim_ket, double complex *coef_ket, slater_det_t *dets_ket,
-                                 double complex *dm, size_t *dim_dm);
+/**
+ * Transformation of a property matrix from the basis of model Slater determinants
+ * to the basis of model vectors.
+ *
+ * @param nroots_i    number of bra model vectors
+ * @param nroots_f    number of ket model vectors
+ * @param ms_size_i   dimension of bra vectors
+ * @param ms_size_f   dimension of ket vectors
+ * @param coefs_bra   bra vectors; row-wise
+ * @param coefs_ket   ket vectors; row-wise
+ * @param prop_slater property matrix in the basis of model Slater determinants
+ * @param prop_model  property matrix in the basis of model vectors
+ */
+void msprop_transform_slater_to_model(size_t nroots_i, size_t nroots_f,
+                                      size_t ms_size_i, size_t ms_size_f,
+                                      double complex *coefs_bra, double complex *coefs_ket,
+                                      double complex *prop_slater, double complex *prop_model)
+{
+    for (size_t i = 0; i < nroots_i; i++) {
+        for (size_t j = 0; j < nroots_f; j++) {
+            double complex prop_if = 0.0 + 0.0 * I;
 
-void model_space_tdms(int sect_h, int sect_p, double complex **dip_mat,
-                      char *bra_rep_name, size_t bra_ms_size, slater_det_t *bra_dets, size_t bra_nroots,
-                      double complex *bra_vecs, double *bra_energies_cm,
-                      char *ket_rep_name, size_t ket_ms_size, slater_det_t *ket_dets, size_t ket_nroots,
-                      double complex *ket_vecs, double *ket_energies_cm
-);
+            for (size_t a = 0; a < ms_size_i; a++) {
+                for (size_t b = 0; b < ms_size_f; b++) {
+                    prop_if += conj(coefs_bra[ms_size_i * i + a]) * coefs_ket[ms_size_f * j + b] *
+                               prop_slater[ms_size_f * a + b];
+                }
+            }
+
+            prop_model[i * nroots_f + j] = prop_if;
+        }
+    }
+}
+
+
+/**
+ * Prints property matrix; "i" -- initial (ket) states, "f" -- final (bra) states
+ *
+ * @param nroots_i     number of bra model vectors
+ * @param nroots_f     number of ket model vectors
+ * @param energies_i   energies of bra states (cm-1)
+ * @param energies_f   energies of ket states (cm-1)
+ * @param rep_name_i   symbolic name of the bra irrep
+ * @param rep_name_f   symbolic name of the ket irrep
+ * @param prop_matrix  property matrix in the basis of model vectors
+ */
+void print_property_matrix(int nroots_i, int nroots_f,
+    double *energies_i, double *energies_f,
+    char *rep_name_i, char *rep_name_f, double complex *prop_matrix)
+{
+    int non_zero = 0;
+
+    for (size_t i = 0; i < nroots_i; i++) {
+        for (size_t f = 0; f < nroots_f; f++) {
+            double complex prop_if = prop_matrix[i * nroots_f + f];
+            if (cabs(prop_if) < 1e-6) {
+                continue;
+            }
+            non_zero++;
+            if (non_zero == 1) {
+                printf("  E1(cm-1)  E2(cm-1)         Re            Im          |prop|\n");
+            }
+            printf("%2d (%-4s) -> %2d (%-4s) %10.2f %10.2f %14.6f %14.6f %14.6f\n",
+                   i + 1, rep_name_i, f + 1, rep_name_f, energies_i[i], energies_f[f],
+                   creal(prop_if), cimag(prop_if), cabs(prop_if));
+        }
+    }
+
+    if (non_zero == 0) {
+        printf("     no allowed transitions\n");
+    }
+    printf("\n");
+}
 
 
 /*******************************************************************************
@@ -288,9 +330,9 @@ void dipole_length_tdms(int sect_h, int sect_p)
     d_spinor[0] = zzeros(nspinors, nspinors);
     d_spinor[1] = zzeros(nspinors, nspinors);
     d_spinor[2] = zzeros(nspinors, nspinors);
-    read_property_formatted("XDIPLEN", nspinors, d_spinor[0], 0);
-    read_property_formatted("YDIPLEN", nspinors, d_spinor[1], 0);
-    read_property_formatted("ZDIPLEN", nspinors, d_spinor[2], 0);
+    read_prop_single_file(nspinors, "XDIPLEN", d_spinor[0]);
+    read_prop_single_file(nspinors, "YDIPLEN", d_spinor[1]);
+    read_prop_single_file(nspinors, "ZDIPLEN", d_spinor[2]);
     printf(" done\n");
 
     printf(" NOTE: only model vectors are used to estimate TDMs\n");
@@ -455,9 +497,6 @@ void model_space_tdms(int sect_h, int sect_p, double complex **dip_mat,
             if (fabs(e_i - e_f) < 1e-3) { // skip transitions between degenerate states
                 continue;
             }
-            /*if ((strcmp(bra_rep_name, ket_rep_name) == 0) && i == f) { // skip diagonal elements
-                continue;
-            }*/
 
             double complex *coef_i = &bra_vecs[bra_ms_size * i];
             double complex *coef_f = &ket_vecs[ket_ms_size * f];
@@ -475,7 +514,6 @@ void model_space_tdms(int sect_h, int sect_p, double complex **dip_mat,
             // intensity ? osc str I = 2/3 * |d|^2 * excitation energy
             // in atomic units
             double osc_str = 2.0 / 3.0 * d2 * (fabs(e_f - e_i) / AU2CM);
-            //printf("d = %f    %d\n", d, (d < 1e-6));
 
             if (d > 1e-6) {
                 non_zero++;
@@ -497,89 +535,12 @@ void model_space_tdms(int sect_h, int sect_p, double complex **dip_mat,
 }
 
 
-/*******************************************************************************
- * tdms_ground_to_excited_1h1p
- *
- * Calculates transition dipole moments 0h0p (ground state) -> 1h1p (excited)
- * via the dipole-length transition dipole moments technique (only model vectors
- * are used for these estimates)
- *
- * |exc> = \sum_i C_i |det_i>
- * <0|d|exc> = \sum_i C_i <0|d|det_i>
- ******************************************************************************/
-void tdms_ground_to_excited_1h1p(double complex **dip_mat,
-                                 char *rep_name, size_t ms_size, size_t nroots, slater_det_t *dets,
-                                 double complex *eigval, double *energy_cm,
-                                 double complex *vl, double complex *vr)
-{
-    int icoord, i, j, a, iroot, idet;
-    int n_nonzero = 0;
-    double const AU2CM = 219474.6313702;
-
-    printf(" < ground | d | %4s >", rep_name);
-
-    // FSCC effective is not Hermitian => <0|d|model vect> != <model vect|d|0>
-    // "bra": <left model vect|d|0> (coef-s must be complex conjugated)
-    // "ket": <0|d|right model vect>
-    for (iroot = 0; iroot < nroots; iroot++) {
-        double complex *coef_r = &vr[ms_size * iroot];
-        double complex *coef_l = &vl[ms_size * iroot];
-        double complex d_bra[3] = {0.0 + 0.0 * I, 0.0 + 0.0 * I, 0.0 + 0.0 * I};
-        double complex d_ket[3] = {0.0 + 0.0 * I, 0.0 + 0.0 * I, 0.0 + 0.0 * I};
-        double d2_bra = 0.0, d2_ket = 0.0;
-        double d_e = fabs(energy_cm[iroot]) / AU2CM;
-        //printf("\n");
-        for (icoord = 0; icoord < 3; icoord++) {
-            for (idet = 0; idet < ms_size; idet++) {
-                slater_det_t *det = &dets[idet];
-                i = det->indices[0];
-                a = det->indices[1];
-                //double complex c = coef_l[idet];
-                //double complex d = dip_mat[icoord][nspinors * a + i];
-                d_bra[icoord] += conj(coef_l[idet]) * dip_mat[icoord][nspinors * i + a];
-                d_ket[icoord] += coef_r[idet] * dip_mat[icoord][nspinors * a + i];
-                if (icoord == 0) {
-                    //printf("+ (%f,%f) x (%f,%f) = (%f,%f)\n", creal(c), cimag(c), creal(d), cimag(d), creal(c*d), cimag(c*d));
-                }
-            }
-            if (icoord == 0) {
-                //printf(" d  = (%f,%f)\n", creal(d_bra[icoord]), cimag(d_bra[icoord]));
-                //printf("|d| = %f\n", cabs(d_bra[icoord]));
-            }
-            d2_bra += pow(cabs(d_bra[icoord]), 2);
-            d2_ket += pow(cabs(d_ket[icoord]), 2);
-        }
-        double osc_str_bra = 2.0 / 3.0 * d2_bra * d_e;
-        double osc_str_ket = 2.0 / 3.0 * d2_ket * d_e;
-        double abs_d_ket = sqrt(d2_ket);
-        double abs_d_bra = sqrt(d2_bra);
-        if (abs_d_ket >= 1e-6 || abs_d_bra >= 1e-6) {
-            n_nonzero++;
-            // 0h0p -> 1h1p
-            printf("\n%10.2f%12.6f%12.6f%16.6f%12.6f%12.6f\n", energy_cm[iroot],
-                   sqrt(d2_ket), osc_str_ket, cabs(d_ket[0]), cabs(d_ket[1]), cabs(d_ket[2]));
-            // 1h1p -> 0h0p
-            printf("%22.6f%12.6f%16.6f%12.6f%12.6f",
-                   sqrt(d2_bra), osc_str_bra, cabs(d_bra[0]), cabs(d_bra[1]), cabs(d_bra[2]));
-        }
-    }
-    if (n_nonzero == 0) {
-        printf("   forbidden\n");
-    }
-    else {
-        printf("\n");
-    }
-}
-
-
 // "accessor" function
 // returns matrix element mat[i,j], indices=[i,j]
-double complex get_dm(double complex *mat, int *indices)
+double complex get_matrix_element(double complex *mat, int *indices)
 {
     size_t i = indices[0];
     size_t j = indices[1];
-
-    double complex s = mat[i * nspinors + j];
 
     return mat[i * nspinors + j];
 }

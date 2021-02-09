@@ -6,7 +6,7 @@
 title "Test CO/cc-pVDZ/Dirac-Coulomb/Cinfv"
 maxiter 100
 conv 1e-9
-memory 8 gb
+memory 1 gb
 #nthreads 2
 arith real
 

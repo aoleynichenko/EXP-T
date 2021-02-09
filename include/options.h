@@ -45,7 +45,7 @@
 #define CC_ARITH_COMPLEX 1
 
 // maximum number of queues for properties calculations
-#define CC_MAX_NPROP 64
+#define CC_MAX_NPROP 256
 #define CC_MAX_SELECTION 64
 
 // boolean constants
@@ -67,6 +67,12 @@ typedef enum {
     CC_INTEGRALS_DIRAC,
     CC_INTEGRALS_TM2C
 } cc_interface_t;
+
+// source of property matrices
+enum {
+    CC_PROP_FROM_MDPROP,
+    CC_PROP_FROM_TXTPROP
+};
 
 // level of disk usage
 enum {
@@ -151,9 +157,12 @@ typedef struct {
 
 // for calculation of properties
 typedef struct {
+    int  source;
     char prop_name[32];
-    int swap_re_im;     // in DIRAC some properties are stored in the Im^T+Re*i form
-} cc_property_query_t;
+    char file_real[CC_MAX_FILE_NAME_LENGTH];
+    char file_imag[CC_MAX_FILE_NAME_LENGTH];
+    int  do_transpose;     // optional transposition
+} cc_ms_prop_query_t;
 
 // data compression algorithm
 typedef enum {
@@ -348,8 +357,8 @@ struct cc_options {
     cc_denmat_query_t denmat_query[CC_MAX_NPROP];
 
     // for model-space estimation of properties
-    int n_props;
-    cc_property_query_t prop_queries[CC_MAX_NPROP];
+    int n_ms_props;
+    cc_ms_prop_query_t prop_queries[CC_MAX_NPROP];
 
     // selection of amplitudes
     // (does not affect performance, just for fast implementation of new approximate schemes)

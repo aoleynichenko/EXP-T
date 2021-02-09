@@ -456,6 +456,22 @@ void setup_scratch()
             printf(" Full path to OneProp 1-el integrals (imag part) = %s\n", cc_opts->oneprop_file_im[i]);
         }
     }
+    if (cc_opts->n_ms_props > 0) {
+        for (int i = 0; i < cc_opts->n_ms_props; i++) {
+            if (cc_opts->prop_queries[i].source == CC_PROP_FROM_TXTPROP) {
+                strcpy(tmp, cwd_path);
+                strcat(tmp, "/");
+                strcat(tmp, cc_opts->prop_queries[i].file_real);
+                strcpy(cc_opts->prop_queries[i].file_real, tmp);
+                printf(" Full path to OneProp 1-el integrals (real part) = %s\n", cc_opts->prop_queries[i].file_real);
+                strcpy(tmp, cwd_path);
+                strcat(tmp, "/");
+                strcat(tmp, cc_opts->prop_queries[i].file_imag);
+                strcpy(cc_opts->prop_queries[i].file_imag, tmp);
+                printf(" Full path to OneProp 1-el integrals (imag part) = %s\n", cc_opts->prop_queries[i].file_imag);
+            }
+        }
+    }
 
     // TwoProp files (2el property integrals)
     if (cc_opts->twoprop_on) {
