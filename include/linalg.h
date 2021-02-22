@@ -86,6 +86,8 @@ double *dzeros(size_t n, size_t m);
 
 double complex *zzeros(size_t n, size_t m);
 
+void conj_vector(size_t n, double complex *v);
+
 // solves eigenvalue problem for matrix A
 int eig(int n, double complex *A, double complex *ev, double complex *vl, double complex *vr);
 

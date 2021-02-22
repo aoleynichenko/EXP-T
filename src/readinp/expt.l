@@ -77,12 +77,12 @@ cuda            { inc_col(); return KEYWORD_CUDA;         }
 arith           { inc_col(); return KEYWORD_ARITH;        }
 mdprop          { inc_col(); return KEYWORD_MDPROP;       }
 txtprop         { inc_col(); return KEYWORD_TXTPROP;      }
-no_inner_core_corr { inc_col(); return KEYWORD_NOINNER;   }
 end             { inc_col(); return KEYWORD_END;          }
 select          { inc_col(); return KEYWORD_SELECT;       }
 hptt            { inc_col(); return KEYWORD_HPTT;         }
 gaunt           { inc_col(); return KEYWORD_GAUNT;        }
 skip            { inc_col(); return KEYWORD_SKIP;         }
+interface       { inc_col(); return KEYWORD_INTERFACE;    }
 breit           { inc_col(); return KEYWORD_BREIT;        }
 x2cmmf          { inc_col(); return KEYWORD_X2CMMF;       }
 !=              { inc_col(); return TT_NEQ;               }

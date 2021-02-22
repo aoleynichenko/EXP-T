@@ -88,7 +88,7 @@ void directive_nthreads(cc_options_t *opts);
 void directive_arith(cc_options_t *opts);
 void directive_mdprop(cc_options_t *opts);
 void directive_txtprop(cc_options_t *opts);
-void directive_no_inner_core_corr(cc_options_t *opts);
+void directive_interface(cc_options_t *opts);
 
 void yyerror(char *s);
 int next_token();
@@ -254,8 +254,8 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_TXTPROP:
                 directive_txtprop(opts);
                 break;
-            case KEYWORD_NOINNER:
-                directive_no_inner_core_corr(opts);
+            case KEYWORD_INTERFACE:
+                directive_interface(opts);
                 break;
             case END_OF_LINE:
                 // nothing to do
@@ -494,7 +494,7 @@ void parse_cc_model(cc_options_t *opts)
     }
     else if (strcmp(yytext, "ccsdt-1'") == 0) {
         opts->cc_model = CC_MODEL_CCSDT_1B_PRIME;
-        strcpy(opts->cc_model_str, "CCSDT-1b\'");
+        strcpy(opts->cc_model_str, "CCSDT-1b'");
     }
     else if (strcmp(yytext, "ccsdt-2") == 0) {
         opts->cc_model = CC_MODEL_CCSDT_2;
@@ -1690,6 +1690,34 @@ void directive_txtprop(cc_options_t *opts)
     }
 
     opts->n_ms_props++;
+}
+
+
+/**
+ * Syntax:
+ * interface ( dirac || tm2c )
+ */
+void directive_interface(cc_options_t *opts)
+{
+    static char *msg = "unknown interface";
+    int token_type;
+
+    token_type = next_token();
+    if (token_type == TT_WORD) {
+        str_tolower(yytext);
+        if (strcmp(yytext, "dirac") == 0) {
+            cc_opts->int_source = CC_INTEGRALS_DIRAC;
+        }
+        else if (strcmp(yytext, "tm2c") == 0) {
+            cc_opts->int_source = CC_INTEGRALS_TM2C;
+        }
+        else {
+            yyerror(msg);
+        }
+    }
+    else {
+        yyerror(msg);
+    }
 }
 
 

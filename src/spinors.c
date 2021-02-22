@@ -31,6 +31,7 @@
  * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -782,6 +783,28 @@ void print_spinor_info()
         if (to_be_printed[i]) { printf("%6d", virt_i[i]); }
     }
     printf("\n\n");
+}
+
+
+int get_spinor_block_size(int spinor_block_number)
+{
+    assert(spinor_block_number >= 0 && spinor_block_number < n_spinor_blocks);
+
+    return spinor_blocks[spinor_block_number].size;
+}
+
+
+int get_max_spinor_block_size()
+{
+    int max_sz = 0;
+
+    for (size_t i = 0; i < n_spinor_blocks; i++) {
+        if (spinor_blocks[i].size > max_sz) {
+            max_sz = spinor_blocks[i].size;
+        }
+    }
+
+    return max_sz;
 }
 
 

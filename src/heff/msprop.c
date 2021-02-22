@@ -22,9 +22,8 @@
  */
 
 /*******************************************************************************
- * dipole.c
+ * msprop.c
  *
- * Dipole-length transition moments calculations.
  * Model-space estimation of properties.
  *
  * 2019-2021 Alexander Oleynichenko

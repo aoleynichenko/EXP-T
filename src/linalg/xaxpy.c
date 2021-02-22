@@ -66,9 +66,6 @@ void my_daxpy(size_t n, double alpha, const double *x, double *y)
     for (size_t i = 0; i < n; i++) {
         y[i] = alpha * x[i] + y[i];
     }
-    // void cblas_daxpy(const int N, const double alpha, const double *X,
-    //                 const int incX, double *Y, const int incY);
-    //cblas_daxpy(n, alpha, x, 1, y, 1);
 }
 
 
@@ -78,9 +75,6 @@ void my_zaxpy(size_t n, double alpha,
     for (size_t i = 0; i < n; i++) {
         y[i] = alpha * x[i] + y[i];
     }
-    //double complex a = alpha + 0.0*I;
-    // void cblas_zaxpy(const int __N, const void *__alpha, const void *__X, const int __incX, void *__Y, const int __incY);
-    //cblas_zaxpy(n, &a, x, 1, y, 1);
 }
 
 

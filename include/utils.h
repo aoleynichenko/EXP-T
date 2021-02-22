@@ -36,6 +36,7 @@
 #include <stdint.h>
 #include <complex.h>
 
+
 void decompose_time(double t, int *d, int *h, int *m, int *s, int *ms);
 
 enum {
@@ -56,6 +57,10 @@ int sgn(double x);
 int is_empty(const char *s);
 
 int intcmp(size_t n, int *a, int *b);
+
+int max(int a, int b);
+
+int min(int a, int b);
 
 int imax3(int a, int b, int c);
 

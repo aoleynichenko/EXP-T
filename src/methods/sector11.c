@@ -189,15 +189,6 @@ int sector11(cc_options_t *opts)
             diveps("e3nw");
         }
 
-#ifdef VERSION_DEVEL
-        if (opts->do_relax) {
-            remove_core_correlation("e2nw");
-            /*if (triples) {
-                remove_core_correlation("s3nw");
-            }*/
-        }
-#endif
-
         if (cc_opts->cc_model == CC_MODEL_CCS) {
             clear("e2nw");
         }

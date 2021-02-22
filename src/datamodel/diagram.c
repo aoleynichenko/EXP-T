@@ -362,8 +362,13 @@ block_t *diagram_get_block(diagram_t *dg, int *spinor_blocks_nums, size_t *block
 
     size_t ii = as_linear_index(dg->rank, dims, spinor_blocks_nums);
     *block_index = dg->inv_index[ii];
-
     block_t *ret = dg->blocks[*block_index];
+
+    for (int i = 0; i < dg->rank; i++) {
+        if (ret->spinor_blocks[i] != spinor_blocks_nums[i]) {
+            return NULL;
+        }
+    }
 
     return ret;
 }
@@ -462,6 +467,7 @@ double complex diagram_get(diagram_t *dg, int *idx)
                 transform(b->rank, idx, idx_uniq, b->perm_to_unique, 0);
 
                 size_t unique_index = 0;
+                //block_t *uniq_block =
                 diagram_get_block(dg, uniq_spinor_blocks, &unique_index);
                 block_t *uniq_block = dg->blocks[unique_index];
 

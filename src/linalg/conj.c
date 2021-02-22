@@ -21,30 +21,11 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/*******************************************************************************
- * sort.h
- * ======
- *
- * Sorting of integrals (creating basic diagrams from the raw integral arrays).
- *
- * 2018-2021 Alexander Oleynichenko
- ******************************************************************************/
+#include "linalg.h"
 
-#ifndef CC_SORT_H_INCLUDED
-#define CC_SORT_H_INCLUDED
-
-#include <complex.h>
-#include <stdint.h>
-
-#include "datamodel.h"
-
-#define CC_SORTING_IO_BUF_SIZE 16384
-
-// leave a request for sorting of diagram named 'name' with given 'qparts',
-// 'valence', 'order' characteristic
-void request_sorting(char *name, char *qparts, char *valence, char *order);
-
-// performs sorting for all the requests leaved
-void perform_sorting();
-
-#endif /* CC_SORT_H_INCLUDED */
+void conj_vector(size_t n, double complex *v)
+{
+    for (size_t i = 0; i < n; i++) {
+        v[i] = conj(v[i]);
+    }
+}

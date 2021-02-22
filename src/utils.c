@@ -108,6 +108,18 @@ int imax(size_t count, int *values)
 }
 
 
+int max(int x, int y)
+{
+    return (x >= y) ? x : y;
+}
+
+
+int min(int x, int y)
+{
+    return (x <= y) ? x : y;
+}
+
+
 /*******************************************************************************
  * size_t_max
  *

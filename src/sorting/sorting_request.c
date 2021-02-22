@@ -21,30 +21,28 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/*******************************************************************************
- * sort.h
- * ======
- *
- * Sorting of integrals (creating basic diagrams from the raw integral arrays).
- *
- * 2018-2021 Alexander Oleynichenko
- ******************************************************************************/
+#include <string.h>
 
-#ifndef CC_SORT_H_INCLUDED
-#define CC_SORT_H_INCLUDED
+#include "sorting_request.h"
 
-#include <complex.h>
-#include <stdint.h>
+sorting_request_t sorting_requests[CC_MAX_SORTING_REQUESTS];
+int n_requests = 0;
 
-#include "datamodel.h"
 
-#define CC_SORTING_IO_BUF_SIZE 16384
+sorting_request_t *append_sorting_request(sorting_request_t *requests, int *num_requests,
+                                          char *name, char *qparts, char *valence, char *order)
+{
+    sorting_request_t *req;
 
-// leave a request for sorting of diagram named 'name' with given 'qparts',
-// 'valence', 'order' characteristic
-void request_sorting(char *name, char *qparts, char *valence, char *order);
+    req = sorting_requests + (*num_requests);
+    req->dg = diagram_stack_find(name);;
+    strcpy(req->dg_name, name);
+    strcpy(req->hp, qparts);
+    strcpy(req->valence, valence);
+    strcpy(req->order, order);
+    req->done = 0;
 
-// performs sorting for all the requests leaved
-void perform_sorting();
+    *num_requests = *num_requests + 1;
+    return req;
+}
 
-#endif /* CC_SORT_H_INCLUDED */

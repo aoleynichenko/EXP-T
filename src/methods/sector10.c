@@ -163,7 +163,7 @@ int sector10(cc_options_t *opts)
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
     }
 
-    diis_queue_t *diis_queue = new_diis_queue(1, 1, opts->diis_triples);
+    diis_queue_t *diis_queue = new_diis_queue(1, 1, triples && opts->diis_triples);
     converged = 0;
     t1 = abs_time();
     for (it = 1; it <= opts->maxiter; it++) {
@@ -198,26 +198,12 @@ int sector10(cc_options_t *opts)
             diveps("h3nw");
         }
 
-#ifdef VERSION_DEVEL
-        if (opts->do_relax) {
-            remove_core_correlation("h2nw");
-            if (triples) {
-                remove_core_correlation("h3nw");
-            }
-        }
-#endif
-
         if (cc_opts->cc_model == CC_MODEL_CCS) {
             clear("h2nw");
         }
         else if (cc_opts->cc_model == CC_MODEL_CCD) {
             clear("h1nw");
         }
-#ifdef VERSION_DEVEL
-        if (cc_opts->restrict_triples) {
-            restrict_triples("h3nw", cc_opts->restrict_triples_e1, cc_opts->restrict_triples_e2);
-        }
-#endif
 
         diffmax("h1c", "h1nw", &diff1, diffmax1_idx);
         diffmax("h2c", "h2nw", &diff2, diffmax2_idx);
@@ -433,12 +419,6 @@ void init_amplitudes_1h0p()
     else if (cc_opts->cc_model == CC_MODEL_CCD) {
         clear("h1c");
     }
-
-#ifdef VERSION_DEVEL
-    if (cc_opts->restrict_triples) {
-        restrict_triples("h3c", cc_opts->restrict_triples_e1, cc_opts->restrict_triples_e2);
-    }
-#endif
 }
 
 

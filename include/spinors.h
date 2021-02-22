@@ -118,6 +118,10 @@ void setup_singles_only_space(int *ccs_only_space);
 
 void print_spinor_info();
 
+int get_spinor_block_size(int spinor_block_number);
+
+int get_max_spinor_block_size();
+
 void spinors_cleanup();
 
 extern int (*is_symblock_zerox[CC_DIAGRAM_MAX_RANK])(int *spinor_blocks, int *qparts, int *valence);

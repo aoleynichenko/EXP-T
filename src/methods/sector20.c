@@ -140,21 +140,9 @@ int sector20(cc_options_t *opts)
         reorder("g2c", "g2cr", "3412");
 
         calc_G2();
-
         closed("g2nw", "veff20");
-
         folded_2h0p();
-
         diveps("g2nw");
-
-#ifdef VERSION_DEVEL
-        if (opts->do_relax) {
-            remove_core_correlation("g2nw");
-            /*if (triples) {
-                remove_core_correlation("g3nw");
-            }*/
-        }
-#endif
 
         if (cc_opts->cc_model == CC_MODEL_CCS) {
             clear("g2nw");

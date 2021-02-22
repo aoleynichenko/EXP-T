@@ -366,16 +366,10 @@ void print_options(cc_options_t *opts)
     else {
         printf("no\n");
     }
-    /*printf("  Interface to      ");
-    if (opts->int_source == CC_INTEGRALS_DIRAC) {
-        printf("DIRAC\n");
-    }
-    else if (opts->int_source == CC_INTEGRALS_TM2C) {
-        printf("tm2c (R. Berger, K. Gaul, S. Giesen)\n");
-    }
-    else{
-        printf("\n");
-    }*/
+
+    printf(" %-15s  %-40s  %s\n", "interface", "source of transformed molecular integrals",
+           opts->int_source == CC_INTEGRALS_DIRAC ? "DIRAC" : "tm2c");
+
     printf(" %-15s  %-40s  %s\n", "integrals", "one-electron Hamiltonian integrals file", opts->integral_file_1);
     printf(" %-15s  %-40s  %s\n", "", "two-electron (Coulomb) integrals file", opts->integral_file_2);
     printf(" %-15s  %-40s  %s\n", "", "one-electron property integrals file", opts->integral_file_prop);

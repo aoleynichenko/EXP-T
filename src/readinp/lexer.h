@@ -91,8 +91,8 @@ enum {
     KEYWORD_GAUNT,
     KEYWORD_BREIT,
     KEYWORD_X2CMMF,
-    KEYWORD_NOINNER,
     KEYWORD_SKIP,
+    KEYWORD_INTERFACE,
     /* special */
     END_OF_LINE,
     END_OF_FILE

@@ -21,30 +21,28 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/*******************************************************************************
- * sort.h
- * ======
- *
- * Sorting of integrals (creating basic diagrams from the raw integral arrays).
- *
- * 2018-2021 Alexander Oleynichenko
- ******************************************************************************/
-
-#ifndef CC_SORT_H_INCLUDED
-#define CC_SORT_H_INCLUDED
-
-#include <complex.h>
-#include <stdint.h>
+#ifndef CC_SORTING_REQUEST_H_INCLUDED
+#define CC_SORTING_REQUEST_H_INCLUDED
 
 #include "datamodel.h"
 
-#define CC_SORTING_IO_BUF_SIZE 16384
+#define CC_MAX_SORTING_REQUESTS 64
 
-// leave a request for sorting of diagram named 'name' with given 'qparts',
-// 'valence', 'order' characteristic
-void request_sorting(char *name, char *qparts, char *valence, char *order);
+typedef struct {
+    diagram_t *dg;
+    char dg_name[256];
+    char hp[CC_DIAGRAM_MAX_RANK];
+    char valence[CC_DIAGRAM_MAX_RANK];
+    char order[CC_DIAGRAM_MAX_RANK];
+    int done;
+} sorting_request_t;
 
-// performs sorting for all the requests leaved
-void perform_sorting();
+extern sorting_request_t sorting_requests[CC_MAX_SORTING_REQUESTS];
+extern int n_requests;
 
-#endif /* CC_SORT_H_INCLUDED */
+int num_twoelec_requests(sorting_request_t *requests, int num_requests);
+
+sorting_request_t *append_sorting_request(sorting_request_t *requests, int *num_requests,
+                                          char *name, char *qparts, char *valence, char *order);
+
+#endif /* CC_SORTING_REQUEST_H_INCLUDED */

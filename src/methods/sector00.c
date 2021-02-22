@@ -97,6 +97,9 @@ int sector00(cc_options_t *opts)
     if (opts->cc_model == CC_MODEL_CCSD_T3 || opts->cc_model == CC_MODEL_CCSD_T4) {  // for CCSD(T)
         strcpy(cc_model_str, "CCSD");
     }
+    if (opts->cc_model == CC_MODEL_CCSDT_1B_PRIME) {
+        strcpy(cc_model_str, "CCSDT-1b");
+    }
     else {
         strcpy(cc_model_str, opts->cc_model_str);
     }
@@ -153,7 +156,7 @@ int sector00(cc_options_t *opts)
         printf(" ----------------------------------------------------------------------------------------------------------------\n");
     }
 
-    diis_queue_t *diis_queue = new_diis_queue(1, 1, opts->diis_triples);
+    diis_queue_t *diis_queue = new_diis_queue(1, 1, triples && opts->diis_triples);
     converged = 0;
     t1 = abs_time();
 
@@ -189,21 +192,6 @@ int sector00(cc_options_t *opts)
         apply_selections(0, 0, "t2nw");
         if (triples) {
             apply_selections(0, 0, "t3nw");
-        }
-
-        if (opts->do_remove_inner_core_corr) {
-            remove_inner_core_correlation("t2nw");
-        }
-
-        if (opts->do_relax) {
-            remove_core_correlation("t2nw");
-            if (triples) {
-                remove_core_correlation("t3nw");
-            }
-        }
-
-        if (opts->restrict_triples) {
-            restrict_triples("t3nw", opts->restrict_triples_e1, opts->restrict_triples_e2);
         }
 #endif
 
@@ -463,12 +451,6 @@ void initial_guess()
         printf("set T1 amplitudes to zero\n");
         clear("t1c");
     }
-
-#ifdef VERSION_DEVEL
-    if (cc_opts->restrict_triples) {
-        restrict_triples("t3c", cc_opts->restrict_triples_e1, cc_opts->restrict_triples_e2);
-    }
-#endif
 }
 
 

@@ -87,6 +87,29 @@ module general
 end module general
 
 
+module c_io
+
+    interface
+        integer(4) function io_open(path, mode) bind(C, name = "io_open")
+            character, dimension(*) :: path, mode
+        end function io_open
+        integer(4) function io_close(fd) bind(C, name = "io_close")
+            integer(4), value :: fd
+        end function io_close
+        integer(4) function io_write_compressed(fd, buf, sz) bind(C, name = "io_write_compressed")
+            use iso_c_binding
+            integer(4), value :: fd
+            type(c_ptr), value :: buf
+            integer(c_size_t), value :: sz
+        end function io_write_compressed
+        subroutine c_asctime() bind(C, name = "c_asctime")
+        end subroutine c_asctime
+    end interface
+
+end module c_io
+
+
+
 ! ******************************************************************************
 ! module spinor_blocks
 !
@@ -356,20 +379,7 @@ contains
         use general
         use spinor_blocks
         use iso_c_binding
-        interface
-            integer(4) function io_open(path, mode) bind(C, name = "io_open")
-                character, dimension(*) :: path, mode
-            end function io_open
-            integer(4) function io_close(fd) bind(C, name = "io_close")
-                integer(4), value :: fd
-            end function io_close
-            integer(4) function io_write_compressed(fd, buf, sz) bind(C, name = "io_write_compressed")
-                use iso_c_binding
-                integer(4), value :: fd
-                type(c_ptr), value :: buf
-                integer(c_size_t), value :: sz
-            end function io_write_compressed
-        end interface
+        use c_io
         integer(4) :: fd, status
         integer(4), target :: nint
         integer(4) :: ibuf, sb1, sb2, sb3, sb4
@@ -397,6 +407,8 @@ contains
                             if (stat == 0) close(1234, status = 'delete')
                         end if
                         n_vint_files = n_vint_files + 1
+
+                        call flush_buf(sb1, sb2, sb3, sb4)
                         fd = io_open(trim(filename) // C_NULL_CHAR, "a" // C_NULL_CHAR)
                         status = io_write_compressed(fd, c_loc(nint), sizeof_int4)
                         if (nint /= 0) then
@@ -440,35 +452,11 @@ contains
     subroutine put_integral(i1, i2, i3, i4, val)
         use general
         use spinor_blocks
-        use iso_c_binding
         integer(2) :: i1, i2, i3, i4
         complex(8) :: val
         integer(4) :: sb1, sb2, sb3, sb4
         integer(4) :: ibuf
         integer(4), target :: nint
-        integer(4) :: fd
-        integer(4) :: status
-        character(len = 100) :: filename
-        integer(8), parameter :: sizeof_int2 = 2
-        integer(8), parameter :: sizeof_int4 = 4
-        integer(8), parameter :: sizeof_complex8 = 16
-        integer(8), parameter :: sizeof_real8 = 8
-        integer(4) :: stat
-
-        interface
-            integer(4) function io_open(path, mode) bind(C, name = "io_open")
-                character, dimension(*) :: path, mode
-            end function io_open
-            integer(4) function io_close(fd) bind(C, name = "io_close")
-                integer(4), value :: fd
-            end function io_close
-            integer(4) function io_write_compressed(fd, buf, sz) bind(C, name = "io_write_compressed")
-                use iso_c_binding
-                integer(4), value :: fd
-                type(c_ptr), value :: buf
-                integer(c_size_t), value :: sz
-            end function io_write_compressed
-        end interface
 
         sb1 = spinor_to_spinor_block(i1)
         sb2 = spinor_to_spinor_block(i2)
@@ -481,24 +469,7 @@ contains
         ! flush buffer if needed
         ! "VINT-*" file must be truncated if opened for the first time
         if (nint == BUF_SIZE) then
-            write (filename, "(a,a1,i0,a1,i0,a1,i0,a1,i0,a1)") trim(files_prefix), "-", sb1, "-", sb2, "-", sb3, "-", sb4
-            if (.not. buf_flushed(ibuf)) then
-                open(unit = 1234, iostat = stat, file = filename, status = 'old')
-                if (stat == 0) close(1234, status = 'delete')
-            end if
-            buf_flushed(ibuf) = .TRUE.
-            fd = io_open(trim(filename) // C_NULL_CHAR, "a" // C_NULL_CHAR)
-            status = io_write_compressed(fd, c_loc(nint), sizeof_int4)
-            status = io_write_compressed(fd, c_loc(buf_indices(:, ibuf)), 4 * nint * sizeof_int2)
-            nbytes_written = nbytes_written + sizeof_int4 + 4 * nint * sizeof_int2
-            if (carith) then
-                status = io_write_compressed(fd, c_loc(buf_vint(:, ibuf)), nint * sizeof_complex8)
-                nbytes_written = nbytes_written + nint * sizeof_complex8
-            else
-                status = io_write_compressed(fd, c_loc(buf_vint_re(:, ibuf)), nint * sizeof_real8)
-                nbytes_written = nbytes_written + nint * sizeof_real8
-            end if
-            status = io_close(fd)
+            call flush_buf(sb1, sb2, sb3, sb4)
             nint = 0
         end if
         ! write new data to the buffer
@@ -515,6 +486,46 @@ contains
         buf_nint(ibuf) = nint
 
     end subroutine put_integral
+
+    subroutine flush_buf(sb1, sb2, sb3, sb4)
+        use general
+        use iso_c_binding
+        use c_io
+        integer(4), intent(in) :: sb1, sb2, sb3, sb4
+        integer(4) :: ibuf
+        integer(4), target :: nint
+        character(len = 100) :: filename
+        integer(8), parameter :: sizeof_int2 = 2
+        integer(8), parameter :: sizeof_int4 = 4
+        integer(8), parameter :: sizeof_complex8 = 16
+        integer(8), parameter :: sizeof_real8 = 8
+        integer(4) :: stat
+        integer(4) :: fd
+
+        ibuf = outbuf_idx(sb1, sb2, sb3, sb4)
+        nint = buf_nint(ibuf)
+
+        write (filename, "(a,a1,i0,a1,i0,a1,i0,a1,i0,a1)") trim(files_prefix), "-", sb1, "-", sb2, "-", sb3, "-", sb4
+        if (.not. buf_flushed(ibuf)) then
+            open(unit = 1234, iostat = stat, file = filename, status = 'old')
+            if (stat == 0) close(1234, status = 'delete')
+        end if
+        buf_flushed(ibuf) = .TRUE.
+        fd = io_open(trim(filename) // C_NULL_CHAR, "a" // C_NULL_CHAR)
+        stat = io_write_compressed(fd, c_loc(nint), sizeof_int4)
+        stat = io_write_compressed(fd, c_loc(buf_indices(:, ibuf)), 4 * nint * sizeof_int2)
+        nbytes_written = nbytes_written + sizeof_int4 + 4 * nint * sizeof_int2
+        if (carith) then
+            stat = io_write_compressed(fd, c_loc(buf_vint(:, ibuf)), nint * sizeof_complex8)
+            nbytes_written = nbytes_written + nint * sizeof_complex8
+        else
+            stat = io_write_compressed(fd, c_loc(buf_vint_re(:, ibuf)), nint * sizeof_real8)
+            nbytes_written = nbytes_written + nint * sizeof_real8
+        end if
+        stat = io_close(fd)
+        buf_nint(ibuf) = 0
+
+    end subroutine flush_buf
 
 end module output_buffers
 
@@ -589,22 +600,6 @@ subroutine dirac_interface_binary(err) bind(C)
     use spinor_blocks
     use output_buffers
     implicit none
-    interface
-        integer(4) function io_open(path, mode) bind(C, name = "io_open")
-            character, dimension(*) :: path, mode
-        end function io_open
-        integer(4) function io_close(fd) bind(C, name = "io_close")
-            integer(4), value :: fd
-        end function io_close
-        integer(4) function io_write_compressed(fd, buf, sz) bind(C, name = "io_write_compressed")
-            use iso_c_binding
-            integer(4), value :: fd
-            type(c_ptr), value :: buf
-            integer(c_size_t), value :: sz
-        end function io_write_compressed
-        subroutine c_asctime() bind(C, name = "c_asctime")
-        end subroutine c_asctime
-    end interface
     interface
         subroutine flush_fock(nspinors, hint)
             integer(4) :: nspinors
@@ -983,20 +978,7 @@ end subroutine dirac_interface_binary
 subroutine flush_fock(nspinors, hint)
 
     use iso_c_binding
-    interface
-        integer(4) function io_open(path, mode) bind(C, name = "io_open")
-            character, dimension(*) :: path, mode
-        end function io_open
-        integer(4) function io_close(fd) bind(C, name = "io_close")
-            integer(4), value :: fd
-        end function io_close
-        integer(4) function io_write_compressed(fd, buf, sz) bind(C, name = "io_write_compressed")
-            use iso_c_binding
-            integer(4), value :: fd
-            type(c_ptr), value :: buf
-            integer(c_size_t), value :: sz
-        end function io_write_compressed
-    end interface
+    use c_io
 
     integer(4) :: nspinors
     complex(8), dimension(nspinors**2), target :: hint
@@ -1029,6 +1011,7 @@ subroutine read_two_electron_prop(prop_name, file_name)
     use dirac_32_64_compatibility
     use spinor_blocks
     use output_buffers
+    use c_io
     implicit none
 
     ! argument
@@ -1050,11 +1033,6 @@ subroutine read_two_electron_prop(prop_name, file_name)
     complex(8) :: zgint
     real(8) :: gint
     integer :: luint   ! 2-el property integrals file
-
-    interface
-        subroutine c_asctime() bind(C, name = "c_asctime")
-        end subroutine c_asctime
-    end interface
 
     print *
     write (*, '(3a)'), ' *** ', trim(prop_name), ' FILE ***'
@@ -1090,12 +1068,8 @@ subroutine read_mdcint(nz_arith, is_spinfree, nspinors)
     use dirac_32_64_compatibility
     use spinor_blocks
     use output_buffers
+    use c_io
     implicit none
-
-    interface
-        subroutine c_asctime() bind(C, name = "c_asctime")
-        end subroutine c_asctime
-    end interface
 
     ! arguments
     integer(4), intent(in) :: nz_arith, is_spinfree, nspinors
@@ -1124,13 +1098,6 @@ subroutine read_mdcint(nz_arith, is_spinfree, nspinors)
     integer(4), dimension(:), allocatable :: indk, indl
     real(8), dimension(:, :), allocatable :: cbuf
 
-    ! expanding integrals:
-    ! buffers used to accumulate integrals ("vint_buf") and their indices ("indices")
-    complex(8), dimension(:), allocatable, target :: vint_buf
-    integer(2), dimension(:), allocatable, target :: indices
-    ! current number of integrals in the buffer
-    integer(4), target :: nint
-
     print *
     print *, '*** MDCINT FILE ***'
     call c_asctime()
@@ -1142,8 +1109,6 @@ subroutine read_mdcint(nz_arith, is_spinfree, nspinors)
     allocate(indk(nspinors * nspinors))
     allocate(indl(nspinors * nspinors))
     allocate(cbuf(2, nspinors * nspinors))
-    allocate(vint_buf(4 * nspinors**2))
-    allocate(indices(4 * nspinors**2 * 4))
     ! if 8-byte integers in DIRAC
     if (dirac_integer_size == CC_DIRAC_INT8) then
         allocate(kr8(-nspinors:nspinors))
@@ -1260,7 +1225,7 @@ subroutine read_mdcint(nz_arith, is_spinfree, nspinors)
     call flush(6)
 
     ! final cleanup
-    deallocate(kr, indk, indl, cbuf, vint_buf, indices)
+    !deallocate(kr, indk, indl, cbuf, vint_buf, indices)
     ! if 8-byte integers in DIRAC
     if (dirac_integer_size == CC_DIRAC_INT8) then
         deallocate(kr8, indk8, indl8)
@@ -1304,13 +1269,8 @@ contains
         integer(4) :: inz
         ! tmp variable for the new integral
         complex(8) :: cint
-        integer(c_size_t), parameter :: sizeof_int2 = 2
-        integer(c_size_t), parameter :: sizeof_int4 = 4
-        integer(c_size_t), parameter :: sizeof_complex8 = 16
 
         if (nonzr == 0) return
-
-        nint = 0
 
         ! determine integral class
         kclass = intclass(ikr, indk(1), jkr, indl(1))
@@ -1350,23 +1310,13 @@ contains
     ! determine integral class
     integer(4) function intclass(ikr, jkr, kkr, lkr)
         integer(4) :: ikr, jkr, kkr, lkr   ! indices of Kramers pairs, > 0 for unbarred, < 0 for barred
+        integer(4) :: sign_product
 
-        intclass = INTCLASS_NO_BARS
-        if (ikr > 0 .and. jkr > 0 .and. kkr > 0 .and. lkr > 0) then
+        sign_product = sign(1,ikr) * sign(1,jkr) * sign(1,kkr) * sign(1,lkr)
+        if (sign_product > 0) then
             intclass = INTCLASS_NO_BARS
-        else if (ikr > 0 .and. jkr < 0 .and. kkr > 0 .and. lkr < 0) then
-            intclass = INTCLASS_TWO_BARS
-        else if (ikr > 0 .and. jkr > 0 .and. kkr < 0 .and. lkr < 0) then
-            intclass = INTCLASS_TWO_BARS
-        else if (ikr > 0 .and. jkr < 0 .and. kkr < 0 .and. lkr > 0) then
-            intclass = INTCLASS_TWO_BARS
-        else if (ikr > 0 .and. jkr < 0 .and. kkr > 0 .and. lkr > 0) then
-            intclass = INTCLASS_ONE_BAR
-        else if (ikr > 0 .and. jkr > 0 .and. kkr > 0 .and. lkr < 0) then
-            intclass = INTCLASS_ONE_BAR
-        else if (ikr < 0 .and. jkr > 0 .and. kkr > 0 .and. lkr > 0) then
-            intclass = INTCLASS_ONE_BAR
-        else if (ikr > 0 .and. jkr > 0 .and. kkr < 0 .and. lkr > 0) then
+            ! INTCLASS_TWO_BARS is the same for Coulomb integrals
+        else if (sign_product < 0) then
             intclass = INTCLASS_ONE_BAR
         else
             print *, 'unknown Kramers class'
@@ -1374,39 +1324,16 @@ contains
             err = 1
             return
         end if
+
     end function intclass
 
     subroutine perm_symm(cint, i, j, k, l)
         complex(8), intent(in) :: cint
         integer(4), intent(in) :: i, j, k, l
 
-        nint = nint + 1
-        vint_buf(nint) = cint
-        indices((nint - 1) * 4 + 1) = i
-        indices((nint - 1) * 4 + 2) = j
-        indices((nint - 1) * 4 + 3) = k
-        indices((nint - 1) * 4 + 4) = l
         call put_integral(int(i, 2), int(j, 2), int(k, 2), int(l, 2), cint)
-        nint = nint + 1
-        vint_buf(nint) = cint
-        indices((nint - 1) * 4 + 1) = j
-        indices((nint - 1) * 4 + 2) = i
-        indices((nint - 1) * 4 + 3) = l
-        indices((nint - 1) * 4 + 4) = k
         call put_integral(int(j, 2), int(i, 2), int(l, 2), int(k, 2), cint)
-        nint = nint + 1
-        vint_buf(nint) = conjg(cint)
-        indices((nint - 1) * 4 + 1) = k
-        indices((nint - 1) * 4 + 2) = l
-        indices((nint - 1) * 4 + 3) = i
-        indices((nint - 1) * 4 + 4) = j
         call put_integral(int(k, 2), int(l, 2), int(i, 2), int(j, 2), conjg(cint))
-        nint = nint + 1
-        vint_buf(nint) = conjg(cint)
-        indices((nint - 1) * 4 + 1) = l
-        indices((nint - 1) * 4 + 2) = k
-        indices((nint - 1) * 4 + 3) = j
-        indices((nint - 1) * 4 + 4) = i
         call put_integral(int(l, 2), int(k, 2), int(j, 2), int(i, 2), conjg(cint))
 
     end subroutine perm_symm

@@ -42,26 +42,19 @@ static size_t max_available = 100 * 1024u * 1024u; // start with 100 Mb
 void cc_memory_usage();
 
 
-/*******************************************************************************
- * cc_init_allocator
- *
- * Initialization of memory allocation subsystem
- ******************************************************************************/
 void cc_init_allocator(size_t max_mem)
 {
     max_available = max_mem;
 }
 
 
-/*******************************************************************************
- * cc_malloc
- *
+/**
  * Wrapper for malloc() from libc.
  * Allocates memory:
  * [sizeof(size_t) block-size-nbytes] [useful space]
  *                                    ^
  *                                 returns
- ******************************************************************************/
+ */
 void *cc_malloc(size_t nbytes)
 {
     void *mem;
@@ -113,11 +106,9 @@ void *cc_calloc(size_t num, size_t size)
 }
 
 
-/*******************************************************************************
- * cc_free
- *
+/**
  * Wrapper for free() from libc
- ******************************************************************************/
+ */
 void cc_free(void *p)
 {
     size_t nbytes;
@@ -136,22 +127,12 @@ void cc_free(void *p)
 }
 
 
-/*******************************************************************************
- * cc_finalize_allocator
- *
- * Finalization of memory allocation subsystem
- ******************************************************************************/
 void cc_finalize_allocator()
 {
     cc_memory_usage();
 }
 
 
-/*******************************************************************************
- * cc_memory_usage
- *
- * Prints memory usage statistics to stdout.
- ******************************************************************************/
 void cc_memory_usage()
 {
     const double b2mb = 1.0 / (1024.0 * 1024.0);
@@ -165,22 +146,12 @@ void cc_memory_usage()
 }
 
 
-/*******************************************************************************
- * cc_get_current_memory_usage
- *
- * Returns current memory usage (in bytes).
- ******************************************************************************/
 size_t cc_get_current_memory_usage()
 {
     return n_allocated;
 }
 
 
-/*******************************************************************************
- * cc_get_peak_memory_usage
- *
- * Returns peak memory usage (in bytes).
- ******************************************************************************/
 size_t cc_get_peak_memory_usage()
 {
     return max_allocated;

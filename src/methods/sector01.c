@@ -163,7 +163,7 @@ int sector01(cc_options_t *opts)
         printf(" it.       diffmax(S1)       diffmax(S2)       diffmax(S3)     max(S1)     max(S2)     max(S3)    t,sec       mem,Gb\n");
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
     }
-    diis_queue_t *diis_queue = new_diis_queue(1, 1, opts->diis_triples);
+    diis_queue_t *diis_queue = new_diis_queue(1, 1, triples && opts->diis_triples);
     converged = 0;
     t1 = abs_time();
     for (it = 1; it <= opts->maxiter; it++) {
@@ -201,13 +201,6 @@ int sector01(cc_options_t *opts)
         if (triples) {
             apply_selections(0, 1, "s3nw");
         }
-
-        if (opts->do_relax) {
-            remove_core_correlation("s2nw");
-            if (triples) {
-                remove_core_correlation("s3nw");
-            }
-        }
 #endif
 
         if (cc_opts->cc_model == CC_MODEL_CCS) {
@@ -216,11 +209,6 @@ int sector01(cc_options_t *opts)
         else if (cc_opts->cc_model == CC_MODEL_CCD) {
             clear("s1nw");
         }
-#ifdef VERSION_DEVEL
-        if (cc_opts->restrict_triples && triples) {
-            restrict_triples("s3nw", cc_opts->restrict_triples_e1, cc_opts->restrict_triples_e2);
-        }
-#endif
 
         diffmax("s1c", "s1nw", &diff1, diffmax1_idx);
         diffmax("s2c", "s2nw", &diff2, diffmax2_idx);
@@ -443,11 +431,6 @@ void init_amplitudes_0h1p()
     else if (cc_opts->cc_model == CC_MODEL_CCD) {
         clear("s1c");
     }
-#ifdef VERSION_DEVEL
-    if (triples && cc_opts->restrict_triples) {
-        restrict_triples("s3c", cc_opts->restrict_triples_e1, cc_opts->restrict_triples_e2);
-    }
-#endif
 }
 
 
