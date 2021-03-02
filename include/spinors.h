@@ -35,26 +35,26 @@
 #define CC_SPINORS_H_INCLUDED
 
 #include "comdef.h"
+#include "options.h"
+
+#define CC_FLAG_OCCUPIED  0x00000001
+#define CC_FLAG_ACTIVE    0x00000002
+#define CC_FLAG_MAIN      0x00000004
 
 // number of one-particle functions (e.g. spinors)
-extern int nspinors;
+extern int NSPINORS;
 
 // attributes of each spinors:
 //  - sequential number
 //  - irrep no
 //  - hole / particle (occupied in reference or not) (1 - hole, 0 - particle)
-//  - active or not (1 or 0)
-//  - space1: if 1, triples amplitude with this spinor can be non-zero
-//    (otherwise it will be set to zero, "restriction of triples")
+//  - space_flags => active/inactive, main/intermediate
 //  - its energy
 typedef struct {
-    int seqno;
     int repno;
     int blockno;
-    int occ;
-    int active;
-    int space1;
     double eps;
+    uint32_t space_flags;
 } spinor_attr_t;
 
 // array of spinor attributes
@@ -69,23 +69,18 @@ typedef struct {
 extern size_t n_spinor_blocks;
 extern spinor_block_t *spinor_blocks;
 
-// all arrays n the following struct contain its size as a first element
-typedef struct {
-    int *holes;      // including active holes
-    int *inact_holes;
-    int *act_holes;
-    int *act_parts;
-    int *inact_parts;
-    int *parts;      // including active particles
-} spinor_types_t;
-extern spinor_types_t spinor_types;
-
 // mapping "global spinor index -> local spinor index (in spinor block)"
 extern int spinor_index_global2local[CC_MAX_SPINORS];
 
-// helper functions
+void set_occupied(int idx, int occ_number);
 
 int is_active(int idx);
+
+int is_active_main(int idx);
+
+int is_active_intermediate(int idx);
+
+int set_main(int idx);
 
 int is_hole(int idx);
 
@@ -101,7 +96,11 @@ int is_inact_part(int idx);
 
 double get_eps(int idx);
 
+void get_spinor_energies(size_t n, double *eps);
+
 int get_num_electrons();
+
+void get_spinor_indices_occupied(int *occ_idx);
 
 int get_vacuum_irrep();
 
@@ -111,20 +110,19 @@ void get_active_space(int *nacth, int *nactp, moindex_t *active_holes_indices, m
 
 void create_spinor_blocks();
 
-void classify_spinors(double actsp_min, double actsp_max,
-                      int nacth, int nactp);
+void setup_occupation_numbers(cc_options_t *options, int num_spinors, spinor_attr_t *spinor_info);
 
-void setup_singles_only_space(int *ccs_only_space);
+void setup_active_space(cc_options_t *cc_opts);
 
-void print_spinor_info();
+void setup_fast_access_spinor_lists();
+
+void print_spinor_info_table();
 
 int get_spinor_block_size(int spinor_block_number);
 
 int get_max_spinor_block_size();
 
 void spinors_cleanup();
-
-extern int (*is_symblock_zerox[CC_DIAGRAM_MAX_RANK])(int *spinor_blocks, int *qparts, int *valence);
 
 int is_symblock_zero(int rank, int *spinor_blocks, int *qparts, int *valence);
 

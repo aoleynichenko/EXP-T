@@ -135,14 +135,22 @@ enum {
     CC_SPACE_BY_TOTAL
 };
 
+enum {
+    CC_ACT_SPACE_UNDEFINED = 0,
+    CC_ACT_SPACE_SPEC_ENERGY,
+    CC_ACT_SPACE_SPEC_TOTAL,
+    CC_ACT_SPACE_SPEC_IRREPS,
+    CC_ACT_SPACE_SPEC_BINARY
+};
+
 // for definition of subspaces (of orbitals or electronic states)
 typedef struct {
     int deftype;
     int total;
     double emin;
     double emax;
-    int dim[CC_MAX_NREP];
-    char rep_names[CC_MAX_NREP][32];
+    int dim[CC_MAX_NUM_IRREPS];
+    char rep_names[CC_MAX_NUM_IRREPS][32];
 } cc_space_t;
 
 // for calculations of density matrices and natural orbitals (including transition ones)
@@ -201,9 +209,6 @@ struct cc_options {
     // orbital range tiling
     int tile_size;
 
-    // keep <pp||pp>-type diagrams in RAM
-    int keep_pppp;
-
     // level of disk usage (all in RAM, rank6 on disk, pppp on disk, etc)
     int disk_usage_level;
 
@@ -239,7 +244,11 @@ struct cc_options {
     double actsp_max;
     int nacth;
     int nactp;
-    cc_active_spec_t active_specs[CC_MAX_NREP];
+    int main_defined;
+    int main_h;
+    int main_p;
+
+    cc_active_spec_t active_specs[CC_MAX_NUM_IRREPS];
     int active_each[CC_MAX_SPINORS];
 
     // number of electrons in each irrep -- will be useful for open-shell references
@@ -298,11 +307,6 @@ struct cc_options {
     int orbshift_0h0p_power;
     double orbshift_0h0p[32];
 
-    // restriction of triples amplitudes
-    int restrict_triples;
-    double restrict_triples_e1;  // lower energy threshold
-    double restrict_triples_e2;  // upper energy threshold
-
     // DIIS -- convergence acceleration
     int diis_enabled;
     int diis_dim;       // dimension of the DIIS subspace
@@ -317,15 +321,6 @@ struct cc_options {
     // how many roots should be processed
     int nroots_specified;  // is 'nroots' option was specified in input file
     cc_space_t nroots_specs;  // number of lowest roots in each symmetry
-
-    // relaxation effects (singles only)
-    cc_space_t relax_core;
-    cc_space_t relax_virtual;
-    int do_relax;
-
-    // remove inner core correlation (and retain core-valence correlation)
-    int do_remove_inner_core_corr;
-    double inner_core_thresh;
 
     // degeneracy threshold (used for representing results)
     double degen_thresh;

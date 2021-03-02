@@ -81,7 +81,6 @@ cc_options_t *new_options()
     opts->max_memory_size = 1024u * 1024u * 1024u;  // 1 Gb
     opts->compress = CC_COMPRESS_NONE;
     opts->tile_size = 100;
-    opts->keep_pppp = 0;
     opts->disk_usage_level = CC_DISK_USAGE_LEVEL_2;  // rank-6+ and pppp on disk
     opts->nthreads = 1;
     opts->cuda_enabled = 0;
@@ -112,11 +111,14 @@ cc_options_t *new_options()
     // active space specification
     // [inact H] actsp_min [act H] [act P] actsp_max [inact P]
     // default: no active space
-    opts->actsp_defined = 0;  // undefined
-    opts->actsp_min = 0.0;
-    opts->actsp_max = 0.0;
+    opts->actsp_defined = CC_ACT_SPACE_UNDEFINED;  // undefined
+    opts->actsp_min = +1e10;
+    opts->actsp_max = -1e10;
     opts->nacth = 0;
     opts->nactp = 0;
+    opts->main_defined = 0;
+    opts->main_h = 0;
+    opts->main_p = 0;
     memset(opts->active_specs, 0, sizeof(opts->active_specs));
     memset(opts->active_each, 0, sizeof(opts->active_each));
 
@@ -160,11 +162,6 @@ cc_options_t *new_options()
     memset(opts->orbshift_0h0p, 0, sizeof(opts->orbshift_0h0p));
     opts->orbshift_0h0p_power = 0;
 
-    // restriction of triples amplitudes
-    opts->restrict_triples = 0;       // off
-    opts->restrict_triples_e1 = 0.0;  // lower energy threshold
-    opts->restrict_triples_e2 = 0.0;  // upper energy threshold
-
     // damping
     memset(opts->damping, 0, sizeof(opts->damping));
 
@@ -183,15 +180,6 @@ cc_options_t *new_options()
 
     // degeneracy threshold (for printing roots)
     opts->degen_thresh = 1e-8;
-
-    // relaxation (singles only)
-    memset(&opts->relax_core, 0, sizeof(opts->relax_core));
-    memset(&opts->relax_virtual, 0, sizeof(opts->relax_virtual));
-    opts->do_relax = 0;
-
-    // remove inner core correlation (and retain core-valence correlation)
-    opts->do_remove_inner_core_corr = 0;
-    opts->inner_core_thresh = 0.0;
 
     // interface to the OneProp code by L. V. Skripnikov (one-elec properties)
     opts->oneprop_on = 0;
@@ -387,13 +375,7 @@ void print_options(cc_options_t *opts)
     else {
         printf("not used\n");
     }
-    /*printf(" %-15s  %-40s  ", "breit", "two-electron (Breit) integrals file");
-    if (opts->breit_defined) {
-        printf("%s\n", opts->integral_file_breit);
-    }
-    else {
-        printf("not used\n");
-    }*/
+
     printf(" %-15s  %-40s  %1dh%1dp\n", "sector", "target Fock space sector", opts->sector_h, opts->sector_p);
     /*if (opts->mixed) {
         printf("  Mixed-sector model 0h0p-1h1p\n");
@@ -444,7 +426,7 @@ void print_options(cc_options_t *opts)
     }
     else if (opts->actsp_defined == 3) {
         printf(" %-15s  %-40s  ", "active", "active holes space (defined by irreps)");
-        for (int i = 0; i < CC_MAX_NREP; i++) {
+        for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
             cc_active_spec_t *sp = &opts->active_specs[i];
             if (sp->nacth > 0) {
                 printf("%s:%d ", sp->rep_name, sp->nacth);
@@ -452,7 +434,7 @@ void print_options(cc_options_t *opts)
         }
         printf("\n");
         printf(" %-15s  %-40s  ", "active", "active particles space (defined by irreps)");
-        for (int i = 0; i < CC_MAX_NREP; i++) {
+        for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
             cc_active_spec_t *sp = &opts->active_specs[i];
             if (sp->nactp > 0) {
                 printf("%s:%d ", sp->rep_name, sp->nactp);
@@ -466,6 +448,12 @@ void print_options(cc_options_t *opts)
     else{
         printf("  active space      undefined\n");
     }*/
+
+    if (opts->main_defined) {
+        printf(" %-15s  %-40s  %d act holes, %d act particles\n",
+               "main", "main active space", opts->main_h, opts->main_p);
+    }
+
     printf(" %-15s  %-40s  ", "shifttype", "formula for denominator shifts");
     if (opts->shift_type == CC_SHIFT_NONE) {
         printf("shifts are disabled\n");
@@ -558,34 +546,7 @@ void print_options(cc_options_t *opts)
     else {
         printf("defined for each spinor\n");
     }
-    // restriction of triples amplitudes
-    /*if (opts->restrict_triples) {
-        printf("  restrict triples  enabled\n");
-        printf("    energy range    %g %g\n", opts->restrict_triples_e1,
-               opts->restrict_triples_e2);
-    }
-    else{
-        printf("  restrict triples  disabled\n");
-    }*/
-    // subspaces for relaxation only (CCS only will be used for these spinors)
-    /*if (opts->do_relax) {
-        printf("  CCS subspace      core    ");
-        print_space(&opts->relax_core);
-        printf("\n");
-        printf("                    virtual ");
-        print_space(&opts->relax_virtual);
-        printf("\n");
-    }
-    else {
-        printf("  CCS subspace      disabled\n");
-    }
-    printf("  remove inner core corr  ");
-    if (opts->do_remove_inner_core_corr) {
-        printf("enabled, inner core < %f a.u.\n", opts->inner_core_thresh);
-    }
-    else {
-        printf("disabled\n");
-    }*/
+
     if (opts->diis_enabled) {
         printf(" %-15s  %-40s  %s\n", "diis", "DIIS technique for convergence", "enabled");
         printf(" %-15s  %-40s  %d\n", "diis <n>", "DIIS subspace dimension", opts->diis_dim);
@@ -739,7 +700,7 @@ void print_space(cc_space_t *space)
         printf("total %d", space->total);
     }
     else { // by irreps
-        for (int i = 0; i < CC_MAX_NREP; i++) {
+        for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
             if (space->dim[i] != 0) {
                 printf("%s:%d ", space->rep_names[i], space->dim[i]);
             }

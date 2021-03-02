@@ -43,13 +43,12 @@ enum {
     CC_EXCHANGE
 };
 
-extern int32_t *symblock_indices;
 
 double complex ****allocate_twoel_buffer(size_t dim);
 
 void free_twoel_buffer(size_t dim, double complex ****v_ints);
 
-int load_coulomb_block(double complex ****v_ints, int spinor_block_1, int spinor_block_2, int spinor_block_3,
+size_t load_coulomb_block(double complex ****v_ints, int spinor_block_1, int spinor_block_2, int spinor_block_3,
                        int spinor_block_4);
 
 void clear_twoel_buffer(double complex ****v_ints, int spinor_block_1, int spinor_block_2, int spinor_block_3,
@@ -85,11 +84,11 @@ void sort_twoel()
     v_ints = allocate_twoel_buffer(get_max_spinor_block_size());
 
     for (spinor_block_1 = 0; spinor_block_1 < n_spinor_blocks; spinor_block_1++) {
-        int n_blocks_processed = 0;
-        int n_integrals_read = 0;
+        size_t n_blocks_processed = 0;
+        size_t n_integrals_read = 0;
         double time_start = abs_time();
 
-        printf("   %3d /%3d ", spinor_block_1, n_spinor_blocks);
+        printf("   %3d /%3ld ", spinor_block_1, n_spinor_blocks);
 
         for (spinor_block_2 = 0; spinor_block_2 < n_spinor_blocks; spinor_block_2++) {
             for (spinor_block_3 = 0; spinor_block_3 < n_spinor_blocks; spinor_block_3++) {
@@ -97,7 +96,7 @@ void sort_twoel()
 
                     clear_twoel_buffer(v_ints, spinor_block_1, spinor_block_2, spinor_block_3, spinor_block_4);
 
-                    int n_ints = load_coulomb_block(v_ints, spinor_block_1, spinor_block_2, spinor_block_3,
+                    size_t n_ints = load_coulomb_block(v_ints, spinor_block_1, spinor_block_2, spinor_block_3,
                                                           spinor_block_4);
                     if (n_ints == 0) {
                         continue;
@@ -171,10 +170,10 @@ void sort_twoel()
             }
         }
         // intermediate statistics
-        int n_bytes_read = n_integrals_read * (carith ? sizeof(double complex) : sizeof(double));
+        size_t n_bytes_read = n_integrals_read * (carith ? sizeof(double complex) : sizeof(double));
         double time_elapsed = abs_time() - time_start;
-        printf("%8d", n_blocks_processed);
-        printf("%12d", n_integrals_read);
+        printf("%8ld", n_blocks_processed);
+        printf("%12ld", n_integrals_read);
         printf("%10.0f", time_elapsed);
         printf("%10.2f", n_bytes_read / time_elapsed * BYTES_TO_GB);
         printf("\n");
@@ -186,8 +185,8 @@ void sort_twoel()
     double sort_twoel_time_elapsed = abs_time() - sort_twoel_time_start;
     size_t n_bytes_read_total = n_integrals_read_total * (carith ? sizeof(double complex) : sizeof(double));
     printf("     total  ");
-    printf("%8d", n_blocks_processed_total);
-    printf("%12d", n_integrals_read_total);
+    printf("%8ld", n_blocks_processed_total);
+    printf("%12ld", n_integrals_read_total);
     printf("%10.0f", sort_twoel_time_elapsed);
     printf("%10.2f", n_bytes_read_total / sort_twoel_time_elapsed * BYTES_TO_GB);
     printf("\n");
@@ -238,7 +237,7 @@ int num_twoelec_requests(sorting_request_t *requests, int num_requests)
  * Returns number of integrals read
  * vint_array = factor1 * vint_array + factor2 * new_integrals
  */
-int read_twoel_block_unformatted(char *vint_file_name, double complex ****vint_array, double complex factor1,
+size_t read_twoel_block_unformatted(char *vint_file_name, double complex ****vint_array, double complex factor1,
                                  double complex factor2, size_t *n_bytes_read)
 {
     int32_t nint;
@@ -334,11 +333,11 @@ void clear_twoel_buffer(double complex ****v_ints, int spinor_block_1, int spino
 }
 
 
-int load_coulomb_block(double complex ****v_ints, int spinor_block_1, int spinor_block_2, int spinor_block_3,
+size_t load_coulomb_block(double complex ****v_ints, int spinor_block_1, int spinor_block_2, int spinor_block_3,
                        int spinor_block_4)
 {
     char vint_file_name[CC_MAX_FILE_NAME_LENGTH];
-    int n_integrals_read;
+    size_t n_integrals_read;
     size_t n_bytes_read;
 
     sprintf(vint_file_name, "VINT-%d-%d-%d-%d",

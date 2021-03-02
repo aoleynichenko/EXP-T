@@ -103,8 +103,8 @@ void predict_intruders(char *diagram_name, int nmax)
     memset(max_denoms, 0, sizeof(indexed_denom_t) * nmax);
 
     // extract one-electron energies
-    double *eps = (double *) cc_malloc(nspinors * sizeof(double));
-    for (i = 0; i < nspinors; i++) {
+    double *eps = (double *) cc_malloc(NSPINORS * sizeof(double));
+    for (i = 0; i < NSPINORS; i++) {
         eps[i] = spinor_info[i].eps;
     }
 

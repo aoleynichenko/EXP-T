@@ -74,7 +74,7 @@
 module general
     ! constants
     integer(4), parameter :: CC_MAX_SPINORS = 2048
-    integer(4), parameter :: CC_MAX_NREP = 64
+    integer(4), parameter :: CC_MAX_NUM_IRREPS = 64
     integer(4), parameter :: CC_MAX_NPROP = 256
     integer(4), parameter :: INTCLASS_NO_BARS = 0  ! all indices are unbarred
     integer(4), parameter :: INTCLASS_ONE_BAR = 1  ! one barred index (quaternion groups only)
@@ -141,7 +141,7 @@ module spinor_blocks
     ! number of fermion irreps in the Abelian subgroup
     integer(4) :: nsymrepa
     ! number of spinors in each (abelian) irrep
-    integer(4), dimension(CC_MAX_NREP) :: repsizes
+    integer(4), dimension(CC_MAX_NUM_IRREPS) :: repsizes
     ! number of spinor blocks
     integer(4) :: n_spinor_blocks
     ! sizes of spinor blocks
@@ -159,9 +159,9 @@ contains
         integer(4) :: i, j, k, isb, sz
         integer(4), dimension(:), allocatable :: rep_indices   ! temporary array
         ! multiplication table for direct products in the Abelian subgroup
-        integer(4), dimension(CC_MAX_NREP, CC_MAX_NREP) :: multb
+        integer(4), dimension(CC_MAX_NUM_IRREPS, CC_MAX_NUM_IRREPS) :: multb
         ! names of these irreps (Abelian subgroup)
-        character(len = 4), dimension(CC_MAX_NREP) :: repanames
+        character(len = 4), dimension(CC_MAX_NUM_IRREPS) :: repanames
 
         ! init variables
         tile_size = tilesz
@@ -309,9 +309,9 @@ contains
         integer(4) :: i1, i2, i3, i4
         integer(4) :: irep1, irep2, irep3, irep4
         ! multiplication table for direct products in the Abelian subgroup
-        integer(4), dimension(CC_MAX_NREP, CC_MAX_NREP) :: multb
+        integer(4), dimension(CC_MAX_NUM_IRREPS, CC_MAX_NUM_IRREPS) :: multb
         ! names of these irreps (Abelian subgroup)
-        character(len = 4), dimension(CC_MAX_NREP) :: repanames
+        character(len = 4), dimension(CC_MAX_NUM_IRREPS) :: repanames
         character(len = 4) :: repname1, repname2, repname3, repname4
         logical :: nonrel = .FALSE.
 
@@ -541,7 +541,7 @@ module dirac_32_64_compatibility
     integer(8) :: nspinors8, invsym8, nz_arith8, is_spinfree8, norb_total8
     integer(8) :: nactive8(8), nstr8(2), nfrozen8(2, 0:2), ndelete8(8)
     integer(8) :: nsymrp8, nsymrpa8, norb8(2), nbsymrp8
-    integer(8) :: multb8(CC_MAX_NREP, CC_MAX_NREP)
+    integer(8) :: multb8(CC_MAX_NUM_IRREPS, CC_MAX_NUM_IRREPS)
     integer(8), dimension(CC_MAX_SPINORS) :: irpmo8, irpamo8, ibspi8, iocc8
     integer(8) :: nkr8, ikr8, jkr8, nonzr8
     integer(8), dimension(:), allocatable :: kr8
@@ -561,7 +561,7 @@ contains
         common /mrconee_mdcint/ oneel_file, twoel_file, prop_file, gaunt_file, gaunt_enabled, n_twoprop, twoprop_files
         bind(C) :: /mrconee_mdcint/
         logical(4) :: breit
-        integer(4) :: nspinors, invsym, nz_arith, is_spinfree, norb_total
+        integer(4) :: NSPINORS, invsym, nz_arith, is_spinfree, norb_total
         real(8) :: enuc, escf
 
         luone = 42
@@ -602,7 +602,7 @@ subroutine dirac_interface_binary(err) bind(C)
     implicit none
     interface
         subroutine flush_fock(nspinors, hint)
-            integer(4) :: nspinors
+            integer(4) :: NSPINORS
             complex(8), dimension(nspinors**2), target :: hint
         end subroutine flush_fock
     end interface
@@ -626,7 +626,7 @@ subroutine dirac_interface_binary(err) bind(C)
 
     ! MRCONEE content
     ! basic info
-    integer(4) :: nspinors
+    integer(4) :: NSPINORS
     logical(4) :: breit
     real(8) :: enuc
     integer(4) :: invsym
@@ -649,7 +649,7 @@ subroutine dirac_interface_binary(err) bind(C)
     integer(4) :: nsymrpa                        ! number of fermion irreps in the Abelian subgroup
     character(len = 4), dimension(4 * NORDER) :: repanames ! names of these irreps
     ! Multiplication table for direct products in the Abelian subgroup
-    integer(4), dimension(CC_MAX_NREP, CC_MAX_NREP) :: multb
+    integer(4), dimension(CC_MAX_NUM_IRREPS, CC_MAX_NUM_IRREPS) :: multb
     ! for each spinor:
     integer(4), dimension(CC_MAX_SPINORS) :: irpmo   ! Irrep in parent group (1:gerade, 2:ungerade)
     integer(4), dimension(CC_MAX_SPINORS) :: irpamo  ! Irrep in Abelian subgroup
@@ -786,7 +786,7 @@ subroutine dirac_interface_binary(err) bind(C)
         arith = CC_ARITH_COMPLEX
         carith = .TRUE.
     end if
-    print *, 'nspinors                                   ', nspinors
+    print *, 'NSPINORS                                   ', nspinors
     print *, 'was breit in DHF                           ', breit
     print *, 'nuclear repulsion energy                   ', enuc
     print *, 'inversion symmetry (1-no,2-yes)            ', invsym
@@ -905,7 +905,7 @@ subroutine dirac_interface_binary(err) bind(C)
     !print *, 'information for each spinor:'
     !print *, '(i, irrep in parent grp, irrep in abelian subgrp, occ number,'
     !print *,  'orb energy, approx boson irrep identification)'
-    !do i = 1, nspinors
+    !do i = 1, NSPINORS
     !    write (*,'(4i4,f15.8,i4)') i, irpmo(i), irpamo(i), iocc(i), eorbmo(i), ibspi(i)
     !end do
     print *, 'number of g/u Kramers pairs', (norb(i), i = 1, invsym)
@@ -980,7 +980,7 @@ subroutine flush_fock(nspinors, hint)
     use iso_c_binding
     use c_io
 
-    integer(4) :: nspinors
+    integer(4) :: NSPINORS
     complex(8), dimension(nspinors**2), target :: hint
 
     integer(4) :: fd
@@ -1072,7 +1072,7 @@ subroutine read_mdcint(nz_arith, is_spinfree, nspinors)
     implicit none
 
     ! arguments
-    integer(4), intent(in) :: nz_arith, is_spinfree, nspinors
+    integer(4), intent(in) :: nz_arith, is_spinfree, NSPINORS
 
     integer(4) :: err
     integer(4) :: ikr, jkr, inz

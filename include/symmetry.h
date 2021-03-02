@@ -49,7 +49,7 @@ extern int is_abelian;
 
 // direct product table
 extern int ***dir_prod_table;
-extern int dir_prod_table_abelian[CC_MAX_NREP][CC_MAX_NREP];
+extern int dir_prod_table_abelian[CC_MAX_NUM_IRREPS][CC_MAX_NUM_IRREPS];
 
 // representation names
 extern char **rep_names;
@@ -59,6 +59,8 @@ extern int irrep_a1;
 
 // point group type (Quaternion, Real, Complex)
 extern int point_group_nz;
+
+int get_num_irreps();
 
 int get_totally_symmetric_irrep();
 
@@ -76,7 +78,7 @@ int mulrep2_abelian(int irep1, int irep2);
 
 // checks if the direct product of n irreps from the rep_list contains the
 // totally symmetry irrep
-extern int (*dpd_contains_totsym_rank[CC_MAX_NREP])(int *gamma);
+extern int (*dpd_contains_totsym_rank[CC_MAX_NUM_IRREPS])(int *gamma);
 
 void set_point_group_name(char *name);
 

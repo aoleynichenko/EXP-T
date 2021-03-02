@@ -21,41 +21,18 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/*******************************************************************************
- * comdef.h
- * ========
- *
- * Common definitions in types used in the EXP-T project.
- *
- * 2020-2021 Alexander Oleynichenko
- ******************************************************************************/
+#ifndef ELEMENTS_H_INCLUDED
+#define ELEMENTS_H_INCLUDED
 
-#ifndef CC_COMDEF_H_INCLUDED
-#define CC_COMDEF_H_INCLUDED
+#define N_CHEM_ELEMENTS 131 // 130 + Ghost
+#define MAX_ELEMENT_SYMBOL 8
 
-#include <complex.h>
-#include <stdint.h>
-#include <stddef.h>
+typedef struct {
+    int z;
+    char sym[MAX_ELEMENT_SYMBOL];
+} element_t;
 
-/* sometimes CUDA compiler knows nothing about the "complex" literal */
-#define complex _Complex
+void get_element_symbol(int z, char *sym);
+int get_element_nuc_charge(char *sym);
 
-// types
-typedef int16_t moindex_t;
-
-typedef int bool_t;
-
-typedef double complex double_complex_t;
-
-// limits (max size of static arrays)
-#define MAX_SECTOR_RANK 4
-#define CC_MAX_TITLE 256
-#define CC_MAX_FILE_NAME_LENGTH 256
-#define CC_DIAGRAM_MAX_NAME 64
-#define CC_DIAGRAM_MAX_RANK 16
-#define CC_MAX_SPINORS 2048
-#define CC_MAX_PATH_LENGTH 1024
-#define CC_MAX_DPD_STACK_SIZE 1024
-#define CC_MAX_NUM_IRREPS 64
-
-#endif /* CC_COMDEF_H_INCLUDED */
+#endif /* ELEMENTS_H_INCLUDED */

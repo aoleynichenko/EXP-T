@@ -43,6 +43,7 @@
 #include "platform.h"
 #include "error.h"
 #include "options.h"
+#include "spinors.h"
 
 #define MAX_LINE_LEN 1024
 #define MAXIMUM2(x, y) (((x) > (y)) ? (x) : (y))
@@ -62,6 +63,7 @@ void directive_occ_irreps(cc_options_t *opts);
 void directive_active(cc_options_t *opts);
 void directive_nactp(cc_options_t *opts);
 void directive_nacth(cc_options_t *opts);
+void directive_main(cc_options_t *opts);
 void directive_degen_thresh(cc_options_t *opts);
 void directive_natorb(cc_options_t *opts);
 void directive_nroots(cc_options_t *opts);
@@ -159,6 +161,9 @@ int readinp(char *file_name, cc_options_t *opts)
                 break;
             case KEYWORD_NACTH:
                 directive_nacth(opts);
+                break;
+            case KEYWORD_MAIN:
+                directive_main(opts);
                 break;
             case KEYWORD_DEGEN_THRESH:
                 directive_degen_thresh(opts);
@@ -311,6 +316,13 @@ int readinp(char *file_name, cc_options_t *opts)
         if (fabs(cimag(opts->twoprop_lambda[i])) > 1e-14) {
             opts->recommended_arith = CC_ARITH_COMPLEX;
             printf("Recommended arithmetic is COMPLEX due to IMAGINARY perturbation parameter\n");
+        }
+    }
+    // main active space
+    if (opts->main_defined) {
+        if (opts->main_h != 0 && opts->main_p == 0 && opts->sector_h == 0 && opts->sector_p != 0) {
+            opts->main_p = opts->main_h;
+            opts->main_h = 0;
         }
     }
 
@@ -609,7 +621,7 @@ void directive_active(cc_options_t *opts)
             }
             opts->actsp_max = atof(yytext);
 
-            opts->actsp_defined = 1;
+            opts->actsp_defined = CC_ACT_SPACE_SPEC_ENERGY;
             return;
         }
         else {
@@ -629,7 +641,7 @@ void directive_active(cc_options_t *opts)
         opts->active_each[i++] = flag;
         token_type = next_token();
     }
-    opts->actsp_defined = 4;
+    opts->actsp_defined = CC_ACT_SPACE_SPEC_BINARY;
 }
 
 
@@ -646,7 +658,7 @@ void directive_nactp(cc_options_t *opts)
     token_type = next_token();
     if (token_type == TT_INTEGER) {
         opts->nactp = atoi(yytext);
-        opts->actsp_defined = 2;
+        opts->actsp_defined = CC_ACT_SPACE_SPEC_TOTAL;
         return;
     }
     else if (token_type == TT_ELEC_STATE) {
@@ -657,7 +669,7 @@ void directive_nactp(cc_options_t *opts)
 
             parse_state_spec(yytext, rep_name, &nact);
             // try to find entry
-            for (int i = 0; i < CC_MAX_NREP; i++) {
+            for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
                 cc_active_spec_t *sp = &opts->active_specs[i];
                 if (strcmp(sp->rep_name, rep_name) == 0) {
                     sp->nactp = nact;
@@ -667,7 +679,7 @@ void directive_nactp(cc_options_t *opts)
             }
             // if entry not found -- write to the first empty slot
             if (!written) {
-                for (int i = 0; i < CC_MAX_NREP; i++) {
+                for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
                     cc_active_spec_t *sp = &opts->active_specs[i];
                     if (*(sp->rep_name) == '\0') {
                         sp->nactp = nact;
@@ -680,7 +692,7 @@ void directive_nactp(cc_options_t *opts)
             token_type = next_token();
         } while (token_type == TT_ELEC_STATE);
         put_back(token_type);
-        opts->actsp_defined = 3;
+        opts->actsp_defined = CC_ACT_SPACE_SPEC_IRREPS;
     }
     else {
         yyerror(msg);
@@ -701,7 +713,7 @@ void directive_nacth(cc_options_t *opts)
     token_type = next_token();
     if (token_type == TT_INTEGER) {
         opts->nacth = atoi(yytext);
-        opts->actsp_defined = 2;
+        opts->actsp_defined = CC_ACT_SPACE_SPEC_TOTAL;
         return;
     }
     else if (token_type == TT_ELEC_STATE) {
@@ -712,7 +724,7 @@ void directive_nacth(cc_options_t *opts)
 
             parse_state_spec(yytext, rep_name, &nact);
             // try to find entry
-            for (int i = 0; i < CC_MAX_NREP; i++) {
+            for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
                 cc_active_spec_t *sp = &opts->active_specs[i];
                 if (strcmp(sp->rep_name, rep_name) == 0) {
                     sp->nacth = nact;
@@ -721,7 +733,7 @@ void directive_nacth(cc_options_t *opts)
             }
             // if entry not found -- write to the first empty slot
             if (!written) {
-                for (int i = 0; i < CC_MAX_NREP; i++) {
+                for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
                     cc_active_spec_t *sp = &opts->active_specs[i];
                     if (*(sp->rep_name) == '\0') {
                         sp->nacth = nact;
@@ -733,10 +745,38 @@ void directive_nacth(cc_options_t *opts)
             token_type = next_token();
         } while (token_type == TT_ELEC_STATE);
         put_back(token_type);
-        opts->actsp_defined = 3;
+        opts->actsp_defined = CC_ACT_SPACE_SPEC_IRREPS;
     }
     else {
         yyerror(msg);
+    }
+}
+
+
+/**
+ * Syntax:
+ * main <integer dim1> [<integer dim2>]
+ */
+void directive_main(cc_options_t *opts)
+{
+    static char *msg = "wrong specification of the main active space";
+    int token_type;
+
+    token_type = next_token();
+    if (token_type == TT_INTEGER) {
+        opts->main_defined = 1;
+        opts->main_h = atoi(yytext);
+    }
+    else {
+        yyerror(msg);
+    }
+
+    token_type = next_token();
+    if (token_type == TT_INTEGER) {
+        opts->main_p = atoi(yytext);
+    }
+    else {
+        put_back(token_type);
     }
 }
 
@@ -1759,7 +1799,7 @@ void read_space_specification(cc_space_t *space)
             parse_state_spec(yytext, rep_name, &norb);
 
             // try to find entry
-            for (int i = 0; i < CC_MAX_NREP; i++) {
+            for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
                 if (strcmp(space->rep_names[i], rep_name) == 0) {
                     space->dim[i] = norb;
                     written = 1;
@@ -1768,7 +1808,7 @@ void read_space_specification(cc_space_t *space)
             }
             // if entry not found -- write to the first empty slot
             if (!written) {
-                for (int i = 0; i < CC_MAX_NREP; i++) {
+                for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
                     if (*(space->rep_names[i]) == '\0') {
                         space->dim[i] = norb;
                         strcpy(space->rep_names[i], rep_name);
@@ -1934,30 +1974,6 @@ void directive_model(cc_options_t *opts)
         }
     }
 }
-
-
-/**
- * Syntax:
- * no_inner_core_corr <real thresh>
- */
-void directive_no_inner_core_corr(cc_options_t *opts)
-{
-    static char *msg = "wrong specification of no_inner_core_corr!\n"
-                       "A real number is expected";
-    double thresh;
-    int token_type;
-
-    token_type = next_token();
-    if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
-        yyerror(msg);
-    }
-
-    thresh = atof(yytext);
-
-    opts->do_remove_inner_core_corr = 1;
-    opts->inner_core_thresh = thresh;
-}
-
 
 
 /*******************************************************************************

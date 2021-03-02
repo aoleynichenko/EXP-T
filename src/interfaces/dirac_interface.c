@@ -82,7 +82,7 @@ extern struct {
     int32_t ndelete[8];      // number of deleted spinors
     int32_t nsymrpa;         // number of fermion irreps in the Abelian subgroup
     char repanames[256];     // names of these irreps
-    int32_t multb[CC_MAX_NREP][CC_MAX_NREP];   // multiplication table for direct products in the Abelian subgroup
+    int32_t multb[CC_MAX_NUM_IRREPS][CC_MAX_NUM_IRREPS];   // multiplication table for direct products in the Abelian subgroup
     int32_t nbsymrp;         // (not used) number of boson symmetry reps (for LUCITA)
     int32_t irpmo[CC_MAX_SPINORS];   // Irrep in parent group (1:gerade, 2:ungerade)
     int32_t irpamo[CC_MAX_SPINORS];  // Irrep in Abelian subgroup
@@ -179,7 +179,7 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
     }
 
     if (opts->print_level >= CC_PRINT_DEBUG) {
-        printf("nspinors = %d\n", dirac_data.nspinors);
+        printf("NSPINORS = %d\n", dirac_data.nspinors);
         printf("breit = %d\n", dirac_data.breit);
         printf("enuc = %.8f\n", dirac_data.enuc);
         printf("invsym = %d\n", dirac_data.invsym);
@@ -574,7 +574,7 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
     // in fact, 3d array
 
     // allocate direct product table
-    memset(dir_prod_table_abelian, 0, sizeof(int) * CC_MAX_NREP * CC_MAX_NREP);
+    memset(dir_prod_table_abelian, 0, sizeof(int) * CC_MAX_NUM_IRREPS * CC_MAX_NUM_IRREPS);
     dir_prod_table = (int ***) cc_malloc(nsym * sizeof(int **));
     for (i = 0; i < nsym; i++) {
         dir_prod_table[i] = (int **) cc_malloc(nsym * sizeof(int *));
@@ -598,29 +598,27 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
         printf("\n");
     }*/
 
-    nspinors = dirac_data.nspinors;
+    NSPINORS = dirac_data.nspinors;
 
     // fill spinor info array
     //  *** Spinor, irrep, occupation, energy ***
-    spinor_info = (spinor_attr_t *) cc_malloc(sizeof(spinor_attr_t) * nspinors);
-    for (i = 0; i < nspinors; i++) {
-        spinor_info[i].seqno = i;    // numeration will start from 0
+    spinor_info = (spinor_attr_t *) cc_malloc(sizeof(spinor_attr_t) * NSPINORS);
+    for (i = 0; i < NSPINORS; i++) {
         spinor_info[i].repno = dirac_data.irpamo[i] - 1; // and for rep-s too
-        spinor_info[i].occ = dirac_data.iocc[i];
         spinor_info[i].eps = dirac_data.eorbmo[i];
-        spinor_info[i].active = 0;
-        if (opts->print_level >= CC_PRINT_DEBUG) {
-            printf("%4d%4d%4d%4d%8.4f\n", spinor_info[i].seqno, spinor_info[i].repno,
-                   spinor_info[i].occ, spinor_info[i].active, spinor_info[i].eps);
+        spinor_info[i].space_flags = 0;
+        if (dirac_data.iocc[i] == 1) {
+            spinor_info[i].space_flags |= CC_FLAG_OCCUPIED;
         }
     }
 
     create_spinor_blocks(opts->tile_size);
-    classify_spinors(opts->actsp_min, opts->actsp_max,
-                     opts->nacth, opts->nactp);  // => quasiparticles: IH, AH, AP, IP
+    setup_occupation_numbers(opts, NSPINORS, spinor_info);
+    setup_active_space(opts);
+    setup_fast_access_spinor_lists();
 
     print_symmetry_info();
-    print_spinor_info();
+    print_spinor_info_table();
 
     // now we can check all symbols of irreps in the input data
     // (1) properties calculations
@@ -634,7 +632,7 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
         }
     }
     // (2) active space specification
-    for (size_t i = 0; i < CC_MAX_NREP; i++) {
+    for (size_t i = 0; i < CC_MAX_NUM_IRREPS; i++) {
         cc_active_spec_t *sp = cc_opts->active_specs + i;
         if (*(sp->rep_name)) {
             if (get_rep_number(sp->rep_name) == -1) {
@@ -645,7 +643,7 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
     }
     // (3) number of roots to be analyzed
     cc_space_t *nroots_specs = &cc_opts->nroots_specs;
-    for (size_t i = 0; i < CC_MAX_NREP; i++) {
+    for (size_t i = 0; i < CC_MAX_NUM_IRREPS; i++) {
         char *rep_name = nroots_specs->rep_names[i];
         if (*(rep_name)) {
             if (get_rep_number(rep_name) == -1) {

@@ -73,7 +73,7 @@ void construct_ms_density_matrix(int sect_h, int sect_p,
     int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
 
     // TODO: refactor, separate utility function (move to spinors.c)
-    for (int i = 0; i < nspinors; i++) {
+    for (int i = 0; i < NSPINORS; i++) {
         if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
@@ -105,7 +105,7 @@ double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, doub
     int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
 
     // TODO: refactor, separate utility function (move to spinors.c)
-    for (int i = 0; i < nspinors; i++) {
+    for (int i = 0; i < NSPINORS; i++) {
         if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
@@ -117,7 +117,7 @@ double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, doub
         for (int j = 0; j < n_active; j++) {
             int p = active_spinors[i];
             int q = active_spinors[j];
-            sum += dm[i * n_active + j] * prp[p * nspinors + q];
+            sum += dm[i * n_active + j] * prp[p * NSPINORS + q];
         }
     }
 
@@ -204,7 +204,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     double *lambda;
 
     // TODO: refactor, separate utility function (move to spinors.c)
-    for (int i = 0; i < nspinors; i++) {
+    for (int i = 0; i < NSPINORS; i++) {
         if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
@@ -282,7 +282,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     double complex tdm[] = {0.0 + 0.0 * I, 0.0 + 0.0 * I, 0.0 + 0.0 * I};
     char *file_names[] = {"XDIPLEN", "YDIPLEN", "ZDIPLEN"};
     for (int icoord = 0; icoord < 3; icoord++) {
-        double complex *d_spinor = zzeros(nspinors, nspinors);
+        double complex *d_spinor = zzeros(NSPINORS, NSPINORS);
         FILE *f = fopen(file_names[icoord], "r");
         if (f == NULL) {
             printf("Cannot calculate transition dipole moment!\n");
@@ -292,7 +292,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         int idx1, idx2;
         double re, im;
         while (fscanf(f, "%d%d%lf%lf", &idx1, &idx2, &re, &im) == 4) {
-            d_spinor[(idx2 - 1) * nspinors + (idx1 - 1)] = re + I * im;  // together with transposition
+            d_spinor[(idx2 - 1) * NSPINORS + (idx1 - 1)] = re + I * im;  // together with transposition
         }
         fclose(f);
         tdm[icoord] = 0.0 + 0.0 * I;
@@ -300,7 +300,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
             for (int j = 0; j < n_active; j++) {
                 idx1 = active_spinors[i];
                 idx2 = active_spinors[j];
-                tdm[icoord] += denmat[i * n_active + j] * d_spinor[idx1 * nspinors + idx2];
+                tdm[icoord] += denmat[i * n_active + j] * d_spinor[idx1 * NSPINORS + idx2];
             }
         }
         cc_free(d_spinor);
@@ -478,7 +478,7 @@ void write_NO(char *natorb_file_name, int sect_h, int sect_p,
 
     // construct 'local indices -> global indices' mapping
     n_active = 0;
-    for (int i = 0; i < nspinors; i++) {
+    for (int i = 0; i < NSPINORS; i++) {
         if (is_act_hole(i) && sect_h > 0 || is_act_part(i) && sect_p > 0) {
             active_spinors[n_active] = i;
             n_active++;
@@ -501,7 +501,7 @@ void write_NO(char *natorb_file_name, int sect_h, int sect_p,
             n_natorb++;
         }
     }
-    fprintf(f, "nspinors %d\n", n_natorb);
+    fprintf(f, "NSPINORS %d\n", n_natorb);
 
     // write NOs
     for (int i = 0; i < n_active; i++) {

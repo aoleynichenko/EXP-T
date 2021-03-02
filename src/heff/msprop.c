@@ -78,7 +78,7 @@ void msprop_transform_slater_to_model(size_t nroots_i, size_t nroots_f,
  * @param sect_p FS sector: number of particles
  * @param nspinors
  * @param prp_spinors property matrix in the basis of molecular spinors
- *                    dim = nspinors x nspinors
+ *                    dim = NSPINORS x NSPINORS
  * @param prp_slater  property matrix in the basis of Slater determinants
  *                    dim = n_det_bra x n_det_ket
  * @param n_det_bra   number of Slater determinants in the bra vector
@@ -132,7 +132,7 @@ void model_space_property(cc_ms_prop_query_t *prop_query)
     int sect_h = cc_opts->sector_h;
     int sect_p = cc_opts->sector_p;
     int nrep = 0;
-    struct mv_block mv_blocks[CC_MAX_NREP];
+    struct mv_block mv_blocks[CC_MAX_NUM_IRREPS];
 
     // banner
     printf("\n");
@@ -153,9 +153,9 @@ void model_space_property(cc_ms_prop_query_t *prop_query)
     read_model_vectors_unformatted(sect_h, sect_p, NULL, &nrep, mv_blocks);
 
     // read property matrix elements (in the basis of molecular spinors)
-    double complex *prp_spinor = xzeros(CC_COMPLEX, nspinors, nspinors);
+    double complex *prp_spinor = xzeros(CC_COMPLEX, NSPINORS, NSPINORS);
     if (prop_query->source == CC_PROP_FROM_MDPROP) {
-        int code = read_prop_single_file(nspinors, prop_query->prop_name, prp_spinor);
+        int code = read_prop_single_file(NSPINORS, prop_query->prop_name, prp_spinor);
         if (code == EXIT_FAILURE) {
             printf(" Error: file '%s' with property integrals not found\n", prop_query->prop_name);
             printf(" Calculation will be skipped\n");
@@ -163,7 +163,7 @@ void model_space_property(cc_ms_prop_query_t *prop_query)
         }
     }
     else { // from 2 txt formatted files
-        int code = read_prop_two_files(nspinors, prop_query->file_real, prop_query->file_imag, prp_spinor);
+        int code = read_prop_two_files(NSPINORS, prop_query->file_real, prop_query->file_imag, prp_spinor);
         if (code == EXIT_FAILURE) {
             printf(" Error: files '%s' (real) and '%s' (imag) with property integrals not found\n",
                    prop_query->file_real, prop_query->file_imag);
@@ -172,7 +172,7 @@ void model_space_property(cc_ms_prop_query_t *prop_query)
         }
     }
     if (prop_query->do_transpose) {
-        xtranspose(CC_COMPLEX, nspinors, nspinors, prp_spinor);
+        xtranspose(CC_COMPLEX, NSPINORS, NSPINORS, prp_spinor);
     }
 
     for (int irep1 = 0; irep1 < nrep; irep1++) {
@@ -185,7 +185,7 @@ void model_space_property(cc_ms_prop_query_t *prop_query)
             double complex *prop = xzeros(CC_COMPLEX, block1->nroots, block2->nroots);
 
             // construct property matrix in the basis of Slater determinants
-            matrix_slater_basis(sect_h, sect_p, nspinors, prp_spinor, prp_slater,
+            matrix_slater_basis(sect_h, sect_p, NSPINORS, prp_spinor, prp_slater,
                                 block1->dets, block1->ms_size, block2->dets, block2->ms_size);
 
             // construct property matrix in the basis of model vectors
@@ -326,12 +326,12 @@ void dipole_length_tdms(int sect_h, int sect_p)
 
     printf(" reading dipole moment integrals in spinor basis...\n");
     double complex *d_spinor[3];
-    d_spinor[0] = zzeros(nspinors, nspinors);
-    d_spinor[1] = zzeros(nspinors, nspinors);
-    d_spinor[2] = zzeros(nspinors, nspinors);
-    read_prop_single_file(nspinors, "XDIPLEN", d_spinor[0]);
-    read_prop_single_file(nspinors, "YDIPLEN", d_spinor[1]);
-    read_prop_single_file(nspinors, "ZDIPLEN", d_spinor[2]);
+    d_spinor[0] = zzeros(NSPINORS, NSPINORS);
+    d_spinor[1] = zzeros(NSPINORS, NSPINORS);
+    d_spinor[2] = zzeros(NSPINORS, NSPINORS);
+    read_prop_single_file(NSPINORS, "XDIPLEN", d_spinor[0]);
+    read_prop_single_file(NSPINORS, "YDIPLEN", d_spinor[1]);
+    read_prop_single_file(NSPINORS, "ZDIPLEN", d_spinor[2]);
     printf(" done\n");
 
     printf(" NOTE: only model vectors are used to estimate TDMs\n");
@@ -484,7 +484,7 @@ void model_space_tdms(int sect_h, int sect_p, double complex **dip_mat,
     double const AU2CM = 219474.6313702;
     int non_zero = 0;
 
-    dm = zzeros(nspinors, nspinors);
+    dm = zzeros(NSPINORS, NSPINORS);
 
     printf(" < %4s | d | %4s >", bra_rep_name, ket_rep_name);
 
@@ -541,5 +541,5 @@ double complex get_matrix_element(double complex *mat, int *indices)
     size_t i = indices[0];
     size_t j = indices[1];
 
-    return mat[i * nspinors + j];
+    return mat[i * NSPINORS + j];
 }

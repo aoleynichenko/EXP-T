@@ -49,6 +49,7 @@ occ_irreps      { inc_col(); return KEYWORD_OCC_IRREPS;   }
 active          { inc_col(); return KEYWORD_ACTIVE;       }
 nactp           { inc_col(); return KEYWORD_NACTP;        }
 nacth           { inc_col(); return KEYWORD_NACTH;        }
+main            { inc_col(); return KEYWORD_MAIN;         }
 nohermit        { inc_col(); return KEYWORD_NOHERMIT;     }
 mstdm           { inc_col(); return KEYWORD_MSTDM;        }
 natorb          { inc_col(); return KEYWORD_NATORB;       }

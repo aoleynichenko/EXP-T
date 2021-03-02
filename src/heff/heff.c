@@ -147,7 +147,7 @@ int detcmp(const void *_d1, const void *_d2)
  * belonging to each symmetry (via the 'ms_rep_sizes' array).
  * NOTE: detlist[] array MUST be pre-allocated
  *
- * global variables used: nspinors, nsym
+ * global variables used: NSPINORS, nsym
  ******************************************************************************/
 void create_model_dets(int sect_h, int sect_p, size_t *ms_rep_sizes, slater_det_t *detlist)
 {
@@ -157,12 +157,12 @@ void create_model_dets(int sect_h, int sect_p, size_t *ms_rep_sizes, slater_det_
     size_t ndet;
 
     // set counters to zero
-    for (int irep = 0; irep < nsym; irep++) {
+    for (int irep = 0; irep < get_num_irreps(); irep++) {
         ms_rep_sizes[irep] = 0;
     }
 
-    active_holes_indices = (moindex_t *) cc_malloc(nspinors * sizeof(moindex_t));
-    active_parts_indices = (moindex_t *) cc_malloc(nspinors * sizeof(moindex_t));
+    active_holes_indices = (moindex_t *) cc_malloc(NSPINORS * sizeof(moindex_t));
+    active_parts_indices = (moindex_t *) cc_malloc(NSPINORS * sizeof(moindex_t));
 
     get_active_space(&nacth, &nactp, active_holes_indices, active_parts_indices);
 
@@ -361,7 +361,7 @@ void diag_heff(int sect_h, int sect_p, ...)
     printf(" Effective Hamiltonian analysis\n");
 
     get_active_space_size(&nacth, &nactp);
-    ms_size = get_model_space_size(sect_h, sect_p, nspinors, spinor_info);
+    ms_size = get_model_space_size(sect_h, sect_p, NSPINORS, spinor_info);
     if (cc_opts->mixed && sect_h == 1 && sect_p == 1) {
         ms_size += 1;  // alloc space for the 0h0p determinant
     }
@@ -371,7 +371,7 @@ void diag_heff(int sect_h, int sect_p, ...)
     dets = (slater_det_t *) cc_malloc(ms_size * sizeof(slater_det_t));
 
     create_model_dets(sect_h, sect_p, ms_rep_sizes, dets);
-    size_t max_heff_size = size_t_max(nsym, ms_rep_sizes);
+    size_t max_heff_size = size_t_max(get_num_irreps(), ms_rep_sizes);
 
     // TODO: to the other place!
     // for mixed-sector model: include the 0h0p determinant
@@ -388,7 +388,7 @@ void diag_heff(int sect_h, int sect_p, ...)
     }
 
     printf(" Dimensions of symmetry blocks of Heff:\n");
-    for (int irep = 0; irep < nsym; irep++) {
+    for (int irep = 0; irep < get_num_irreps(); irep++) {
         if (ms_rep_sizes[irep] == 0) {
             continue;
         }
@@ -428,7 +428,7 @@ void diag_heff(int sect_h, int sect_p, ...)
     // for each irrep: construct Heff, diagonalize it, perform analysis of model vectors
     size_t rep_offset = 0;
     int rep0 = -1;
-    for (int irep = 0; irep < nsym; irep++) {
+    for (int irep = 0; irep < get_num_irreps(); irep++) {
         slater_det_t *rep_dets;
 
         if (ms_rep_sizes[irep] == 0) {
@@ -724,13 +724,13 @@ void eigenvalues_table(size_t n_eigenvalues, eigval_t *eigenvalues, double degen
 
     // find reps with nonzero Heff and their number
     n_nz_reps = 0;
-    for (i = 0; i < nsym; i++) {
+    for (i = 0; i < get_num_irreps(); i++) {
         nz_reps[i] = 0;
     }
     for (i = 0; i < n_eigenvalues; i++) {
         nz_reps[eigenvalues[i].repno]++;
     }
-    for (i = 0; i < nsym; i++) {
+    for (i = 0; i < get_num_irreps(); i++) {
         if (nz_reps[i] != 0) {
             nz_reps[n_nz_reps++] = i;
         }
@@ -827,7 +827,7 @@ int get_nroots_for_irrep(char *irrep_name)
 {
     int nroots_irep = 0;
 
-    for (int ii = 0; ii < nsym; ii++) {
+    for (int ii = 0; ii < get_num_irreps(); ii++) {
         if (strcmp(irrep_name, cc_opts->nroots_specs.rep_names[ii]) == 0) {
             nroots_irep = cc_opts->nroots_specs.dim[ii];
             break;

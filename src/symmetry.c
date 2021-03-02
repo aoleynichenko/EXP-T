@@ -49,7 +49,7 @@ int is_abelian = 0;
 // direct product table
 int ***dir_prod_table;
 
-int dir_prod_table_abelian[CC_MAX_NREP][CC_MAX_NREP];
+int dir_prod_table_abelian[CC_MAX_NUM_IRREPS][CC_MAX_NUM_IRREPS];
 
 // representation names
 char **rep_names;
@@ -61,8 +61,6 @@ int irrep_a1;
 int point_group_nz;
 
 char point_group_name[64] = {'\0'};
-
-void detect_point_group();
 
 
 /*******************************************************************************
@@ -112,6 +110,12 @@ int inverse_irrep_abelian(int irep)
             return irep2;
         }
     }
+}
+
+
+int get_num_irreps()
+{
+    return nsym;
 }
 
 
@@ -239,7 +243,7 @@ static int dpd_rank_other(int *gamma)
 }
 
 
-int (*dpd_contains_totsym_rank[CC_MAX_NREP])(int *gamma) = {
+int (*dpd_contains_totsym_rank[CC_MAX_NUM_IRREPS])(int *gamma) = {
         dpd_rank2, dpd_rank4, dpd_rank6, dpd_rank_other
 };
 

@@ -83,7 +83,7 @@ void sorting_print_configuration()
     const double io_total_buf_size_mb = io_total_buf_size / (1024.0 * 1024.0);
     const double twoelec_buf_size_mb = pow(get_max_spinor_block_size(), 4) / (1024.0 * 1024.0);
 
-    printf("   number of spinors                              %d\n", nspinors);
+    printf("   number of spinors                              %d\n", NSPINORS);
     printf("   number of spinor blocks                        %d\n", n_spinor_blocks);
     printf("   tile size                                      %d\n", cc_opts->tile_size);
     printf("   max spinor block size                          %d\n", get_max_spinor_block_size());
