@@ -260,6 +260,22 @@ void get_spinor_info(int idx, int *repno, int *occ, int *active, double *eps)
 }
 
 
+void create_spinor_info(int n_spinors, int *irrep_numbers, double *spinor_energies, int *occ_numbers)
+{
+    NSPINORS = n_spinors;
+
+    spinor_info = (spinor_attr_t *) cc_malloc(sizeof(spinor_attr_t) * NSPINORS);
+    for (int i = 0; i < NSPINORS; i++) {
+        spinor_info[i].repno = irrep_numbers[i];
+        spinor_info[i].eps = spinor_energies[i];
+        spinor_info[i].space_flags = 0;
+        if (occ_numbers[i] == 1) {
+            spinor_info[i].space_flags |= CC_FLAG_OCCUPIED;
+        }
+    }
+}
+
+
 void create_spinor_blocks(int tilesize)
 {
     int *sizes;

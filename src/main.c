@@ -130,7 +130,7 @@ int main(int argc, char **argv)
     // load transformed MO integrals
     // prepare raw integrals for sorting
     if (opts->int_source == CC_INTEGRALS_DIRAC) {
-        dirac_interface(opts->integral_file_1, opts->integral_file_2, opts->integral_file_prop, opts);
+        dirac_interface(opts);
     }
 #ifdef VERSION_DEVEL
     else if (opts->int_source == CC_INTEGRALS_TM2C) {

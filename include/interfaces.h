@@ -26,7 +26,7 @@
  * Interfaces implemented:
  *   DIRAC
  *   OneProp (by L. V. Skripnikov)
- *   tm2c (Marburg group: S. Giessen, K. Gaul, R. Berger et al)
+ *   tm2c (the Marburg group: S. Giessen, K. Gaul, R. Berger et al)
  *
  * 2018-2021 Alexander Oleynichenko
  */
@@ -36,7 +36,7 @@
 
 #include "options.h"
 
-void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file_prop, cc_options_t *opts);
+void dirac_interface(cc_options_t *opts);
 
 void tm2c_interface(char *moints_file_1, char *moints_file_2, char *moints_file_prop, cc_options_t *opts);
 

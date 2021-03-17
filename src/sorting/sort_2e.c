@@ -48,8 +48,12 @@ double complex ****allocate_twoel_buffer(size_t dim);
 
 void free_twoel_buffer(size_t dim, double complex ****v_ints);
 
-size_t load_coulomb_block(double complex ****v_ints, int spinor_block_1, int spinor_block_2, int spinor_block_3,
-                       int spinor_block_4);
+size_t load_coulomb_block(double complex ****v_ints,
+                          int spinor_block_1, int spinor_block_2, int spinor_block_3, int spinor_block_4);
+size_t load_gaunt_block(double complex ****v_ints,
+                        int spinor_block_1, int spinor_block_2, int spinor_block_3, int spinor_block_4);
+size_t load_twoprop_blocks(double complex ****v_ints,
+                           int spinor_block_1, int spinor_block_2, int spinor_block_3, int spinor_block_4);
 
 void clear_twoel_buffer(double complex ****v_ints, int spinor_block_1, int spinor_block_2, int spinor_block_3,
                         int spinor_block_4);
@@ -96,9 +100,20 @@ void sort_twoel()
 
                     clear_twoel_buffer(v_ints, spinor_block_1, spinor_block_2, spinor_block_3, spinor_block_4);
 
-                    size_t n_ints = load_coulomb_block(v_ints, spinor_block_1, spinor_block_2, spinor_block_3,
-                                                          spinor_block_4);
-                    if (n_ints == 0) {
+                    // load pre-sorted integrals: Coulomb, Gaunt, other (two-electron properties)
+                    size_t n_coulomb_ints = load_coulomb_block(v_ints, spinor_block_1, spinor_block_2,
+                                                               spinor_block_3, spinor_block_4);
+                    size_t n_gaunt_ints = 0;
+                    if (cc_opts->gaunt_defined) {
+                        n_gaunt_ints = load_gaunt_block(v_ints, spinor_block_1, spinor_block_2,
+                                                        spinor_block_3, spinor_block_4);
+                    }
+                    size_t n_twoprop_ints = 0;
+                    if (cc_opts->n_twoprop > 0) {
+                        n_twoprop_ints = load_twoprop_blocks(v_ints, spinor_block_1, spinor_block_2,
+                                                             spinor_block_3, spinor_block_4);
+                    }
+                    if (n_coulomb_ints == 0 && n_gaunt_ints == 0 && n_twoprop_ints == 0) {
                         continue;
                     }
 
@@ -161,8 +176,8 @@ void sort_twoel()
                         symblock_store(sb);
 
                         // update statistics
-                        n_integrals_read += n_ints;
-                        n_integrals_read_total += n_ints;
+                        n_integrals_read += n_coulomb_ints;
+                        n_integrals_read_total += n_coulomb_ints;
                         n_blocks_processed += 1;
                         n_blocks_processed_total += 1;
                     } // end of loop over requests
@@ -238,7 +253,7 @@ int num_twoelec_requests(sorting_request_t *requests, int num_requests)
  * vint_array = factor1 * vint_array + factor2 * new_integrals
  */
 size_t read_twoel_block_unformatted(char *vint_file_name, double complex ****vint_array, double complex factor1,
-                                 double complex factor2, size_t *n_bytes_read)
+                                    double complex factor2, size_t *n_bytes_read)
 {
     int32_t nint;
     int32_t iint;
@@ -333,8 +348,8 @@ void clear_twoel_buffer(double complex ****v_ints, int spinor_block_1, int spino
 }
 
 
-size_t load_coulomb_block(double complex ****v_ints, int spinor_block_1, int spinor_block_2, int spinor_block_3,
-                       int spinor_block_4)
+size_t load_coulomb_block(double complex ****v_ints,
+                          int spinor_block_1, int spinor_block_2, int spinor_block_3, int spinor_block_4)
 {
     char vint_file_name[CC_MAX_FILE_NAME_LENGTH];
     size_t n_integrals_read;
@@ -348,6 +363,54 @@ size_t load_coulomb_block(double complex ****v_ints, int spinor_block_1, int spi
 
     n_integrals_read = read_twoel_block_unformatted(vint_file_name, v_ints, 0.0 + 0.0 * I,
                                                     1.0 + 0.0 * I, &n_bytes_read);
+
+    return n_integrals_read;
+}
+
+
+size_t load_gaunt_block(double complex ****v_ints,
+                        int spinor_block_1, int spinor_block_2, int spinor_block_3, int spinor_block_4)
+{
+    char vint_file_name[CC_MAX_FILE_NAME_LENGTH];
+    size_t n_integrals_read;
+    size_t n_bytes_read;
+
+    sprintf(vint_file_name, "GINT-%d-%d-%d-%d",
+            spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_3 + 1, spinor_block_4 + 1);
+    if (io_file_exists(vint_file_name) == 0) {
+        return 0;
+    }
+
+    n_integrals_read = read_twoel_block_unformatted(vint_file_name, v_ints, 1.0 + 0.0 * I,
+                                                    1.0 + 0.0 * I, &n_bytes_read);
+
+    return n_integrals_read;
+}
+
+
+/**
+ * two-electron property integrals
+ */
+size_t load_twoprop_blocks(double complex ****v_ints,
+                           int spinor_block_1, int spinor_block_2, int spinor_block_3, int spinor_block_4)
+{
+    char vint_file_name[CC_MAX_FILE_NAME_LENGTH];
+    size_t n_integrals_read = 0;
+    size_t n_bytes_read;
+
+    // load two-electron property integrals (if needed)
+    // read TWOPROP* files
+    for (int iprop = 0; iprop < cc_opts->n_twoprop; iprop++) {
+
+        sprintf(vint_file_name, "TWOPROP%d-%d-%d-%d-%d", iprop+1,
+                spinor_block_1 + 1, spinor_block_2 + 1, spinor_block_3 + 1, spinor_block_4 + 1);
+        if (io_file_exists(vint_file_name) == 0) {
+            continue;
+        }
+
+        double complex lambda = cc_opts->twoprop_lambda[iprop];
+        n_integrals_read += read_twoel_block_unformatted(vint_file_name, v_ints, 1.0+0.0*I, lambda, &n_bytes_read);
+    }
 
     return n_integrals_read;
 }

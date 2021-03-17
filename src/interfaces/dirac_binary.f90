@@ -399,7 +399,7 @@ contains
                         if (ibuf == 0) then
                             cycle
                         end if
-                        nint = buf_nint(ibuf)
+
                         write (filename, "(a,a1,i0,a1,i0,a1,i0,a1,i0,a1)") trim(files_prefix), &
                                 "-", sb1, "-", sb2, "-", sb3, "-", sb4
                         if (.not. buf_flushed(ibuf)) then
@@ -409,21 +409,11 @@ contains
                         n_vint_files = n_vint_files + 1
 
                         call flush_buf(sb1, sb2, sb3, sb4)
+
+                        ! terminate file with zero
+                        nint = 0
                         fd = io_open(trim(filename) // C_NULL_CHAR, "a" // C_NULL_CHAR)
                         status = io_write_compressed(fd, c_loc(nint), sizeof_int4)
-                        if (nint /= 0) then
-                            status = io_write_compressed(fd, c_loc(buf_indices(:, ibuf)), 4 * nint * sizeof_int2)
-                            nbytes_written = nbytes_written + 4 * nint * sizeof_int2
-                            if (carith) then
-                                status = io_write_compressed(fd, c_loc(buf_vint(:, ibuf)), nint * sizeof_complex8)
-                                nbytes_written = nbytes_written + nint * sizeof_complex8
-                            else
-                                status = io_write_compressed(fd, c_loc(buf_vint_re(:, ibuf)), nint * sizeof_real8)
-                                nbytes_written = nbytes_written + nint * sizeof_real8
-                            end if
-                            nint = 0
-                            status = io_write_compressed(fd, c_loc(nint), sizeof_int4)
-                        end if
                         status = io_close(fd)
                     end do
                 end do
@@ -1043,7 +1033,7 @@ subroutine read_two_electron_prop(prop_name, file_name)
 
     10  continue
     read (luint, end = 11) i2, j2, k2, l2, gint
-    zgint = gint
+    zgint = cmplx(gint,0.0d0)
     call put_integral(i2, l2, k2, j2, zgint)
     goto 10
     11  continue

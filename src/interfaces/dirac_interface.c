@@ -34,33 +34,29 @@
 
 #include "interfaces.h"
 
-#include <complex.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 #include "engine.h"
-#include "platform.h"
 #include "error.h"
 #include "options.h"
-#include "sort.h"
 #include "spinors.h"
 #include "symmetry.h"
 #include "timer.h"
 
-void dirac_interface_binary(int *err);
+#define MAX_INTS_FILE_NAME_LENGTH 1024
 
 // arguments to be passed to the Fortran code
 // (via the 'mrconee_mdcint' common block, see dirac_binary.f90)
 extern struct {
-    char oneel_file[1024];
-    char twoel_file[1024];
-    char prop_file[1024];
-    char gaunt_file[1024];
+    char oneel_file[MAX_INTS_FILE_NAME_LENGTH];
+    char twoel_file[MAX_INTS_FILE_NAME_LENGTH];
+    char prop_file[MAX_INTS_FILE_NAME_LENGTH];
+    char gaunt_file[MAX_INTS_FILE_NAME_LENGTH];
     int64_t gaunt_enabled;
     int64_t n_twoprop;
-    char twoprop_files[64][1024];
+    char twoprop_files[CC_MAX_NPROP][MAX_INTS_FILE_NAME_LENGTH];
 } mrconee_mdcint;
 
 // data which are returned by the Fortran code;
@@ -104,139 +100,27 @@ extern struct {
     int32_t skip_mdcint;
 } skip_sorting;
 
+void invoke_dirac_interface_binary(cc_options_t *opts);
+void dirac_interface_binary(int *err);
+void dirac_interface_debug_print();
+char **dirac_interface_extract_rep_names(int nsym);
+void detect_dirac_point_group(int nsym, char **rep_names);
+void rename_irreps_dirac_to_expt(int nsym, char **rep_names);
+void create_direct_product_table_dirac(int nsym);
+void strcpy_to_fortran(size_t dest_len, char *dest, char *src);
+void create_spinor_info_dirac(int32_t n_spinors, int32_t *irpamo_array, double *spinor_energies, int32_t *occ_numbers);
+void check_irrep_names();
+int rep_name_exists(int nrep, char **list, char *query);
 
-// prints string with current time
-void c_asctime()
+
+/**
+ * Reads info about spinors and transformed MO integrals from formatted file.
+ * NOTE: no error checking at all!
+ */
+void dirac_interface(cc_options_t *opts)
 {
-    time_t tm = time(0);
-    printf(" %s", asctime(localtime(&tm)));
-}
-
-
-int rep_name_exists(int nrep, char **list, char *query)
-{
-    for (int i = 0; i < nrep; i++) {
-        if (strcmp(list[i], query) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-
-// reads info about spinors and transformed MO integrals from formatted file
-// NOTE: no error checking at all!
-void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file_prop, cc_options_t *opts)
-{
-    int i, j, k;
-    int err;
-    int nz;           // arithmetic, 1:real, 2:complex, 4:quaternion
-
-    // get tile size and pass it to the Fortran side
-    tilesize.tile_size = opts->tile_size;
-    skip_sorting.skip_mdcint = opts->reuse_integrals_2;
-    recommendedcarith.recommended_carith = (opts->recommended_arith == CC_ARITH_COMPLEX) ? 1 : 0;
-
-    // prepare Fortran-compatible names of integral files
-    for (i = 0; i < 1024; i++) {
-        mrconee_mdcint.oneel_file[i] = ' ';
-        mrconee_mdcint.twoel_file[i] = ' ';
-        mrconee_mdcint.prop_file [i] = ' ';
-        mrconee_mdcint.gaunt_file[i] = ' ';
-        for (j = 0; j < CC_MAX_NPROP; j++) {
-            mrconee_mdcint.twoprop_files[j][i] = ' ';
-        }
-    }
-
-    for (i = 0; i < strlen(moints_file_1); i++) {
-        mrconee_mdcint.oneel_file[i] = moints_file_1[i];
-    }
-    for (i = 0; i < strlen(moints_file_2); i++) {
-        mrconee_mdcint.twoel_file[i] = moints_file_2[i];
-    }
-    for (i = 0; i < strlen(moints_file_prop); i++) {
-        mrconee_mdcint.prop_file[i] = moints_file_prop[i];
-    }
-    for (i = 0; i < strlen(opts->integral_file_gaunt); i++) {
-        mrconee_mdcint.gaunt_file[i] = opts->integral_file_gaunt[i];
-    }
-    for (j = 0; j < CC_MAX_NPROP; j++) {
-        for (i = 0; i < strlen(opts->twoprop_file[j]); i++) {
-            mrconee_mdcint.twoprop_files[j][i] = opts->twoprop_file[j][i];
-        }
-    }
-    mrconee_mdcint.gaunt_enabled = opts->gaunt_defined ? 1 : 0;
-    mrconee_mdcint.n_twoprop = opts->n_twoprop;
-
     // call the Fortran subroutine
-    fflush(stdout);
-    timer_new_entry("dirac", "DIRAC interface (MRCONEE/MDCINT)");
-    timer_start("dirac");
-    dirac_interface_binary(&err);
-    timer_stop("dirac");
-    if (err == 1) {
-        errquit("ERROR IN THE BINARY INTERFACE\n");
-    }
-
-    if (opts->print_level >= CC_PRINT_DEBUG) {
-        printf("NSPINORS = %d\n", dirac_data.nspinors);
-        printf("breit = %d\n", dirac_data.breit);
-        printf("enuc = %.8f\n", dirac_data.enuc);
-        printf("invsym = %d\n", dirac_data.invsym);
-        printf("nz_arith = %d\n", dirac_data.nz_arith);
-        printf("is_spinfree = %d\n", dirac_data.is_spinfree);
-        printf("norb_total = %d\n", dirac_data.norb_total);
-        printf("escf = %.8f\n", dirac_data.escf);
-        printf("enuc = %.8f\n", dirac_data.enuc);
-        printf("nsymrp = %d\n", dirac_data.nsymrp);
-        printf("repnames = \n");
-        for (i = 0; i < dirac_data.nsymrp; i++) {
-            printf("  [%d] ", i);
-            for (j = 0; j < 14; j++) {
-                printf("%c", dirac_data.repnames[14 * i + j]);
-            }
-            printf("\n");
-        }
-        printf("nactive = ");
-        for (i = 0; i < 8; i++) {
-            printf("%d ", dirac_data.nactive[i]);
-        }
-        printf("\n");
-        printf("nstr = %d %d\n", dirac_data.nstr[0], dirac_data.nstr[1]);
-        printf("nfrozen = ");
-        for (i = 0; i < 6; i++) {
-            printf("%d ", dirac_data.nfrozen[i]);
-        }
-        printf("\n");
-        printf("ndelete = ");
-        for (i = 0; i < 8; i++) {
-            printf("%d ", dirac_data.ndelete[i]);
-        }
-        printf("\n");
-        printf("nsymrpa = %d\n", dirac_data.nsymrpa);
-        printf("repanames = \n");
-        for (i = 0; i < 2 * dirac_data.nsymrpa; i++) {
-            printf("  [%d] ", i);
-            for (j = 0; j < 4; j++) {
-                printf("%c", dirac_data.repanames[4 * i + j]);
-            }
-            printf("\n");
-        }
-        printf("irrep direct product table =\n");
-        for (i = 0; i < 2 * dirac_data.nsymrpa; i++) {
-            for (j = 0; j < 2 * dirac_data.nsymrpa; j++) {
-                printf("%2d ", dirac_data.multb[i][j]);//64*i+j]);
-            }
-            printf("\n");
-        }
-        printf("nbsymrp = %d\n", dirac_data.nbsymrp);
-        printf("spinor data: ");
-        printf("no, irpmo, irpamo, iocc, eorbmo, ibspi\n");
-        for (i = 0; i < dirac_data.nspinors; i++) {
-            printf("%4d%4d%4d%4d%15.8f%4d\n", i + 1, dirac_data.irpmo[i], dirac_data.irpamo[i],
-                   dirac_data.iocc[i], dirac_data.eorbmo[i], dirac_data.ibspi[i]);
-        }
-    } // end of debug print
+    invoke_dirac_interface_binary(opts);
 
     // extract data from the "Fortran common block"
     // and reinterpret them
@@ -244,7 +128,8 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
     opts->enuc = dirac_data.enuc;
     opts->escf = dirac_data.escf;
 
-    nz = dirac_data.nz_arith;
+    // nz = arithmetic = 1:real, 2:complex, 4:quaternion
+    int nz = dirac_data.nz_arith;
     if (nz == 1) {
         point_group_nz = CC_GROUP_REAL;
     }
@@ -279,16 +164,75 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
     nsym = dirac_data.nsymrpa * 2;
 
     // Representation names
-    rep_names = (char **) cc_malloc(nsym * sizeof(char *));
-    for (i = 0; i < nsym; i++) {
-        rep_names[i] = (char *) cc_malloc(sizeof(char) * 8);
-        for (j = 0; j < 4; j++) {
-            rep_names[i][j] = dirac_data.repanames[4 * i + j];
-        }
-        rep_names[i][4] = '\0';  // cut end of line (only 4 char-s are significant)
+    rep_names = dirac_interface_extract_rep_names(nsym);
+    detect_dirac_point_group(nsym, rep_names);
+    rename_irreps_dirac_to_expt(nsym, rep_names);
+
+    // "Multiplication table" ( = dir prod table for Abelian groups)
+    create_direct_product_table_dirac(nsym);
+
+    // information about spinors and active space
+    create_spinor_info_dirac(dirac_data.nspinors, dirac_data.irpamo, dirac_data.eorbmo, dirac_data.iocc);
+    create_spinor_blocks(opts->tile_size);
+    setup_occupation_numbers(opts, NSPINORS, spinor_info);
+    setup_active_space(opts);
+    setup_fast_access_spinor_lists();
+
+    print_symmetry_info();
+    print_spinor_info_table();
+
+    check_irrep_names();
+}
+
+
+void invoke_dirac_interface_binary(cc_options_t *opts)
+{
+    int err;
+
+    // prepare Fortran-compatible names of integral files
+    strcpy_to_fortran(MAX_INTS_FILE_NAME_LENGTH, mrconee_mdcint.oneel_file, opts->integral_file_1);
+    strcpy_to_fortran(MAX_INTS_FILE_NAME_LENGTH, mrconee_mdcint.twoel_file, opts->integral_file_2);
+    strcpy_to_fortran(MAX_INTS_FILE_NAME_LENGTH, mrconee_mdcint.prop_file, opts->integral_file_prop);
+    strcpy_to_fortran(MAX_INTS_FILE_NAME_LENGTH, mrconee_mdcint.gaunt_file, opts->integral_file_gaunt);
+    for (int i = 0; i < CC_MAX_NPROP; i++) {
+        strcpy_to_fortran(MAX_INTS_FILE_NAME_LENGTH, mrconee_mdcint.twoprop_files[i], opts->twoprop_file[i]);
+    }
+    mrconee_mdcint.gaunt_enabled = opts->gaunt_defined ? 1 : 0;
+    mrconee_mdcint.n_twoprop = opts->n_twoprop;
+
+    // get tile size and pass it to the Fortran side
+    tilesize.tile_size = opts->tile_size;
+    skip_sorting.skip_mdcint = opts->reuse_integrals_2;
+    recommendedcarith.recommended_carith = (opts->recommended_arith == CC_ARITH_COMPLEX) ? 1 : 0;
+
+    fflush(stdout);
+    timer_new_entry("dirac", "DIRAC interface (MRCONEE/MDCINT)");
+    timer_start("dirac");
+    dirac_interface_binary(&err);
+    timer_stop("dirac");
+    if (err == 1) {
+        errquit("ERROR IN THE BINARY INTERFACE\n");
     }
 
-    // detect fully symmetric irrep
+    if (opts->print_level >= CC_PRINT_DEBUG) {
+        dirac_interface_debug_print();
+    }
+}
+
+
+void strcpy_to_fortran(size_t dest_len, char *dest, char *src)
+{
+    for (size_t i = 0; i < dest_len; i++) {
+        dest[i] = ' ';
+    }
+    for (size_t i = 0; i < strlen(src); i++) {
+        dest[i] = src[i];
+    }
+}
+
+
+void detect_dirac_point_group(int nsym, char **rep_names)
+{
     if (strcmp(rep_names[0], "A  a") == 0 && strcmp(rep_names[1], "A  b") == 0) {
         irrep_a1 = 4;
         set_point_group_name("C1");
@@ -350,20 +294,27 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
         irrep_a1 = 0;
         set_point_group_name("undetected");
     }
+}
 
-    // let us use new irrep symbols
-    /* for nonrel groups
-       left -- L. Visscher's notation, right -- A. Oleynichenko's notation
-     (Ms projection)
-     a -> a
-     b -> b
-     3 -> -3/2
-     3 -> +3/2
-     0 -> 0
-     4 -> 2
-     2 -> +1
-     2 -> -1
-     */
+
+/**
+ * Changes names of irreps for DIRAC to EXP-T notation
+ * in order to make them more readable.
+ *
+ * rules for nonrel groups:
+ *  left -- L. Visscher's notation, right -- A. Oleynichenko's notation
+ * (Ms projection)
+ * a -> a
+ * b -> b
+ * 3 -> -3/2
+ * 3 -> +3/2
+ * 0 -> 0
+ * 4 -> 2
+ * 2 -> +1
+ * 2 -> -1
+ */
+void rename_irreps_dirac_to_expt(int nsym, char **rep_names)
+{
     // C1 nonrel
     if (strcmp(rep_names[0], "A  a") == 0 && strcmp(rep_names[1], "A  b") == 0) {
         char *translation[] = {
@@ -569,18 +520,35 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
             strcpy(rep_names[irep], translation[irep]);
         }
     }
+}
 
-    // "Multiplication table" ( = dir prod table for Abelian groups)
-    // in fact, 3d array
 
-    // allocate direct product table
+char **dirac_interface_extract_rep_names(int nsym)
+{
+    char **rep_names = (char **) cc_malloc(nsym * sizeof(char *));
+
+    for (int i = 0; i < nsym; i++) {
+        rep_names[i] = (char *) cc_malloc(sizeof(char) * 8);
+        for (int j = 0; j < 4; j++) {
+            rep_names[i][j] = dirac_data.repanames[4 * i + j];
+        }
+        rep_names[i][4] = '\0';  // cut end of line (only 4 char-s are significant)
+    }
+
+    return rep_names;
+}
+
+
+void create_direct_product_table_dirac(int nsym)
+{
     memset(dir_prod_table_abelian, 0, sizeof(int) * CC_MAX_NUM_IRREPS * CC_MAX_NUM_IRREPS);
     dir_prod_table = (int ***) cc_malloc(nsym * sizeof(int **));
-    for (i = 0; i < nsym; i++) {
+
+    for (int i = 0; i < nsym; i++) {
         dir_prod_table[i] = (int **) cc_malloc(nsym * sizeof(int *));
-        for (j = 0; j < nsym; j++) {
+        for (int j = 0; j < nsym; j++) {
             dir_prod_table[i][j] = (int *) cc_malloc((nsym + 1) * sizeof(int));
-            for (k = 0; k < nsym + 1; k++) {
+            for (int k = 0; k < nsym + 1; k++) {
                 dir_prod_table[i][j][k] = -1;
             }
             // get values from the dirac_data structure (from MRCONEE files)
@@ -590,36 +558,32 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
         }
     }
     is_abelian = 1;
+}
 
-    /*printf("Mult table:\n");
-    for (i = 0; i < nsym; i++) {
-        for (j = 0; j < nsym; j++)
-            printf("%3d", dir_prod_table[i][j][1]);
-        printf("\n");
-    }*/
 
-    NSPINORS = dirac_data.nspinors;
+/**
+ * adapter to the 'create_spinor_info' subroutine,
+ * is needed to encapsulate operations with fixed-width integers.
+ */
+void create_spinor_info_dirac(int32_t n_spinors, int32_t *irpamo_array, double *spinor_energies, int32_t *occ_numbers)
+{
+    int *irrep_numbers_buf = cc_malloc(n_spinors * sizeof(int));
+    int *occ_numbers_buf = cc_malloc(n_spinors * sizeof(int));
 
-    // fill spinor info array
-    //  *** Spinor, irrep, occupation, energy ***
-    spinor_info = (spinor_attr_t *) cc_malloc(sizeof(spinor_attr_t) * NSPINORS);
-    for (i = 0; i < NSPINORS; i++) {
-        spinor_info[i].repno = dirac_data.irpamo[i] - 1; // and for rep-s too
-        spinor_info[i].eps = dirac_data.eorbmo[i];
-        spinor_info[i].space_flags = 0;
-        if (dirac_data.iocc[i] == 1) {
-            spinor_info[i].space_flags |= CC_FLAG_OCCUPIED;
-        }
+    for (int i = 0; i < n_spinors; i++) {
+        irrep_numbers_buf[i] = irpamo_array[i] - 1;
+        occ_numbers_buf[i] = occ_numbers[i];
     }
 
-    create_spinor_blocks(opts->tile_size);
-    setup_occupation_numbers(opts, NSPINORS, spinor_info);
-    setup_active_space(opts);
-    setup_fast_access_spinor_lists();
+    create_spinor_info(n_spinors, irrep_numbers_buf, spinor_energies, occ_numbers_buf);
 
-    print_symmetry_info();
-    print_spinor_info_table();
+    cc_free(irrep_numbers_buf);
+    cc_free(occ_numbers_buf);
+}
 
+
+void check_irrep_names()
+{
     // now we can check all symbols of irreps in the input data
     // (1) properties calculations
     for (size_t i = 0; i < cc_opts->n_denmat; i++) {
@@ -651,5 +615,86 @@ void dirac_interface(char *moints_file_1, char *moints_file_2, char *moints_file
                         rep_name);
             }
         }
+    }
+}
+
+
+// prints string with current time
+void c_asctime()
+{
+    time_t tm = time(0);
+    printf(" %s", asctime(localtime(&tm)));
+}
+
+
+int rep_name_exists(int nrep, char **list, char *query)
+{
+    for (int i = 0; i < nrep; i++) {
+        if (strcmp(list[i], query) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+void dirac_interface_debug_print()
+{
+    printf("nspinors = %d\n", dirac_data.nspinors);
+    printf("breit = %d\n", dirac_data.breit);
+    printf("enuc = %.8f\n", dirac_data.enuc);
+    printf("invsym = %d\n", dirac_data.invsym);
+    printf("nz_arith = %d\n", dirac_data.nz_arith);
+    printf("is_spinfree = %d\n", dirac_data.is_spinfree);
+    printf("norb_total = %d\n", dirac_data.norb_total);
+    printf("escf = %.8f\n", dirac_data.escf);
+    printf("enuc = %.8f\n", dirac_data.enuc);
+    printf("nsymrp = %d\n", dirac_data.nsymrp);
+    printf("repnames = \n");
+    for (int i = 0; i < dirac_data.nsymrp; i++) {
+        printf("  [%d] ", i);
+        for (int j = 0; j < 14; j++) {
+            printf("%c", dirac_data.repnames[14 * i + j]);
+        }
+        printf("\n");
+    }
+    printf("nactive = ");
+    for (int i = 0; i < 8; i++) {
+        printf("%d ", dirac_data.nactive[i]);
+    }
+    printf("\n");
+    printf("nstr = %d %d\n", dirac_data.nstr[0], dirac_data.nstr[1]);
+    printf("nfrozen = ");
+    for (int i = 0; i < 6; i++) {
+        printf("%d ", dirac_data.nfrozen[i]);
+    }
+    printf("\n");
+    printf("ndelete = ");
+    for (int i = 0; i < 8; i++) {
+        printf("%d ", dirac_data.ndelete[i]);
+    }
+    printf("\n");
+    printf("nsymrpa = %d\n", dirac_data.nsymrpa);
+    printf("repanames = \n");
+    for (int i = 0; i < 2 * dirac_data.nsymrpa; i++) {
+        printf("  [%d] ", i);
+        for (int j = 0; j < 4; j++) {
+            printf("%c", dirac_data.repanames[4 * i + j]);
+        }
+        printf("\n");
+    }
+    printf("irrep direct product table =\n");
+    for (int i = 0; i < 2 * dirac_data.nsymrpa; i++) {
+        for (int j = 0; j < 2 * dirac_data.nsymrpa; j++) {
+            printf("%2d ", dirac_data.multb[i][j]);//64*i+j]);
+        }
+        printf("\n");
+    }
+    printf("nbsymrp = %d\n", dirac_data.nbsymrp);
+    printf("spinor data: ");
+    printf("no, irpmo, irpamo, iocc, eorbmo, ibspi\n");
+    for (int i = 0; i < dirac_data.nspinors; i++) {
+        printf("%4d%4d%4d%4d%15.8f%4d\n", i + 1, dirac_data.irpmo[i], dirac_data.irpamo[i],
+               dirac_data.iocc[i], dirac_data.eorbmo[i], dirac_data.ibspi[i]);
     }
 }

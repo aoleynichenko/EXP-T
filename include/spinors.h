@@ -108,6 +108,8 @@ void get_active_space_size(int *nacth, int *nactp);
 
 void get_active_space(int *nacth, int *nactp, moindex_t *active_holes_indices, moindex_t *active_parts_indices);
 
+void create_spinor_info(int n_spinors, int *irrep_numbers, double *spinor_energies, int *occ_numbers);
+
 void create_spinor_blocks();
 
 void setup_occupation_numbers(cc_options_t *options, int num_spinors, spinor_attr_t *spinor_info);

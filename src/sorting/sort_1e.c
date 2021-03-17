@@ -96,6 +96,7 @@ void sort_onel()
     // recalculate SCF energy (and update it if needed)
     if (!cc_opts->x2cmmf) {
         double new_escf = recalculate_scf_energy(h_ints);
+        printf("     SCF energy (energy of reference determinant) = %20.12f a.u.\n", new_escf);
         if (fabs(cc_opts->escf - new_escf) > 1e-10) {
             printf("     SCF energy (energy of reference determinant) was updated:\n");
             printf("       old energy = %20.12f a.u.\n", cc_opts->escf);
@@ -134,6 +135,7 @@ void sort_onel()
         // recalculate energies
         for (int i = 0; i < NSPINORS; i++) {
             spinor_info[i].eps = creal(f_ints[i * NSPINORS + i]);
+            f_ints[i * NSPINORS + i] = 0.0 + 0.0*I;
         }
     }
 

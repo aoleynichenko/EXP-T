@@ -377,12 +377,12 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
 
         // flush full information about NOs to the formatted file
         char natorb_file_name[256];
-        sprintf(natorb_file_name, "NTO_%dh%dp_%s:%d-%s:%d_FROM.dat", sect_h, sect_p, rep_name1, state1 + 1, rep_name2,
-                state2 + 1);
+        sprintf(natorb_file_name, "NTO_%dh%dp_%s_%d_%s_%d_INITIAL.dat",
+                sect_h, sect_p, rep_name1, state1 + 1, rep_name2, state2 + 1);
         str_replace(natorb_file_name, '/', '|');  // for some irrep names with '/' in order to prevent bugs
         write_NO(natorb_file_name, sect_h, sect_p, n_active, lambda, natorb_left, occ_thresh);
-        sprintf(natorb_file_name, "NTO_%dh%dp_%s:%d-%s:%d_TO.dat", sect_h, sect_p, rep_name1, state1 + 1, rep_name2,
-                state2 + 1);
+        sprintf(natorb_file_name, "NTO_%dh%dp_%s_%d_%s_%d_FINAL.dat",
+                sect_h, sect_p, rep_name1, state1 + 1, rep_name2, state2 + 1);
         str_replace(natorb_file_name, '/', '|');
         write_NO(natorb_file_name, sect_h, sect_p, n_active, lambda, natorb_right, occ_thresh);
     }
@@ -429,7 +429,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
 
         // flush full information about NOs to the formatted file
         char natorb_file_name[256];
-        sprintf(natorb_file_name, "NATORB_%dh%dp_%s:%d.dat", sect_h, sect_p, rep_name1, state1 + 1);
+        sprintf(natorb_file_name, "NATORB_%dh%dp_%s_%d.dat", sect_h, sect_p, rep_name1, state1 + 1);
         str_replace(natorb_file_name, '/', '|');  // for some irrep names with '/' in order to prevent bugs
         for (int i = 0; i < n_active; i++) {
             lambda[i] = creal(nat_occ[i]);
