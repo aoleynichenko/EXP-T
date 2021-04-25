@@ -83,6 +83,51 @@ void t3_1h0p_contrib_to_singles();
 
 void t3_1h0p_contrib_to_doubles();
 
+void diag_T3_1h0p_D1_const();
+void diag_T3_1h0p_D2a_1_const();
+void diag_T3_1h0p_D2a_2();
+void diag_T3_1h0p_D2b();
+void diag_T3_1h0p_D2c_const();
+void diag_T3_1h0p_D2d();
+void diag_T3_1h0p_D2e_1_const();
+void diag_T3_1h0p_D2e_2();
+void diag_T3_1h0p_D3a();
+void diag_T3_1h0p_D3b();
+void diag_T3_1h0p_D3c();
+void diag_T3_1h0p_D3d_1();
+void diag_T3_1h0p_D3d_2();
+void diag_T3_1h0p_D4a_const();
+void diag_T3_1h0p_D4b_1_const();
+void diag_T3_1h0p_D4b_2();
+void diag_T3_1h0p_D5a();
+void diag_T3_1h0p_D5b_1();
+void diag_T3_1h0p_D5b_2();
+void diag_T3_1h0p_D5c_1_const();
+void diag_T3_1h0p_D5c_2();
+void diag_T3_1h0p_D5d_1();
+void diag_T3_1h0p_D5d_2();
+void diag_T3_1h0p_D5e_1_const();
+void diag_T3_1h0p_D5e_2();
+void diag_T3_1h0p_D5f();
+void diag_T3_1h0p_D5g_1_const();
+void diag_T3_1h0p_D5g_2();
+void diag_T3_1h0p_D5h();
+void diag_T3_1h0p_D6a_const();
+void diag_T3_1h0p_D6b();
+void diag_T3_1h0p_D6c_1_const();
+void diag_T3_1h0p_D6c_2();
+void diag_T3_1h0p_D7a();
+void diag_T3_1h0p_D7b();
+void diag_T3_1h0p_D7c_1();
+void diag_T3_1h0p_D7c_2();
+void diag_T3_1h0p_D7d();
+void diag_T3_1h0p_D7e_1();
+void diag_T3_1h0p_D7e_2();
+void diag_T3_1h0p_D8a_1_const();
+void diag_T3_1h0p_D8a_2();
+void diag_T3_1h0p_D8b();
+void diag_T3_1h0p_D9();
+
 
 /*******************************************************************************
  * sector10
@@ -440,6 +485,59 @@ void const_terms_1h0p()
     tmplt("h1_0", "hh", "01", "12", NOT_PERM_UNIQUE);
     tmplt("h2_0", "hhhp", "0010", "1234", IS_PERM_UNIQUE);
 
+    diag_T3_1h0p_D1_const();
+
+    diag_T3_1h0p_D2a_1_const();
+    //diag_T3_1h0p_D2a_2();
+    //diag_T3_1h0p_D2b();
+    diag_T3_1h0p_D2c_const();
+    //diag_T3_1h0p_D2d();
+    diag_T3_1h0p_D2e_1_const();
+    //diag_T3_1h0p_D2e_2();
+
+    //diag_T3_1h0p_D3a();
+    //diag_T3_1h0p_D3b();
+    //diag_T3_1h0p_D3c();
+    //diag_T3_1h0p_D3d_1();
+    //diag_T3_1h0p_D3d_2();
+
+    diag_T3_1h0p_D4a_const();
+    diag_T3_1h0p_D4b_1_const();
+    //diag_T3_1h0p_D4b_2();
+
+    //diag_T3_1h0p_D5a();
+    //diag_T3_1h0p_D5b_1();
+    //diag_T3_1h0p_D5b_2();
+    diag_T3_1h0p_D5c_1_const();
+    //diag_T3_1h0p_D5c_2();
+    //diag_T3_1h0p_D5d_1();
+    //diag_T3_1h0p_D5d_2();
+    diag_T3_1h0p_D5e_1_const();
+    //diag_T3_1h0p_D5e_2();
+    //diag_T3_1h0p_D5f();
+    diag_T3_1h0p_D5g_1_const();
+    //diag_T3_1h0p_D5g_2();
+    //diag_T3_1h0p_D5h();
+
+    diag_T3_1h0p_D6a_const();
+    //diag_T3_1h0p_D6b();
+    diag_T3_1h0p_D6c_1_const();
+    //diag_T3_1h0p_D6c_2();
+
+    //diag_T3_1h0p_D7a();
+    //diag_T3_1h0p_D7b();
+    //diag_T3_1h0p_D7c_1();
+    //diag_T3_1h0p_D7c_2();
+    //diag_T3_1h0p_D7d();
+    //diag_T3_1h0p_D7e_1();
+    //diag_T3_1h0p_D7e_2();
+
+    diag_T3_1h0p_D8a_1_const();
+    //diag_T3_1h0p_D8a_2();
+    //diag_T3_1h0p_D8b();
+
+    //diag_T3_1h0p_D9();
+
     timer_stop("const_s10");
 }
 
@@ -565,67 +663,185 @@ void calc_H1()
 void calc_H2()
 {
     copy("h2_0", "h2nw");
+
+    //diag_T3_1h0p_D1_const();
+
+    //diag_T3_1h0p_D2a_1_const();
+    diag_T3_1h0p_D2a_2();
+    diag_T3_1h0p_D2b();
+    //diag_T3_1h0p_D2c_const();
+    diag_T3_1h0p_D2d();
+    //diag_T3_1h0p_D2e_1_const();
+    diag_T3_1h0p_D2e_2();
+
+    diag_T3_1h0p_D3a();
+    diag_T3_1h0p_D3b();
+    diag_T3_1h0p_D3c();
+    diag_T3_1h0p_D3d_1();
+    diag_T3_1h0p_D3d_2();
+
+    //diag_T3_1h0p_D4a_const();
+    //diag_T3_1h0p_D4b_1_const();
+    diag_T3_1h0p_D4b_2();
+
+    diag_T3_1h0p_D5a();
+    diag_T3_1h0p_D5b_1();
+    diag_T3_1h0p_D5b_2();
+    //diag_T3_1h0p_D5c_1_const();
+    diag_T3_1h0p_D5c_2();
+    diag_T3_1h0p_D5d_1();
+    diag_T3_1h0p_D5d_2();
+    //diag_T3_1h0p_D5e_1_const();
+    diag_T3_1h0p_D5e_2();
+    diag_T3_1h0p_D5f();
+    //diag_T3_1h0p_D5g_1_const();
+    diag_T3_1h0p_D5g_2();
+    diag_T3_1h0p_D5h();
+
+    //diag_T3_1h0p_D6a_const();
+    diag_T3_1h0p_D6b();
+    //diag_T3_1h0p_D6c_1_const();
+    diag_T3_1h0p_D6c_2();
+
+    diag_T3_1h0p_D7a();
+    diag_T3_1h0p_D7b();
+    diag_T3_1h0p_D7c_1();
+    diag_T3_1h0p_D7c_2();
+    diag_T3_1h0p_D7d();
+    diag_T3_1h0p_D7e_1();
+    diag_T3_1h0p_D7e_2();
+
+    //diag_T3_1h0p_D8a_1_const();
+    diag_T3_1h0p_D8a_2();
+    diag_T3_1h0p_D8b();
+
+    diag_T3_1h0p_D9();
+
+    // Triples contribution to Doubles
+#ifdef VERSION_DEVEL
+    if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
+        t3_1h0p_contrib_to_doubles();
+    }
+#endif
+}
+
+
+void diag_T3_1h0p_D1_const()
+{
+    copy("hhgp", "h2_0");
+}
+
+
+void diag_T3_1h0p_D2a_1_const()
+{
     dg_stack_pos_t pos = get_stack_pos();
 
-    // D1
-    copy("hhgp", "h2nw");
-
-    // diagram D2a-1
     reorder("pg", "pgr", "21");
     mult("t2c", "pgr", "r1", 1);
     reorder("r1", "r2", "2143");
-    update("h2nw", 1.0, "r2");
-    restore_stack_pos(pos);
+    update("h2_0", 1.0, "r2");
 
-    // diagram D2a-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D2a_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     mult("h2c", "ppr", "r1", 1);
     update("h2nw", 1.0, "r1");
+
     restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D2b()
+{
+    dg_stack_pos_t pos = get_stack_pos();
 
     // D2b
     mult("h2cr", "hh", "r1", 1);
     reorder("r1", "r2", "3412");
     perm("r2", "(12)");
     update("h2nw", -1.0, "r2");
+
     restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D2c_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
 
     // D2c
     mult("ppgp", "t2c", "r1", 2);
     reorder("r1", "r2", "3412");
-    update("h2nw", 0.5, "r2");
+    update("h2_0", 0.5, "r2");
+
     restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D2d()
+{
+    dg_stack_pos_t pos = get_stack_pos();
 
     // D2d
     mult("hhhh", "h2cr", "r1", 2);
     update("h2nw", 0.5, "r1");
-    restore_stack_pos(pos);
 
-    // diagram D2e-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D2e_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("t2c", "r1", "1324");
     reorder("phhg", "r2", "2431");
     mult("r1", "r2", "r3", 2);
     reorder("r3", "r4", "1324");
     reorder("r4", "r5", "2143");
     perm("r5", "(12)");
-    update("h2nw", 1.0, "r5");
-    restore_stack_pos(pos);
+    update("h2_0", 1.0, "r5");
 
-    // diagram D2e-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D2e_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("h2c", "r1", "1324");
     mult("r1", "phhp", "r3", 2);
     reorder("r3", "r4", "1324");
     perm("r4", "(12)");
     update("h2nw", 1.0, "r4");
-    restore_stack_pos(pos);
 
-    // D3a
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D3a()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v1", "3412");
     mult("t2c", "v1", "r1", 2);
     mult("r1", "h2cr", "r2", 2);
     update("h2nw", 0.25, "r2");
-    restore_stack_pos(pos);
 
-    // D3b
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D3b()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("h2c", "r1", "1324");
     reorder("t2c", "r2", "2413");
     reorder("pphh", "v1", "4231");
@@ -634,75 +850,135 @@ void calc_H2()
     reorder("i2", "r3", "1324");
     perm("r3", "(12)");
     update("h2nw", 1.0, "r3");
-    restore_stack_pos(pos);
 
-    // D3c
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D3c()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v1", "3412");
     mult("t2c", "v1", "r1", 3);
     reorder("h2c", "r2", "2341");
     mult("r1", "r2", "r3", 1);
     perm("r3", "(12)");
     update("h2nw", -0.5, "r3");
-    restore_stack_pos(pos);
 
-    // diagram D3d-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D3d_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     mult("t2r", "pphh", "r1", 3);
     mult("h2c", "r1", "r2", 1);
     update("h2nw", -0.5, "r2");
-    restore_stack_pos(pos);
 
-    // diagram D3d-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D3d_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     mult("h2cr", "pphh", "r1", 3);
     mult("t2c", "r1", "r2", 1);
     reorder("r2", "r3", "2143");
     update("h2nw", -0.5, "r3");
-    restore_stack_pos(pos);
 
-    // D4a
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D4a_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phgp", "r1", "2341");
     mult("t1c", "r1", "r2", 1);
     perm("r2", "(12)");
-    update("h2nw", 1.0, "r2");
-    restore_stack_pos(pos);
+    update("h2_0", 1.0, "r2");
 
-    // diagram D4b-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D4b_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("hhhg", "r1", "1243");
     mult("r1", "t1r", "r2", 1);
     reorder("r2", "r3", "1243");
     reorder("r3", "r4", "2143");
-    update("h2nw", -1.0, "r4");
-    restore_stack_pos(pos);
+    update("h2_0", -1.0, "r4");
 
-    // diagram D4b-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D4b_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("hhhp", "r1", "1243");
     mult("r1", "h1cr", "r2", 1);
     reorder("r2", "r3", "1243");
     update("h2nw", -1.0, "r3");
-    restore_stack_pos(pos);
 
-    // D5a
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D5a()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("ph", "r1", "21");
     mult("t1c", "r1", "r2", 1);
     mult("h2cr", "r2", "r3", 1);
     reorder("r3", "r4", "3412");
     perm("r4", "(12)");
     update("h2nw", -1.0, "r4");
-    restore_stack_pos(pos);
 
-    // diagram D5b-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D5b_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     mult("t1r", "ph", "r1", 1);
     mult("h2c", "r1", "r2", 1);
     update("h2nw", -1.0, "r2");
-    restore_stack_pos(pos);
 
-    // diagram D5b-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D5b_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     mult("h1cr", "ph", "r1", 1);
     mult("t2c", "r1", "r2", 1);
     reorder("r2", "r3", "2143");
     update("h2nw", -1.0, "r3");
-    restore_stack_pos(pos);
 
-    // diagram D5c-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D5c_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphg", "r1", "4312");
     mult("t1c", "r1", "r2", 1);
     reorder("t2c", "r3", "1324");
@@ -710,9 +986,16 @@ void calc_H2()
     reorder("r4", "r5", "1324");
     reorder("r5", "r6", "2143");
     perm("r6", "(12)");
-    update("h2nw", 1.0, "r6");
+    update("h2_0", 1.0, "r6");
+
     restore_stack_pos(pos);
-    // diagram D5c-2
+}
+
+
+void diag_T3_1h0p_D5c_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphp", "r1", "4312");
     mult("t1c", "r1", "r2", 1);
     reorder("h2c", "r3", "1324");
@@ -720,9 +1003,15 @@ void calc_H2()
     reorder("r4", "r5", "1324");
     perm("r5", "(12)");
     update("h2nw", 1.0, "r5");
-    restore_stack_pos(pos);
 
-    // diagram D5d-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D5d_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhh", "r1", "2314");
     mult("t1r", "r1", "i1", 1);
     reorder("h2c", "r2", "1324");
@@ -730,8 +1019,15 @@ void calc_H2()
     reorder("i2", "r3", "1423");
     perm("r3", "(12)");
     update("h2nw", -1.0, "r3");
+
     restore_stack_pos(pos);
-    // diagram D5d-2
+}
+
+
+void diag_T3_1h0p_D5d_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhh", "r1", "2314");
     mult("h1cr", "r1", "i1", 1);
     reorder("t2c", "r2", "1324");
@@ -740,85 +1036,155 @@ void calc_H2()
     reorder("r3", "r4", "2143");
     perm("r4", "(12)");
     update("h2nw", -1.0, "r4");
-    restore_stack_pos(pos);
 
-    // diagram D5e-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D5e_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphg", "r1", "4312");
     mult("t2c", "r1", "i1", 2);
     mult("i1", "t1r", "r2", 1);
     reorder("r2", "r3", "1243");
     reorder("r3", "r4", "2143");
-    update("h2nw", -0.5, "r4");
+    update("h2_0", -0.5, "r4");
+
     restore_stack_pos(pos);
-    // diagram D5e-2
+}
+
+
+void diag_T3_1h0p_D5e_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphp", "r1", "4312");
     mult("t2c", "r1", "i1", 2);
     mult("i1", "h1cr", "r2", 1);
     reorder("r2", "r3", "1243");
     update("h2nw", -0.5, "r3");
-    restore_stack_pos(pos);
 
-    // D5f
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D5f()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhh", "r1", "2341");
     mult("t1c", "r1", "i1", 1);
     mult("i1", "h2cr", "r2", 2);
     perm("r2", "(12)");
     update("h2nw", 0.5, "r2");
-    restore_stack_pos(pos);
 
-    // diagram D5g-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D5g_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphg", "r1", "4231");
     mult("r1", "t1c", "i1", 2);
     mult("t2c", "i1", "r2", 1);
     reorder("r2", "r3", "2143");
-    update("h2nw", 1.0, "r3");
+    update("h2_0", 1.0, "r3");
+
     restore_stack_pos(pos);
-    // diagram D5g-2
+}
+
+
+void diag_T3_1h0p_D5g_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphp", "r1", "4231");
     mult("r1", "t1c", "i1", 2);
     mult("h2c", "i1", "r2", 1);
     update("h2nw", 1.0, "r2");
-    restore_stack_pos(pos);
 
-    // D5h
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D5h()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhh", "r1", "2431");
     mult("r1", "t1c", "i1", 2);
     reorder("h2c", "r2", "2341");
     mult("i1", "r2", "r3", 1);
     perm("r3", "(12)");
     update("h2nw", -1.0, "r3");
-    restore_stack_pos(pos);
 
-    // D6a
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D6a_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     mult("ppgp", "t1c", "i1", 1);
     reorder("i1", "r1", "4123");
     mult("t1c", "r1", "r2", 1);
-    update("h2nw", 1.0, "r2");
-    restore_stack_pos(pos);
+    update("h2_0", 1.0, "r2");
 
-    // D6b
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D6b()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     mult("t1r", "hhhh", "i1", 1);
     mult("h1cr", "i1", "i2", 1);
     reorder("i2", "r1", "3412");
     update("h2nw", 1.0, "r1");
-    restore_stack_pos(pos);
 
-    // diagram D6c-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D6c_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhg", "r1", "2431");
     mult("t1c", "r1", "i1", 1);
     mult("i1", "t1r", "i2", 1);
     reorder("i2", "r2", "1243");
     reorder("r2", "r3", "2143");
     perm("r3", "(12)");
-    update("h2nw", -1.0, "r3");
+    update("h2_0", -1.0, "r3");
+
     restore_stack_pos(pos);
-    // diagram D6c-2
+}
+
+
+void diag_T3_1h0p_D6c_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     mult("t1c", "phhp", "i1", 1);
     mult("i1", "h1cr", "i2", 1);
     reorder("i2", "r2", "1243");
     perm("r2", "(12)");
     update("h2nw", -1.0, "r2");
+
     restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D7a()
+{
+    dg_stack_pos_t pos = get_stack_pos();
 
     // D7a
     reorder("pphh", "v1  ", "3412");
@@ -826,7 +1192,14 @@ void calc_H2()
     mult("t1c", "r1  ", "r2  ", 1);
     mult("r2  ", "h2cr", "r3  ", 2);
     update("h2nw", 0.5, "r3  ");
+
     restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D7b()
+{
+    dg_stack_pos_t pos = get_stack_pos();
 
     // D7b
     reorder("pphh", "v1  ", "3412");
@@ -835,9 +1208,15 @@ void calc_H2()
     mult("h1cr", "r2  ", "r3  ", 1);
     reorder("r3  ", "r4  ", "3412");
     update("h2nw", 0.5, "r4  ");
-    restore_stack_pos(pos);
 
-    // diagram D7c-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D7c_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v   ", "3241");
     mult("t1c", "v   ", "r1  ", 1);
     reorder("t2c", "t2x ", "2431");
@@ -846,8 +1225,15 @@ void calc_H2()
     reorder("r3  ", "r4  ", "3142");
     perm("r4  ", "(12)");
     update("h2nw", -1.0, "r4  ");
+
     restore_stack_pos(pos);
-    // diagram D7c-2
+}
+
+
+void diag_T3_1h0p_D7c_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v   ", "3241");
     mult("t1c", "v   ", "r1  ", 1);
     reorder("h2c", "r0  ", "2143");
@@ -858,9 +1244,15 @@ void calc_H2()
     reorder("r4", "r5", "2143");
     perm("r5", "(12)");
     update("h2nw", -1.0, "r5");
-    restore_stack_pos(pos);
 
-    // D7d
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D7d()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v   ", "2431");
     mult("v   ", "t1c", "r1  ", 2);
     reorder("r1  ", "r2  ", "21");
@@ -869,9 +1261,15 @@ void calc_H2()
     mult("r3  ", "h2r ", "r4  ", 1);
     perm("r4  ", "(12)");
     update("h2nw", -1.0, "r4  ");
-    restore_stack_pos(pos);
 
-    // diagram D7e-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D7e_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v   ", "2431");
     mult("v   ", "t1c", "r1  ", 2);
     mult("h1cr", "r1  ", "r2  ", 1);
@@ -879,8 +1277,15 @@ void calc_H2()
     mult("t2x ", "r2  ", "r3  ", 1);
     reorder("r3  ", "r4  ", "1243");
     update("h2nw", -1.0, "r4  ");
+
     restore_stack_pos(pos);
-    // diagram D7e-2
+}
+
+
+void diag_T3_1h0p_D7e_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v   ", "2431");
     mult("v   ", "t1c", "r1  ", 2);
     mult("t1r", "r1  ", "r2  ", 1);
@@ -890,27 +1295,46 @@ void calc_H2()
     reorder("r3  ", "r4", "1243");
     reorder("r4", "r5", "2143");
     update("h2nw", -1.0, "r5");
-    restore_stack_pos(pos);
 
-    // diagram D8a-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D8a_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphg", "r1", "4312");
     mult("t1c", "r1", "r2", 1);
     mult("t1c", "r2", "r3", 1);
     mult("r3", "t1r", "r4", 1);
     reorder("r4", "r5", "1243");
     reorder("r5", "r6", "2143");
-    update("h2nw", -1.0, "r6");
+    update("h2_0", -1.0, "r6");
+
     restore_stack_pos(pos);
-    // diagram D8a-2
+}
+
+
+void diag_T3_1h0p_D8a_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphp", "r1", "4312");
     mult("t1c", "r1", "r2", 1);
     mult("t1c", "r2", "r3", 1);
     mult("r3", "h1cr", "r4", 1);
     reorder("r4", "r5", "1243");
     update("h2nw", -1.0, "r5");
-    restore_stack_pos(pos);
 
-    // D8b
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D8b()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhh", "r1", "2341");
     mult("t1c", "r1", "i1", 1);
     mult("t1r", "i1", "i2", 1);
@@ -918,9 +1342,15 @@ void calc_H2()
     reorder("r2", "r3", "3412");
     perm("r3", "(12)");
     update("h2nw", 1.0, "r3");
-    restore_stack_pos(pos);
 
-    // D9
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h0p_D9()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v1  ", "3412");
     mult("t1c", "v1  ", "r1  ", 1);
     mult("t1c", "r1  ", "r2  ", 1);
@@ -928,14 +1358,8 @@ void calc_H2()
     mult("h1cr", "r3  ", "r4  ", 1);
     reorder("r4  ", "r5  ", "3412");
     update("h2nw", 1.0, "r5  ");
-    restore_stack_pos(pos);
 
-    // Triples contribution to Doubles
-#ifdef VERSION_DEVEL
-    if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
-        t3_1h0p_contrib_to_doubles();
-    }
-#endif
+    restore_stack_pos(pos);
 }
 
 

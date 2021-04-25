@@ -91,6 +91,7 @@ void directive_arith(cc_options_t *opts);
 void directive_mdprop(cc_options_t *opts);
 void directive_txtprop(cc_options_t *opts);
 void directive_interface(cc_options_t *opts);
+void directive_intham(cc_options_t *opts);
 
 void yyerror(char *s);
 int next_token();
@@ -261,6 +262,9 @@ int readinp(char *file_name, cc_options_t *opts)
                 break;
             case KEYWORD_INTERFACE:
                 directive_interface(opts);
+                break;
+            case KEYWORD_INTHAM:
+                directive_intham(opts);
                 break;
             case END_OF_LINE:
                 // nothing to do
@@ -1763,7 +1767,7 @@ void directive_interface(cc_options_t *opts)
 
 void read_space_specification(cc_space_t *space)
 {
-    static char *msg = "wrong specification of the space of spinors!";
+    static char *msg = "wrong specification of the space";
     int token_type;
 
     token_type = next_token();
@@ -1972,6 +1976,56 @@ void directive_model(cc_options_t *opts)
         if (token_type != END_OF_LINE) {
             yyerror("end of line is expected");
         }
+    }
+}
+
+
+
+
+/**
+ * Syntax (example):
+ * intham
+ *   main [0+]:3 [1+]:2 [1-]:2
+ * end
+ */
+void directive_intham(cc_options_t *opts)
+{
+    static char *err_end_of_line = "end of line is expected";
+    static char *err_no_main     = "main subspace specification is required";
+    int token_type;
+    int sect_h, sect_p;
+    int main_defined = 0;
+
+    opts->do_intham = 1;
+
+    // "end of line" or "ccsd... etc" after the opening keyword
+    token_type = next_token();
+    if (token_type != END_OF_LINE) {
+        yyerror(err_end_of_line);
+    }
+
+    while (1) {
+
+        token_type = next_token();
+        if (token_type == KEYWORD_END) {
+            break;
+        }
+        if (token_type == KEYWORD_MAIN) {
+            main_defined = 1;
+            read_space_specification(&opts->intham_params.main_space);
+        }
+
+        // each subdirective must end with end of line!
+        token_type = next_token();
+        if (token_type != END_OF_LINE) {
+            yyerror(err_end_of_line);
+        }
+
+    }
+
+    // check parameters
+    if (!main_defined) {
+        yyerror(err_no_main);
     }
 }
 

@@ -38,6 +38,7 @@
 #include <complex.h>
 
 #include "comdef.h"
+#include "intham.h"
 #include "linalg.h"
 #include "selection.h"
 
@@ -177,6 +178,10 @@ typedef enum {
     CC_COMPRESS_NONE,
     CC_COMPRESS_LZ4
 } cc_compression_type_t;
+
+typedef struct {
+    cc_space_t main_space;
+} intham_param_t;
 
 // sizeof(double) or sizeof(double complex)
 extern int SIZEOF_WORKING_TYPE;
@@ -359,6 +364,10 @@ struct cc_options {
     // (does not affect performance, just for fast implementation of new approximate schemes)
     int n_select;
     ampl_selection_t selects[CC_MAX_SELECTION];
+
+    // intermediate hamiltonian parameters
+    int do_intham;
+    intham_param_t intham_params;
 };
 
 typedef struct cc_options cc_options_t;

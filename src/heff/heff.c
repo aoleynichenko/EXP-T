@@ -65,6 +65,7 @@ void print_model_vector(
         size_t len, double complex *coeffs, slater_det_t *det_list
 );
 int get_nroots_for_irrep(char *irrep_name);
+int get_intham_main_subspace_for_irrep(char *irrep_name);
 void renormalize_wave_operator_0h0p_0h1p(size_t dim, slater_det_t *det_list,
                                          double complex *heff, double complex *heff_prime, double complex *omega);
 
@@ -161,10 +162,11 @@ void create_model_dets(int sect_h, int sect_p, size_t *ms_rep_sizes, slater_det_
         ms_rep_sizes[irep] = 0;
     }
 
-    active_holes_indices = (moindex_t *) cc_malloc(NSPINORS * sizeof(moindex_t));
-    active_parts_indices = (moindex_t *) cc_malloc(NSPINORS * sizeof(moindex_t));
+    int nspinors = get_num_spinors();
+    active_holes_indices = (moindex_t *) cc_malloc(nspinors * sizeof(moindex_t));
+    active_parts_indices = (moindex_t *) cc_malloc(nspinors * sizeof(moindex_t));
 
-    get_active_space(&nacth, &nactp, active_holes_indices, active_parts_indices);
+    get_active_holes_particles(&nacth, &nactp, active_holes_indices, active_parts_indices);
 
     // in order to avoid dynamically-nested loops we shall consider
     // different Fock-space sectors simply as different cases
@@ -360,8 +362,9 @@ void diag_heff(int sect_h, int sect_p, ...)
     printf("\n");
     printf(" Effective Hamiltonian analysis\n");
 
+    int nspinors = get_num_spinors();
     get_active_space_size(&nacth, &nactp);
-    ms_size = get_model_space_size(sect_h, sect_p, NSPINORS, spinor_info);
+    ms_size = get_model_space_size(sect_h, sect_p, nspinors, spinor_info);
     if (cc_opts->mixed && sect_h == 1 && sect_p == 1) {
         ms_size += 1;  // alloc space for the 0h0p determinant
     }
@@ -509,6 +512,44 @@ void diag_heff(int sect_h, int sect_p, ...)
         // 3. HEFF matrix will be destroyed
         eig(ms_size, heff, ev, vl, vr);
 
+        char *irrep_name = get_irrep_name(irep);
+        if (cc_opts->do_intham) {
+            int n_main_states = get_intham_main_subspace_for_irrep(irrep_name);
+            printf("n_main_states = %d\n", n_main_states);
+
+            xprimat(CC_COMPLEX, vr, ms_size, ms_size, "Right model vectors");
+
+            double complex *P = zzeros(ms_size, ms_size);
+            construct_projector(ms_size, n_main_states, vr, P);
+            xprimat(CC_COMPLEX, P, ms_size, ms_size, "Projector P");
+            //cc_free(P);
+
+            double complex *P2 = zzeros(ms_size, ms_size);
+            double complex alpha = 1.0+0.0*I;
+            double complex beta = 0.0+0.0*I;
+            xgemm(CC_COMPLEX, "N", "N", ms_size, ms_size, ms_size, &alpha, P, ms_size, P, ms_size, &beta, P2, ms_size);
+            xprimat(CC_COMPLEX, P2, ms_size, ms_size, "P^2");
+
+            cc_free(P);
+            cc_free(P2);
+        }
+
+        /*double complex *OVL = zzeros(ms_size, ms_size);
+        double complex *OVL_inv = zzeros(ms_size, ms_size);
+        double complex *PROD = zzeros(ms_size, ms_size);
+
+        overlap(ms_size, vr, vr, OVL);
+        inv(ms_size, OVL, OVL_inv);
+        double complex alpha = 1.0+0.0*I;
+        double complex beta  = 0.0+0.0*I;
+        xgemm(CC_COMPLEX, "N", "N", ms_size, ms_size, ms_size, &alpha, OVL_inv, ms_size, OVL, ms_size, &beta, PROD, ms_size);
+
+        xprimat(CC_COMPLEX, PROD, ms_size, ms_size, "S x S^{-1}");
+
+        cc_free(OVL);
+        cc_free(OVL_inv);
+        cc_free(PROD);*/
+
         // perform Loewdin orthogonalization (if not prohibited)
         if (cc_opts->do_hermit == 1) {
             loewdin_orth(ms_size, vr, vr, cc_opts->print_level == CC_PRINT_DEBUG ? 5 : 0);
@@ -517,7 +558,6 @@ void diag_heff(int sect_h, int sect_p, ...)
         // else: no orthogonalization => biorthogonal vectors => TDM_if != TDM_fi
 
         // get max number of roots for this irrep
-        char *irrep_name = get_irrep_name(irep);
         int nroots_irep = get_nroots_for_irrep(irrep_name);
         size_t nroots = cc_opts->nroots_specified ? nroots_irep : ms_size;
 
@@ -820,6 +860,21 @@ void print_model_vector(
         fprintf(f_out, " %10.5f%10.5f ", creal(coef), cimag(coef));
         print_slater_det(f_out, sect_h, sect_p, det_list + j);
     }
+}
+
+
+int get_intham_main_subspace_for_irrep(char *irrep_name)
+{
+    int nroots_irep = 0;
+
+    for (int ii = 0; ii < get_num_irreps(); ii++) {
+        if (strcmp(irrep_name, cc_opts->intham_params.main_space.rep_names[ii]) == 0) {
+            nroots_irep = cc_opts->intham_params.main_space.dim[ii];
+            break;
+        }
+    }
+
+    return nroots_irep;
 }
 
 

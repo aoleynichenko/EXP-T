@@ -41,9 +41,6 @@
 #define CC_FLAG_ACTIVE    0x00000002
 #define CC_FLAG_MAIN      0x00000004
 
-// number of one-particle functions (e.g. spinors)
-extern int NSPINORS;
-
 // attributes of each spinors:
 //  - sequential number
 //  - irrep no
@@ -73,6 +70,8 @@ extern spinor_block_t *spinor_blocks;
 extern int spinor_index_global2local[CC_MAX_SPINORS];
 
 void set_occupied(int idx, int occ_number);
+
+int get_num_spinors();
 
 int is_active(int idx);
 
@@ -106,7 +105,9 @@ int get_vacuum_irrep();
 
 void get_active_space_size(int *nacth, int *nactp);
 
-void get_active_space(int *nacth, int *nactp, moindex_t *active_holes_indices, moindex_t *active_parts_indices);
+void get_active_holes_particles(int *nacth, int *nactp, moindex_t *active_holes_indices, moindex_t *active_parts_indices);
+
+void get_active_space(int sect_h, int sect_p, int *n_active, int *active_spinors);
 
 void create_spinor_info(int n_spinors, int *irrep_numbers, double *spinor_energies, int *occ_numbers);
 

@@ -123,6 +123,7 @@ diagram_t *diagram_diveps(diagram_t *dg)
 
 void diveps_block_rank_2(block_t *block)
 {
+    int nspinors = get_num_spinors();
     int sect_h = cc_opts->curr_sector_h;
     int sect_p = cc_opts->curr_sector_p;
     int shift_type = get_shift_type(sect_h, sect_p);
@@ -134,8 +135,8 @@ void diveps_block_rank_2(block_t *block)
     int *block_indices_0 = block->indices[0] + 1; // +1 to skip first element (length)
     int *block_indices_1 = block->indices[1] + 1;
 
-    double *eps = (double *) cc_malloc(NSPINORS * sizeof(double));
-    get_spinor_energies(NSPINORS, eps);
+    double *eps = (double *) cc_malloc(nspinors * sizeof(double));
+    get_spinor_energies(nspinors, eps);
 
     // loop over matrix elements
     for (size_t i = 0; i < block->size; i++) {
@@ -180,6 +181,7 @@ void diveps_block_rank_2(block_t *block)
 
 void diveps_block_rank_4(block_t *block)
 {
+    int nspinors = get_num_spinors();
     int sect_h = cc_opts->curr_sector_h;
     int sect_p = cc_opts->curr_sector_p;
     int shift_type = get_shift_type(sect_h, sect_p);
@@ -198,8 +200,8 @@ void diveps_block_rank_4(block_t *block)
     int *block_indices_2 = block->indices[2] + 1;
     int *block_indices_3 = block->indices[3] + 1;
 
-    double *eps = (double *) cc_malloc(NSPINORS * sizeof(double));
-    get_spinor_energies(NSPINORS, eps);
+    double *eps = (double *) cc_malloc(nspinors * sizeof(double));
+    get_spinor_energies(nspinors, eps);
 
     // loop over matrix elements
     for (size_t i = 0; i < block->size; i++) {
@@ -253,6 +255,7 @@ void diveps_block_rank_4(block_t *block)
 
 void diveps_block_rank_6(block_t *block)
 {
+    int nspinors = get_num_spinors();
     int sect_h = cc_opts->curr_sector_h;
     int sect_p = cc_opts->curr_sector_p;
     int shift_type = get_shift_type(sect_h, sect_p);
@@ -272,8 +275,8 @@ void diveps_block_rank_6(block_t *block)
     int *block_indices_5 = block->indices[4] + 1;
     int *block_indices_6 = block->indices[5] + 1;
 
-    double *eps = (double *) cc_malloc(NSPINORS * sizeof(double));
-    get_spinor_energies(NSPINORS, eps);
+    double *eps = (double *) cc_malloc(nspinors * sizeof(double));
+    get_spinor_energies(nspinors, eps);
 
     size_t index = 0;
     for (int i1 = 0; i1 < dims_1; i1++) {
@@ -344,13 +347,14 @@ void diveps_block_general(block_t *block)
     int idx[CC_DIAGRAM_MAX_RANK];
 
     int rank = block->rank;
+    int nspinors = get_num_spinors();
     int sect_h = cc_opts->curr_sector_h;
     int sect_p = cc_opts->curr_sector_p;
     int shift_type = get_shift_type(sect_h, sect_p);
     int npower = get_attenuation_parameter(sect_h, sect_p);
 
-    double *eps = (double *) cc_malloc(NSPINORS * sizeof(double));
-    get_spinor_energies(NSPINORS, eps);
+    double *eps = (double *) cc_malloc(get_num_spinors() * sizeof(double));
+    get_spinor_energies(nspinors, eps);
     symblock_get_dims(block, dims);
 
     // loop over matrix elements

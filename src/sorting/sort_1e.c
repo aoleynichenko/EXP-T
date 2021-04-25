@@ -25,6 +25,7 @@
 #include <complex.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "sorting_request.h"
@@ -56,15 +57,16 @@ double max_diagonal_diff(double complex *fock);
 
 void sort_onel()
 {
-    double complex *h_ints = (double complex *) xzeros(CC_COMPLEX, NSPINORS, NSPINORS);
-    double complex *f_ints = (double complex *) xzeros(CC_COMPLEX, NSPINORS, NSPINORS);
+    int nspinors = get_num_spinors();
+    double complex *h_ints = (double complex *) xzeros(CC_COMPLEX, nspinors, nspinors);
+    double complex *f_ints = (double complex *) xzeros(CC_COMPLEX, nspinors, nspinors);
 
     printf("   sorting one-electron integrals ...\n");
 
     // read one-electron integrals -- core Fock operator
     // ? а что если HINT нет?
     int fd = io_open("HINT", "r");
-    io_read_compressed(fd, h_ints, sizeof(double complex) * NSPINORS * NSPINORS);
+    io_read_compressed(fd, h_ints, sizeof(double complex) * nspinors * nspinors);
     io_close(fd);
 
     // read one-electron operators from the OneProp code by Leonid V. Skripnikov
@@ -83,13 +85,13 @@ void sort_onel()
 
     // construct Fock matrix
     if (!cc_opts->x2cmmf) {
-        reconstruct_fock(NSPINORS, h_ints, f_ints);
+        reconstruct_fock(nspinors, h_ints, f_ints);
     }
     else {  // x2cmmf hamiltonian, no recompute fock matrix
         printf("     Fock matrix reconstruction will be skipped\n");
-        memset(f_ints, 0, sizeof(double complex) * NSPINORS * NSPINORS);
-        for (int i = 0; i < NSPINORS; i++) {
-            f_ints[i * NSPINORS + i] = spinor_info[i].eps;
+        memset(f_ints, 0, sizeof(double complex) * nspinors * nspinors);
+        for (int i = 0; i < nspinors; i++) {
+            f_ints[i * nspinors + i] = spinor_info[i].eps;
         }
     }
 
@@ -120,9 +122,9 @@ void sort_onel()
             printf("\n");
             printf("     no    rep         occ    active     one-el energy        recalc energy            delta    \n");
             printf("    ---------------------------------------------------------------------------------------------\n");
-            for (int i = 0; i < NSPINORS; i++) {
+            for (int i = 0; i < nspinors; i++) {
                 double eps = spinor_info[i].eps;
-                double f_ii = creal(f_ints[i * NSPINORS + i]);
+                double f_ii = creal(f_ints[i * nspinors + i]);
                 printf("    %4d%4d \"%-6s\"%4d       %1s     %16.10f     %16.10f     %16.6e\n",
                        i + 1, spinor_info[i].repno,
                        rep_names[spinor_info[i].repno], is_hole(i),
@@ -133,9 +135,9 @@ void sort_onel()
         printf("   max deviation of the diagonal elements of the reconstructed"
                " Fock matrix and orbital energies = %.6e\n", max_eps_diff);
         // recalculate energies
-        for (int i = 0; i < NSPINORS; i++) {
-            spinor_info[i].eps = creal(f_ints[i * NSPINORS + i]);
-            f_ints[i * NSPINORS + i] = 0.0 + 0.0*I;
+        for (int i = 0; i < nspinors; i++) {
+            spinor_info[i].eps = creal(f_ints[i * nspinors + i]);
+            f_ints[i * nspinors + i] = 0.0 + 0.0*I;
         }
     }
 
@@ -165,21 +167,22 @@ void sort_onel()
 
 void fock_add_oneprop(double complex *fock, double complex lambda, char *file_re, char *file_im)
 {
-    double complex *oper = xzeros(CC_COMPLEX, NSPINORS, NSPINORS);
+    int nspinors = get_num_spinors();
+    double complex *oper = xzeros(CC_COMPLEX, nspinors, nspinors);
 
     printf("     reading one-electron property from Oneprop "
            "(lambda = %e %e, file_re = %s, file_im = %s)\n",
            creal(lambda), cimag(lambda), file_re, file_im);
 
     // read files with (a) real part of the prop matrix (b) imaginary part
-    int status = read_prop_two_files(NSPINORS, file_re, file_im, oper);
+    int status = read_prop_two_files(nspinors, file_re, file_im, oper);
     if (status == EXIT_FAILURE) {
         errquit("Cannot open OneProp files '%s' (re) '%s' (im)", file_re, file_im);
     }
 
     // add operator matrix to the Fock matrix:
     // F = F + lambda*Oper (lambda = perturbation parameter)
-    xaxpy(CC_COMPLEX, NSPINORS * NSPINORS, lambda, oper, fock);
+    xaxpy(CC_COMPLEX, nspinors * nspinors, lambda, oper, fock);
 
     // all done
     cc_free(oper);
@@ -188,20 +191,21 @@ void fock_add_oneprop(double complex *fock, double complex lambda, char *file_re
 
 void fock_add_mdprop(double complex *fock, double complex lambda, char *prop_name)
 {
-    double complex *oper = xzeros(CC_COMPLEX, NSPINORS, NSPINORS);
+    int nspinors = get_num_spinors();
+    double complex *oper = xzeros(CC_COMPLEX, nspinors, nspinors);
 
     printf("     reading one-electron property %s from MDPROP "
            "(lambda = %e %e)\n", prop_name, creal(lambda), cimag(lambda));
 
     // read file containing the prop matrix
-    int status = read_prop_single_file(NSPINORS, prop_name, oper);
+    int status = read_prop_single_file(nspinors, prop_name, oper);
     if (status == EXIT_FAILURE) {
         errquit("Cannot open property matrix file '%s'", prop_name);
     }
 
     // add operator matrix to the Fock matrix:
     // F = F + lambda*Oper (lambda = perturbation parameter)
-    xaxpy(CC_COMPLEX, NSPINORS * NSPINORS, lambda, oper, fock);
+    xaxpy(CC_COMPLEX, nspinors * nspinors, lambda, oper, fock);
 
     // all done
     cc_free(oper);
@@ -218,9 +222,10 @@ double max_diagonal_diff(double complex *fock)
     double eps_diff = 0.0;
     double max_eps_diff = 0.0;
     double const PRINT_THRESH = 1e-13;
+    int nspinors = get_num_spinors();
 
-    for (int i = 0; i < NSPINORS; i++) {
-        double complex f_ii = fock[i * NSPINORS + i];
+    for (int i = 0; i < nspinors; i++) {
+        double complex f_ii = fock[i * nspinors + i];
         if (cimag(f_ii) > PRINT_THRESH) {
             printf("     (!) in sort_onel(): imaginary value of the [%d,%d] diagonal "
                    "element of the Fock matrix = %.8f %.3E (threshold = 1e-13)\n",
@@ -243,6 +248,7 @@ void fill_block_one_elec(block_t *block, double complex *ints_matrix)
 {
     assert(block->rank == 2);
 
+    int nspinors = get_num_spinors();
     int dims_1 = block->indices[0][0];
     int dims_2 = block->indices[1][0];
     int *block_indices_1 = block->indices[0] + 1;
@@ -264,10 +270,10 @@ void fill_block_one_elec(block_t *block, double complex *ints_matrix)
             }
             else {
                 if (carith) {
-                    block->buf[index] = ints_matrix[idx_1 * NSPINORS + idx_2];
+                    block->buf[index] = ints_matrix[idx_1 * nspinors + idx_2];
                 }
                 else {
-                    dbuf[index] = creal(ints_matrix[idx_1 * NSPINORS + idx_2]);
+                    dbuf[index] = creal(ints_matrix[idx_1 * nspinors + idx_2]);
                 }
             }
             index++;
@@ -342,16 +348,17 @@ double recalculate_scf_energy(double complex *h_ints)
 {
     int idx4[4];
     double new_escf = cc_opts->enuc;
+    int nspinors = get_num_spinors();
 
     diagram_t *dg_hhhh = diagram_stack_find("hhhh");
     if (dg_hhhh == NULL) {
         errquit("in sort_onel(): diagram 'hhhh' is required to construct Fock matrix, but it was not found");
     }
 
-    for (int i = 0; i < NSPINORS; i++) {
+    for (int i = 0; i < nspinors; i++) {
         if (!is_hole(i)) { continue; }
-        new_escf += h_ints[i * NSPINORS + i];
-        for (int j = 0; j < NSPINORS; j++) {
+        new_escf += h_ints[i * nspinors + i];
+        for (int j = 0; j < nspinors; j++) {
             if (!is_hole(j)) { continue; }
             idx4[0] = i;
             idx4[1] = j;

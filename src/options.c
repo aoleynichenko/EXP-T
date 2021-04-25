@@ -225,6 +225,10 @@ cc_options_t *new_options()
     // selection of amplitudes
     opts->n_select = 0;
 
+    // intermediate hamiltonian parameters
+    opts->do_intham = 0;
+    memset(&opts->intham_params.main_space, 0, sizeof(opts->intham_params.main_space));
+
     return opts;
 }
 
@@ -681,6 +685,18 @@ void print_options(cc_options_t *opts)
             }
             printf("%s 0\n", opts->selects[i].task == CC_SELECTION_SET_ZERO ? "=" : "!=");
         }
+    }
+
+    printf(" %-15s  %-40s  ", "intham", "intermediate Hamiltonian");
+    if (opts->do_intham == 1) {
+        printf("enabled\n");
+        printf(" %-15s  %-40s  ", "  main", "subspace of target states");
+        printf("lowest ");
+        print_space(&opts->intham_params.main_space);
+        printf("\n");
+    }
+    else {
+        printf("disabled\n");
     }
 
     printf("\n\n");

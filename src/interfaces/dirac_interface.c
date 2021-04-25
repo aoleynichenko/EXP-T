@@ -174,7 +174,7 @@ void dirac_interface(cc_options_t *opts)
     // information about spinors and active space
     create_spinor_info_dirac(dirac_data.nspinors, dirac_data.irpamo, dirac_data.eorbmo, dirac_data.iocc);
     create_spinor_blocks(opts->tile_size);
-    setup_occupation_numbers(opts, NSPINORS, spinor_info);
+    setup_occupation_numbers(opts, dirac_data.nspinors, spinor_info);
     setup_active_space(opts);
     setup_fast_access_spinor_lists();
 

@@ -80,6 +80,7 @@ mdprop          { inc_col(); return KEYWORD_MDPROP;       }
 txtprop         { inc_col(); return KEYWORD_TXTPROP;      }
 end             { inc_col(); return KEYWORD_END;          }
 select          { inc_col(); return KEYWORD_SELECT;       }
+intham          { inc_col(); return KEYWORD_INTHAM;       }
 hptt            { inc_col(); return KEYWORD_HPTT;         }
 gaunt           { inc_col(); return KEYWORD_GAUNT;        }
 skip            { inc_col(); return KEYWORD_SKIP;         }

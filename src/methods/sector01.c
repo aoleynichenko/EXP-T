@@ -1004,7 +1004,6 @@ void folded_0h1p()
     update("s2nw", -1.0, "r2");
     restore_stack_pos(pos);
 
-
     // triples
     // this folded diagram appears in PT3 and hence is excluded in the CCSDT-n models
 #ifdef VERSION_DEVEL

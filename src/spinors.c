@@ -62,6 +62,12 @@ spinor_block_t *spb_hp01[2][2];
 int spinor_index_global2local[CC_MAX_SPINORS];
 
 
+int get_num_spinors()
+{
+    return NSPINORS;
+}
+
+
 // info functions ("getters")
 inline int is_active(int idx)
 {
@@ -163,7 +169,7 @@ void get_active_space_size(int *nacth, int *nactp)
 }
 
 
-void get_active_space(int *nacth, int *nactp, moindex_t *active_holes_indices, moindex_t *active_parts_indices)
+void get_active_holes_particles(int *nacth, int *nactp, moindex_t *active_holes_indices, moindex_t *active_parts_indices)
 {
     *nacth = 0;
     *nactp = 0;
@@ -176,6 +182,21 @@ void get_active_space(int *nacth, int *nactp, moindex_t *active_holes_indices, m
         else if (is_act_part(i)) {
             active_parts_indices[*nactp] = i;
             (*nactp)++;
+        }
+    }
+}
+
+
+void get_active_space(int sect_h, int sect_p, int *n_active, int *active_spinors)
+{
+    *n_active = 0;
+
+    // TODO: refactor, separate utility function (move to spinors.c)
+    int nspinors = get_num_spinors();
+    for (int i = 0; i < nspinors; i++) {
+        if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
+            active_spinors[*n_active] = i;
+            *n_active = *n_active + 1;
         }
     }
 }
@@ -281,6 +302,7 @@ void create_spinor_blocks(int tilesize)
     int *sizes;
     int i, j, isp;
     int prt_lvl;
+    int nspinors = get_num_spinors();
 
     prt_lvl = cc_opts->print_level;
 
@@ -288,7 +310,7 @@ void create_spinor_blocks(int tilesize)
     int num_irreps = get_num_irreps();
     sizes = (int *) cc_malloc(num_irreps * sizeof(int));
     memset(sizes, 0, num_irreps * sizeof(int));
-    for (i = 0; i < NSPINORS; i++) {
+    for (i = 0; i < get_num_spinors(); i++) {
         sizes[spinor_info[i].repno]++;
     }
 
@@ -329,7 +351,7 @@ void create_spinor_blocks(int tilesize)
     }
 
     // assign indices
-    for (i = 0; i < NSPINORS; i++) {
+    for (i = 0; i < nspinors; i++) {
         for (j = 0; j < n_spinor_blocks; j++) {
             if (spinor_info[i].repno == spinor_blocks[j].repno) {
                 if (spinor_blocks[j].size == tilesize) {
@@ -386,7 +408,7 @@ void create_spinor_blocks(int tilesize)
     printf("\n");
 
     // construct mapping: "global spinor index -> local spinor index"
-    for (isp = 0; isp < NSPINORS; isp++) {
+    for (isp = 0; isp < nspinors; isp++) {
         for (i = 0; i < n_spinor_blocks; i++) {
             for (j = 0; j < spinor_blocks[i].size; j++) {
                 if (spinor_blocks[i].indices[j] == isp) {
@@ -401,7 +423,7 @@ void create_spinor_blocks(int tilesize)
 
     if (prt_lvl >= CC_PRINT_DEBUG) {
         printf("spinor indices, global to local mapping:\n");
-        for (i = 0; i < NSPINORS; i++) {
+        for (i = 0; i < nspinors; i++) {
             printf("%3d->%3d ", i, spinor_index_global2local[i]);
             if ((i + 1) % 10 == 0) {
                 printf("\n");

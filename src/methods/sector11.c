@@ -66,17 +66,88 @@ void init_amplitudes_1h1p();
 
 void const_terms_1h1p();
 
+void const_terms_1h1p_triples(int pt_order);
+
 void t3corr_1h1p();
 
 void calc_E1();
 
 void calc_E2();
 
-void calc_E3();
+void calc_E3(int pt_order);
 
 void folded_1h1p_singles();
 
 void folded_1h1p_doubles();
+
+void folded_1h1p_triples(int pt_order);
+
+void t3_1h1p_contrib_to_singles(int pt_order);
+
+void t3_1h1p_contrib_to_doubles(int pt_order);
+
+void diag_T3_1h1p_D2a_1_const();
+void diag_T3_1h1p_D2a_2();
+void diag_T3_1h1p_D2b_1();
+void diag_T3_1h1p_D2b_2_const();
+void diag_T3_1h1p_D2c_const();
+void diag_T3_1h1p_D2d_const();
+void diag_T3_1h1p_D2e_1();
+void diag_T3_1h1p_D2e_2_const();
+void diag_T3_1h1p_D2e_3_const();
+void diag_T3_1h1p_D2e_4_const();
+void diag_T3_1h1p_D3a_const();
+void diag_T3_1h1p_D3b_1_const();
+void diag_T3_1h1p_D3b_2();
+void diag_T3_1h1p_D3c_1();
+void diag_T3_1h1p_D3c_2_const();
+void diag_T3_1h1p_D3d_1_const();
+void diag_T3_1h1p_D3d_2();
+void diag_T3_1h1p_D4a_1_const();
+void diag_T3_1h1p_D4a_2_const();
+void diag_T3_1h1p_D4b_1_const();
+void diag_T3_1h1p_D4b_2_const();
+void diag_T3_1h1p_D5a_1();
+void diag_T3_1h1p_D5a_2_const();
+void diag_T3_1h1p_D5b_1();
+void diag_T3_1h1p_D5b_2_const();
+void diag_T3_1h1p_D5c_1_const();
+void diag_T3_1h1p_D5c_2_const();
+void diag_T3_1h1p_D5c_3_const();
+void diag_T3_1h1p_D5c_4();
+void diag_T3_1h1p_D5d_1_const();
+void diag_T3_1h1p_D5d_2_const();
+void diag_T3_1h1p_D5d_3_const();
+void diag_T3_1h1p_D5d_4();
+void diag_T3_1h1p_D5e_1_const();
+void diag_T3_1h1p_D5e_2_const();
+void diag_T3_1h1p_D5f_1_const();
+void diag_T3_1h1p_D5f_2_const();
+void diag_T3_1h1p_D5g_1();
+void diag_T3_1h1p_D5g_2_const();
+void diag_T3_1h1p_D5h_1();
+void diag_T3_1h1p_D5h_2_const();
+void diag_T3_1h1p_D6a_const();
+void diag_T3_1h1p_D6b_const();
+void diag_T3_1h1p_D6c_1_const();
+void diag_T3_1h1p_D6c_2_const();
+void diag_T3_1h1p_D6c_3_const();
+void diag_T3_1h1p_D6c_4_const();
+void diag_T3_1h1p_D7a_const();
+void diag_T3_1h1p_D7b_const();
+void diag_T3_1h1p_D7c_1_const();
+void diag_T3_1h1p_D7c_2_const();
+void diag_T3_1h1p_D7c_3_const();
+void diag_T3_1h1p_D7c_4();
+void diag_T3_1h1p_D7d_1_const();
+void diag_T3_1h1p_D7d_2();
+void diag_T3_1h1p_D7e_1_const();
+void diag_T3_1h1p_D7e_2();
+void diag_T3_1h1p_D8a_1_const();
+void diag_T3_1h1p_D8a_2_const();
+void diag_T3_1h1p_D8b_1_const();
+void diag_T3_1h1p_D8b_2_const();
+void diag_T3_1h1p_D9_const();
 
 
 /*******************************************************************************
@@ -125,7 +196,7 @@ int sector11(cc_options_t *opts)
     //request_sorting("vvhh", "pphh", "1100", "1234");
     //request_sorting("vvhp", "pphp", "1100", "1234");
     if (opts->cc_model >= CC_MODEL_CCSD_T3) {
-        //request_sorting("vhhp", "phhp", "1000", "1234");
+        request_sorting("vhhp", "phhp", "1000", "1234");
         //request_sorting("vphh", "pphh", "1000", "1234");
     }
     perform_sorting();
@@ -158,7 +229,7 @@ int sector11(cc_options_t *opts)
         printf(" ---------------------------------------------------------------------------------------------------------------------\n");
     }
 
-    diis_queue_t *diis_queue = new_diis_queue(1, 1, 0);
+    diis_queue_t *diis_queue = new_diis_queue(1, 1, triples && opts->diis_triples);
     converged = 0;
     t1 = abs_time();
     for (it = 1; it <= opts->maxiter; it++) {
@@ -174,14 +245,21 @@ int sector11(cc_options_t *opts)
 
         calc_E1();
         calc_E2();
+#ifdef VERSION_DEVEL
         if (triples) {
-            calc_E3();
+            calc_E3(PT_INF);
         }
+#endif
 
         closed("e2nw", "veff11");
 
         folded_1h1p_singles();
         folded_1h1p_doubles();
+#ifdef VERSION_DEVEL
+        if (triples) {
+            folded_1h1p_triples(PT_INF);
+        }
+#endif
 
         diveps("e1nw");
         diveps("e2nw");
@@ -228,10 +306,10 @@ int sector11(cc_options_t *opts)
         }
 
         if (opts->diis_enabled) {
-            diis_put(diis_queue, "e1nw", "e1c", "e2nw", "e2c", "", "", it);
+            diis_put(diis_queue, "e1nw", "e1c", "e2nw", "e2c", "e3nw", "e3c", it);
             if (it >= 2) {
                 diis_truncate(diis_queue, opts->diis_dim);
-                diis_extrapolate(diis_queue, "e1nw", "e2nw", "");
+                diis_extrapolate(diis_queue, "e1nw", "e2nw", "e3nw");
             }
         }
 
@@ -368,7 +446,7 @@ void init_amplitudes_1h1p()
         else {
             printf(" Heff{11} diagram will be calculated\n");
         }
-        /*if (triples) {
+        if (triples) {
             if (diagram_read("e3c.dg") != NULL) {
                 printf(" S{11}_3 amplitudes successfully read from disk\n");
                 calc_t3 = 0;
@@ -376,7 +454,7 @@ void init_amplitudes_1h1p()
             else {
                 printf(" S{11}_3 amplitudes will be calculated\n");
             }
-        }*/
+        }
     }
 
     // init amplitudes if needed
@@ -403,8 +481,8 @@ void init_amplitudes_1h1p()
         printf(" Calculated: Heff{11}\n");
     }
     if (triples && calc_t3) {
-        /*tmplt("x3c", "pphppp", "110000", "123456");
-        printf(" Calculated: S{02}_3\n");*/
+        tmplt("e3c", "phhphp", "100010", "123456", IS_PERM_UNIQUE);
+        printf(" Calculated: S{11}_3\n");
     }
 
     if (cc_opts->cc_model == CC_MODEL_CCS) {
@@ -431,7 +509,95 @@ void const_terms_1h1p()
     timer_new_entry("const_s11", "Constant part of 1h1p amplitudes");
     timer_start("const_s11");
 
+    if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
+        tmplt("e3_0", "phhphp", "100010", "123456", IS_PERM_UNIQUE);
+    }
+
     copy("vhpg", "e2_0");
+
+    // T2
+    diag_T3_1h1p_D2a_1_const();
+    //diag_T3_1h1p_D2a_2();
+    //diag_T3_1h1p_D2b_1();
+    diag_T3_1h1p_D2b_2_const();
+    diag_T3_1h1p_D2c_const();
+    diag_T3_1h1p_D2d_const();
+    //diag_T3_1h1p_D2e_1();
+    diag_T3_1h1p_D2e_2_const();
+    diag_T3_1h1p_D2e_3_const();
+    diag_T3_1h1p_D2e_4_const();
+
+    // T2^2
+    diag_T3_1h1p_D3a_const();
+    diag_T3_1h1p_D3b_1_const();
+    //diag_T3_1h1p_D3b_2();
+    //diag_T3_1h1p_D3c_1();
+    diag_T3_1h1p_D3c_2_const();
+    diag_T3_1h1p_D3d_1_const();
+    //diag_T3_1h1p_D3d_2();
+
+    // T1
+    diag_T3_1h1p_D4a_1_const();
+    diag_T3_1h1p_D4a_2_const();
+    diag_T3_1h1p_D4b_1_const();
+    diag_T3_1h1p_D4b_2_const();
+
+    // T1 T2
+    //diag_T3_1h1p_D5a_1();
+    diag_T3_1h1p_D5a_2_const();
+    //diag_T3_1h1p_D5b_1();
+    diag_T3_1h1p_D5b_2_const();
+    diag_T3_1h1p_D5c_1_const();
+    diag_T3_1h1p_D5c_2_const();
+    diag_T3_1h1p_D5c_3_const();
+    //diag_T3_1h1p_D5c_4();
+    diag_T3_1h1p_D5d_1_const();
+    diag_T3_1h1p_D5d_2_const();
+    diag_T3_1h1p_D5d_3_const();
+    //diag_T3_1h1p_D5d_4();
+    diag_T3_1h1p_D5e_1_const();
+    diag_T3_1h1p_D5e_2_const();
+    diag_T3_1h1p_D5f_1_const();
+    diag_T3_1h1p_D5f_2_const();
+    //diag_T3_1h1p_D5g_1();
+    diag_T3_1h1p_D5g_2_const();
+    //diag_T3_1h1p_D5h_1();
+    diag_T3_1h1p_D5h_2_const();
+
+    // T1^2
+    diag_T3_1h1p_D6a_const();
+    diag_T3_1h1p_D6b_const();
+    diag_T3_1h1p_D6c_1_const();
+    diag_T3_1h1p_D6c_2_const();
+    diag_T3_1h1p_D6c_3_const();
+    diag_T3_1h1p_D6c_4_const();
+
+    // T1^2 T2
+    diag_T3_1h1p_D7a_const();
+    diag_T3_1h1p_D7b_const();
+    diag_T3_1h1p_D7c_1_const();
+    diag_T3_1h1p_D7c_2_const();
+    diag_T3_1h1p_D7c_3_const();
+    //diag_T3_1h1p_D7c_4();
+    diag_T3_1h1p_D7d_1_const();
+    //diag_T3_1h1p_D7d_2();
+    diag_T3_1h1p_D7e_1_const();
+    //diag_T3_1h1p_D7e_2();
+
+    // T1^3
+    diag_T3_1h1p_D8a_1_const();
+    diag_T3_1h1p_D8a_2_const();
+    diag_T3_1h1p_D8b_1_const();
+    diag_T3_1h1p_D8b_2_const();
+
+    // T1^4
+    diag_T3_1h1p_D9_const();
+
+    #ifdef VERSION_DEVEL
+    if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
+        const_terms_1h1p_triples(PT_INF);
+    }
+    #endif
 
     timer_stop("const_s11");
 }
@@ -444,8 +610,8 @@ void const_terms_1h1p()
  ******************************************************************************/
 void calc_E1()
 {
-    timer_new_entry("00-E1", "1h1p -- Singles equations (Exc1)");
-    timer_start("00-E1");
+    timer_new_entry("11-E1", "1h1p -- Singles equations (Exc1)");
+    timer_start("11-E1");
 
     // S1
     copy("vg", "e1nw");
@@ -552,127 +718,188 @@ void calc_E1()
     restore_stack_pos(pos);
 
     // Triples contribution to Singles
-    /*if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
+#ifdef VERSION_DEVEL
+    if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
+        t3_1h1p_contrib_to_singles(PT_INF);
+    }
+#endif
 
-    }*/
-
-    timer_stop("00-E1");
+    timer_stop("11-E1");
 }
 
 
-/*******************************************************************************
- * calc_X2
- *
- * Constructs the next approximation to S{02}_2 amplitudes ("Doubles").
- * Only S{02}_2/3 dependent diagrams will be calculated; for independent terms
- * see const_terms_0h2p().
- ******************************************************************************/
-void calc_E2()
+void diag_T3_1h1p_D2a_1_const()
 {
-    timer_new_entry("11-S2", "1h1p -- Doubles equations (S{11}_2)");
-    timer_start("11-S2");
-
-    // D1
-    copy("e2_0", "e2nw");
-
     dg_stack_pos_t pos = get_stack_pos();
 
-    // D2a-1
     reorder("pg", "pgr", "21");
     mult("s2c", "pgr", "r1", 1);
-    update("e2nw", 1.0, "r1");
-    restore_stack_pos(pos);
+    update("e2_0", 1.0, "r1");
 
-    // D2a-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D2a_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pp", "ppr_", "21");
     reorder("e2c", "e2_21", "2143");
     mult("e2_21", "ppr_", "r1", 1);
     reorder("r1", "r2", "2143");
     update("e2nw", 1.0, "r2");
-    restore_stack_pos(pos);
 
-    // D2b-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D2b_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("e2c", "e2r_", "3412");
     mult("e2r_", "hh", "r1", 1);
     reorder("r1", "r2", "3412");
     update("e2nw", -1.0, "r2");
+
     restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D2b_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
 
     // D2b-2
     reorder("h2c", "h2r_", "3412");
     mult("h2r_", "vh", "r1", 1);
     reorder("r1", "r2", "3412");
     reorder("r2", "r3", "2143");
-    update("e2nw", -1.0, "r3");
-    restore_stack_pos(pos);
+    update("e2_0", -1.0, "r3");
 
-    // D2c
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D2c_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     mult("pppgr", "s2c", "r1", 2);
     reorder("r1", "r2", "3412");
-    update("e2nw", 0.5, "r2");
-    restore_stack_pos(pos);
+    update("e2_0", 0.5, "r2");
 
-    // D2d
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D2d_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("h2c", "r1", "3412");
     mult("hvhh", "r1", "r2", 2);
     reorder("r2", "r3", "2143");
-    update("e2nw", 0.5, "r3");
-    restore_stack_pos(pos);
+    update("e2_0", 0.5, "r3");
 
-    // D2e-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D2e_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("e2c", "r1", "1423");
     reorder("phph", "r2", "2341");
     mult("r1", "r2", "r3", 2);
     reorder("r3", "r4", "1342");
     update("e2nw", -1.0, "r4");
-    restore_stack_pos(pos);
 
-    // D2e-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D2e_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("t2c", "r1", "1423");
     reorder("pvgh", "r2", "2341");
     mult("r1", "r2", "r3", 2);
     reorder("r3", "r4", "1342");
     reorder("r4", "r5", "2143");
-    update("e2nw", -1.0, "r5");
-    restore_stack_pos(pos);
+    update("e2_0", -1.0, "r5");
 
-    // D2e-3
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D2e_3_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("s2c", "r1", "1324");
     reorder("phhg", "r0", "2431");
     mult("r1", "r0", "r3", 2);
     reorder("r3", "r4", "1324");
-    update("e2nw", 1.0, "r4");
-    restore_stack_pos(pos);
+    update("e2_0", 1.0, "r4");
 
-    // D2e-4
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D2e_4_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("h2c", "r1", "1324");
     reorder("pvhp", "r0", "2431");
     mult("r1", "r0", "r3", 2);
     reorder("r3", "r4", "1324");
     reorder("r4", "r5", "2143");
-    update("e2nw", 1.0, "r5");
-    restore_stack_pos(pos);
+    update("e2_0", 1.0, "r5");
 
-    // D3a
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D3a_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("h2c", "h2_21", "2143");
     reorder("h2_21", "h2r_", "3412");
     reorder("pphh", "v1", "3412");
     mult("s2c", "v1", "r1", 2);
     mult("r1", "h2r_", "r2", 2);
-    update("e2nw", 0.25, "r2");
-    restore_stack_pos(pos);
+    update("e2_0", 0.25, "r2");
 
-    // D3b-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D3b_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("s2c", "s2_r1", "1324");
     reorder("h2c", "h2_r1", "1324");
     reorder("pphh", "r2", "4231");
     mult("s2_r1", "r2", "r3", 2);
     mult("r3", "h2_r1", "r4", 2);
     reorder("r4", "r5", "1324");
-    update("e2nw", 1.0, "r5");
-    restore_stack_pos(pos);
+    update("e2_0", 1.0, "r5");
 
-    // D3b-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D3b_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("e2c", "e2c_m", "1243");
     reorder("e2c_m", "e2_r1", "1324");
     reorder("t2c", "t2_r1", "1324");
@@ -682,9 +909,15 @@ void calc_E2()
     reorder("r4", "r5", "1324");
     reorder("r5", "r6", "1243");
     update("e2nw", 1.0, "r6");
-    restore_stack_pos(pos);
 
-    // D3c-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D3c_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v1", "3412");
     mult("t2c", "v1", "r1", 3);
     reorder("e2c", "e2_21", "2143");
@@ -692,127 +925,218 @@ void calc_E2()
     mult("r1", "r2", "r3", 1);
     reorder("r3", "r4", "2143");
     update("e2nw", -0.5, "r4");
-    restore_stack_pos(pos);
 
-    // D3c-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D3c_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v1", "3412");
     mult("s2c", "v1", "r1", 3);
     reorder("h2c", "h2_21", "2143");
     reorder("h2_21", "r2", "2341");
     mult("r1", "r2", "r3", 1);
-    update("e2nw", -0.5, "r3");
-    restore_stack_pos(pos);
+    update("e2_0", -0.5, "r3");
 
-    // D3d-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D3d_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("h2c", "h2r_", "3412");
     mult("h2r_", "pphh", "r1", 3);
     mult("s2c", "r1", "r2", 1);
-    update("e2nw", -0.5, "r2");
-    restore_stack_pos(pos);
+    update("e2_0", -0.5, "r2");
 
-    // D3d-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D3d_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("t2c", "t2r_", "3412");
     mult("t2r_", "pphh", "r1", 3);
     reorder("e2c", "e2_21", "2143");
     mult("e2_21", "r1", "r2", 1);
     reorder("r2", "r3", "2143");
     update("e2nw", -0.5, "r3");
+    
     restore_stack_pos(pos);
+}
 
-    // D4a-1
+
+void diag_T3_1h1p_D4a_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phpg", "r1", "2341");
     mult("s1c", "r1", "r2", 1);
-    update("e2nw", 1.0, "r2");
+    update("e2_0", 1.0, "r2");
+    
     restore_stack_pos(pos);
+}
 
-    // D4a-2
+
+void diag_T3_1h1p_D4a_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pvgp", "r1", "2341");
     mult("t1c", "r1", "r2", 1);
     reorder("r2", "r3", "2143");
-    update("e2nw", 1.0, "r3");
+    update("e2_0", 1.0, "r3");
+    
     restore_stack_pos(pos);
+}
 
-    // D4b-1
+
+void diag_T3_1h1p_D4b_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("hvhp", "r1", "1243");
     reorder("h1c", "h1_21", "21");
     mult("r1", "h1_21", "r2", 1);
     reorder("r2", "r3", "2134");
-    update("e2nw", -1.0, "r3");
+    update("e2_0", -1.0, "r3");
+    
     restore_stack_pos(pos);
+}
 
-    // D4b-2
+
+void diag_T3_1h1p_D4b_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
+ 
     reorder("vhhg", "r1", "1243");
     reorder("t1c", "t1_21", "21");
     mult("r1", "t1_21", "r2", 1);
     reorder("r2", "r3", "1243");
-    update("e2nw", -1.0, "r3");
-    restore_stack_pos(pos);
+    update("e2_0", -1.0, "r3");
 
-    // D5a-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D5a_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("ph", "r1", "21");
     reorder("e2c", "e2_21", "3412");
     mult("t1c", "r1", "r2", 1);
     mult("e2_21", "r2", "r3", 1);
     reorder("r3", "r4", "3412");
     update("e2nw", -1.0, "r4");
+    
     restore_stack_pos(pos);
+}
 
-    // D5a-2
+
+void diag_T3_1h1p_D5a_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("ph", "r1", "21");
     reorder("h2c", "h2_21", "3412");
     mult("s1c", "r1", "r2", 1);
     mult("h2_21", "r2", "r3", 1);
     reorder("r3", "r4", "3412");
     reorder("r4", "r5", "2143");
-    update("e2nw", -1.0, "r5");
+    update("e2_0", -1.0, "r5");
+    
     restore_stack_pos(pos);
+}
 
-    // D5b-1
+
+void diag_T3_1h1p_D5b_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("t1c", "t1_21", "21");
     mult("t1_21", "ph", "r1", 1);
     reorder("e2c", "e2c_21", "2143");
     mult("e2c_21", "r1", "r2", 1);
     reorder("r2", "r3", "2143");
     update("e2nw", -1.0, "r3");
+    
     restore_stack_pos(pos);
+}
 
-    // D5b-2
+
+void diag_T3_1h1p_D5b_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("h1c", "h1_21", "21");
     mult("h1_21", "ph", "r1", 1);
     mult("s2c", "r1", "r2", 1);
-    update("e2nw", -1.0, "r2");
+    update("e2_0", -1.0, "r2");
+    
     restore_stack_pos(pos);
+}
 
-    // D5c-1
+
+void diag_T3_1h1p_D5c_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphg", "r1", "4312");
     mult("s1c", "r1", "r2", 1);
     reorder("t2c", "r3", "1324");
     mult("r3", "r2", "r4", 2);
     reorder("r4", "r5", "1324");
     reorder("r5", "r6", "2134");
-    update("e2nw", -1.0, "r6");   // minus
-    restore_stack_pos(pos);
+    update("e2_0", -1.0, "r6");   // minus
 
-    // D5c-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D5c_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphp", "r1", "4312");
     mult("s1c", "r1", "r2", 1);
     reorder("h2c", "r3", "1324");
     mult("r3", "r2", "r4", 2);
     reorder("r4", "r5", "1324");
     reorder("r5", "r6", "2143");
-    update("e2nw", 1.0, "r6");
-    restore_stack_pos(pos);
+    update("e2_0", 1.0, "r6");
 
-    // D5c-3
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D5c_3_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphg", "r1", "4312");
     mult("t1c", "r1", "r2", 1);
     reorder("s2c", "r3", "1324");
     mult("r3", "r2", "r4", 2);
     reorder("r4", "r5", "1324");
-    update("e2nw", 1.0, "r5");
+    update("e2_0", 1.0, "r5");
+    
     restore_stack_pos(pos);
+}
 
-    // D5c-4
+
+void diag_T3_1h1p_D5c_4()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("e2c", "e2c_m", "1243");
     reorder("pphp", "r1", "4312");
     mult("t1c", "r1", "r2", 1);
@@ -821,9 +1145,15 @@ void calc_E2()
     reorder("r4", "r5", "1324");
     reorder("r5", "r6", "1243");
     update("e2nw", 1.0, "r6");   // minus
+    
     restore_stack_pos(pos);
+}
 
-    // D5d-1
+
+void diag_T3_1h1p_D5d_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pvhh", "r1", "2314");
     reorder("h1c", "h1_21", "21");
     mult("h1_21", "r1", "i1", 1);
@@ -831,10 +1161,16 @@ void calc_E2()
     mult("r2", "i1", "i2", 2);
     reorder("i2", "r3", "1423");
     reorder("r3", "r4", "2134");
-    update("e2nw", 1.0, "r4");   // minus
+    update("e2_0", 1.0, "r4");   // minus
+    
     restore_stack_pos(pos);
+}
 
-    // D5d-2
+
+void diag_T3_1h1p_D5d_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pvhh", "r1", "2314");
     reorder("t1c", "t1_21", "21");
     mult("t1_21", "r1", "i1", 1);
@@ -842,20 +1178,32 @@ void calc_E2()
     mult("r2", "i1", "i2", 2);
     reorder("i2", "r3", "1423");
     reorder("r3", "r4", "2143");
-    update("e2nw", -1.0, "r4");
+    update("e2_0", -1.0, "r4");
+    
     restore_stack_pos(pos);
+}
 
-    // D5d-3
+
+void diag_T3_1h1p_D5d_3_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhh", "r1", "2314");
     reorder("h1c", "h1_21", "21");
     mult("h1_21", "r1", "i1", 1);
     reorder("s2c", "r2", "1324");
     mult("r2", "i1", "i2", 2);
     reorder("i2", "r3", "1423");
-    update("e2nw", -1.0, "r3");
-    restore_stack_pos(pos);
+    update("e2_0", -1.0, "r3");
 
-    // D5d-4
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D5d_4()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhh", "r1", "2314");
     reorder("t1c", "t1_21", "21");
     mult("t1_21", "r1", "i1", 1);
@@ -865,60 +1213,102 @@ void calc_E2()
     reorder("i2", "r3", "1423");
     reorder("r3", "r4", "1243");
     update("e2nw", -1.0, "r4");   // minus
+    
     restore_stack_pos(pos);
+}
 
-    // D5e-1
+
+void diag_T3_1h1p_D5e_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphp", "r1", "4312");
     reorder("h1c", "h1_21", "21");
     mult("s2c", "r1", "i1", 2);
     mult("i1", "h1_21", "r2", 1);
-    update("e2nw", 0.5, "r2");   // minus
-    restore_stack_pos(pos);
+    update("e2_0", 0.5, "r2");   // minus
 
-    // D5e-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D5e_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphg", "r1", "4312");
     reorder("t1c", "t1_21", "21");
     mult("s2c", "r1", "i1", 2);
     mult("i1", "t1_21", "r2", 1);
     reorder("r2", "r3", "1243");
-    update("e2nw", -0.5, "r3");
-    restore_stack_pos(pos);
+    update("e2_0", -0.5, "r3");
 
-    // D5f-1
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D5f_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhh", "r1", "2341");
     reorder("h2c", "h2_21", "2143");
     reorder("h2_21", "h2r", "3412");
     mult("s1c", "r1", "i1", 1);
     mult("i1", "h2r", "r2", 2);
-    update("e2nw", 0.5, "r2");
+    update("e2_0", 0.5, "r2");
+    
     restore_stack_pos(pos);
+}
 
-    // D5f-2
+
+void diag_T3_1h1p_D5f_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pvhh", "r1", "2341");
     reorder("h2c", "h2r", "3412");
     mult("t1c", "r1", "i1", 1);
     mult("i1", "h2r", "r2", 2);
     reorder("r2", "r3", "2143");
-    update("e2nw", 0.5, "r3");
+    update("e2_0", 0.5, "r3");
+    
     restore_stack_pos(pos);
+}
 
-    // D5g-1
+
+void diag_T3_1h1p_D5g_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphp", "r1", "4231");
     mult("r1", "t1c", "i1", 2);
     reorder("e2c", "e2c_21", "2143");
     mult("e2c_21", "i1", "r2", 1);
     reorder("r2", "r3", "2143");
     update("e2nw", 1.0, "r3");
-    restore_stack_pos(pos);
 
-    // D5g-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D5g_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphg", "r1", "4231");
     mult("r1", "t1c", "i1", 2);
     mult("s2c", "i1", "r2", 1);
-    update("e2nw", 1.0, "r2");
+    update("e2_0", 1.0, "r2");
+    
     restore_stack_pos(pos);
+}
 
-    // D5h-1
+
+void diag_T3_1h1p_D5h_1()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhh", "r1", "2431");
     mult("r1", "t1c", "i1", 2);
     reorder("e2c", "e2c_21", "2143");
@@ -926,80 +1316,134 @@ void calc_E2()
     mult("i1", "r2", "r3", 1);
     reorder("r3", "r4", "2143");
     update("e2nw", -1.0, "r4");
+    
     restore_stack_pos(pos);
+}
 
-    // D5h-2
+
+void diag_T3_1h1p_D5h_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pvhh", "r1", "2431");
     mult("r1", "t1c", "i1", 2);
     reorder("h2c", "h2_21", "2143");
     reorder("h2_21", "r2", "2341");
     mult("i1", "r2", "r3", 1);
-    update("e2nw", -1.0, "r3");
+    update("e2_0", -1.0, "r3");
+    
     restore_stack_pos(pos);
+}
 
-    // D6a
+
+void diag_T3_1h1p_D6a_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     mult("pppgr", "t1c", "i1", 1);
     reorder("i1", "r1", "4123");
     mult("s1c", "r1", "r2", 1);
-    update("e2nw", 1.0, "r2");
+    update("e2_0", 1.0, "r2");
+    
     restore_stack_pos(pos);
+}
 
-    // D6b
+
+void diag_T3_1h1p_D6b_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("t1c", "t1_21", "21");
     reorder("h1c", "h1_21", "21");
     mult("h1_21", "vhhh", "i1", 1);
     mult("t1_21", "i1", "i2", 1);
     reorder("i2", "r1", "3412");
-    update("e2nw", 1.0, "r1");
+    update("e2_0", 1.0, "r1");
+    
     restore_stack_pos(pos);
+}
 
-    // D6c-1
+
+void diag_T3_1h1p_D6c_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phph", "r1", "2341");
     reorder("h1c", "r2", "21");
     mult("s1c", "r1", "r3", 1);
     mult("r3", "r2", "r4", 1);
-    update("e2nw", -1.0, "r4");
-    restore_stack_pos(pos);
+    update("e2_0", -1.0, "r4");
 
-    // D6c-2
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D6c_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pvgh", "r1", "2341");
     reorder("t1c", "r2", "21");
     mult("t1c", "r1", "r3", 1);
     mult("r3", "r2", "r4", 1);
     reorder("r4", "r5", "2143");
-    update("e2nw", -1.0, "r5");
+    update("e2_0", -1.0, "r5");
+    
     restore_stack_pos(pos);
+}
 
-    // D6c-3
+
+void diag_T3_1h1p_D6c_3_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhg", "r0", "2431");
     mult("s1c", "r0", "i1", 1);
     reorder("t1c", "t1_21", "21");
     mult("i1", "t1_21", "i2", 1);
     reorder("i2", "r2", "1243");
-    update("e2nw", -1.0, "r2");
-    restore_stack_pos(pos);
+    update("e2_0", -1.0, "r2");
 
-    // D6c-4
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D6c_4_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pvhp", "r0", "2431");
     mult("t1c", "r0", "i1", 1);
     reorder("h1c", "h1_21", "21");
     mult("i1", "h1_21", "i2", 1);
     reorder("i2", "r2", "1243");
     reorder("r2", "r3", "2143");
-    update("e2nw", -1.0, "r3");
+    update("e2_0", -1.0, "r3");
+    
     restore_stack_pos(pos);
+}
 
-    // D7a
+
+void diag_T3_1h1p_D7a_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "vr1", "3412");
     reorder("h2c", "h2_21", "2143");
     reorder("h2_21", "h2_21_r", "3412");
     mult("t1c", "vr1", "r1", 1);
     mult("s1c", "r1", "r2", 1);
     mult("r2", "h2_21_r", "r3", 2);
-    update("e2nw", 0.5, "r3");
+    update("e2_0", 0.5, "r3");
+   
     restore_stack_pos(pos);
+}
 
-    // D7b
+
+void diag_T3_1h1p_D7b_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "vr1", "3412");
     reorder("t1c", "t1_r", "21");
     reorder("h1c", "h1_r", "21");
@@ -1007,10 +1451,16 @@ void calc_E2()
     mult("h1_r", "r1", "r2", 1);
     mult("t1_r", "r2", "r3", 1);
     reorder("r3", "r4", "3412");
-    update("e2nw", 0.5, "r4");
+    update("e2_0", 0.5, "r4");
+    
     restore_stack_pos(pos);
+}
 
-    // D7c-1
+
+void diag_T3_1h1p_D7c_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "r1", "3142");
     reorder("h2c", "h2_21", "2143");
     reorder("h2_21", "r2", "2413");
@@ -1019,10 +1469,16 @@ void calc_E2()
     mult("s1c", "r3", "r4", 1);
     mult("r4", "r5", "r6", 1);
     reorder("r6", "r7", "1243");
-    update("e2nw", -1.0, "r7");
+    update("e2_0", -1.0, "r7");
+    
     restore_stack_pos(pos);
+}
 
-    // D7c-2
+
+void diag_T3_1h1p_D7c_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "r1", "3142");
     reorder("s2c", "s2_21", "2143");
     reorder("s2_21", "r2", "2413");
@@ -1032,20 +1488,32 @@ void calc_E2()
     mult("r4", "r5", "r6", 1);
     reorder("r6", "r7", "1243");
     reorder("r7", "r8", "2143");
-    update("e2nw", -1.0, "r8");
-    restore_stack_pos(pos);
+    update("e2_0", -1.0, "r8");
 
-    // D7c-3
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D7c_3_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "r1", "3142");
     reorder("t2c", "r2", "2413");
     reorder("h1c", "r5", "21");
     mult("r2", "r1", "r3", 2);
     mult("s1c", "r3", "r4", 1);
     mult("r4", "r5", "r6", 1);
-    update("e2nw", 1.0, "r6");   // minus
+    update("e2_0", 1.0, "r6");   // minus
+    
     restore_stack_pos(pos);
+}
 
-    // D7c-4
+
+void diag_T3_1h1p_D7c_4()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("e2c", "e2c_m_21", "2134");
     reorder("pphh", "r1", "3142");
     reorder("e2c_m_21", "r2", "2413");
@@ -1055,9 +1523,15 @@ void calc_E2()
     mult("r4", "r5", "r6", 1);
     reorder("r6", "r7", "2143");
     update("e2nw", -1.0, "r7");   // minus
+   
     restore_stack_pos(pos);
+}
 
-    // D7d-1
+
+void diag_T3_1h1p_D7d_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v_", "2431");
     mult("v_", "t1c", "r1", 2);
     reorder("r1", "r2", "21");
@@ -1065,10 +1539,16 @@ void calc_E2()
     reorder("h2c", "h2_21", "2143");
     reorder("h2_21", "h2_21_r", "2341");
     mult("r3", "h2_21_r", "r4", 1);
-    update("e2nw", -1.0, "r4");
+    update("e2_0", -1.0, "r4");
+    
     restore_stack_pos(pos);
+}
 
-    // D7d-2
+
+void diag_T3_1h1p_D7d_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v_", "2431");
     mult("v_", "t1c", "r1", 2);
     reorder("r1", "r2", "21");
@@ -1078,9 +1558,15 @@ void calc_E2()
     mult("r3", "e2c_21_r", "r4", 1);
     reorder("r4", "r5", "2143");
     update("e2nw", -1.0, "r5");
+    
     restore_stack_pos(pos);
+}
 
-    // D7e-1
+
+void diag_T3_1h1p_D7e_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v_", "2431");
     reorder("h1c", "h1_21", "21");
     mult("v_", "t1c", "r1", 2);
@@ -1089,10 +1575,16 @@ void calc_E2()
     reorder("s2_21", "s2_21_r", "1243");
     mult("s2_21_r", "r2", "r3", 1);
     reorder("r3", "r4", "2134");
-    update("e2nw", -1.0, "r4");
+    update("e2_0", -1.0, "r4");
+    
     restore_stack_pos(pos);
+}
 
-    // D7e-2
+
+void diag_T3_1h1p_D7e_2()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphh", "v_", "2431");
     reorder("t1c", "t1_21", "21");
     mult("v_", "t1c", "r1", 2);
@@ -1101,29 +1593,47 @@ void calc_E2()
     mult("e2r_", "r2", "r3", 1);
     reorder("r3", "r4", "1243");
     update("e2nw", -1.0, "r4");
+   
     restore_stack_pos(pos);
+}
 
-    // D8a-1
+
+void diag_T3_1h1p_D8a_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphg", "r1", "4312");
     reorder("t1c", "t1_21", "21");
     mult("t1c", "r1", "r2", 1);
     mult("s1c", "r2", "r3", 1);
     mult("r3", "t1_21", "r4", 1);
     reorder("r4", "r5", "1243");
-    update("e2nw", -1.0, "r5");
+    update("e2_0", -1.0, "r5");
+    
     restore_stack_pos(pos);
+}
 
-    // D8a-2
+
+void diag_T3_1h1p_D8a_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pphp", "r1", "4312");
     reorder("h1c", "h1_21", "21");
     mult("s1c", "r1", "r2", 1);
     mult("t1c", "r2", "r3", 1);
     mult("r3", "h1_21", "r4", 1);
     reorder("r4", "r5", "2134");
-    update("e2nw", -1.0, "r5");
+    update("e2_0", -1.0, "r5");
+    
     restore_stack_pos(pos);
+}
 
-    // D8b-1
+
+void diag_T3_1h1p_D8b_1_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("phhh", "r1", "2341");
     reorder("t1c", "t1_21", "21");
     reorder("h1c", "h1_21", "21");
@@ -1131,10 +1641,16 @@ void calc_E2()
     mult("h1_21", "i1", "i2", 1);
     mult("t1_21", "i2", "r2", 1);
     reorder("r2", "r3", "3412");
-    update("e2nw", 1.0, "r3");
+    update("e2_0", 1.0, "r3");
+    
     restore_stack_pos(pos);
+}
 
-    // D8b-2
+
+void diag_T3_1h1p_D8b_2_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("pvhh", "r1", "2341");
     reorder("t1c", "t1_21", "21");
     reorder("h1c", "h1_21", "21");
@@ -1143,10 +1659,16 @@ void calc_E2()
     mult("h1_21", "i2", "r2", 1);
     reorder("r2", "r3", "3412");
     reorder("r3", "r4", "2143");
-    update("e2nw", 1.0, "r4");
-    restore_stack_pos(pos);
+    update("e2_0", 1.0, "r4");
 
-    // D9
+    restore_stack_pos(pos);
+}
+
+
+void diag_T3_1h1p_D9_const()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+
     reorder("t1c", "t1_21", "21");
     reorder("h1c", "h1_21", "21");
     reorder("pphh", "vr1", "3412");
@@ -1155,16 +1677,113 @@ void calc_E2()
     mult("h1_21", "r2", "r3", 1);
     mult("t1_21", "r3", "r4", 1);
     reorder("r4", "r5", "3412");
-    update("e2nw", 1.0, "r5");
-    restore_stack_pos(pos);
+    update("e2_0", 1.0, "r5");
 
-    timer_stop("11-S2");
+    restore_stack_pos(pos);
 }
 
 
-void calc_E3()
+/*******************************************************************************
+ * calc_E2
+ *
+ * Constructs the next approximation to S{11}_2 amplitudes ("Doubles").
+ * Only S{11}_2/3 dependent diagrams will be calculated; for independent terms
+ * see const_terms_1h1p().
+ ******************************************************************************/
+void calc_E2()
 {
+    timer_new_entry("11-S2", "1h1p -- Doubles equations (S{11}_2)");
+    timer_start("11-S2");
 
+    // diagram D1
+    copy("e2_0", "e2nw");
+
+    // T2
+    //diag_T3_1h1p_D2a_1_const();
+    diag_T3_1h1p_D2a_2();
+    diag_T3_1h1p_D2b_1();
+    //diag_T3_1h1p_D2b_2_const();
+    //diag_T3_1h1p_D2c_const();
+    //diag_T3_1h1p_D2d_const();
+    diag_T3_1h1p_D2e_1();
+    //diag_T3_1h1p_D2e_2_const();
+    //diag_T3_1h1p_D2e_3_const();
+    //diag_T3_1h1p_D2e_4_const();
+
+    // T2^2
+    //diag_T3_1h1p_D3a_const();
+    //diag_T3_1h1p_D3b_1_const();
+    diag_T3_1h1p_D3b_2();
+    diag_T3_1h1p_D3c_1();
+    //diag_T3_1h1p_D3c_2_const();
+    //diag_T3_1h1p_D3d_1_const();
+    diag_T3_1h1p_D3d_2();
+
+    // T1
+    //diag_T3_1h1p_D4a_1_const();
+    //diag_T3_1h1p_D4a_2_const();
+    //diag_T3_1h1p_D4b_1_const();
+    //diag_T3_1h1p_D4b_2_const();
+
+    // T1 T2
+    diag_T3_1h1p_D5a_1();
+    //diag_T3_1h1p_D5a_2_const();
+    diag_T3_1h1p_D5b_1();
+    //diag_T3_1h1p_D5b_2_const();
+    //diag_T3_1h1p_D5c_1_const();
+    //diag_T3_1h1p_D5c_2_const();
+    //diag_T3_1h1p_D5c_3_const();
+    diag_T3_1h1p_D5c_4();
+    //diag_T3_1h1p_D5d_1_const();
+    //diag_T3_1h1p_D5d_2_const();
+    //diag_T3_1h1p_D5d_3_const();
+    diag_T3_1h1p_D5d_4();
+    //diag_T3_1h1p_D5e_1_const();
+    //diag_T3_1h1p_D5e_2_const();
+    //diag_T3_1h1p_D5f_1_const();
+    //diag_T3_1h1p_D5f_2_const();
+    diag_T3_1h1p_D5g_1();
+    //diag_T3_1h1p_D5g_2_const();
+    diag_T3_1h1p_D5h_1();
+    //diag_T3_1h1p_D5h_2_const();
+
+    // T1^2
+    //diag_T3_1h1p_D6a_const();
+    //diag_T3_1h1p_D6b_const();
+    //diag_T3_1h1p_D6c_1_const();
+    //diag_T3_1h1p_D6c_2_const();
+    //diag_T3_1h1p_D6c_3_const();
+    //diag_T3_1h1p_D6c_4_const();
+
+    // T1^2 T2
+    //diag_T3_1h1p_D7a_const();
+    //diag_T3_1h1p_D7b_const();
+    //diag_T3_1h1p_D7c_1_const();
+    //diag_T3_1h1p_D7c_2_const();
+    //diag_T3_1h1p_D7c_3_const();
+    diag_T3_1h1p_D7c_4();
+    //diag_T3_1h1p_D7d_1_const();
+    diag_T3_1h1p_D7d_2();
+    //diag_T3_1h1p_D7e_1_const();
+    diag_T3_1h1p_D7e_2();
+
+    // T1^3
+    //diag_T3_1h1p_D8a_1_const();
+    //diag_T3_1h1p_D8a_2_const();
+    //diag_T3_1h1p_D8b_1_const();
+    //diag_T3_1h1p_D8b_2_const();
+
+    // T1^4
+    //diag_T3_1h1p_D9_const();
+
+    // Triples contribution to Doubles
+#ifdef VERSION_DEVEL
+    if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
+        t3_1h1p_contrib_to_doubles(PT_INF);
+    }
+#endif
+
+    timer_stop("11-S2");
 }
 
 

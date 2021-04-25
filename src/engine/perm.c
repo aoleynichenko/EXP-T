@@ -248,6 +248,7 @@ void elementary_perm(char *src_name, char *perm_str)
  * P(i/jk|a/bc) = P(i/jk)P(a/bc)
  *
  * TODO: permutations for 3-particle diagrams
+ * TODO: refactoring, patternmatching in a regexp-like manner
  ******************************************************************************/
 void perm(char *dg_name, char *perm_str)
 {
@@ -283,6 +284,17 @@ void perm(char *dg_name, char *perm_str)
     }
     else if (strcmp(perm_str, "(123)") == 0) {
         elementary_perm(dg_name, perm_str);
+    }
+        // case of (xx|yy) permutations
+    else if (strlen(perm_str) == 7 && perm_str[0] == '(' && perm_str[6] == ')' && perm_str[3] == '|') {
+        char perm1[] = "(xx)";
+        char perm2[] = "(yy)";
+        perm1[1] = perm_str[1];
+        perm1[2] = perm_str[2];
+        perm2[1] = perm_str[4];
+        perm2[2] = perm_str[5];
+        elementary_perm(dg_name, perm1);
+        elementary_perm(dg_name, perm2);
     }
         // case of (x/xx|y/yy) permutations
     else if (strlen(perm_str) == 11 && perm_str[0] == '(' && perm_str[10] == ')' && perm_str[5] == '|') {

@@ -62,7 +62,7 @@ void loewdin_orth(size_t n, double complex *C, double complex *C_orth, int print
         xprimat(CC_COMPLEX, C, n, n, "Input non-orthogonal vectors");
     }
 
-    overlap(n, C, C, S);
+    overlap(n, n, C, C, S);
     if (print >= 2) {
         xprimat(CC_COMPLEX, S, n, n, "OVERLAP");
     }
@@ -110,7 +110,7 @@ void loewdin_orth(size_t n, double complex *C, double complex *C_orth, int print
     memcpy(C_orth, U, nbytes);
 
     // check orthogonalization
-    overlap(n, C_orth, C_orth, S);
+    overlap(n, n, C_orth, C_orth, S);
     if (print >= 1) {
         xprimat(CC_COMPLEX, S, n, n, "NEW OVERLAP");
     }

@@ -22,7 +22,7 @@
  */
 
 #include "linalg.h"
-
+#include "memory.h"
 
 /**
  * Calculates overlap matrix S = <C1|C2>, where C1, C2 -- n x n square matrices
@@ -39,17 +39,78 @@
  * @author 2017-2019 Andrei Zaitsevskii
  * @author 2019 Alexander Oleynichenko
  */
-void overlap(size_t n, double complex *C1, double complex *C2, double complex *S)
+void overlap(size_t dim, size_t n_states, double complex *C1, double complex *C2, double complex *S)
 {
+    // Naive implementation:
+
     size_t i, j, k;
 
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < n; j++) {
+    for (i = 0; i < n_states; i++) {
+        for (j = 0; j < n_states; j++) {
             double complex s = 0.0 + 0.0 * I;
-            for (k = 0; k < n; k++) {
-                s = s + conj(C1[i * n + k]) * C2[j * n + k];
+            for (k = 0; k < dim; k++) {
+                s = s + conj(C1[i * dim + k]) * C2[j * dim + k];
             }
-            S[i * n + j] = s;
+            S[i * n_states + j] = s;
         }
     }
+
+
+    // LAPACK-based implementation (for square matrices):
+
+    /*
+    double complex alpha = 1.0 + 0.0*I;
+    double complex beta  = 0.0 + 0.0*I;
+
+    // if vectors in C1 and C2 are stored row-wise,
+    // S* = C1 x C2^T
+    // S = conj(C1 x C2^T)
+    xgemm(CC_COMPLEX, "N", "C", n, n, n, &alpha, C1, n, C2, n, &beta, S, n);
+    for (size_t i = 0; i < n * n; i++) {
+        S[i] = conj(S[i]);
+    }
+    */
+}
+
+
+/*
+ * Construct projector onto non-orthogonal basis in the basis of Slater determinants.
+ * Basis vectors are stored row-wise in the 'C' matrix.
+ *
+ * dim      - dimension of the basis of Slater determinants
+ * n_states - number of states in the basis
+ * C        - matrix of basis vectors (model vectors), stored row-wise
+ *            dimensions: 'n_states' rows, 'dim' columns
+ * P        - (target) square matrix of the projector of size dim x dim
+ */
+void construct_projector(int dim, int n_states, double complex *C, double complex *P)
+{
+    if (n_states == 0) {
+        return;
+    }
+    double complex *S = zzeros(n_states, n_states);
+    double complex *S_inv = zzeros(n_states, n_states);
+
+    overlap(dim, n_states, C, C, S);
+    inv(n_states, S, S_inv);
+
+    xprimat(CC_COMPLEX, S, n_states, n_states, "S");
+    xprimat(CC_COMPLEX, S_inv, n_states, n_states, "S_inv");
+
+    for (int a = 0; a < dim; a++) {
+        for (int b = 0; b < dim; b++) {
+            double complex P_ab = 0.0 + 0.0*I;
+
+            for (int mu = 0; mu < n_states; mu++) {
+                for (int nu = 0; nu < n_states; nu++) {
+                    P_ab += C[mu*dim+a] * S_inv[mu*n_states+nu] * conj(C[nu*dim+b]);
+                }
+            }
+
+            P[a*dim + b] = P_ab;
+        }
+    }
+
+    cc_free(S);
+    cc_free(S_inv);
 }

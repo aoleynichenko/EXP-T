@@ -95,7 +95,9 @@ int eig(int n, double complex *A, double complex *ev, double complex *vl, double
 void svd(int n, double complex *A, double *lambda, double complex *U, double complex *V);
 
 // overlap matrix between two sets of vectors
-void overlap(size_t n, double complex *C1, double complex *C2, double complex *S);
+void overlap(size_t dim, size_t n_states, double complex *C1, double complex *C2, double complex *S);
+
+void construct_projector(int dim, int n_states, double complex *C, double complex *P);
 
 // symmetric (Loewdin) orthogonalization
 void loewdin_orth(size_t n, double complex *C, double complex *C_orth, int print);

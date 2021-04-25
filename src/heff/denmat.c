@@ -65,15 +65,16 @@ void sort_vectors(int n, double complex *ev, double complex *vl, double complex 
 void construct_ms_density_matrix(int sect_h, int sect_p,
                                  int dim_bra, double complex *coef_bra, slater_det_t *dets_bra,
                                  int dim_ket, double complex *coef_ket, slater_det_t *dets_ket,
-                                 double complex *dm, size_t *dim_dm)
+                                 double complex *dm, int *dim_dm)
 {
     // only 'valence' parts of DMs are be constructed
     // dim DMs = n_active x n_active
     size_t n_active = 0;
     int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
+    int nspinors = get_num_spinors();
 
     // TODO: refactor, separate utility function (move to spinors.c)
-    for (int i = 0; i < NSPINORS; i++) {
+    for (int i = 0; i < nspinors; i++) {
         if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
@@ -103,9 +104,10 @@ double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, doub
 {
     int n_active = 0;
     int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
+    int nspinors = get_num_spinors();
 
     // TODO: refactor, separate utility function (move to spinors.c)
-    for (int i = 0; i < NSPINORS; i++) {
+    for (int i = 0; i < nspinors; i++) {
         if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
@@ -117,7 +119,7 @@ double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, doub
         for (int j = 0; j < n_active; j++) {
             int p = active_spinors[i];
             int q = active_spinors[j];
-            sum += dm[i * n_active + j] * prp[p * NSPINORS + q];
+            sum += dm[i * n_active + j] * prp[p * nspinors + q];
         }
     }
 
@@ -197,19 +199,13 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
 
     // only 'valence' parts of DMs are be constructed
     // dim DMs = n_active x n_active
-    size_t n_active = 0;
+    int n_active = 0;
     int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
     double complex *denmat;
     double complex *nat_occ, *natorb_left, *natorb_right;
     double *lambda;
 
-    // TODO: refactor, separate utility function (move to spinors.c)
-    for (int i = 0; i < NSPINORS; i++) {
-        if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
-            active_spinors[n_active] = i;
-            n_active++;
-        }
-    }
+    get_active_space(sect_h, sect_p, &n_active, active_spinors);
 
     // in the 1h1p sector states:
     // 0h0p => state 1
@@ -255,7 +251,6 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         }
     }
 
-
     // state 1
     ms_size1 = mvb1->ms_size;
     dets1 = mvb1->dets;
@@ -275,40 +270,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     // density matrix (DM) construction
     // the same code for both cases of DMs and transition DMs
     printf(" Model density matrix construction...\n");
-    construct_ms_density_matrix(sect_h, sect_p, ms_size1, coef_left1, dets1, ms_size2, coef_right2, dets2, denmat,
-                                &n_active);
-
-    // just in order to check correctness: calculate transition dipole moment
-    double complex tdm[] = {0.0 + 0.0 * I, 0.0 + 0.0 * I, 0.0 + 0.0 * I};
-    char *file_names[] = {"XDIPLEN", "YDIPLEN", "ZDIPLEN"};
-    for (int icoord = 0; icoord < 3; icoord++) {
-        double complex *d_spinor = zzeros(NSPINORS, NSPINORS);
-        FILE *f = fopen(file_names[icoord], "r");
-        if (f == NULL) {
-            printf("Cannot calculate transition dipole moment!\n");
-            printf("File '%s' does not exist\n", file_names[icoord]);
-            break;
-        }
-        int idx1, idx2;
-        double re, im;
-        while (fscanf(f, "%d%d%lf%lf", &idx1, &idx2, &re, &im) == 4) {
-            d_spinor[(idx2 - 1) * NSPINORS + (idx1 - 1)] = re + I * im;  // together with transposition
-        }
-        fclose(f);
-        tdm[icoord] = 0.0 + 0.0 * I;
-        for (int i = 0; i < n_active; i++) {
-            for (int j = 0; j < n_active; j++) {
-                idx1 = active_spinors[i];
-                idx2 = active_spinors[j];
-                tdm[icoord] += denmat[i * n_active + j] * d_spinor[idx1 * NSPINORS + idx2];
-            }
-        }
-        cc_free(d_spinor);
-    }
-    double complex dx = tdm[0];
-    double complex dy = tdm[1];
-    double complex dz = tdm[2];
-    double tranmom = sqrt(cabs(dx) * cabs(dx) + cabs(dy) * cabs(dy) + cabs(dz) * cabs(dz));
+    construct_ms_density_matrix(sect_h, sect_p, ms_size1, coef_left1, dets1, ms_size2, coef_right2, dets2, denmat, &n_active);
 
 
     // calculate natural transition spinors (NTOs)
@@ -336,11 +298,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
         printf(" Symmetry: %s --> %s\n", rep_name1, rep_name2);
         printf(" State 1: %10.2f cm^-1 (%s)\n", energy_cm_1, rep_name1);
         printf(" State 2: %10.2f cm^-1 (%s)\n", energy_cm_2, rep_name2);
-        printf(" (dipole-length) transition dipole moment (a.u.):\n");
-        printf("  dx = %10.6f%10.6f     |dx| = %10.6f\n", creal(dx), cimag(dx), cabs(dx));
-        printf("  dy = %10.6f%10.6f     |dy| = %10.6f\n", creal(dy), cimag(dy), cabs(dy));
-        printf("  dz = %10.6f%10.6f     |dz| = %10.6f\n", creal(dz), cimag(dz), cabs(dz));
-        printf("                                |d|  = %10.6f\n", tranmom);
+
         double sum_lambda_sq = 0.0;  // sum of weights
         int count = 1;
         for (int i = 0; i < n_active; i++) {
@@ -461,6 +419,167 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
 }
 
 
+void quasi_natural_orbitals(int sect_h, int sect_p, int rep1, int state1)
+{
+    int nrep;
+    struct mv_block mv_blocks[64];
+    int nrep_0011;
+    struct mv_block mv_blocks_0011[64];
+    double const occ_thresh = 1e-6;   // threshold for printing natural orbitals
+    double const coef_thresh = 1e-4;   // threshold for printing model vec-s coeff-s
+    // for state 1
+    char *rep_name1;
+    size_t ms_size;
+    slater_det_t *det_list;
+    double eigvals;
+    double energy_cm;
+    double complex *coef_left, *coef_right;
+
+    rep_name1 = get_irrep_name(rep1);
+
+    printf("\n\n *** DENSITY MATRIX AND NATURAL ORBITALS FOR THE IRREP %d (%s) STATE %d ***\n",
+           rep1 + 1, rep_name1, state1 + 1);
+
+
+    // only 'valence' parts of DMs are be constructed
+    // dim DMs = n_active x n_active
+    int n_active = 0;
+    int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
+    double complex *denmat;
+    double complex *nat_occ, *natorb_left, *natorb_right;
+
+    get_active_space(sect_h, sect_p, &n_active, active_spinors);
+
+    // in the 1h1p sector states:
+    // 0h0p => state 1
+    // 1h1p => states 2, 3, ...
+    // (only in the irrep containing the 0h0p state)
+    int vac_irrep = get_vacuum_irrep();
+
+    // allocate working arrays
+    denmat = zzeros(n_active, n_active);
+    nat_occ = zzeros(n_active, 1);  // NO occ numbers
+    natorb_left = zzeros(n_active, n_active);
+    natorb_right = zzeros(n_active, n_active);
+
+    // extract model vectors and eigenvalues from the MVCOEF* unformatted file
+    read_model_vectors_unformatted(sect_h, sect_p, NULL, &nrep, mv_blocks);
+    struct mv_block *modvec_block = NULL, *mvb2 = NULL;
+    struct mv_block *b0011 = NULL;
+    // vectors with the intermediate normalization restored (0h0p and 1h1p are mixed)
+    // to be used for 00->11, 11->00 and 11->11 matrix elements by default
+    if (sect_h == 1 && sect_p == 1) {
+        read_model_vectors_unformatted(1, 1, "MVCOEF0011", &nrep_0011, mv_blocks_0011);
+        b0011 = &mv_blocks_0011[0];
+    }
+    for (size_t ib = 0; ib < nrep; ib++) {
+        if (strcmp(mv_blocks[ib].rep_name, rep_name1) == 0) {
+            if (sect_h == 1 && sect_p == 1 && rep1 == vac_irrep) {
+                printf(" Mixed 0h0p+1h1p vectors will be used\n");
+                modvec_block = b0011;
+            }
+            else {
+                modvec_block = mv_blocks + ib;
+            }
+        }
+    }
+
+    // state 1
+    ms_size = modvec_block->ms_size;
+    det_list = modvec_block->dets;
+    eigvals = creal(modvec_block->eigval[state1]);
+    energy_cm = modvec_block->energy_cm[state1];
+    coef_left = modvec_block->vl + ms_size * state1;
+    coef_right = modvec_block->vr + ms_size * state1;
+
+    // density matrix (DM) construction
+    construct_ms_density_matrix(sect_h, sect_p, ms_size, coef_left, det_list, ms_size, coef_right, det_list, denmat,
+                                &n_active);
+
+
+    // calculate natural spinors (NOs)
+    // diagonalize density matrix
+
+    // тут происходит очень неустойчивая диагонализация матрицы с кучей нулевых собственных значений
+    // но почему все нормально на неортогонализованных векторах?
+    // потому что диагонализуемая матрица плотности неэрмитова!
+    eig(n_active, denmat, nat_occ, natorb_left, natorb_right);
+    sort_vectors(n_active, nat_occ, natorb_left, natorb_right, cmp_natorb_occupations);
+
+    printf(" Symmetry of this electronic state: %s\n", rep_name1);
+    printf(" Eigenvalue   = %.8f a.u.\n", eigvals);
+    printf(" Energy level = %.2f cm^-1\n", energy_cm);
+    int count = 1;
+    double complex sum_occ = 0.0 + 0.0 * I;  // trace
+    for (int i = 0; i < n_active; i++) {
+        sum_occ += nat_occ[i];
+        if (cimag(nat_occ[i]) > 1e-13) {
+            printf(" Imaginary occupation number: %.3e %.3e\n", creal(nat_occ[i]), cimag(nat_occ[i]));
+        }
+        if (fabs(creal(nat_occ[i])) < occ_thresh) {
+            continue;
+        }
+
+        printf(" [%d] Occ number = %.6f\n", count++, creal(nat_occ[i]));
+        for (size_t j = 0; j < n_active; j++) {
+            double complex coef = natorb_right[n_active * i + j];
+            if (cabs(coef) < coef_thresh) {
+                continue;
+            }
+            printf("  %12.6f%12.6f ", creal(coef), cimag(coef));
+            int ispinor = active_spinors[j];
+            printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+                   spinor_info[ispinor].eps);
+        }
+    }
+    printf(" Sum of occ numbers = %.6f (must be = %d)\n", creal(sum_occ), -sect_h + sect_p);
+    printf(" Configuration (weights):\n");
+    for (size_t j = 0; j < n_active; j++) {
+        double weight = 0.0;
+        for (size_t i = 0; i < n_active; i++) {
+            double complex coef = natorb_right[n_active * i + j];
+            weight += nat_occ[i] * cabs(coef) * cabs(coef);
+        }
+        printf("  %12.6f", weight);
+        int ispinor = active_spinors[j];
+        printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+               spinor_info[ispinor].eps);
+    }
+
+    // flush full information about NOs to the formatted file
+    char natorb_file_name[256];
+    double *lambda = (double *) cc_malloc(sizeof(double) & n_active);
+    sprintf(natorb_file_name, "NATORB_%dh%dp_%s_%d.dat", sect_h, sect_p, rep_name1, state1 + 1);
+    str_replace(natorb_file_name, '/', '|');  // for some irrep names with '/' in order to prevent bugs
+    for (int i = 0; i < n_active; i++) {
+        lambda[i] = creal(nat_occ[i]);
+    }
+    write_NO(natorb_file_name, sect_h, sect_p, n_active, lambda, natorb_right, occ_thresh);
+
+    // cleanup
+    cc_free(denmat);
+    cc_free(nat_occ);
+    cc_free(lambda);
+    cc_free(natorb_left);
+    cc_free(natorb_right);
+    for (size_t irep = 0; irep < nrep; irep++) {
+        struct mv_block *b = &mv_blocks[irep];
+        cc_free(b->dets);
+        cc_free(b->eigval);
+        cc_free(b->energy_cm);
+        cc_free(b->vl);
+        cc_free(b->vr);
+    }
+    printf(" *** end of DENSITY MATRIX AND NATURAL ORBITALS module ***\n");
+}
+
+
+void quasi_natural_transition_orbitals(int sect_h, int sect_p, int rep1, int state1, int rep2, int state2)
+{
+
+}
+
+
 /*******************************************************************************
  * write_NO
  *
@@ -478,7 +597,7 @@ void write_NO(char *natorb_file_name, int sect_h, int sect_p,
 
     // construct 'local indices -> global indices' mapping
     n_active = 0;
-    for (int i = 0; i < NSPINORS; i++) {
+    for (int i = 0; i < get_num_spinors(); i++) {
         if (is_act_hole(i) && sect_h > 0 || is_act_part(i) && sect_p > 0) {
             active_spinors[n_active] = i;
             n_active++;
