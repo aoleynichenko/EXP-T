@@ -33,10 +33,10 @@ if do_test_full:
 	test_dirs = [
 	'highspin', 'sector1h1p', 'sector2h0p', 'sector0h2p',
     'sector0h1p', 'sector1h0p', 'openmp', 'x2cmmf',
-	'efield', 'shifts', 'ccsd', 'cuda', 'oneprop'
+	'efield', 'shifts', 'ccsd', 'cuda',
 	]
 if do_test_quick:
-	test_dirs += ['oneprop', 'highspin', 'sector0h2p', 'sector1h1p']
+	test_dirs += ['highspin', 'sector0h2p', 'sector1h1p']
 if do_test_cuda:
 	test_dirs += ['cuda']
 if do_test_omp:
