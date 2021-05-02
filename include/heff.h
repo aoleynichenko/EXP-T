@@ -36,6 +36,7 @@
 
 #include <complex.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -48,16 +49,28 @@ typedef struct {
     int repno;
 } eigval_t;
 
+void heff_analysis(int sect_h, int sect_p, ...);
+
 void diag_heff(int sect_h, int sect_p, ...);
 
 int eigval_cmp(const void *aa, const void *bb);
 
-void eigenvalues_table(size_t n_eigenvalues, eigval_t *eigenvalues, double degen_thresh, double max_energy);
+void eigenvalues_table_old(size_t n_eigenvalues, eigval_t *eigenvalues, double degen_thresh, double max_energy);
 
 void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int state2);
 
 void dipole_length_tdms(int sect_h, int sect_p);
 
 void model_space_property(cc_ms_prop_query_t *prop_query);
+
+void model_space_properties_and_natural_orbitals();
+
+void model_vectors_analysis(int sect_h, int sect_p);
+
+void model_space_props_natorbs(int sect_h, int sect_p);
+
+void print_model_vector(FILE *f_out, int sect_h, int sect_p,
+                        int rep_no, char *rep_name, int state_no, double complex energy,
+                        size_t len, double complex *coeffs, slater_det_t *det_list, double coef_thresh);
 
 #endif /* CC_HEFF_H_INCLUDED */

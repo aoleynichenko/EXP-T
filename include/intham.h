@@ -22,15 +22,17 @@
  */
 
 /*******************************************************************************
-* intham.h
-* ========
-*
-* Intermediate Hamiltonian settings.
-*
-* 2021 Alexander Oleynichenko
-******************************************************************************/
+ * intham.h
+ * ========
+ *
+ * Intermediate Hamiltonian settings.
+ *
+ * 2021 Alexander Oleynichenko
+ ******************************************************************************/
 
 #ifndef CC_INTHAM_H_INCLUDED
 
+void intham(int sect_h, int sect_p);
+int get_intham_main_subspace_for_irrep(char *irrep_name);
 
 #endif /* CC_INTHAM_H_INCLUDED */

@@ -22,39 +22,18 @@
  */
 
 /*******************************************************************************
- * mvcoef.h
+ * natorb.h
+ * ========
  *
- * Model vectors are stored on disk in binary files MVCOEF**.
- * This file provides interface for operating with the MVCOEF file format.
+ * Tools for construction of quasi-natural spinors and quasi-natural
+ * transition spinors.
  *
- * 2020-2021 Alexander Oleynichenko
+ * 2021 Alexander Oleynichenko
  ******************************************************************************/
-
-#ifndef CC_MVCOEF_H_INCLUDED
-#define CC_MVCOEF_H_INCLUDED
 
 #include "slater.h"
 
-/*
-  data structure which is used to store data about model vectors read from
-  unformatted files (see also code in heff.c)
- */
-struct mv_block {
-    char rep_name[64];
-    size_t ms_size;
-    size_t nroots;
-    double complex *eigval;
-    double *energy_cm;
-    slater_det_t *dets;
-    double complex *vl;
-    double complex *vr;
-};
+void quasi_natural_orbitals_driver(int sect_h, int sect_p, int rep, int state);
 
-int mvcoef_open(int sect_h, int sect_p);
-void mvcoef_close(int file_descr, double lowest_root);
-void mvcoef_write_vectors_unformatted(int file_descr, char *rep_name,
-                                      size_t nroots, size_t dim, slater_det_t *det_list,
-                                      double complex *ev, double complex *vl, double complex *vr);
-void read_model_vectors_unformatted(int sect_h, int sect_p, char *file_name, int *nrep, struct mv_block *mv_blocks);
-
-#endif /* CC_MVCOEF_H_INCLUDED */
+void get_effective_configuration(int sect_h, int sect_p, int ms_size, slater_det_t *det_list,
+                                 double complex *coef_left, double complex *coef_right, double *config);

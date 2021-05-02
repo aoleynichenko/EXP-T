@@ -36,6 +36,7 @@
 #include <string.h>
 
 #include "io.h"
+#include "heff.h"
 #include "linalg.h"
 #include "mvcoef.h"
 #include "slater.h"

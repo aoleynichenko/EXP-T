@@ -29,6 +29,7 @@
  * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
+#include <complex.h>
 #include <ctype.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -293,6 +294,34 @@ void int2str(int *dig, char *str, size_t n)
 int cmpfunc_int(const void *a, const void *b)
 {
     return (*(int *) a - *(int *) b);
+}
+
+
+double sum_doubles(size_t n, double *v)
+{
+    double sum = 0.0;
+
+    for (size_t i = 0; i < n; i++) {
+        sum += v[i];
+    }
+
+    return sum;
+}
+
+
+void get_real_parts(size_t n, double complex *src, double *dst)
+{
+    for (size_t i = 0; i < n; i++) {
+        dst[i] = creal(src[i]);
+    }
+}
+
+
+void get_imag_parts(size_t n, double complex *src, double *dst)
+{
+    for (size_t i = 0; i < n; i++) {
+        dst[i] = cimag(src[i]);
+    }
 }
 
 

@@ -58,6 +58,7 @@
 #include "diis.h"
 #include "engine.h"
 #include "heff.h"
+#include "intham.h"
 #include "methods.h"
 #include "options.h"
 #include "sort.h"
@@ -180,6 +181,17 @@ int sector02(cc_options_t *opts)
         closed("x2nw", "veff02");
 
         folded_0h2p();
+
+        // в этой точке у нас есть собственные векторы эфф гамильтониана и мы можем уже строить
+        // проекторы на промежуточные состояния. тут же у нас есть и возможность соорудить эффективные
+        // конфигурации активных спиноров и вычислить сдвиги для каждого спинора по отдельности.
+        // только после того, как мы получим сдвиги, мы сможем вычислить "довесок" к амплитудным уравнениям.
+        // а затем решить их или по методу Якоби (вызвав diveps, как и раньше), или посредством решения
+        // системы линейных уравнений.
+
+#ifdef VERSION_DEVEL
+        //intham(0, 2);
+#endif
 
         diveps("x2nw");
         if (triples) {
@@ -321,7 +333,8 @@ int sector02(cc_options_t *opts)
 
     // construct and diagonalize effective Hamiltonian
     // analyze its eigenvectors & eigenvalues
-    diag_heff(0, 2, "veff01", "veff02");
+    heff_analysis(0, 2, "veff01", "veff02");
+    model_space_properties_and_natural_orbitals(0, 2);
 
     // perturbative correction to the effective interaction
     // Heff will be re-constructed and diagonalized again with corrections added

@@ -60,13 +60,13 @@ int mvcoef_open(int sect_h, int sect_p)
 }
 
 
-void mvcoef_close(int file_descr, double eigval_0)
+void mvcoef_close(int file_descr, double lowest_root)
 {
     char *eof_str = "EOF";
     size_t eof_len = strlen(eof_str) + 1;
     io_write(file_descr, &eof_len, sizeof(eof_len));
     io_write(file_descr, eof_str, eof_len);
-    io_write(file_descr, &eigval_0, sizeof(eigval_0));
+    io_write(file_descr, &lowest_root, sizeof(lowest_root));
     io_close(file_descr);
 }
 

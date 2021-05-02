@@ -86,6 +86,12 @@ void int2str(int *dig, char *str, size_t n);
 
 void isort(int n, int *src, int *dst);
 
+double sum_doubles(size_t n, double *v);
+
+void get_real_parts(size_t n, double complex *src, double *dst);
+
+void get_imag_parts(size_t n, double complex *src, double *dst);
+
 size_t strcount(char *s, char c);
 
 void print_hyphens(int offs, int len);

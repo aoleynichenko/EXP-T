@@ -393,9 +393,8 @@ int sector11(cc_options_t *opts)
 
     // construct and diagonalize effective Hamiltonian
     // analyze its eigenvectors & eigenvalues
-    //clear("veff11");
-    //prt("veff11");
-    diag_heff(1, 1, "veff01", "veff10", "veff11");
+    heff_analysis(1, 1, "veff01", "veff10", "veff11");
+    model_space_properties_and_natural_orbitals(1, 1);
 
     // perturbative correction to the effective interaction
     // Heff will be re-constructed and diagonalized again with corrections added

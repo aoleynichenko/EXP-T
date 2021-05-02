@@ -56,4 +56,6 @@ size_t cc_get_current_memory_usage();
 
 size_t cc_get_peak_memory_usage();
 
+char *cc_strdup(const char *src);
+
 #endif /* CC_MEMORY_H_INCLUDED */

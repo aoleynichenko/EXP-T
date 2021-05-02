@@ -38,7 +38,7 @@
  * Writes header lines.
  * Returns pointer to the FILE structure.
  */
-FILE *hefff_open(int sect_h, int sect_p)
+FILE *hefff_open(int sect_h, int sect_p, char *label)
 {
     FILE *hefff;
 
@@ -47,7 +47,12 @@ FILE *hefff_open(int sect_h, int sect_p)
         return NULL;
     }
 
-    fprintf(hefff, "%dh%dp         # sector\n", sect_h, sect_p);
+    if (label == NULL) {
+        fprintf(hefff, "%dh%dp         # sector\n", sect_h, sect_p);
+    }
+    else {
+        fprintf(hefff, "%s         # sector\n", label);
+    }
 
     return hefff;
 }

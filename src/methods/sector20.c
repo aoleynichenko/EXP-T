@@ -226,7 +226,8 @@ int sector20(cc_options_t *opts)
 
     // construct and diagonalize effective Hamiltonian
     // analyze its eigenvectors & eigenvalues
-    diag_heff(2, 0, "veff10", "veff20");
+    heff_analysis(2, 0, "veff10", "veff20");
+    model_space_properties_and_natural_orbitals(2, 0);
 
     return EXIT_SUCCESS;
 }

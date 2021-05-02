@@ -46,6 +46,7 @@
 #include "datamodel.h"
 #include "linalg.h"
 #include "mvcoef.h"
+#include "natorb.h"
 #include "options.h"
 #include "spinors.h"
 #include "symmetry.h"
@@ -54,20 +55,21 @@
 void zero_order_heff(int sect_h, int sect_p, size_t dim, slater_det_t *det_list, double complex *heff);
 void omega_0h0p_0h1p(size_t dim, slater_det_t *det_list_1h1p, double complex *omega,
                      char *exc_oper_name, char *deexc_oper_name);
-FILE *hefff_open(int sect_h, int sect_p);
+FILE *hefff_open(int sect_h, int sect_p, char *label);
 void hefff_close(FILE *hefff);
 void hefff_write_block(FILE *hefff, int carith, int rep_no, size_t dim, double complex *heff);
-void print_model_vector(
-        FILE *f_out,
-        int sect_h, int sect_p,
-        int rep_no, char *rep_name, int state_no,
-        double complex energy,
-        size_t len, double complex *coeffs, slater_det_t *det_list
-);
+void
+print_model_vector(FILE *f_out, int sect_h, int sect_p, int rep_no, char *rep_name, int state_no, double complex energy,
+                   size_t len, double complex *coeffs, slater_det_t *det_list, double coef_thresh);
 int get_nroots_for_irrep(char *irrep_name);
 int get_intham_main_subspace_for_irrep(char *irrep_name);
 void renormalize_wave_operator_0h0p_0h1p(size_t dim, slater_det_t *det_list,
                                          double complex *heff, double complex *heff_prime, double complex *omega);
+
+void construct_quasi_natural_orbitals(int sect_h, int sect_p, int ms_size, slater_det_t *det_list,
+                                      double complex *coef_left, double complex *coef_right,
+                                      double complex *natorb_left, double complex *natorb_right,
+                                      double *nat_occ_numbers, double *config);
 
 
 /*******************************************************************************
@@ -330,338 +332,703 @@ void print_slater_det(FILE *f, int sect_h, int sect_p, slater_det_t *det)
 }
 
 
-/*******************************************************************************
- * diag_heff
+void model_vectors_analysis(int sect_h, int sect_p)
+{
+    int nrep = 0;
+    struct mv_block mv_blocks[64];
+    double eff_config[CC_MAX_SPINORS];
+    int n_active = 0;
+    int active_spinors[CC_MAX_SPINORS];
+
+    get_active_space(sect_h, sect_p, &n_active, active_spinors);
+
+    read_model_vectors_unformatted(sect_h, sect_p, NULL, &nrep, mv_blocks);
+
+    for (size_t irep = 0; irep < nrep; irep++) {
+        struct mv_block *block = mv_blocks + irep;
+
+        char *irrep_name = block->rep_name;
+        int nroots = block->nroots;
+        size_t ms_size = block->ms_size;
+        slater_det_t *det_list = block->dets;
+        double *energy_cm = block->energy_cm;
+        double complex *eigenvals = block->eigval;
+        double complex *coef_left = block->vl;
+        double complex *coef_right = block->vr;
+
+        int rep0 = 0;
+
+        for (size_t i = 0; i < nroots; i++) {
+            print_model_vector(stdout, sect_h, sect_p,
+                               irep - rep0 + 1, irrep_name, i, eigenvals[i],
+                               ms_size, coef_right + ms_size * i, det_list, 0);
+
+            get_effective_configuration(sect_h, sect_p, ms_size, det_list,
+                                        coef_left, coef_right, eff_config);
+
+            printf(" Effective configuration:\n");
+            for (size_t j = 0; j < n_active; j++) {
+                printf("  %12.6f", eff_config[j]);
+                int ispinor = active_spinors[j];
+                printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+                       spinor_info[ispinor].eps);
+            }
+        }
+    }
+}
+
+
+void model_space_props_natorbs(int sect_h, int sect_p)
+{
+    // calculation of density matrices and natural orbitals
+    // for the target sector only
+    if (cc_opts->sector_h == sect_h && cc_opts->sector_p == sect_p &&
+        cc_opts->n_denmat) {
+        for (int ipair = 0; ipair < cc_opts->n_denmat; ipair++) {
+            int sect2_h = cc_opts->denmat_query[ipair].sect2[0];
+            int sect2_p = cc_opts->denmat_query[ipair].sect2[1];
+            if (!(sect2_h == sect_h && sect2_p == sect_p)) {
+                continue;
+            }
+            int rep1 = get_rep_number(cc_opts->denmat_query[ipair].rep1_name);
+            int rep2 = get_rep_number(cc_opts->denmat_query[ipair].rep2_name);
+            int state1 = cc_opts->denmat_query[ipair].state1;
+            int state2 = cc_opts->denmat_query[ipair].state2;
+            // single code for NOs and NTOs:
+            // rep1 == rep2 && state1 == state2  =>  single state (NO)
+            // else: pair of states (NTO)
+            density_matrix(sect_h, sect_p, rep1, state1, rep2, state2);
+            if (rep1 == rep2 && state1 == state2) {
+                quasi_natural_orbitals_driver(sect_h, sect_p, rep1, state1);
+            }
+        }
+    }
+
+    // transition dipole moments via the DL-TDM techniques
+    // for the target sector only
+    if (cc_opts->sector_h == sect_h && cc_opts->sector_p == sect_p &&
+        cc_opts->do_diplen_tdm) {
+        dipole_length_tdms(sect_h, sect_p);
+    }
+
+    // estimate properties: only for the target sector
+    if (cc_opts->sector_h == sect_h && cc_opts->sector_p == sect_p &&
+        cc_opts->n_ms_props > 0) {
+        for (int i = 0; i < cc_opts->n_ms_props; i++) {
+            model_space_property(cc_opts->prop_queries + i);
+        }
+    }
+}
+
+void construct_heff(int sect_h, int sect_p, slater_det_t *det_list, size_t *block_sizes, double complex **heff_blocks,
+                    int n_diagrams, char **diagram_names);
+
+void diagonalize_heff(int sect_h, int sect_p, size_t *block_dims, double complex **heff,
+                      double complex **eigvalues, double complex **coef_left, double complex **coef_right);
+
+void print_eigenvalues_table(int sect_h, int sect_p, size_t *block_dims, double complex **eigvalues, double degen_thresh);
+
+double max_energy_of_required_roots(size_t *block_dims, double complex **eigvalues);
+
+void write_formatted_heff(int sect_h, int sect_p, size_t *block_dims, double complex **heff);
+
+void restore_intermediate_normalization(size_t total_ms_dim, slater_det_t *det_list, size_t *block_dims,
+                                        double complex **heff, double complex **eigvalues);
+
+void print_model_vectors_stdout(int sector_h, int sector_p,
+                                size_t total_ms_size, slater_det_t *det_list, size_t *block_dims,
+                                double complex **eigvalues, double complex **coef_left, double complex **coef_right);
+
+void write_model_vectors_unformatted(int sector_h, int sector_p,
+                                     size_t total_ms_size, slater_det_t *det_list, size_t *block_dims,
+                                     double complex **eigvalues, double complex **coef_left, double complex **coef_right);
+
+double get_lowest_eigenvalue(size_t *block_dims, double complex **eigvalues);
+
+size_t first_nonzero_irrep(size_t *block_dims);
+
+
+/**
+ * heff_analysis
  *
  * Constructs and diagonalizes effective Hamiltonian.
- * Writes Heff and right eigenvectors to the formatted files.
+ * Performs analysis of model vectors.
+ * Writes to disk:
+ *   HEFF      formatted file with the effective Hamiltonian
+ *   MVCOEF**  unformatted files with model vectors and eigenvalues
+ *
  * Agruments:
  *   sect_h, sect_p   number of the Fock-space sector
  *   ...              list of names of the diagrams containing 1-particle,
  *                    2-particle etc parts of the effective interaction operator
- ******************************************************************************/
-void diag_heff(int sect_h, int sect_p, ...)
+ */
+void heff_analysis(int sect_h, int sect_p, ...)
 {
+    double complex *heff[CC_MAX_NUM_IRREPS];
+    double complex *eigvalues[CC_MAX_NUM_IRREPS];
+    double complex *coef_left[CC_MAX_NUM_IRREPS];
+    double complex *coef_right[CC_MAX_NUM_IRREPS];
+    size_t block_dims[CC_MAX_NUM_IRREPS];
+
+    printf("\n Effective Hamiltonian analysis\n");
+
+    /*
+     * Construct model space
+     */
     int nacth, nactp;
-    const int MAX_REPS_NUMBER = 64;
-    size_t ms_size;
-    size_t ms_rep_sizes[MAX_REPS_NUMBER];
-    slater_det_t *dets;
-    va_list vargs;
-    double const coef_thresh = 1e-4;   // threshold for printing model vec-s coeff-s
-    double max_energy = -1.0e9;
-    int tot_sym_rep = get_totally_symmetric_irrep();
-    int vac_det_rep = get_totally_symmetric_irrep();
-
-    // for transition moments 0h0p -> 1h1p
-    size_t heff_0h0p_1h1p_prime_dim;
-    double complex *heff_0h0p_1h1p_prime = NULL;
-    double complex *p_omega_p = NULL;
-    slater_det_t *rep_dets_0011 = NULL;
-
-    printf("\n");
-    printf(" Effective Hamiltonian analysis\n");
-
     int nspinors = get_num_spinors();
     get_active_space_size(&nacth, &nactp);
-    ms_size = get_model_space_size(sect_h, sect_p, nspinors, spinor_info);
-    if (cc_opts->mixed && sect_h == 1 && sect_p == 1) {
-        ms_size += 1;  // alloc space for the 0h0p determinant
-    }
+    size_t ms_size = get_model_space_size(sect_h, sect_p, nspinors, spinor_info);
+    slater_det_t *det_list = (slater_det_t *) cc_malloc(ms_size * sizeof(slater_det_t));
+    create_model_dets(sect_h, sect_p, block_dims, det_list);
+
     printf(" Active space: %d holes, %d particles\n", nacth, nactp);
     printf(" Model space size: %d determinants (total)\n", ms_size);
-
-    dets = (slater_det_t *) cc_malloc(ms_size * sizeof(slater_det_t));
-
-    create_model_dets(sect_h, sect_p, ms_rep_sizes, dets);
-    size_t max_heff_size = size_t_max(get_num_irreps(), ms_rep_sizes);
-
-    // TODO: to the other place!
-    // for mixed-sector model: include the 0h0p determinant
-    // it is supposed to belong to the totally symmetric irrep
-    // (not so for open-shell references, however).
-    // here we just allocate place for the 0h0p determinant
-
-    if (cc_opts->print_level >= CC_PRINT_MEDIUM) {
+    if (cc_opts->print_level >= CC_PRINT_HIGH) {
         printf("\n List of model space determinants:\n");
         for (size_t i = 0; i < ms_size; i++) {
             printf(" %3d  ", i);
-            print_slater_det(stdout, sect_h, sect_p, &dets[i]);
+            print_slater_det(stdout, sect_h, sect_p, det_list+i);
         }
     }
-
     printf(" Dimensions of symmetry blocks of Heff:\n");
     for (int irep = 0; irep < get_num_irreps(); irep++) {
-        if (ms_rep_sizes[irep] == 0) {
+        if (block_dims[irep] == 0) {
             continue;
         }
-        printf("%4s [%d]  ", rep_names[irep], ms_rep_sizes[irep]);
+        printf("  %4s [%d]", rep_names[irep], block_dims[irep]);
     }
+    size_t max_heff_size = size_t_max(get_num_irreps(), block_dims);
     printf(" (max %d)", max_heff_size);
     printf("\n");
 
-    // allocate working arrays
-    size_t nbytes = max_heff_size * max_heff_size * sizeof(double complex);
-    double complex *heff = zzeros(max_heff_size, max_heff_size);
-    double complex *vl = zzeros(max_heff_size, max_heff_size);
-    double complex *vr = zzeros(max_heff_size, max_heff_size);
-    double complex *ev = zzeros(max_heff_size, 1);
-    eigval_t *eigenvalues = (eigval_t *) cc_malloc(
-            (ms_size + 1) * sizeof(eigval_t)); // +1 for the reference energy in case of 1h1p
-    size_t n_eigenvalues = 0;
+    va_list args;
+    va_start(args, sect_p);
+    int n_diagrams = (sect_h + 1) * (sect_p + 1) - 1; // rectangle - (0,0) sector
+    char ** diagram_names = (char **) cc_malloc(sizeof(char *) * n_diagrams);
+    for (int i = 0; i < n_diagrams; i++) {
+        char *dg_name = va_arg(args, char *);
+        diagram_names[i] = cc_strdup(dg_name);
+    }
+    va_end(args);
 
-    // not needed for the mixed-sector model 0h0p-1h1p
-    if (sect_h == 1 && sect_p == 1 && cc_opts->mixed == 0) {
-        eigenvalues[0].eigval = 0.0;
-        eigenvalues[0].repno = get_vacuum_irrep();
-        n_eigenvalues++;
+    construct_heff(sect_h, sect_p, det_list, block_dims, heff, n_diagrams, diagram_names);
+
+    for (int i = 0; i < n_diagrams; i++) {
+        cc_free(diagram_names[i]);
+    }
+    cc_free(diagram_names);
+
+    /*
+     * Write Heff to the formatted file
+     */
+    write_formatted_heff(sect_h, sect_p, block_dims, heff);
+
+    /*
+     * Diagonalization
+     */
+    diagonalize_heff(sect_h, sect_p, block_dims, heff, eigvalues, coef_left, coef_right);
+
+    /*
+     * For the 1h1p sector only: restoration of the intermediate normalization
+     */
+    if (sect_h == 1 && sect_p == 1) {
+        restore_intermediate_normalization(ms_size, det_list, block_dims, heff, eigvalues);
     }
 
-    // open file with formatted Heff
-    FILE *hefff = hefff_open(sect_h, sect_p);
+    /*
+     * Save model vectors and eigenvalues to the formatted files MVCOEF
+     */
+    write_model_vectors_unformatted(sect_h, sect_p, ms_size, det_list, block_dims,
+                                    eigvalues, coef_left, coef_right);
 
-    // open unformatted file with model vectors
-    int f_mvcoef = mvcoef_open(sect_h, sect_p);
+    /*
+     * Print model vectors
+     */
+    print_model_vectors_stdout(sect_h, sect_p, ms_size, det_list, block_dims, eigvalues, coef_left, coef_right);
 
-    printf("\n Sector (%dh,%dp) -- analysis of model vectors (right vectors)\n", sect_h, sect_p);
-    printf(" first line : irrep, state number, total energy, eigenvalue\n");
-    printf(" other lines: coefficients of contributing determinants (above a threshold of %.1e)\n",
-           coef_thresh);
+    /*
+     * Print table with energy levels
+     */
+    print_eigenvalues_table(sect_h, sect_p, block_dims, eigvalues, cc_opts->degen_thresh);
 
-    // for each irrep: construct Heff, diagonalize it, perform analysis of model vectors
-    size_t rep_offset = 0;
-    int rep0 = -1;
-    for (int irep = 0; irep < get_num_irreps(); irep++) {
-        slater_det_t *rep_dets;
-
-        if (ms_rep_sizes[irep] == 0) {
+    /*
+     * Cleanup
+     */
+    cc_free(det_list);
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+        if (block_dims[irrep] == 0) {
             continue;
         }
-        if (rep0 == -1) {
-            rep0 = irep;
+        cc_free(heff[irrep]);
+        cc_free(eigvalues[irrep]);
+        cc_free(coef_left[irrep]);
+        cc_free(coef_right[irrep]);
+    }
+}
+
+
+void construct_heff(int sect_h, int sect_p, slater_det_t *det_list, size_t *block_sizes, double complex **heff_blocks,
+                    int n_diagrams, char **diagram_names)
+{
+    /*
+     * Allocate memory for the effective Hamiltonian (Heff)
+     */
+    for (int irep = 0; irep < CC_MAX_NUM_IRREPS; irep++) {
+        heff_blocks[irep] = NULL;
+    }
+    for (int irep = 0; irep < get_num_irreps(); irep++) {
+        size_t dim = block_sizes[irep];
+        if (dim != 0) {
+            heff_blocks[irep] = zzeros(dim, dim);
+        }
+    }
+
+    /*
+     * Construct symmetry blocks of the Heff matrix
+     */
+    size_t rep_offset = 0;
+    for (int irep = 0; irep < get_num_irreps(); irep++) {
+        if (block_sizes[irep] == 0) {
+            continue;
         }
 
-        // тут нужно проверить, не в это ли представление входит вакуумный детерминант
-
-        // clear workspace
-        memset(heff, 0, nbytes);
-        memset(vl, 0, nbytes);
-        memset(vr, 0, nbytes);
-        memset(ev, 0, max_heff_size * sizeof(double complex));
-
         // get pointer to the current block of det-s with symmetry 'irep'
-        rep_dets = &dets[rep_offset];
-        rep_offset += ms_rep_sizes[irep];  // go to the next block of dets
+        slater_det_t *rep_dets = det_list + rep_offset;
+        rep_offset += block_sizes[irep];  // go to the next block of dets
 
         // size of the Heff subblock
-        size_t ms_size = ms_rep_sizes[irep];
+        size_t ms_size = block_sizes[irep];
 
         // construct zero-order Hamiltonian
-        zero_order_heff(sect_h, sect_p, ms_size, rep_dets, heff);
+        zero_order_heff(sect_h, sect_p, ms_size, rep_dets, heff_blocks[irep]);
 
-        int n_var_arg = (sect_h + 1) * (sect_p + 1) - 1; // rectangle - (0,0) sector
-        va_start(vargs, sect_p);
         // loop over n-particle contibutions (n=1,2,...) to the Veff operator
-        for (int ioper = 0; ioper < n_var_arg; ioper++) {
-            char *dg_name = va_arg(vargs, char *);
+        for (int ioper = 0; ioper < n_diagrams; ioper++) {
+            char *dg_name = diagram_names[ioper];
             diagram_t *dg_veff = diagram_stack_find(dg_name);
             if (dg_veff == NULL) {
-                errquit("in diag_heff(): diagram '%s' not found", dg_name);
+                errquit("in construct_heff(): diagram '%s' not found", dg_name);
             }
             setup_slater(dg_veff, (matrix_getter_fun) diagram_get, sect_h, sect_p, sect_h, sect_p, rank(dg_name) / 2);
 
             // construct matrix of the effective interaction (Veff) in the basis
             // of Slater determinants
-            //
-            // NOTE: here we exclude vacuum determinants!
-            // They arise in the mixed-sector model, but matrix elements between
-            // something and |vac> must be treated separately
             for (int i = 0; i < ms_size; i++) {
-                slater_det_t *bra = &rep_dets[i];
-                if (is_vacuum_det(bra)) {
-                    continue;
-                }
                 for (int j = 0; j < ms_size; j++) {
-                    slater_det_t *ket = &rep_dets[j];
-                    if (is_vacuum_det(ket)) {
-                        continue;
-                    }
-                    heff[i * ms_size + j] += slater(bra, ket);
+                    slater_det_t *bra = rep_dets + i;
+                    slater_det_t *ket = rep_dets + j;
+                    heff_blocks[irep][i * ms_size + j] += slater(bra, ket);
                 }
             }
         }
-        va_end(vargs);
+    }
+}
 
-        // 0h0p-1h1p: transformation of the Heff to with the (P\OmegaP)^-1 matrix.
-        // + store this 0h0p+1h1p block; it will be written to the formatted file
-        // AFTER all blocks belonging to the "pure" 1h1p sector
-        if (sect_h == 1 && sect_p == 1 && irep == vac_det_rep) {
-            heff_0h0p_1h1p_prime_dim = ms_size + 1;
-            heff_0h0p_1h1p_prime = zzeros(ms_size + 1, ms_size + 1);
-            p_omega_p = zzeros(ms_size + 1, ms_size + 1);
-            renormalize_wave_operator_0h0p_0h1p(ms_size, rep_dets, heff, heff_0h0p_1h1p_prime, p_omega_p);
-            rep_dets_0011 = rep_dets;
+
+/**
+ * Writes blocks of the effective Hamiltonian to the formatted file 'HEFF'
+ *
+ * @param sect_h
+ * @param sect_p
+ * @param block_dims
+ * @param heff
+ */
+void write_formatted_heff(int sect_h, int sect_p, size_t *block_dims, double complex **heff)
+{
+    int first_irrep = first_nonzero_irrep(block_dims);
+
+    // open file with formatted Heff
+    FILE *hefff = hefff_open(sect_h, sect_p, NULL);
+
+    for (int irep = 0; irep < get_num_irreps(); irep++) {
+        if (block_dims[irep] == 0) {
+            continue;
         }
+        double complex *heff_block = heff[irep];
+        size_t ms_size = block_dims[irep];
+        hefff_write_block(hefff, carith, irep - first_irrep + 1, ms_size, heff_block);
+    }
 
-        // write this block of the effective Hamiltonian to the formatted file 'HEFF'
-        hefff_write_block(hefff, carith, irep + 1 - rep0, ms_size, heff);
+    hefff_close(hefff);
+}
 
-        // diagonalization:
-        // 1. eigenvalues are sorted in ascending order
-        // 2. eigenvectors are resorted too (and biorthonormalized)
-        // 3. HEFF matrix will be destroyed
-        eig(ms_size, heff, ev, vl, vr);
 
-        char *irrep_name = get_irrep_name(irep);
-        if (cc_opts->do_intham) {
-            int n_main_states = get_intham_main_subspace_for_irrep(irrep_name);
-            printf("n_main_states = %d\n", n_main_states);
-
-            xprimat(CC_COMPLEX, vr, ms_size, ms_size, "Right model vectors");
-
-            double complex *P = zzeros(ms_size, ms_size);
-            construct_projector(ms_size, n_main_states, vr, P);
-            xprimat(CC_COMPLEX, P, ms_size, ms_size, "Projector P");
-            //cc_free(P);
-
-            double complex *P2 = zzeros(ms_size, ms_size);
-            double complex alpha = 1.0+0.0*I;
-            double complex beta = 0.0+0.0*I;
-            xgemm(CC_COMPLEX, "N", "N", ms_size, ms_size, ms_size, &alpha, P, ms_size, P, ms_size, &beta, P2, ms_size);
-            xprimat(CC_COMPLEX, P2, ms_size, ms_size, "P^2");
-
-            cc_free(P);
-            cc_free(P2);
+void diagonalize_heff(int sect_h, int sect_p, size_t *block_dims, double complex **heff,
+                      double complex **eigvalues, double complex **coef_left, double complex **coef_right)
+{
+    /*
+     * Allocate memory for left, right eigenvectors and eigenvalues
+     */
+    for (int irep = 0; irep < CC_MAX_NUM_IRREPS; irep++) {
+        eigvalues[irep] = NULL;
+        coef_left[irep] = NULL;
+        coef_right[irep] = NULL;
+    }
+    for (int irep = 0; irep < get_num_irreps(); irep++) {
+        size_t dim = block_dims[irep];
+        if (dim != 0) {
+            eigvalues[irep] = zzeros(dim, 1);
+            coef_left[irep] = zzeros(dim, dim);
+            coef_right[irep] = zzeros(dim, dim);
         }
+    }
 
-        /*double complex *OVL = zzeros(ms_size, ms_size);
-        double complex *OVL_inv = zzeros(ms_size, ms_size);
-        double complex *PROD = zzeros(ms_size, ms_size);
-
-        overlap(ms_size, vr, vr, OVL);
-        inv(ms_size, OVL, OVL_inv);
-        double complex alpha = 1.0+0.0*I;
-        double complex beta  = 0.0+0.0*I;
-        xgemm(CC_COMPLEX, "N", "N", ms_size, ms_size, ms_size, &alpha, OVL_inv, ms_size, OVL, ms_size, &beta, PROD, ms_size);
-
-        xprimat(CC_COMPLEX, PROD, ms_size, ms_size, "S x S^{-1}");
-
-        cc_free(OVL);
-        cc_free(OVL_inv);
-        cc_free(PROD);*/
-
-        // perform Loewdin orthogonalization (if not prohibited)
-        if (cc_opts->do_hermit == 1) {
-            loewdin_orth(ms_size, vr, vr, cc_opts->print_level == CC_PRINT_DEBUG ? 5 : 0);
-            memcpy(vl, vr, ms_size * ms_size * sizeof(double complex));
+    /*
+     * Diagonalize each block of the Heff matrix
+     * 1. eigenvalues are sorted in ascending order
+     * 2. eigenvectors are resorted too (and biorthonormalized)
+     */
+    size_t max_dim = size_t_max(get_num_irreps(), block_dims);
+    double complex *heff_work = zzeros(max_dim, max_dim);
+    for (int irep = 0; irep < get_num_irreps(); irep++) {
+        if (block_dims[irep] == 0) {
+            continue;
         }
-        // else: no orthogonalization => biorthogonal vectors => TDM_if != TDM_fi
+        size_t ms_size = block_dims[irep];
+        double complex *heff_block = heff[irep];
+        double complex *eigvalues_block = eigvalues[irep];
+        double complex *coef_left_block = coef_left[irep];
+        double complex *coef_right_block = coef_right[irep];
+
+        memcpy(heff_work, heff_block, sizeof(double complex) * ms_size * ms_size);
+        eig(ms_size, heff_work, eigvalues_block, coef_left_block, coef_right_block);
+    }
+    cc_free(heff_work);
+
+    /*
+     * Loewdin orthogonalization of model vectors (if required)
+     * NOTE: if no orthogonalization is performed, property matrices will be non-Hermitian
+     */
+    if (cc_opts->do_hermit == 1) {
+        for (int irep = 0; irep < get_num_irreps(); irep++) {
+            if (block_dims[irep] == 0) {
+                continue;
+            }
+            size_t ms_size = block_dims[irep];
+            double complex *coef_left_block = coef_left[irep];
+            double complex *coef_right_block = coef_right[irep];
+
+            loewdin_orth(ms_size, coef_right_block, coef_right_block, cc_opts->print_level == CC_PRINT_DEBUG ? 5 : 0);
+            memcpy(coef_left_block, coef_right_block, ms_size * ms_size * sizeof(double complex));
+        }
+    }
+}
+
+
+double max_energy_of_required_roots(size_t *block_dims, double complex **eigvalues)
+{
+    double max_energy = -1.0e12;
+
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
 
         // get max number of roots for this irrep
+        char *irrep_name = get_irrep_name(irrep);
         int nroots_irep = get_nroots_for_irrep(irrep_name);
-        size_t nroots = cc_opts->nroots_specified ? nroots_irep : ms_size;
+        size_t nroots = cc_opts->nroots_specified ? nroots_irep : block_dims[irrep];
 
-        // print & save model vectors
+        double complex *ev = eigvalues[irrep];
         if (nroots > 0) {
-            // print 'nroots' model vectors to stdout (formatted)
             for (size_t i = 0; i < nroots; i++) {
-                print_model_vector(stdout, sect_h, sect_p,
-                                   irep - rep0 + 1, irrep_name, i, ev[i],
-                                   ms_size, vr + ms_size * i, rep_dets);
-                // update max energy (used in eigenvalues_table() to cut unused roots)
                 if (creal(ev[i]) > max_energy) {
                     max_energy = creal(ev[i]);
                 }
             }
-            // print model vectors to the unformatted file MVCOEF**
-            mvcoef_write_vectors_unformatted(f_mvcoef, irrep_name, nroots, ms_size, rep_dets, ev, vl, vr);
         }
-
-        // save eigenvalues
-        for (size_t i = 0; i < ms_size; i++) {
-            eigenvalues[n_eigenvalues + i].eigval = ev[i];
-            eigenvalues[n_eigenvalues + i].repno = irep;
-        }
-        n_eigenvalues += ms_size;
     }
 
-    qsort(eigenvalues, n_eigenvalues, sizeof(eigval_t), eigval_cmp);
-    eigenvalues_table(n_eigenvalues, eigenvalues, cc_opts->degen_thresh, max_energy);
+    return max_energy;
+}
 
-    double eigval_0 = creal(eigenvalues[0].eigval);
-    if (sect_h != sect_p) {
-        printf("\n Ionization potential wrt reference state = %18.12f a.u. = %8.4f eV = %10.2f cm^-1\n",
-               -eigval_0, -eigval_0 * 27.21138602, -eigval_0 * 219474.6313702);
+
+slater_det_t *find_slater_dets_for_irrep(size_t total_ms_dim, slater_det_t *det_list, int irrep)
+{
+    for (size_t i = 0; i < total_ms_dim; i++) {
+        if (det_list[i].sym == irrep) {
+            return det_list + i;
+        }
     }
+
+    return NULL;
+}
+
+
+void restore_intermediate_normalization(size_t total_ms_dim, slater_det_t *det_list, size_t *block_dims,
+                                        double complex **heff, double complex **eigvalues)
+{
+    if (!(cc_opts->sector_h == 1 && cc_opts->sector_p == 1)) {
+        return;
+    }
+
+    int first_irrep = first_nonzero_irrep(block_dims);
+    int vacuum_irrep = get_vacuum_irrep();
+    char *vacuum_irrep_name = get_irrep_name(vacuum_irrep);
+    slater_det_t *det_basis = find_slater_dets_for_irrep(total_ms_dim, det_list, vacuum_irrep);
+    size_t dim = block_dims[vacuum_irrep];
+    double complex *heff_block = heff[vacuum_irrep];
+
+    size_t dim_prime = dim + 1;  // dimension of the Heff' matrix
+    double complex *heff_0h0p_1h1p_prime = zzeros(dim_prime, dim_prime);
+    double complex *p_omega_p = zzeros(dim_prime, dim_prime);
+
+    // 0h0p-1h1p: transformation of the Heff to with the (P\OmegaP)^-1 matrix.
+    // + store this 0h0p+1h1p block; it will be written to the formatted file
+    // AFTER all blocks belonging to the "pure" 1h1p sector
+    renormalize_wave_operator_0h0p_0h1p(dim, det_basis, heff_block, heff_0h0p_1h1p_prime, p_omega_p);
 
     // write the 0h0p+1h1p transformed Heff block
     // together with the transformation P \Omega P matrix
-    if (sect_h == 1 && sect_p == 1) {
-        fprintf(hefff, "0011         # sector\n");
-        // heff block
-        hefff_write_block(hefff, carith, vac_det_rep + 1 - rep0, heff_0h0p_1h1p_prime_dim, heff_0h0p_1h1p_prime);
-        // P \omega P
-        size_t dim = heff_0h0p_1h1p_prime_dim;
-        for (int i = 0; i < dim * dim; i++) {
-            if (carith) {
-                fprintf(hefff, "%21.12E%21.12E", creal(p_omega_p[i]), cimag(p_omega_p[i]));
-                if (i > 0 && i % 2 != 0) { fprintf(hefff, "\n"); }
-            }
-            else {
-                fprintf(hefff, "%21.12E", creal(p_omega_p[i]));
-                if (i > 0 && (i + 1) % 4 == 0) { fprintf(hefff, "\n"); }
-            }
+    FILE *hefff = hefff_open(1, 1, "0011");
+    // heff block
+    hefff_write_block(hefff, carith, vacuum_irrep-first_irrep+1, dim_prime, heff_0h0p_1h1p_prime);
+    // P \omega P
+    for (int i = 0; i < dim_prime * dim_prime; i++) {
+        if (carith) {
+            fprintf(hefff, "%21.12E%21.12E", creal(p_omega_p[i]), cimag(p_omega_p[i]));
+            if (i > 0 && i % 2 != 0) { fprintf(hefff, "\n"); }
         }
-        if (dim * dim % 2 != 0) { fprintf(hefff, "\n"); }
+        else {
+            fprintf(hefff, "%21.12E", creal(p_omega_p[i]));
+            if (i > 0 && (i + 1) % 4 == 0) { fprintf(hefff, "\n"); }
+        }
+    }
+    if (dim * dim % 2 != 0) { fprintf(hefff, "\n"); }
+    hefff_close(hefff);
 
-        // diagonalize the 00-11 block
-        double complex *vl_0011 = zzeros(dim, dim);
-        double complex *vr_0011 = zzeros(dim, dim);
-        double complex *ev_0011 = zzeros(dim, 1);
-        int irep = vac_det_rep;
-        char *irrep_name = get_irrep_name(irep);
+    /*
+     * The 0h0p-1h1p Heff block should be diagonalized since its eigenvectors
+     * are required to construct properties and quasi-natural orbitals.
+     * These eigenvectors are to be stored in the MVCOEF0011 unformatted file.
+     */
+    double complex *vl_0011 = zzeros(dim_prime, dim_prime);
+    double complex *vr_0011 = zzeros(dim_prime, dim_prime);
+    double complex *ev_0011 = zzeros(dim_prime, 1);
+    int nroots_irep = get_nroots_for_irrep(vacuum_irrep_name);
+    size_t nroots = cc_opts->nroots_specified ? nroots_irep : dim_prime;
+
+    eig(dim_prime, heff_0h0p_1h1p_prime, ev_0011, vl_0011, vr_0011);
+    if (cc_opts->do_hermit == 1) {
+        loewdin_orth(dim_prime, vr_0011, vr_0011, cc_opts->print_level == CC_PRINT_DEBUG ? 5 : 0);
+        memcpy(vl_0011, vr_0011, dim_prime * dim_prime * sizeof(double complex));
+    }
+
+    // print model vectors to the unformatted file MVCOEF**
+    slater_det_t *det_list_0011 = (slater_det_t *) cc_malloc(sizeof(slater_det_t) * dim_prime);
+    det_list_0011[0].indices[0] = 0;
+    det_list_0011[0].indices[1] = 0;
+    det_list_0011[0].sym = vacuum_irrep;
+    memcpy(det_list_0011 + 1, det_basis, sizeof(slater_det_t) * (dim_prime - 1));
+    ev_0011[0] = 0.0 + 0.0 * I;
+
+    int f_mvcoef_0011 = io_open("MVCOEF0011", "w");
+    mvcoef_write_vectors_unformatted(f_mvcoef_0011, vacuum_irrep_name, nroots + 1, dim_prime, det_list_0011, ev_0011,
+                                     vl_0011, vr_0011);
+
+    //double lowest_root = get_lowest_eigenvalue(block_dims, eigvalues);
+    mvcoef_close(f_mvcoef_0011, 0.0);  // lowest root == 0.0
+    cc_free(vl_0011);
+    cc_free(vr_0011);
+    cc_free(ev_0011);
+
+    cc_free(heff_0h0p_1h1p_prime);
+    cc_free(p_omega_p);
+}
+
+
+/*
+ * Prints model vectors to stdout (formatted output).
+ * If the 'nroots' directive is given in the input file, only the
+ * vectors specified by this directive will be printed and analyzed.
+ */
+void print_model_vectors_stdout(int sector_h, int sector_p,
+                                size_t total_ms_size, slater_det_t *det_list, size_t *block_dims,
+                                double complex **eigvalues, double complex **coef_left, double complex **coef_right)
+{
+    double const COEF_THRESH = 1e-4;   // threshold for printing model vec-s coeff-s
+    int first_irrep = first_nonzero_irrep(block_dims);
+
+    printf("\n Sector (%dh,%dp) -- analysis of model vectors (right vectors)\n", sector_h, sector_p);
+    printf(" first line : irrep, state number, total energy, eigenvalue\n");
+    printf(" other lines: coefficients of contributing determinants (above a threshold of %.1e)\n",
+           COEF_THRESH);
+
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+        size_t dim = block_dims[irrep];
+        slater_det_t *det_basis = find_slater_dets_for_irrep(total_ms_size, det_list, irrep);
+
+        // get max number of roots for this irrep
+        char *irrep_name = get_irrep_name(irrep);
         int nroots_irep = get_nroots_for_irrep(irrep_name);
-        size_t nroots = cc_opts->nroots_specified ? nroots_irep : dim;
+        size_t nroots = cc_opts->nroots_specified ? nroots_irep : block_dims[irrep];
+        if (nroots == 0) {
+            continue;
+        }
 
-        eig(dim, heff_0h0p_1h1p_prime, ev_0011, vl_0011, vr_0011);
-        if (cc_opts->do_hermit == 1) {
-            loewdin_orth(dim, vr_0011, vr_0011, cc_opts->print_level == CC_PRINT_DEBUG ? 5 : 0);
-            memcpy(vl_0011, vr_0011, dim * dim * sizeof(double complex));
+        for (size_t i = 0; i < nroots; i++) {
+            print_model_vector(stdout, sector_h, sector_p,
+                               irrep - first_irrep + 1, irrep_name, i, eigvalues[irrep][i],
+                               dim, coef_right[irrep] + dim * i, det_basis, 0);
+        }
+    }
+}
+
+
+double get_lowest_eigenvalue(size_t *block_dims, double complex **eigvalues)
+{
+    double min_eig_value = 0.0;
+
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+        if (block_dims[irrep] == 0) {
+            continue;
+        }
+        if (creal(eigvalues[irrep][0]) < min_eig_value) {
+            min_eig_value = creal(eigvalues[irrep][0]);
+        }
+    }
+
+    return min_eig_value;
+}
+
+
+void write_model_vectors_unformatted(int sector_h, int sector_p,
+                                     size_t total_ms_size, slater_det_t *det_list, size_t *block_dims,
+                                     double complex **eigvalues, double complex **coef_left, double complex **coef_right)
+{
+    // open unformatted file with model vectors
+    int f_mvcoef = mvcoef_open(sector_h, sector_p);
+
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+        size_t dim = block_dims[irrep];
+        slater_det_t *det_basis = find_slater_dets_for_irrep(total_ms_size, det_list, irrep);
+
+        // get max number of roots for this irrep
+        char *irrep_name = get_irrep_name(irrep);
+        int nroots_irep = get_nroots_for_irrep(irrep_name);
+        size_t nroots = cc_opts->nroots_specified ? nroots_irep : block_dims[irrep];
+        if (nroots == 0) {
+            continue;
         }
 
         // print model vectors to the unformatted file MVCOEF**
-        slater_det_t *det_list_0011 = (slater_det_t *) cc_malloc(sizeof(slater_det_t) * dim);
-        det_list_0011[0].indices[0] = 0;
-        det_list_0011[0].indices[1] = 0;
-        det_list_0011[0].sym = vac_det_rep;
-        memcpy(det_list_0011 + 1, rep_dets_0011, sizeof(slater_det_t) * (dim - 1));
-        ev_0011[0] = 0.0 + 0.0 * I;
-
-        int f_mvcoef_0011 = io_open("MVCOEF0011", "w");
-        mvcoef_write_vectors_unformatted(f_mvcoef_0011, rep_names[irep], nroots + 1, dim, det_list_0011, ev_0011,
-                                         vl_0011, vr_0011);
-
-        mvcoef_close(f_mvcoef_0011, eigval_0);
-        cc_free(vl_0011);
-        cc_free(vr_0011);
-        cc_free(ev_0011);
+        mvcoef_write_vectors_unformatted(f_mvcoef, irrep_name, nroots, block_dims[irrep], det_basis,
+                                         eigvalues[irrep], coef_left[irrep], coef_right[irrep]);
     }
 
-    mvcoef_close(f_mvcoef, eigval_0);
-    hefff_close(hefff);
-    cc_free(eigenvalues);
-    cc_free(heff);
-    cc_free(ev);
-    cc_free(vr);
-    cc_free(vl);
-    cc_free(dets);
-    if (heff_0h0p_1h1p_prime != NULL) {
-        cc_free(heff_0h0p_1h1p_prime);
+    double lowest_root = get_lowest_eigenvalue(block_dims, eigvalues);
+    mvcoef_close(f_mvcoef, lowest_root);
+}
+
+
+void print_eigenvalues_table(int sect_h, int sect_p, size_t *block_dims,
+                             double complex **eigvalues, double degen_thresh)
+{
+    /*
+     * Allocate table for eigenvalues
+     */
+    size_t total_heff_dim = 0;
+    for (int i = 0; i < get_num_irreps(); i++) {
+        total_heff_dim += block_dims[i];
     }
-    if (p_omega_p != NULL) {
-        cc_free(p_omega_p);
+    if (sect_h == 1 && sect_p == 1) {
+        total_heff_dim += 1;  // for the reference energy
+    }
+    eigval_t *eigenvalues = (eigval_t *) cc_malloc(total_heff_dim * sizeof(eigval_t));
+    size_t n_eigenvalues = 0;
+
+    /*
+     * Copy eigenvalues to the table
+     */
+    if (sect_h == 1 && sect_p == 1) {
+        eigenvalues[0].eigval = 0.0;
+        eigenvalues[0].repno = get_vacuum_irrep();
+        n_eigenvalues++;
+    }
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+        size_t block_dim = block_dims[irrep];
+        for (size_t i = 0; i < block_dim; i++) {
+            eigenvalues[n_eigenvalues + i].eigval = eigvalues[irrep][i];
+            eigenvalues[n_eigenvalues + i].repno = irrep;
+        }
+        n_eigenvalues += block_dim;
     }
 
+    /*
+     * Sort table in ascending order
+     */
+    qsort(eigenvalues, n_eigenvalues, sizeof(eigval_t), eigval_cmp);
+
+    /*
+     * Print table with energy levels
+     */
+    double complex e0 = eigenvalues[0].eigval;
+    double reference_energy = cc_opts->eref;   // (see options.h)
+    double max_energy = max_energy_of_required_roots(block_dims, eigvalues);
+
+    printf("\n Heff eigenvalues:\n (degeneracy threshold = %.1e a.u.)\n\n", degen_thresh);
+    printf(" Level  Re(eigenvalue)  Im(eigv)               Abs energy  Rel eigenvalue    Rel eigv, eV  Rel eigv, cm-1  deg  symmetry\n");
+    printf(" ------------------------------------------------------------------------------------------------------------------------\n");
+
+    int ilevel = 1;
+    for (size_t i = 0; i < n_eigenvalues; i++) {
+
+        // only energy levels with eigenvalue Ei <= max_energy will be printed
+        if (creal(eigenvalues[i].eigval) > max_energy + degen_thresh) {
+            break;
+        }
+
+        // calculate degeneracy
+        int deg = 0;
+        for (size_t j = i; j < n_eigenvalues; j++) {
+            if (cabs(eigenvalues[i].eigval - eigenvalues[j].eigval) > degen_thresh) {
+                break;
+            }
+            else {
+                deg++;
+            }
+        }
+
+        // print info about (maybe degenerate) level
+        double complex ei = eigenvalues[i].eigval;
+        double abs_energy = reference_energy + creal(ei);
+        double rel_energy = creal(ei) - creal(e0);
+        double rel_energy_cm = rel_energy * CODATA_AU_TO_CM;
+        double rel_energy_ev = rel_energy * CODATA_AU_TO_EV;
+        printf("@%5d%16.10f%10.2e%25.17f%16.10f%16.10f%16.6f  %2d  ",
+               ilevel, creal(ei), cimag(ei), abs_energy, rel_energy,
+               rel_energy_ev, rel_energy_cm, deg);
+        for (size_t irrep = 0; irrep < get_num_irreps(); irrep++) {
+            int rep_deg = 0;
+            for (size_t j = 0; j < deg; j++) {
+                if (eigenvalues[i + j].repno == irrep) {
+                    rep_deg++;
+                }
+            }
+            if (rep_deg == 0) { continue; }
+            printf(" %s", get_irrep_name(irrep));
+            if (rep_deg > 1) {
+                printf("(%d)", rep_deg);
+            }
+        }
+        printf("\n");
+
+        // go to the next (maybe degenerate) energy level
+        i += deg - 1;
+        ilevel++;
+    }
+
+    /*
+     * Ionization potential
+     */
+    double lowest_root = creal(eigenvalues[0].eigval);
+    if (sect_h != sect_p) {
+        printf("\n Ionization potential wrt reference state = %18.12f a.u. = %8.4f eV = %10.2f cm^-1\n",
+               -lowest_root, -lowest_root * CODATA_AU_TO_EV, -lowest_root * CODATA_AU_TO_CM);
+    }
+}
+
+
+void model_space_properties_and_natural_orbitals(int sect_h, int sect_p)
+{
     // calculation of density matrices and natural orbitals
     // for the target sector only
     if (cc_opts->sector_h == sect_h && cc_opts->sector_p == sect_p &&
@@ -697,6 +1064,18 @@ void diag_heff(int sect_h, int sect_p, ...)
             model_space_property(cc_opts->prop_queries + i);
         }
     }
+}
+
+
+size_t first_nonzero_irrep(size_t *block_dims)
+{
+    for (size_t i = 0; i < get_num_irreps(); i++) {
+        if (block_dims[i] != 0) {
+            return i;
+        }
+    }
+
+    return 0;
 }
 
 
@@ -741,12 +1120,12 @@ int eigval_cmp(const void *aa, const void *bb)
 
 
 /*******************************************************************************
- * eigenvalues_table
+ * eigenvalues_table_old
  *
  * Prints nice table with all information about eigenvalues and symmetries of
  * solutions
  ******************************************************************************/
-void eigenvalues_table(size_t n_eigenvalues, eigval_t *eigenvalues, double degen_thresh, double max_energy)
+void eigenvalues_table_old(size_t n_eigenvalues, eigval_t *eigenvalues, double degen_thresh, double max_energy)
 {
     size_t i, j;
     size_t ilevel;
@@ -837,44 +1216,24 @@ void eigenvalues_table(size_t n_eigenvalues, eigval_t *eigenvalues, double degen
 
 /**
  * Prints model vectors.
+ * coef_thresh -- threshold for printing model vec-s coeff-s
  */
-void print_model_vector(
-        FILE *f_out,
-        int sect_h, int sect_p,
-        int rep_no, char *rep_name, int state_no,
-        double complex energy,
-        size_t len, double complex *coeffs, slater_det_t *det_list
-)
+void print_model_vector(FILE *f_out, int sect_h, int sect_p,
+                        int rep_no, char *rep_name, int state_no, double complex energy,
+                        size_t len, double complex *coeffs, slater_det_t *det_list, double coef_thresh)
 {
-    double complex coef;
-    double const coef_thresh = 1e-4;   // threshold for printing model vec-s coeff-s
-
     fprintf(f_out, "\n");
     fprintf(f_out, " Irrep %d (%4s) State %d Energy %23.15f Eigenvalue %14.8f%14.4E\n",
             rep_no, rep_name, state_no + 1, cc_opts->eref + creal(energy), creal(energy), cimag(energy));
+
     for (size_t j = 0; j < len; j++) {
-        coef = coeffs[j];
+        double complex coef = coeffs[j];
         if (cabs(coef) < coef_thresh) {
             continue;
         }
         fprintf(f_out, " %10.5f%10.5f ", creal(coef), cimag(coef));
         print_slater_det(f_out, sect_h, sect_p, det_list + j);
     }
-}
-
-
-int get_intham_main_subspace_for_irrep(char *irrep_name)
-{
-    int nroots_irep = 0;
-
-    for (int ii = 0; ii < get_num_irreps(); ii++) {
-        if (strcmp(irrep_name, cc_opts->intham_params.main_space.rep_names[ii]) == 0) {
-            nroots_irep = cc_opts->intham_params.main_space.dim[ii];
-            break;
-        }
-    }
-
-    return nroots_irep;
 }
 
 

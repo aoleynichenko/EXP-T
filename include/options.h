@@ -57,6 +57,7 @@ enum {
 
 // print level
 enum {
+    CC_PRINT_NOTHING,
     CC_PRINT_LOW,
     CC_PRINT_MEDIUM,
     CC_PRINT_HIGH,

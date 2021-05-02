@@ -1475,7 +1475,7 @@ subroutine expect_dipole(iocc)
     end if
 
     print *
-    print *, 'ELECTRONIC contibution to dipole moment (DHF level)'
+    print *, 'ELECTRONIC contribution to dipole moment (DHF level)'
 
     do i = 1, n_spinors
         if (iocc(i) /= 1) cycle
