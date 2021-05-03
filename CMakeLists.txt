@@ -242,8 +242,12 @@ set(BASIC_SOURCE
         
         src/heff/msprop.c         # model-space estimations of properties
         src/heff/heff.c           # construction & analysis of Heff and eigenvalues
-        src/heff/denmat.c         # density matrices and natural orbitals
-        src/heff/slater.c         # Slater rules
+        src/heff/denmat.c         # model-space density matrices
+        src/heff/natorb.c         # quasi-natural orbitals
+        src/heff/slater_rules.c   # Slater rules
+        src/heff/slater_det.c     # Slater determinants
+        src/heff/model_space.c    # operations with model spaces
+        src/heff/renorm_omega.c   # restoration of the intermediate normalization
         src/heff/mvcoef.c         # operations with MVCOEF files (unformatted, model vectors)
         src/heff/hefff.c          # operations with formatted HEFF files (eff Hamiltonians)
 
