@@ -3,7 +3,7 @@
 import sys
 import os
 
-test_dirs = ['Ne_uncontracted', 'LiF-FSCC']
+test_dirs = ['N2_exc_musial', 'Ne_uncontracted', 'LiF-FSCC']
 
 for tdir in test_dirs:
 	os.chdir(tdir)

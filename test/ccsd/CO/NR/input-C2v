@@ -6,7 +6,7 @@
 title "Test CO/cc-pVDZ/nonrel/C2v"
 maxiter 30
 conv 1e-9
-
+disk_usage 0
 
 # import integrals from
 integrals MRCONEE-C2v MDCINT-C2v

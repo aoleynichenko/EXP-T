@@ -70,6 +70,8 @@ void print_symmetry_info();
 
 void symmetry_cleanup();
 
+int get_vacuum_irrep();
+
 int get_rep_number(char *name);
 
 char *get_irrep_name(int irep);

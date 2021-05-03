@@ -39,7 +39,7 @@
 #include "heff.h"
 #include "linalg.h"
 #include "mvcoef.h"
-#include "slater.h"
+#include "slater_rules.h"
 #include "symmetry.h"
 #include "spinors.h"
 #include "options.h"

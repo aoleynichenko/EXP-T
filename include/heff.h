@@ -42,7 +42,7 @@
 
 #include "engine.h"
 #include "options.h"
-#include "../src/heff/slater.h"
+#include "../src/heff/slater_rules.h"
 
 typedef struct {
     double complex eigval;

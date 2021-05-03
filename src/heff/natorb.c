@@ -42,7 +42,7 @@
 #include "linalg.h"
 #include "memory.h"
 #include "mvcoef.h"
-#include "slater.h"
+#include "slater_rules.h"
 #include "spinors.h"
 #include "symmetry.h"
 #include "options.h"

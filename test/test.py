@@ -33,7 +33,7 @@ if do_test_full:
 	test_dirs = [
 	'highspin', 'sector1h1p', 'sector2h0p', 'sector0h2p',
     'sector0h1p', 'sector1h0p', 'openmp', 'x2cmmf',
-	'efield', 'shifts', 'ccsd', 'cuda',
+	'efield', 'shifts', 'ccsd', 'cuda'
 	]
 if do_test_quick:
 	test_dirs += ['highspin', 'sector0h2p', 'sector1h1p']

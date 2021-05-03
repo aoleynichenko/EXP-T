@@ -51,7 +51,7 @@ for sym in symmetries:
 	    t1_e8,t1_e9,t1_e10,t1_e11,t1_e12,t1_e13,t1_e14,
 	    t1_e15,t1_e16,t1_e17,t1_e18,t1_e19
 	    ]).run()
-	execute("rm -rf MRCONEE* MDCINT*")
+	execute("rm -rf MRCONEE* MDCINT* MDPROP")
 	execute("rm -rf HINT VINT* modelvectors* HEFF")
 
 

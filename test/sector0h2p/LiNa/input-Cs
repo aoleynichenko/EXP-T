@@ -5,6 +5,7 @@
 # (4) DC - relativistic, 4-comp
 # (5) symmetry Cs
 
+
 title "Test LiNa/cc-pVDZ/Dirac-Coulomb/Cs/sector 0h2p"
 maxiter 500
 conv 1e-9

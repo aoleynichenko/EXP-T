@@ -33,6 +33,7 @@ for sym in symmetries:
 	Test(sym, "input-1h1p", filters=[t1_scf,t1_cc_tot,t1_ccsd,
 	    t1_e2,t1_e3,t1_e4,t1_e5]).run(options="--no-clean")
 	execute("mv input-1h1p.test.out expt_LiF_%s_NR_1h1p.out" % (sym))
+	execute("mv scratch/HEFF HEFF_NR_%s" % (sym))
 	execute("rm -rf MRCONEE* MDCINT* MDPROP*")
 	execute("rm -rf scratch")
 	execute("rm -rf HINT VINT* modelvectors* HEFF")
@@ -62,6 +63,7 @@ for sym in symmetries:
 	Test(sym, "input-1h1p", filters=[t1_scf,t1_cc_tot,t1_ccsd,
 	    t1_e2,t1_e3,t1_e4,t1_e5,t1_e6,t1_e7,t1_e8,t1_e9]).run(options="--no-clean")
 	execute("mv input-1h1p.test.out expt_LiF_%s_R_1h1p.out" % (sym))
+	execute("mv scratch/HEFF HEFF_Rel_%s" % (sym))
 	execute("rm -rf MRCONEE* MDCINT* MDPROP*")
 	execute("rm -rf scratch")
 	execute("rm -rf HINT VINT* modelvectors* HEFF")

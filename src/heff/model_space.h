@@ -21,47 +21,31 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-#include "linalg.h"
+/*******************************************************************************
+ * model_space.h
+ * =============
+ *
+ * Model space in FS-CC consists of Slater determinants.
+ * Current implementation deals with only the quasi-complete model spaces.
+ *
+ * 2019-2021 Alexander Oleynichenko
+ ******************************************************************************/
 
-#include <stdio.h>
-#include <string.h>
+#ifndef CC_MODEL_SPACE_H_INCLUDED
+#define CC_MODEL_SPACE_H_INCLUDED
 
-#include "memory.h"
-
+#include "comdef.h"
+#include "slater_det.h"
+#include "spinors.h"
 
 /**
- * calculates inverse matrix
- * @param n matrix dimensino
- * @param A square n x n matrix; will not be destroyed
- * @param Ainv inverse matrix Ainv = A^{-1}
+ * Returns total number of model-space determinants for the given FS sector
  */
-int inv(size_t n, double complex *A, double complex *Ainv)
-{
-    int *ipiv;
-    int ret;
+size_t get_model_space_size(int sect_h, int sect_p, int nspinors, spinor_attr_t *spinor_info);
 
-    ipiv = (int *) cc_malloc(sizeof(int) * (n + 1));
+/**
+ * Returns list of model-space determinants.
+ */
+slater_det_t **create_model_dets(int sect_h, int sect_p, size_t *ms_rep_sizes);
 
-    memmove(Ainv, A, sizeof(double complex) * n * n);
-
-#ifdef BLAS_MKL
-    ret = LAPACKE_zgetrf(LAPACK_ROW_MAJOR, n, n, (MKL_Complex16 *) Ainv, n, ipiv);
-#else
-    ret =  LAPACKE_zgetrf(CblasRowMajor, n, n, Ainv, n, ipiv);
-#endif
-
-    if (ret != 0) {
-        cc_free(ipiv);
-        return ret;
-    }
-
-#ifdef BLAS_MKL
-    ret = LAPACKE_zgetri(LAPACK_ROW_MAJOR, n, (MKL_Complex16 *) Ainv, n, ipiv);
-#else
-    ret = LAPACKE_zgetri(CblasRowMajor, n, Ainv, n, ipiv);
-#endif
-
-    cc_free(ipiv);
-
-    return ret;
-}
+#endif /* CC_MODEL_SPACE_H_INCLUDED */

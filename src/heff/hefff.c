@@ -32,6 +32,41 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "options.h"
+#include "symmetry.h"
+
+FILE *hefff_open(int sect_h, int sect_p, char *label);
+void hefff_close(FILE *hefff);
+void hefff_write_block(FILE *hefff, int carith, int rep_no, size_t dim, double complex *heff);
+size_t first_nonzero_irrep(size_t *block_dims);
+
+/**
+ * Writes blocks of the effective Hamiltonian to the formatted file 'HEFF'
+ *
+ * @param sect_h
+ * @param sect_p
+ * @param block_dims
+ * @param heff
+ */
+void write_formatted_heff(int sect_h, int sect_p, size_t *block_dims, double complex **heff)
+{
+    int first_irrep = first_nonzero_irrep(block_dims);
+
+    // open file with formatted Heff
+    FILE *hefff = hefff_open(sect_h, sect_p, NULL);
+
+    for (int irep = 0; irep < get_num_irreps(); irep++) {
+        if (block_dims[irep] == 0) {
+            continue;
+        }
+        double complex *heff_block = heff[irep];
+        size_t ms_size = block_dims[irep];
+        hefff_write_block(hefff, carith, irep - first_irrep + 1, ms_size, heff_block);
+    }
+
+    hefff_close(hefff);
+}
+
 
 /**
  * Opens formatted HEFF file.
@@ -85,3 +120,5 @@ void hefff_write_block(FILE *hefff, int carith, int rep_no, size_t dim, double c
     }
     if (dim * dim % 2 != 0) { fprintf(hefff, "\n"); }
 }
+
+

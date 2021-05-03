@@ -1,0 +1,12 @@
+memory 1 gb
+title "Test N2/cc-pVDZ/NR/Cinfv/CCSD-1h1p"
+maxiter 300
+conv 1e-9
+model ccsd
+disk_usage 0
+sector 1h1p
+nacth 8
+nactp 4
+diis 20
+
+

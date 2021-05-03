@@ -21,47 +21,28 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-#include "linalg.h"
+/*******************************************************************************
+ * slater_rules.h
+ * ==============
+ *
+ * Slater rules: evaluation of matrix elements in the basis of Slater
+ * determinants.
+ *
+ * 2019-2021 Alexander Oleynichenko
+ ******************************************************************************/
 
-#include <stdio.h>
-#include <string.h>
+#ifndef CC_SLATER_RULES_H_INCLUDED
+#define CC_SLATER_RULES_H_INCLUDED
 
-#include "memory.h"
+#include "comdef.h"
+#include "engine.h"
+#include "slater_det.h"
 
+typedef double complex (*matrix_getter_fun)(void *source, void *indices);
 
-/**
- * calculates inverse matrix
- * @param n matrix dimensino
- * @param A square n x n matrix; will not be destroyed
- * @param Ainv inverse matrix Ainv = A^{-1}
- */
-int inv(size_t n, double complex *A, double complex *Ainv)
-{
-    int *ipiv;
-    int ret;
+extern double complex (*slater)(slater_det_t *d1, slater_det_t *d2);
 
-    ipiv = (int *) cc_malloc(sizeof(int) * (n + 1));
+void setup_slater(void *source, matrix_getter_fun getter,
+                  int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sect_p, int npart);
 
-    memmove(Ainv, A, sizeof(double complex) * n * n);
-
-#ifdef BLAS_MKL
-    ret = LAPACKE_zgetrf(LAPACK_ROW_MAJOR, n, n, (MKL_Complex16 *) Ainv, n, ipiv);
-#else
-    ret =  LAPACKE_zgetrf(CblasRowMajor, n, n, Ainv, n, ipiv);
-#endif
-
-    if (ret != 0) {
-        cc_free(ipiv);
-        return ret;
-    }
-
-#ifdef BLAS_MKL
-    ret = LAPACKE_zgetri(LAPACK_ROW_MAJOR, n, (MKL_Complex16 *) Ainv, n, ipiv);
-#else
-    ret = LAPACKE_zgetri(CblasRowMajor, n, Ainv, n, ipiv);
-#endif
-
-    cc_free(ipiv);
-
-    return ret;
-}
+#endif /* CC_SLATER_RULES_H_INCLUDED */

@@ -146,13 +146,6 @@ inline int is_inact_part(int idx)
 }
 
 
-// returns irrep to which the vacuum (0h0p) electronic state belongs
-int get_vacuum_irrep()
-{
-    return get_totally_symmetric_irrep();
-}
-
-
 void get_active_space_size(int *nacth, int *nactp)
 {
     *nacth = 0;

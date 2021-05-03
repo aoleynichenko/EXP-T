@@ -1,0 +1,24 @@
+!
+**GENERAL
+.PCMOUT
+**DIRAC         
+.TITLE          
+Carbon atom with Intermediate Hamiltonian
+.WAVE FUNCTION  
+.4INDEX
+**WAVE FUNCTION          
+.SCF        
+*SCF            
+.MAXITR
+200
+.CLOSED         
+ 4          
+.ERGCNV         
+1E-12     
+**MOLTRA        
+.SCHEME
+ 4
+.ACTIVE         
+all
+*END OF INPUT   
+

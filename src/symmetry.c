@@ -409,3 +409,10 @@ void symmetry_cleanup()
     cc_free(dir_prod_table);
     dir_prod_table = NULL;
 }
+
+
+// returns irrep to which the vacuum (0h0p) electronic state belongs
+int get_vacuum_irrep()
+{
+    return get_totally_symmetric_irrep();
+}

@@ -33,7 +33,7 @@
 #ifndef CC_MVCOEF_H_INCLUDED
 #define CC_MVCOEF_H_INCLUDED
 
-#include "slater.h"
+#include "slater_rules.h"
 
 /*
   data structure which is used to store data about model vectors read from

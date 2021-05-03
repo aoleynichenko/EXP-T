@@ -22,18 +22,33 @@
  */
 
 /*******************************************************************************
- * natorb.h
- * ========
+ * renorm_omega.h
+ * ==============
  *
- * Tools for construction of quasi-natural spinors and quasi-natural
- * transition spinors.
+ * Restoration of the intermediate normalization of the wave operator
+ * Omega = { exp(T) }.
+ * This code is used primarily for the FF calculation of off-diagonal matrix
+ * elements between the 0h0p ground and 1h1p excited states.
+
+ * For details, see:
+ * A. Zaitsevskii, A. V. Oleynichenko, E. Eliav,
+ * Finite-Field Calculations of Transition Properties by the Fock Space
+ * Relativistic Coupled Cluster Method: Transitions between Different
+ * Fock Space Sectors.
+ * Symmetry 2020, 12(11), 1845; https://doi.org/10.3390/sym12111845
  *
- * 2021 Alexander Oleynichenko
+ * 2019-2021 Alexander Oleynichenko
  ******************************************************************************/
 
-#include "slater_rules.h"
+#ifndef CC_RENORM_OMEGA_H_INCLUDED
+#define CC_RENORM_OMEGA_H_INCLUDED
 
-void quasi_natural_orbitals_driver(int sect_h, int sect_p, int rep, int state);
+#include "comdef.h"
+#include "slater_det.h"
+#include "symmetry.h"
 
-void get_effective_configuration(int sect_h, int sect_p, int ms_size, slater_det_t *det_list,
-                                 double complex *coef_left, double complex *coef_right, double *config);
+void restore_intermediate_normalization(size_t *block_dims, slater_det_t **det_list, double complex **heff,
+                                        double complex **eigvalues);
+
+
+#endif /* CC_RENORM_OMEGA_H_INCLUDED */

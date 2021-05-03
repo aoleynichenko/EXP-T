@@ -13,8 +13,13 @@ nactp 8
 model ccsd
 shifttype real
 shift 0h2p 3 -2.0
-mstdm
+#mstdm
+diis triples
 
 # import integrals from
 integrals MRCONEE-Cinfv MDCINT-Cinfv
+
+disk_usage 0
+
+
 
