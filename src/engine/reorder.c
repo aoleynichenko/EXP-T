@@ -139,6 +139,7 @@ diagram_t *diagram_reorder(diagram_t *dg, int *perm, int perm_unique)
     diagram_t *tgt;
     char qparts[CC_DIAGRAM_MAX_RANK];
     char valence[CC_DIAGRAM_MAX_RANK];
+    char t3space[CC_DIAGRAM_MAX_RANK];
     char order[CC_DIAGRAM_MAX_RANK];
 
     rank = dg->rank;
@@ -149,13 +150,15 @@ diagram_t *diagram_reorder(diagram_t *dg, int *perm, int perm_unique)
         perm[i] = perm[i] - 1;
         qparts[i] = dg->qparts[perm[i]];
         valence[i] = dg->valence[perm[i]] + '0';
+        t3space[i] = dg->t3space[perm[i]] + '0';
         order[i] = dg->order[perm[i]] + '0';
     }
     qparts[rank] = '\0';
     valence[rank] = '\0';
+    t3space[rank] = '\0';
     order[rank] = '\0';
 
-    tgt = diagram_new("rdr " /*dg->name*/, qparts, valence, order, perm_unique);
+    tgt = diagram_new("rdr " /*dg->name*/, qparts, valence, t3space, order, perm_unique);
 
     // name of the new diagram consist of the old one + "_copy_" + clone's ID
     sprintf(tgt->name, "%s_rdr_%ld", dg->name, tgt->dg_id);
@@ -171,23 +174,12 @@ diagram_t *diagram_reorder(diagram_t *dg, int *perm, int perm_unique)
             src_spib_rdr[idim] = sb_src->spinor_blocks[perm[idim]];
         }
 
-        size_t ib2;
-        diagram_get_block(tgt, src_spib_rdr, &ib2);
-        block_t *sb_tgt = tgt->blocks[ib2];
+        block_t *sb_tgt = diagram_get_block(tgt, src_spib_rdr);
 
         if (sb_src->is_unique != sb_tgt->is_unique) {
             printf("reorder(): %d %d\n", sb_src->is_unique, sb_tgt->is_unique);
             exit(0);
         }
-        /*printf("< ");
-        for (int i = 0; i < sb_src->rank; i++) {
-            printf("%d ", sb_src->spinor_blocks[i]);
-        }
-        printf(">    ---->     < ");
-        for (int i = 0; i < sb_tgt->rank; i++) {
-            printf("%d ", sb_tgt->spinor_blocks[i]);
-        }
-        printf(">\n");*/
 
         if (sb_src->is_unique == 0) {
             continue;
@@ -248,9 +240,7 @@ void restore_block(diagram_t *dg, block_t *b)
 
     transform(b->rank, b->spinor_blocks, uniq_spinor_blocks, b->perm_to_unique, 0);
 
-    size_t unique_index = 0;
-    diagram_get_block(dg, uniq_spinor_blocks, &unique_index);
-    block_t *uniq_block = dg->blocks[unique_index];
+    block_t *uniq_block = diagram_get_block(dg, uniq_spinor_blocks);
 
     if (b->storage_type == CC_DIAGRAM_IN_MEM) {
         printf("restore_block(): already in mem!\n");

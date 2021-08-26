@@ -47,8 +47,6 @@ int is_vacuum_det(slater_det_t *det);
 
 int set_vacuum_det(slater_det_t *det);
 
-int detcmp(const void *_d1, const void *_d2);
-
 void print_slater_det(FILE *f, int sect_h, int sect_p, slater_det_t *det);
 
 #endif /* CC_SLATER_DET_H_INCLUDED */

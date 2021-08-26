@@ -40,7 +40,7 @@
  *
  * @note matrix must be manually deallocated by the user
  */
-void *xzeros(data_type_t type, size_t n, size_t m)
+void *x_zeros(data_type_t type, size_t n, size_t m)
 {
     assert(type == CC_DOUBLE || type == CC_DOUBLE_COMPLEX);
 
@@ -51,13 +51,13 @@ void *xzeros(data_type_t type, size_t n, size_t m)
 }
 
 
-double *dzeros(size_t n, size_t m)
+double *d_zeros(size_t n, size_t m)
 {
-    return (double *) xzeros(CC_DOUBLE, n, m);
+    return (double *) x_zeros(CC_DOUBLE, n, m);
 }
 
 
-double complex *zzeros(size_t n, size_t m)
+double complex *z_zeros(size_t n, size_t m)
 {
-    return (double complex *) xzeros(CC_DOUBLE_COMPLEX, n, m);
+    return (double complex *) x_zeros(CC_DOUBLE_COMPLEX, n, m);
 }

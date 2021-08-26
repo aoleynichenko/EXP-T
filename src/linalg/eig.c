@@ -162,9 +162,9 @@ void eigher(double complex *A, double *eva, int32_t n)
     double complex *A_buf;
     double complex *vl_buf;
 
-    A_buf = zzeros(n, n);
-    vl_buf = zzeros(n, n);
-    eva_buf = zzeros(n, 1);
+    A_buf = z_zeros(n, n);
+    vl_buf = z_zeros(n, n);
+    eva_buf = z_zeros(n, 1);
     memcpy(A_buf, A, sizeof(double complex) * n * n);
 
     eig(n, A_buf, eva_buf, vl_buf, A);

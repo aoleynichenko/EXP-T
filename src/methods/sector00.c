@@ -41,10 +41,13 @@
 #include "engine.h"
 #include "datamodel.h"
 #include "diis.h"
+#include "heff.h"
 #include "options.h"
 #include "sort.h"
 #include "spinors.h"
 #include "utils.h"
+
+void sort_integrals_0h0p();
 
 void calc_T1();
 
@@ -77,23 +80,15 @@ int sector00(cc_options_t *opts)
     int diffmax2_idx[CC_DIAGRAM_MAX_RANK];
     int diffmax3_idx[CC_DIAGRAM_MAX_RANK];
     char total_energy_str[16];
-    int converged;
-    int it;
     double ecorr;
-    double t1, t2;
-    int triples;
     char cc_model_str[32];
+    int it;
 
-    printf("\n");
-    printf("\t\t\t\t*****************\n");
-    printf("\t\t\t\t** Sector 0h0p **\n");
-    printf("\t\t\t\t*****************\n");
-    printf("\n");
-
+    print_sector_banner(0, 0);
     opts->curr_sector_h = 0;
     opts->curr_sector_p = 0;
 
-    triples = (opts->cc_model < CC_MODEL_CCSDT_1A) ? 0 : 1;
+    int triples = triples_enabled();
     if (opts->cc_model == CC_MODEL_CCSD_T3 || opts->cc_model == CC_MODEL_CCSD_T4) {  // for CCSD(T)
         strcpy(cc_model_str, "CCSD");
     }
@@ -104,44 +99,11 @@ int sector00(cc_options_t *opts)
         strcpy(cc_model_str, opts->cc_model_str);
     }
 
-    // prepare one-electron integrals
-    request_sorting("hh", "hh", "00", "12");
-    request_sorting("hp", "hp", "00", "12");
-    request_sorting("ph", "ph", "00", "12");
-    request_sorting("pp", "pp", "00", "12");
-
-    // prepare two-electron integrals
-    request_sorting("hhpp", "hhpp", "0000", "1234");
-    request_sorting("pphh", "pphh", "0000", "1234");
-    request_sorting("hhhh", "hhhh", "0000", "1234");
-    request_sorting("phhp", "phhp", "0000", "2431");
-    request_sorting("ppppr", "pppp", "0000", "3412");
-    request_sorting("pphp", "pphp", "0000", "1234");
-    request_sorting("phpp", "phpp", "0000", "1234");
-    request_sorting("phhh", "phhh", "0000", "1234");
-    request_sorting("hhhp", "hhhp", "0000", "1234");
-    request_sorting("hphh", "hphh", "0000", "1234");  // for Fock matrix only
-    request_sorting("hphp", "hphp", "0000", "1234");  // for Fock matrix only
-    if (triples || opts->cc_model == CC_MODEL_CCSD_T3 || opts->cc_model == CC_MODEL_CCSD_T4) {
-        request_sorting("ppph", "ppph", "0000", "1234");
-    }
-
-    perform_sorting();
-
-    // hphp -> phph
-    reorder("hphp", "phph", "2143");
-    set_order("phph", "1234");
-
-    reorder("pphh", "v", "3412");
-
-    if (opts->print_level >= CC_PRINT_DEBUG) {
-        diagram_stack_print();
-    }
+    // preliminary integral sorting
+    sort_integrals_0h0p();
 
     // initialize T1 and T2 amplitudes (diagrams t1c and t2c)
     initial_guess();
-
-    //diagram_perm_struct(diagram_stack_find("t3c"));
 
     printf(" Solution of amplitude equations (sector 0h0p)\t\t\t");
     print_asctime();
@@ -157,8 +119,8 @@ int sector00(cc_options_t *opts)
     }
 
     diis_queue_t *diis_queue = new_diis_queue(1, 1, triples && opts->diis_triples);
-    converged = 0;
-    t1 = abs_time();
+    int converged = 0;
+    double t1 = abs_time();
 
     for (it = 1; it <= opts->maxiter; it++) {
         double it_t1, it_t2;
@@ -201,9 +163,6 @@ int sector00(cc_options_t *opts)
         else if (opts->cc_model == CC_MODEL_CCD) {
             clear("t1nw");
         }
-
-        // for vscc
-        //clear("t1nw");
 
         ecorr = cc_energy();
         diffmax("t1c", "t1nw", &diff1, diffmax1_idx);
@@ -251,7 +210,6 @@ int sector00(cc_options_t *opts)
         }
 
         copy("t1nw", "t1c");
-        //clear("t1c");
         copy("t2nw", "t2c");
         if (triples) {
             copy("t3nw", "t3c");
@@ -278,13 +236,12 @@ int sector00(cc_options_t *opts)
         double curr_usage = cc_get_current_memory_usage() / (1024.0 * 1024.0 * 1024.0);
         double peak_usage = cc_get_peak_memory_usage() / (1024.0 * 1024.0 * 1024.0);
         printf("%8.2f/%.2f\n", curr_usage, peak_usage);
-        //printf("%.3f %.3f\n", curr_usage*1e3, peak_usage*1e3);
 
         if (converged) {
             break;
         }
     }
-    t2 = abs_time();
+    double t2 = abs_time();
     if (!triples) {
         printf(" --------------------------------------------------------------------------------------------\n");
     }
@@ -307,12 +264,6 @@ int sector00(cc_options_t *opts)
         diagram_write(diagram_stack_find("t3c"), "t3c.dg");
     }
 
-    /*print_ampl_vs_denom("t1c", "t1c_eps.dat");
-    print_ampl_vs_denom("t2c", "t2c_eps.dat");
-    if (triples) {
-        print_ampl_vs_denom("t3c", "t3c_eps.dat");
-    }*/
-
     strcpy(total_energy_str, " Total ");
     strcat(total_energy_str, cc_model_str);
     printf("\n");
@@ -321,24 +272,7 @@ int sector00(cc_options_t *opts)
     printf("  %21s energy = %20.12f\n", total_energy_str, opts->escf + ecorr);
     printf("\n");
 
-    // write total energy to the file with formatted Heff
-    // file will be truncated
-    FILE *hefff = fopen("HEFF", "w");
-    if (carith) {
-        fprintf(hefff, "complex      # arithmetic\n");
-    }
-    else {
-        fprintf(hefff, "real         # arithmetic\n");
-    }
-    fprintf(hefff, "0h0p         # sector\n");
-    fprintf(hefff, "   1     1   # rep No & heff size\n");
-    if (carith) {
-        fprintf(hefff, "%21.12E%21.12E\n", opts->escf + ecorr, 0.0);
-    }
-    else {
-        fprintf(hefff, "%21.12E\n", opts->escf + ecorr);
-    }
-    fclose(hefff);
+    write_formatted_heff_0h0p(opts->escf + ecorr);
 
     printf(" average time per iteration = %.3f sec\n", (t2 - t1) / it);
 
@@ -379,6 +313,46 @@ int sector00(cc_options_t *opts)
     }
 
     return EXIT_SUCCESS;
+}
+
+
+void sort_integrals_0h0p()
+{
+    int triples = (cc_opts->cc_model < CC_MODEL_CCSDT_1A) ? 0 : 1;
+
+    // prepare one-electron integrals
+    request_sorting("hh", "hh", "00", "12");
+    request_sorting("hp", "hp", "00", "12");
+    request_sorting("ph", "ph", "00", "12");
+    request_sorting("pp", "pp", "00", "12");
+
+    // prepare two-electron integrals
+    request_sorting("hhpp", "hhpp", "0000", "1234");
+    request_sorting("pphh", "pphh", "0000", "1234");
+    request_sorting("hhhh", "hhhh", "0000", "1234");
+    request_sorting("phhp", "phhp", "0000", "2431");
+    request_sorting("ppppr", "pppp", "0000", "3412");
+    request_sorting("pphp", "pphp", "0000", "1234");
+    request_sorting("phpp", "phpp", "0000", "1234");
+    request_sorting("phhh", "phhh", "0000", "1234");
+    request_sorting("hhhp", "hhhp", "0000", "1234");
+    request_sorting("hphh", "hphh", "0000", "1234");  // for Fock matrix only
+    request_sorting("hphp", "hphp", "0000", "1234");  // for Fock matrix only
+    if (triples || cc_opts->cc_model == CC_MODEL_CCSD_T3 || cc_opts->cc_model == CC_MODEL_CCSD_T4) {
+        request_sorting("ppph", "ppph", "0000", "1234");
+    }
+
+    perform_sorting();
+
+    // hphp -> phph
+    reorder("hphp", "phph", "2143");
+    set_order("phph", "1234");
+
+    reorder("pphh", "v", "3412");
+
+    if (cc_opts->print_level >= CC_PRINT_DEBUG) {
+        diagram_stack_print();
+    }
 }
 
 
@@ -434,6 +408,8 @@ void initial_guess()
     }
     if (triples && calc_t3) {
         tmplt("t3c", "hhhppp", "000000", "123456", IS_PERM_UNIQUE);
+        //prt("t3c");
+        //exit(0);
     }
 
     // calculate MP2 energy
@@ -500,11 +476,6 @@ double cc_energy()
     mult("r1", "t1nw", "r2", 2);
     et1_2 = 0.5 * scalar_product("N", "N", "r2", "t1nw");
     restore_stack_pos(pos);
-
-    /*if (cc_opts->print_level >= CC_PRINT_HIGH) {
-        printf(" Contributions to the CC energy:\n");
-        printf("   T1    %15.10f   T1^2  %15.10f   T2    %15.10f\n", creal(et1), creal(et1_2), creal(et2));
-    }*/
 
     ecc = et1 + et1_2 + et2;
     cc_opts->eref = cc_opts->escf + creal(ecc);  // save for higher sectors
@@ -838,13 +809,6 @@ void calc_T2()
     perm("r4", "(12|34)");
     update("t2nw", -1.0, "r4");
     restore_stack_pos(pos);
-    /*mult("t1c", "phhp", "i1", 1);
-    reorder("t1c", "t1cr", "21");
-    mult("i1", "t1cr", "i2", 1);
-    reorder("i2", "r2", "1243");
-    perm("r2", "(12|34)");
-    add(-1.0, "r2", 1.0, "t2nw", "t2nw");
-    restore_stack_pos(pos);*/
 
     // D7a
     reorder("pphh", "vr1", "3412");
@@ -875,19 +839,6 @@ void calc_T2()
     reorder("r6", "r7", "1243");
     perm("r7", "(12|34)");
     update("t2nw", -1.0, "r7");
-
-    // TODO: too many reorderings
-    /*reorder("pphh", "v_", "3241");
-    reorder("t1c", "t1cr", "21");
-    mult("t1c", "v_", "r1", 1);
-    reorder("t2c", "t2r", "2431");
-    mult("t2r", "r1", "r2", 2);
-    mult("r2", "t1cr", "r3", 1);
-    reorder("r3", "r4", "3142");
-    reorder("r4", "r5", "2143");
-    perm("r5", "(12|34)");
-    add(-1.0, "r5", 1.0, "t2nw", "t2nw");
-    restore_stack_pos(pos);*/
 
     // D7d
     reorder("pphh", "v_", "2431");

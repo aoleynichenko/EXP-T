@@ -26,13 +26,11 @@
  * ======
  *
  * Fock-Space Multireference coupled cluster program.
- * Version 1.5.4
  *
  * Authors:
  *   Alexander Oleynichenko (Lomonosov Moscow State University)
  * Mailto:
  *   alexvoleynichenko@gmail.com
- * Date: 5 Feb 2021
  *
  ******************************************************************************/
 
@@ -45,11 +43,11 @@
 // version: MAJOR.MINOR.REVISION
 #define CC_VERSION_MAJOR      1
 #define CC_VERSION_MINOR      5
-#define CC_VERSION_REVISION   4
+#define CC_VERSION_REVISION   6
 
 // date of release:
-#define CC_VERSION_DAY        5
-#define CC_VERSION_MONTH      "Feb"
+#define CC_VERSION_DAY        14
+#define CC_VERSION_MONTH      "Aug"
 #define CC_VERSION_YEAR       2021
 
 #include "platform.h"
@@ -80,8 +78,8 @@ int cuda_device_query();
 struct globalArgs_t {
     int clean;                  /* =0 if do not clean scratch directory on exit */
     char *scratch_dir;          /* Path to scratch directory (default: ./scratch) */
-    char **inputFiles;                /* input files */
-    int numInputFiles;                /* number of input files */
+    char **inputFiles;          /* input files */
+    int numInputFiles;          /* number of input files */
     int print_usage;            /* --usage option */
 } globalArgs;
 
@@ -183,6 +181,36 @@ int main(int argc, char **argv)
             goto finalize;
         }
     }
+    else if (opts->sector_h == 1 && opts->sector_p == 2) {
+#ifdef VERSION_DEVEL
+        exit_code = sector00(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector10(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector01(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector11(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector02(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector12(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+#else
+        errquit("THe 1h2p sector is not part of the public release");
+#endif
+    }
     else if (opts->sector_h == 0 && opts->sector_p == 2) {
         exit_code = sector00(opts);
         if (exit_code == EXIT_FAILURE) {
@@ -230,7 +258,7 @@ int main(int argc, char **argv)
             goto finalize;
         }
 #else
-        errquit("mixed-sector model is not part of the public release");
+        errquit("THe 0h3p sector is not part of the public release");
 #endif
     }
     else {
@@ -353,7 +381,8 @@ void banner()
     printf("\t\t**     Calculations. See http://www.qchem.pnpi.spb.ru/expt.                     **\n");
     printf("\t\t** [2] A. V. Oleynichenko, A. Zaitsevskii, E. Eliav.                            **\n");
     printf("\t\t**     Towards high performance relativistic electronic structure modelling:    **\n");
-    printf("\t\t**     the EXP-T program package, 2020. arXiv:2004.03682v1.                     **\n");
+    printf("\t\t**     the EXP-T program package. Commun. Comput. Inf. Sci. 1331, 375 (2020).   **\n");
+    printf("\t\t**     doi: 10.1007/978-3-030-64616-5_33                                        **\n");
     printf("\t\t**                                                                              **\n");
     printf("\t\t**********************************************************************************\n");
     printf("\n");

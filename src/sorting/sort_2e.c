@@ -84,8 +84,8 @@ void sort_twoel()
         return;
     }
 
-    printf("   sorting two-electron integrals\n");
-    printf("     step    #blocks   ints read    time,s  rate,G/s\n");
+    printf(" sorting two-electron integrals\n");
+    printf("   step    #blocks   ints read    time,s  rate,G/s\n");
     double sort_twoel_time_start = abs_time();
 
     v_ints = allocate_twoel_buffer(get_max_spinor_block_size());
@@ -95,7 +95,7 @@ void sort_twoel()
         size_t n_integrals_read = 0;
         double time_start = abs_time();
 
-        printf("   %3d /%3ld ", spinor_block_1, n_spinor_blocks);
+        printf(" %3d /%3ld ", spinor_block_1, n_spinor_blocks);
 
         for (spinor_block_2 = 0; spinor_block_2 < n_spinor_blocks; spinor_block_2++) {
             for (spinor_block_3 = 0; spinor_block_3 < n_spinor_blocks; spinor_block_3++) {
@@ -133,8 +133,7 @@ void sort_twoel()
                         spinor_blocks_nums[1] = spinor_block_2;
                         spinor_blocks_nums[2] = spinor_block_3;
                         spinor_blocks_nums[3] = spinor_block_4;
-                        size_t block_index;
-                        block_t *sb = diagram_get_block(dg, spinor_blocks_nums, &block_index);
+                        block_t *sb = diagram_get_block(dg, spinor_blocks_nums);
                         if (sb == NULL) {
                             continue;
                         }
@@ -161,8 +160,7 @@ void sort_twoel()
                         spinor_blocks_nums[1] = spinor_block_2;
                         spinor_blocks_nums[2] = spinor_block_4;
                         spinor_blocks_nums[3] = spinor_block_3;
-                        size_t block_index;
-                        block_t *sb = diagram_get_block(dg, spinor_blocks_nums, &block_index);
+                        block_t *sb = diagram_get_block(dg, spinor_blocks_nums);
                         if (sb == NULL) {
                             continue;
                         }
@@ -202,7 +200,7 @@ void sort_twoel()
     // print statistics
     double sort_twoel_time_elapsed = abs_time() - sort_twoel_time_start;
     size_t n_bytes_read_total = n_integrals_read_total * (carith ? sizeof(double complex) : sizeof(double));
-    printf("     total  ");
+    printf("   total  ");
     printf("%8ld", n_blocks_processed_total);
     printf("%12ld", n_integrals_read_total);
     printf("%10.0f", sort_twoel_time_elapsed);

@@ -94,7 +94,7 @@ size_t get_model_space_size(int sect_h, int sect_p, int nspinors, spinor_attr_t 
  * belonging to each symmetry (via the 'ms_rep_sizes' array).
  * NOTE: the detlist[] array MUST be pre-allocated
  */
-slater_det_t **create_model_dets(int sect_h, int sect_p, size_t *ms_rep_sizes)
+slater_det_t **construct_model_space(int sect_h, int sect_p, size_t *ms_rep_sizes)
 {
     moindex_t *active_holes_indices;
     moindex_t *active_parts_indices;
@@ -206,6 +206,30 @@ slater_det_t **create_model_dets(int sect_h, int sect_p, size_t *ms_rep_sizes)
                 det_buf[count].sym = rep_ia;
                 ms_rep_sizes[rep_ia]++;
                 count++;
+            }
+        }
+    }
+    else if (sect_h == 1 && sect_p == 2) {
+        count = 0;
+        for (int i = 0; i < nacth; i++) {
+            for (int a = 0; a < nactp; a++) {
+                for (int b = a + 1; b < nactp; b++) {
+                    moindex_t idx_i = active_holes_indices[i];
+                    moindex_t idx_a = active_parts_indices[a];
+                    moindex_t idx_b = active_parts_indices[b];
+                    det_buf[count].indices[0] = idx_i;
+                    det_buf[count].indices[1] = idx_a;
+                    det_buf[count].indices[2] = idx_b;
+
+                    int rep_i = inverse_irrep_abelian(spinor_info[idx_i].repno);
+                    int rep_a = spinor_info[idx_a].repno;
+                    int rep_b = spinor_info[idx_b].repno;
+                    int rep_ia = mulrep2_abelian(rep_i, rep_a);
+                    int rep_iab = mulrep2_abelian(rep_ia, rep_b);
+                    det_buf[count].sym = rep_iab;
+                    ms_rep_sizes[rep_iab]++;
+                    count++;
+                }
             }
         }
     }

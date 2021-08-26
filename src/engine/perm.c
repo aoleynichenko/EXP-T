@@ -198,18 +198,14 @@ void elementary_perm(char *src_name, char *perm_str)
 
             int perm_spinor_blocks[CC_DIAGRAM_MAX_RANK];
 
-            size_t direct_block_index;
-            diagram_get_block(d_src, b_tgt->spinor_blocks, &direct_block_index);
-            block_t *b_direct = d_src->blocks[direct_block_index];
+            block_t *b_direct = diagram_get_block(d_src, b_tgt->spinor_blocks);
 
-            size_t perm_block_index;
             for (int i = 0; i < rk; i++) {
                 perm_spinor_blocks[i] = b_tgt->spinor_blocks[perm[i]];
             }
-            diagram_get_block(d_src, perm_spinor_blocks, &perm_block_index);
-            block_t *b_perm = d_src->blocks[perm_block_index];
+            block_t *b_perm = diagram_get_block(d_src, perm_spinor_blocks);
 
-            block_t *b_reordered = symblock_new(rk, b_direct->spinor_blocks, d_src->qparts, d_src->valence,
+            block_t *b_reordered = symblock_new(rk, b_direct->spinor_blocks, d_src->qparts, d_src->valence, d_src->t3space,
                                                 d_src->order, CC_DIAGRAM_IN_MEM, 0);
 
             if (carith) {

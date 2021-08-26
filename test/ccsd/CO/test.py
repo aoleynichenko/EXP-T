@@ -3,7 +3,8 @@
 import sys
 import os
 
-test_dirs = ['NR', 'R']
+#test_dirs = ['NR', 'R']
+test_dirs = ['NR']
 
 for tdir in test_dirs:
 	os.chdir(tdir)

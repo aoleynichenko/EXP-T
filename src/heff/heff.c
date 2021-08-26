@@ -35,7 +35,7 @@
 
 #include "heff.h"
 
-#include "assert.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,7 +68,11 @@ void print_eigenvalues_table(int sect_h, int sect_p, size_t *block_dims,
                              double complex **eigvalues, double degen_thresh);
 int get_nroots_for_irrep(char *irrep_name);
 void write_formatted_heff(int sect_h, int sect_p, size_t *block_dims, double complex **heff);
+void write_formatted_heff_0h0p(double total_energy);
+
 size_t first_nonzero_irrep(size_t *block_dims);
+void get_nroots(size_t *block_dims, double complex **eigvalues, size_t *nroots);
+size_t get_nroots_from_cutoff(size_t irrep_dim, double complex *eigvalues, double emin, double cutoff);
 
 
 /**
@@ -100,7 +104,14 @@ void heff_analysis(int sect_h, int sect_p, ...)
     /*
      * Construct model space
      */
-    slater_det_t **det_basis = create_model_dets(sect_h, sect_p, block_dims);
+    slater_det_t **det_basis = construct_model_space(sect_h, sect_p, block_dims);
+    printf(" List of model space determinants:\n");
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+        for (int i = 0; i < block_dims[irrep]; i++) {
+            print_slater_det(stdout, sect_h, sect_p, det_basis[irrep] + i);
+        }
+    }
+    printf("\n");
 
     printf(" Model space dimension:\n");
     for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
@@ -122,7 +133,6 @@ void heff_analysis(int sect_h, int sect_p, ...)
     for (int i = 0; i < n_diagrams; i++) {
         cc_free(diagram_names[i]);
     }
-
 
     /*
      * Write Heff to the formatted file
@@ -174,6 +184,61 @@ void heff_analysis(int sect_h, int sect_p, ...)
 }
 
 
+void construct_diagonalize_heff_silent(int sect_h, int sect_p, ...)
+{
+    double complex *heff[CC_MAX_NUM_IRREPS];
+    double complex *eigvalues[CC_MAX_NUM_IRREPS];
+    double complex *coef_left[CC_MAX_NUM_IRREPS];
+    double complex *coef_right[CC_MAX_NUM_IRREPS];
+    size_t block_dims[CC_MAX_NUM_IRREPS];
+    const int MAX_DIAGRAMS = 64;
+    char *diagram_names[MAX_DIAGRAMS];
+
+    /*
+     * Construct model space
+     */
+    slater_det_t **det_basis = construct_model_space(sect_h, sect_p, block_dims);
+
+    va_list args;
+    va_start(args, sect_p);
+    int n_diagrams = (sect_h + 1) * (sect_p + 1) - 1; // rectangle - (0,0) sector
+    for (int i = 0; i < n_diagrams; i++) {
+        char *dg_name = va_arg(args, char *);
+        diagram_names[i] = cc_strdup(dg_name);
+    }
+    va_end(args);
+    construct_heff(sect_h, sect_p, det_basis, block_dims, heff, n_diagrams, diagram_names);
+    for (int i = 0; i < n_diagrams; i++) {
+        cc_free(diagram_names[i]);
+    }
+
+    /*
+     * Diagonalization
+     */
+    diagonalize_heff(sect_h, sect_p, block_dims, heff, eigvalues, coef_left, coef_right);
+
+    /*
+     * Print table with energy levels
+     */
+    print_eigenvalues_table(sect_h, sect_p, block_dims, eigvalues, cc_opts->degen_thresh);
+
+    /*
+     * Cleanup
+     */
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+        if (block_dims[irrep] == 0) {
+            continue;
+        }
+        cc_free(heff[irrep]);
+        cc_free(eigvalues[irrep]);
+        cc_free(coef_left[irrep]);
+        cc_free(coef_right[irrep]);
+        cc_free(det_basis[irrep]);
+    }
+    cc_free(det_basis);
+}
+
+
 void construct_heff(int sect_h, int sect_p, slater_det_t **det_list, size_t *block_sizes, double complex **heff_blocks,
                     int n_diagrams, char **diagram_names)
 {
@@ -186,7 +251,7 @@ void construct_heff(int sect_h, int sect_p, slater_det_t **det_list, size_t *blo
     for (int irep = 0; irep < get_num_irreps(); irep++) {
         size_t dim = block_sizes[irep];
         if (dim != 0) {
-            heff_blocks[irep] = zzeros(dim, dim);
+            heff_blocks[irep] = z_zeros(dim, dim);
         }
     }
 
@@ -272,9 +337,9 @@ void diagonalize_heff(int sect_h, int sect_p, size_t *block_dims, double complex
     for (int irep = 0; irep < get_num_irreps(); irep++) {
         size_t dim = block_dims[irep];
         if (dim != 0) {
-            eigvalues[irep] = zzeros(dim, 1);
-            coef_left[irep] = zzeros(dim, dim);
-            coef_right[irep] = zzeros(dim, dim);
+            eigvalues[irep] = z_zeros(dim, 1);
+            coef_left[irep] = z_zeros(dim, dim);
+            coef_right[irep] = z_zeros(dim, dim);
         }
     }
 
@@ -284,7 +349,7 @@ void diagonalize_heff(int sect_h, int sect_p, size_t *block_dims, double complex
      * 2. eigenvectors are resorted too (and biorthonormalized)
      */
     size_t max_dim = size_t_max(get_num_irreps(), block_dims);
-    double complex *heff_work = zzeros(max_dim, max_dim);
+    double complex *heff_work = z_zeros(max_dim, max_dim);
     for (int irep = 0; irep < get_num_irreps(); irep++) {
         if (block_dims[irep] == 0) {
             continue;
@@ -324,16 +389,23 @@ double max_energy_of_required_roots(size_t *block_dims, double complex **eigvalu
 {
     double max_energy = -1.0e12;
 
+    size_t nroots[CC_MAX_NUM_IRREPS];
+    get_nroots(block_dims, eigvalues, nroots);
+
     for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
 
+        if (block_dims[irrep] == 0 || nroots[irrep] == 0) {
+            continue;
+        }
+
         // get max number of roots for this irrep
-        char *irrep_name = get_irrep_name(irrep);
+        /*char *irrep_name = get_irrep_name(irrep);
         int nroots_irep = get_nroots_for_irrep(irrep_name);
-        size_t nroots = cc_opts->nroots_specified ? nroots_irep : block_dims[irrep];
+        size_t nroots = cc_opts->nroots_specified ? nroots_irep : block_dims[irrep];*/
 
         double complex *ev = eigvalues[irrep];
-        if (nroots > 0) {
-            for (size_t i = 0; i < nroots; i++) {
+        if (nroots[irrep] > 0) {
+            for (size_t i = 0; i < nroots[irrep]; i++) {
                 if (creal(ev[i]) > max_energy) {
                     max_energy = creal(ev[i]);
                 }
@@ -364,24 +436,33 @@ void print_model_vectors_stdout(int sector_h, int sector_p, slater_det_t **det_l
     int active_spinors[CC_MAX_SPINORS];
     get_active_space(sector_h, sector_p, &n_active, active_spinors);
 
+    size_t nroots[CC_MAX_NUM_IRREPS];
+    get_nroots(block_dims, eigvalues, nroots);
+
     printf("\n Sector (%dh,%dp) -- analysis of model vectors (right vectors)\n", sector_h, sector_p);
     printf(" first line : irrep, state number, total energy, eigenvalue\n");
     printf(" other lines: coefficients of contributing determinants (above a threshold of %.1e)\n",
            COEF_THRESH);
 
     for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+
         size_t dim = block_dims[irrep];
+        size_t nroots_irrep = nroots[irrep];
         slater_det_t *det_basis = det_list[irrep];
 
-        // get max number of roots for this irrep
-        char *irrep_name = get_irrep_name(irrep);
-        int nroots_irep = get_nroots_for_irrep(irrep_name);
-        size_t nroots = cc_opts->nroots_specified ? nroots_irep : block_dims[irrep];
-        if (nroots == 0) {
+        if (dim == 0 || nroots_irrep == 0) {
             continue;
         }
 
-        for (size_t i = 0; i < nroots; i++) {
+        // get max number of roots for this irrep
+        char *irrep_name = get_irrep_name(irrep);
+        /*int nroots_irep = get_nroots_for_irrep(irrep_name);
+        size_t nroots = cc_opts->nroots_specified ? nroots_irep : block_dims[irrep];
+        if (nroots == 0) {
+            continue;
+        }*/
+
+        for (size_t i = 0; i < nroots_irrep; i++) {
             double complex *left_vector = coef_left[irrep] + dim * i;
             double complex *right_vector = coef_right[irrep] + dim * i;
 
@@ -389,8 +470,8 @@ void print_model_vectors_stdout(int sector_h, int sector_p, slater_det_t **det_l
                                irrep - first_irrep + 1, irrep_name, i, eigvalues[irrep][i],
                                dim, coef_right[irrep] + dim * i, det_basis, 0);
 
-            get_effective_configuration(sector_h, sector_p, dim, det_basis,
-                                        left_vector, right_vector, eff_config);
+            get_eff_configuration(sector_h, sector_p, dim, det_basis,
+                                  left_vector, right_vector, eff_config);
 
             printf(" Effective configuration:\n");
             for (size_t j = 0; j < n_active; j++) {
@@ -428,24 +509,40 @@ void write_model_vectors_unformatted(int sector_h, int sector_p, slater_det_t **
     // open unformatted file with model vectors
     int f_mvcoef = mvcoef_open(sector_h, sector_p);
 
-    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
-        size_t dim = block_dims[irrep];
-        slater_det_t *det_basis = det_list[irrep];
+    double lowest_root = get_lowest_eigenvalue(block_dims, eigvalues);
 
-        // get max number of roots for this irrep
-        char *irrep_name = get_irrep_name(irrep);
-        int nroots_irep = get_nroots_for_irrep(irrep_name);
-        size_t nroots = cc_opts->nroots_specified ? nroots_irep : block_dims[irrep];
-        if (nroots == 0) {
+    size_t nroots[CC_MAX_NUM_IRREPS];
+    get_nroots(block_dims, eigvalues, nroots);
+
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+
+        size_t dim = block_dims[irrep];
+        size_t nroots_irrep = nroots[irrep];
+
+        if (dim == 0 || nroots_irrep == 0) {
             continue;
         }
 
+        slater_det_t *det_basis = det_list[irrep];
+        char *irrep_name = get_irrep_name(irrep);
+
+
+        // get max number of roots for this irrep
+        /*char *irrep_name = get_irrep_name(irrep);
+        int nroots_irep = get_nroots_for_irrep(irrep_name);
+        size_t nroots = cc_opts->nroots_specified ? nroots_irep : block_dims[irrep];
+        if (cc_opts->roots_cutoff_specified) {
+            //size_t nroots_from_cutoff = get_nroots_from_cutoff(dim, eigvalues[irrep], lowest_root, cc_opts->roots_cutoff);
+        }
+        if (nroots == 0) {
+            continue;
+        }*/
+
         // print model vectors to the unformatted file MVCOEF**
-        mvcoef_write_vectors_unformatted(f_mvcoef, irrep_name, nroots, block_dims[irrep], det_basis,
+        mvcoef_write_vectors_unformatted(f_mvcoef, irrep_name, nroots_irrep, dim, det_basis,
                                          eigvalues[irrep], coef_left[irrep], coef_right[irrep]);
     }
 
-    double lowest_root = get_lowest_eigenvalue(block_dims, eigvalues);
     mvcoef_close(f_mvcoef, lowest_root);
 }
 
@@ -494,6 +591,12 @@ void print_eigenvalues_table(int sect_h, int sect_p, size_t *block_dims,
     double complex e0 = eigenvalues[0].eigval;
     double reference_energy = cc_opts->eref;   // (see options.h)
     double max_energy = max_energy_of_required_roots(block_dims, eigvalues);
+    if (sect_h == 0 && sect_p == 1) {
+        cc_opts->ground_energy_0h1p = creal(e0);
+    }
+    if (sect_h == 1 && sect_p == 2) {
+        e0 = cc_opts->ground_energy_0h1p + 0.0*I;
+    }
 
     printf("\n Heff eigenvalues:\n (degeneracy threshold = %.1e a.u.)\n\n", degen_thresh);
     printf(" Level  Re(eigenvalue)  Im(eigv)               Abs energy  Rel eigenvalue    Rel eigv, eV  Rel eigv, cm-1  deg  symmetry\n");
@@ -632,6 +735,50 @@ void print_model_vector(FILE *f_out, int sect_h, int sect_p,
         fprintf(f_out, " %10.5f%10.5f ", creal(coef), cimag(coef));
         print_slater_det(f_out, sect_h, sect_p, det_list + j);
     }
+}
+
+
+/* calculates how many roots in each irrep should be processed.
+ * number of roots is given by the two options in the input file:
+ * 'nroots' - number of lowest roots for each irrep
+ * 'roots_cutoff' - lowest roots are limited by some max energy
+ * finally, number of roots = min(nroots,roots_cutoff)
+ */
+void get_nroots(size_t *block_dims, double complex **eigvalues, size_t *nroots)
+{
+    double lowest_root = get_lowest_eigenvalue(block_dims, eigvalues);
+
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+
+        size_t nroots_irrep = block_dims[irrep];
+        size_t nroots_cutoff = block_dims[irrep];
+
+        // from the 'nroots' option
+        if (cc_opts->nroots_specified) {
+            char *irrep_name = get_irrep_name(irrep);
+            nroots_irrep = get_nroots_for_irrep(irrep_name);
+        }
+        else if (cc_opts->roots_cutoff_specified) {
+            nroots_cutoff = get_nroots_from_cutoff(block_dims[irrep], eigvalues[irrep], lowest_root, cc_opts->roots_cutoff);
+        }
+
+        nroots[irrep] = MIN(nroots_irrep, nroots_cutoff);
+    }
+}
+
+
+size_t get_nroots_from_cutoff(size_t irrep_dim, double complex *eigvalues, double emin, double cutoff)
+{
+    size_t nroots = 0;
+
+    for (size_t i = 0; i < irrep_dim; i++) {
+        double e_i = creal(eigvalues[i]);
+        if (e_i - emin <= cutoff) {
+            nroots += 1;
+        }
+    }
+
+    return nroots;
 }
 
 

@@ -30,7 +30,9 @@
 #ifndef CCUTILS_H_INCLUDED
 #define CCUTILS_H_INCLUDED
 
-void flush_block_sizes(char *diag_name, char *file_name);
+#include "comdef.h"
+
+void print_sector_banner(int sect_h, int sect_p);
 
 void damping(int h, int p, char *old_ampl, char *new_ampl, int iter);
 

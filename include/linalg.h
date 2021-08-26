@@ -79,12 +79,15 @@ void xgemm(data_type_t data_type, char *trans_a, char *trans_b,
 // print matrix
 void xprimat(data_type_t type, const void *A, int n, int m, const char *comment);
 
-// return a new matrix of given type, filled with zeros
-void *xzeros(data_type_t type, size_t n, size_t m);
+// returns an identity matrix of a given type
+void *x_identity(data_type_t type, size_t n);
+double *d_identity(size_t n);
+double complex *z_identity(size_t n);
 
-double *dzeros(size_t n, size_t m);
-
-double complex *zzeros(size_t n, size_t m);
+// returns a new matrix of a given type, filled with zeros
+void *x_zeros(data_type_t type, size_t n, size_t m);
+double *d_zeros(size_t n, size_t m);
+double complex *z_zeros(size_t n, size_t m);
 
 void conj_vector(size_t n, double complex *v);
 
@@ -98,6 +101,8 @@ void svd(int n, double complex *A, double *lambda, double complex *U, double com
 void overlap(size_t dim, size_t n_states, double complex *C1, double complex *C2, double complex *S);
 
 void construct_projector(int dim, int n_states, double complex *C, double complex *P);
+
+void construct_biorth_projector(int dim, int n_states, double complex *C_left, double complex *C_right, double complex *P);
 
 // symmetric (Loewdin) orthogonalization
 void loewdin_orth(size_t n, double complex *C, double complex *C_orth, int print);

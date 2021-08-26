@@ -58,10 +58,10 @@ double max_diagonal_diff(double complex *fock);
 void sort_onel()
 {
     int nspinors = get_num_spinors();
-    double complex *h_ints = (double complex *) xzeros(CC_COMPLEX, nspinors, nspinors);
-    double complex *f_ints = (double complex *) xzeros(CC_COMPLEX, nspinors, nspinors);
+    double complex *h_ints = (double complex *) x_zeros(CC_COMPLEX, nspinors, nspinors);
+    double complex *f_ints = (double complex *) x_zeros(CC_COMPLEX, nspinors, nspinors);
 
-    printf("   sorting one-electron integrals ...\n");
+    printf(" sorting one-electron integrals ...\n");
 
     // read one-electron integrals -- core Fock operator
     // ? а что если HINT нет?
@@ -88,7 +88,7 @@ void sort_onel()
         reconstruct_fock(nspinors, h_ints, f_ints);
     }
     else {  // x2cmmf hamiltonian, no recompute fock matrix
-        printf("     Fock matrix reconstruction will be skipped\n");
+        printf("   Fock matrix reconstruction will be skipped\n");
         memset(f_ints, 0, sizeof(double complex) * nspinors * nspinors);
         for (int i = 0; i < nspinors; i++) {
             f_ints[i * nspinors + i] = spinor_info[i].eps;
@@ -98,11 +98,11 @@ void sort_onel()
     // recalculate SCF energy (and update it if needed)
     if (!cc_opts->x2cmmf) {
         double new_escf = recalculate_scf_energy(h_ints);
-        printf("     SCF energy (energy of reference determinant) = %20.12f a.u.\n", new_escf);
+        printf("   SCF energy (energy of reference determinant) = %20.12f a.u.\n", new_escf);
         if (fabs(cc_opts->escf - new_escf) > 1e-10) {
-            printf("     SCF energy (energy of reference determinant) was updated:\n");
-            printf("       old energy = %20.12f a.u.\n", cc_opts->escf);
-            printf("       new energy = %20.12f a.u.\n", new_escf);
+            printf("   SCF energy (energy of reference determinant) was updated:\n");
+            printf("     old energy = %20.12f a.u.\n", cc_opts->escf);
+            printf("     new energy = %20.12f a.u.\n", new_escf);
             cc_opts->escf = new_escf;
         }
     }
@@ -114,25 +114,25 @@ void sort_onel()
     double max_eps_diff = max_diagonal_diff(f_ints);
     if (max_eps_diff > 1e-10) {
         if (max_eps_diff > 1e-6) {
-            printf("     The diagonal elements of the reconstructed Fock matrix don't "
+            printf("   The diagonal elements of the reconstructed Fock matrix don't "
                    "coincide with the orbital energies!\n");
-            printf("     NOTE: The diagonal elements of the recomputed Fock matrix "
+            printf("   NOTE: The diagonal elements of the recomputed Fock matrix "
                    "(right column) are used in perturbation expressions.\n");
 
             printf("\n");
-            printf("     no    rep         occ    active     one-el energy        recalc energy            delta    \n");
-            printf("    ---------------------------------------------------------------------------------------------\n");
+            printf("   no    rep         occ    active     one-el energy        recalc energy            delta    \n");
+            printf("  ---------------------------------------------------------------------------------------------\n");
             for (int i = 0; i < nspinors; i++) {
                 double eps = spinor_info[i].eps;
                 double f_ii = creal(f_ints[i * nspinors + i]);
-                printf("    %4d%4d \"%-6s\"%4d       %1s     %16.10f     %16.10f     %16.6e\n",
+                printf("  %4d%4d \"%-6s\"%4d       %1s     %16.10f     %16.10f     %16.6e\n",
                        i + 1, spinor_info[i].repno,
                        rep_names[spinor_info[i].repno], is_hole(i),
                        is_active(i) ? "a" : "i", eps, f_ii, f_ii - eps);
             }
-            printf("    ---------------------------------------------------------------------------------------------\n");
+            printf("  ---------------------------------------------------------------------------------------------\n");
         }
-        printf("   max deviation of the diagonal elements of the reconstructed"
+        printf(" max deviation of the diagonal elements of the reconstructed"
                " Fock matrix and orbital energies = %.6e\n", max_eps_diff);
         // recalculate energies
         for (int i = 0; i < nspinors; i++) {
@@ -142,7 +142,7 @@ void sort_onel()
     }
 
     // только запросы ?
-    printf("   fill 1-electron diagrams ... ");
+    printf(" fill 1-electron diagrams ... ");
     for (int ireq = 0; ireq < n_requests; ireq++) {
         diagram_t *dg = sorting_requests[ireq].dg;
         if (dg->rank != 2) { // only one-electron diagrams
@@ -168,9 +168,9 @@ void sort_onel()
 void fock_add_oneprop(double complex *fock, double complex lambda, char *file_re, char *file_im)
 {
     int nspinors = get_num_spinors();
-    double complex *oper = xzeros(CC_COMPLEX, nspinors, nspinors);
+    double complex *oper = x_zeros(CC_COMPLEX, nspinors, nspinors);
 
-    printf("     reading one-electron property from Oneprop "
+    printf("   reading one-electron property from Oneprop "
            "(lambda = %e %e, file_re = %s, file_im = %s)\n",
            creal(lambda), cimag(lambda), file_re, file_im);
 
@@ -192,9 +192,9 @@ void fock_add_oneprop(double complex *fock, double complex lambda, char *file_re
 void fock_add_mdprop(double complex *fock, double complex lambda, char *prop_name)
 {
     int nspinors = get_num_spinors();
-    double complex *oper = xzeros(CC_COMPLEX, nspinors, nspinors);
+    double complex *oper = x_zeros(CC_COMPLEX, nspinors, nspinors);
 
-    printf("     reading one-electron property %s from MDPROP "
+    printf("   reading one-electron property %s from MDPROP "
            "(lambda = %e %e)\n", prop_name, creal(lambda), cimag(lambda));
 
     // read file containing the prop matrix
@@ -227,7 +227,7 @@ double max_diagonal_diff(double complex *fock)
     for (int i = 0; i < nspinors; i++) {
         double complex f_ii = fock[i * nspinors + i];
         if (cimag(f_ii) > PRINT_THRESH) {
-            printf("     (!) in sort_onel(): imaginary value of the [%d,%d] diagonal "
+            printf("   (!) in sort_onel(): imaginary value of the [%d,%d] diagonal "
                    "element of the Fock matrix = %.8f %.3E (threshold = 1e-13)\n",
                    i, i, creal(f_ii), cimag(f_ii));
         }
@@ -395,7 +395,7 @@ int read_prop_two_files(int nspinors, char *file_re, char *file_im, double compl
         return EXIT_FAILURE;
     }
     while (fscanf(f_prop, "%d%d%lf", &idx_i, &idx_j, &value) == 3) {
-        prop_mat[(idx_j - 1) * nspinors + (idx_i - 1)] = value + 0.0 * I;
+        prop_mat[(idx_i - 1) * nspinors + (idx_j - 1)] = value + 0.0 * I;
     }
     fclose(f_prop);
 
@@ -405,7 +405,7 @@ int read_prop_two_files(int nspinors, char *file_re, char *file_im, double compl
         return EXIT_FAILURE;
     }
     while (fscanf(f_prop, "%d%d%lf", &idx_i, &idx_j, &value) == 3) {
-        prop_mat[(idx_j - 1) * nspinors + (idx_i - 1)] += 0.0 + value * I;
+        prop_mat[(idx_i - 1) * nspinors + (idx_j - 1)] += 0.0 + value * I;
     }
     fclose(f_prop);
 

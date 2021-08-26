@@ -29,15 +29,11 @@
  * 2018-2021 Alexander Oleynichenko
  ******************************************************************************/
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <options.h>
 
 #include "datamodel.h"
 #include "error.h"
-//#include "spinors.h"
-#include "utils.h"
 
 #define CC_MAX_STACK_DEPTH 1024
 
@@ -90,17 +86,6 @@ diagram_t *diagram_stack_replace(char *name, diagram_t *dg)
 dg_stack_pos_t get_stack_pos()
 {
     return dg_stack_top;
-}
-
-
-#include "memory.h"
-
-
-void print_mem_usage()
-{
-    double curr_usage = cc_get_current_memory_usage() / (1024.0 * 1024.0 * 1024.0);
-    double peak_usage = cc_get_peak_memory_usage() / (1024.0 * 1024.0 * 1024.0);
-    printf(" $ current memory usage = %.3f Gb; peak memory usage = %.3f Gb\n", curr_usage, peak_usage);
 }
 
 

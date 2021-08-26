@@ -1,0 +1,50 @@
+!
+**DIRAC         
+.TITLE          
+C2H2 molecule
+.WAVE FUNCTION  
+.4INDEX
+**HAMILTONIAN
+.NONREL
+**WAVE FUNCTION          
+.SCF
+.RELCCSD
+*SCF            
+#.CLOSED         
+# 14          
+.ERGCNV         
+1E-10    
+**MOLTRA        
+.SCHEME
+ 4
+.ACTIVE         
+all
+**RELCC         
+.ENERGY
+.FOCKSP         
+.PRINT          
+1               
+*CCENER         
+.MAXIT          
+50              
+.NTOL           
+ 9     
+*CCFSPC
+.MAXIT
+200
+.NACTH
+ 1 1 3 3
+.DOIE
+.DOIE2
+#.DOIH
+*CCIH
+.IHSCHEME
+ 1
+.AIH
+ 0.0
+.NIH
+ 3
+.SH_H2
+ -5.0
+*END OF INPUT   
+				

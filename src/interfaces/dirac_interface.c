@@ -47,6 +47,9 @@
 
 #define MAX_INTS_FILE_NAME_LENGTH 1024
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 // arguments to be passed to the Fortran code
 // (via the 'mrconee_mdcint' common block, see dirac_binary.f90)
 extern struct {
@@ -112,6 +115,10 @@ void create_spinor_info_dirac(int32_t n_spinors, int32_t *irpamo_array, double *
 void check_irrep_names();
 int rep_name_exists(int nrep, char **list, char *query);
 
+void extend_point_group_Cinfv();
+void extend_point_group_Dinfh();
+void check_max_num_irreps_enough();
+
 
 /**
  * Reads info about spinors and transformed MO integrals from formatted file.
@@ -171,6 +178,13 @@ void dirac_interface(cc_options_t *opts)
     // "Multiplication table" ( = dir prod table for Abelian groups)
     create_direct_product_table_dirac(nsym);
 
+    /*if (strcmp(get_point_group_name(), "C32 aka Cinfv") == 0) {
+        extend_point_group_Cinfv();
+    }
+    else if (strcmp(get_point_group_name(), "C16h aka Dinfh") == 0) {
+        extend_point_group_Dinfh();
+    }*/
+
     // information about spinors and active space
     create_spinor_info_dirac(dirac_data.nspinors, dirac_data.irpamo, dirac_data.eorbmo, dirac_data.iocc);
     create_spinor_blocks(opts->tile_size);
@@ -181,7 +195,254 @@ void dirac_interface(cc_options_t *opts)
     print_symmetry_info();
     print_spinor_info_table();
 
+    // additional checks:
+    // 1. names of irreps in some directives of the input file can be incorrect
     check_irrep_names();
+    // 2. in the special case of infinite groups one must check if the list of irreps
+    // includes all their direct products possible within the CC model chosen
+    /*if (strcmp(get_point_group_name(), "C32 aka Cinfv") == 0) {
+        check_max_num_irreps_enough();
+    }*/
+}
+
+
+void check_max_num_irreps_enough()
+{
+    int max_spinor_proj_x2 = 0;
+
+    // find max angular momentum projection of spinors
+    for (int i = 0; i < get_num_spinors(); i++) {
+        int irep = get_spinor_irrep(i);
+        char *irrep_name = get_irrep_name(irep);
+        int irrep_proj_x2 = irrep_name[0] - '0';
+        if (irrep_proj_x2 > max_spinor_proj_x2) {
+            max_spinor_proj_x2 = irrep_proj_x2;
+        }
+    }
+
+    int n_mult = MAX(cc_opts->cc_model > CC_MODEL_CCSD ? 3 : 2, cc_opts->sector_h+cc_opts->sector_p);
+
+    if (n_mult * max_spinor_proj_x2 > (CC_MAX_NUM_IRREPS / 4 - 1) * 2) {
+        printf("max proj x2 = %d\n", max_spinor_proj_x2);
+        printf("n_mult = %d\n", n_mult);
+        printf("n_mult * max_spinor_proj_x2 = %d\n", n_mult * max_spinor_proj_x2);
+        printf("(CC_MAX_NUM_IRREPS/4-1)*2 = %d\n", (CC_MAX_NUM_IRREPS/4-1)*2);
+        printf("CC_MAX_NUM_IRREPS must be increased to %d\n", ((n_mult * max_spinor_proj_x2) / 2 + 1) * 4);
+        errquit("parameter CC_MAX_NUM_IRREPS must be increased (and the program must be recompiled)");
+    }
+}
+
+
+
+typedef struct {
+    int omega_x2;
+    int parity;
+} infty_irrep_t;
+
+
+void infty_irrep_to_string_Cinfv(infty_irrep_t *irrep, char *buf)
+{
+    int omega_x2 = irrep->omega_x2;
+    int proj_sign = (omega_x2 < 0) ? -1 : +1;
+
+    if (omega_x2 == 0) {
+        sprintf(buf, "0");
+    }
+    else if (omega_x2 % 2 == 0) // even
+    {
+        sprintf(buf, "%d%c", abs(omega_x2)/2, (proj_sign == -1) ? '-' : '+');
+    }
+    else // odd
+    {
+        sprintf(buf, "%d/2%c", abs(omega_x2), (proj_sign == -1) ? '-' : '+');
+    }
+}
+
+void infty_irrep_to_string_Dinfh(infty_irrep_t *irrep, char *buf)
+{
+    int omega_x2 = irrep->omega_x2;
+    int proj_sign = (omega_x2 < 0) ? -1 : +1;
+
+    if (omega_x2 == 0) {
+        sprintf(buf, "0%c", (irrep->parity > 0) ? 'g' : 'u');
+    }
+    else if (omega_x2 % 2 == 0) // even
+    {
+        sprintf(buf, "%d%c%c", abs(omega_x2)/2, (irrep->parity > 0) ? 'g' : 'u', (proj_sign == -1) ? '-' : '+');
+    }
+    else // odd
+    {
+        sprintf(buf, "%d/2%c%c", abs(omega_x2), (irrep->parity > 0) ? 'g' : 'u', (proj_sign == -1) ? '-' : '+');
+    }
+}
+
+
+void extend_point_group_Cinfv()
+{
+    infty_irrep_t *irrep_list = (infty_irrep_t *) cc_malloc(sizeof(infty_irrep_t) * CC_MAX_NUM_IRREPS);
+
+    int max_omega = CC_MAX_NUM_IRREPS / 4 - 1;
+
+    printf("CC_MAX_NUM_IRREPS = %d\n", CC_MAX_NUM_IRREPS);
+    printf("Max Omega = %d\n", max_omega);
+
+    // generate half-integer omega irreps
+    int irep = 0;
+    for (int i = 1; i <= max_omega * 2; i += 2) {
+        irrep_list[irep].omega_x2 = +i;   // projection plus
+        irrep_list[irep+1].omega_x2 = -i; // projection minus
+        irep += 2;
+    }
+
+    // irrep 0 = (0+) + (0-)
+    irrep_list[irep].omega_x2 = 0;
+    irrep_a1 = irep;
+    irep += 1;
+
+    // generate integer omega irreps
+    for (int i = 2; i <= max_omega * 2; i += 2) {
+        irrep_list[irep].omega_x2 = +i;   // projection plus
+        irrep_list[irep+1].omega_x2 = -i; // projection minus
+        irep += 2;
+    }
+
+    // deallocate old list of irrep names and old multiplication table
+    for (int i = 0; i < nsym; i++) {
+        cc_free(rep_names[i]);
+    }
+    cc_free(rep_names);
+
+    // update list of irrep names
+    nsym = irep;
+    rep_names = (char **) cc_malloc(nsym * sizeof(char *));
+    for (int i = 0; i < nsym; i++) {
+        char buf[64];
+        infty_irrep_to_string_Cinfv(irrep_list+i, buf);
+        rep_names[i] = cc_strdup(buf);
+        printf("%d %s\n", i, rep_names[i]);
+    }
+
+
+    // update multiplication table (for abelian groups only)
+    for (int i = 0; i < nsym; i++) {
+        for (int j = 0; j < nsym; j++) {
+            infty_irrep_t *op1 = irrep_list + i;
+            infty_irrep_t *op2 = irrep_list + j;
+            infty_irrep_t prod;
+            prod.omega_x2 = op1->omega_x2 + op2->omega_x2;
+
+            // find product irrep in the list (-1 if not found)
+            int found = 0;
+            for (int k = 0; k < nsym; k++) {
+                if (irrep_list[k].omega_x2 == prod.omega_x2) {
+                    dir_prod_table_abelian[i][j] = k;
+                    found = 1;
+                    break;
+                }
+            }
+            if (found == 0) {
+                dir_prod_table_abelian[i][j] = -1;
+            }
+        }
+    }
+}
+
+
+void extend_point_group_Dinfh()
+{
+    infty_irrep_t *irrep_list = (infty_irrep_t *) cc_malloc(sizeof(infty_irrep_t) * CC_MAX_NUM_IRREPS);
+
+    int max_omega = CC_MAX_NUM_IRREPS / 8 - 1;
+
+    printf("CC_MAX_NUM_IRREPS = %d\n", CC_MAX_NUM_IRREPS);
+    printf("Max Omega = %d\n", max_omega);
+
+    // generate half-integer omega irreps
+    // gerade
+    int irep = 0;
+    for (int i = 1; i <= max_omega * 2; i += 2) {
+        irrep_list[irep].omega_x2 = +i;   // projection plus
+        irrep_list[irep].parity = +1;
+        irrep_list[irep+1].omega_x2 = -i; // projection minus
+        irrep_list[irep+1].parity = +1;
+        irep += 2;
+    }
+    // ungerade
+    for (int i = 1; i <= max_omega * 2; i += 2) {
+        irrep_list[irep].omega_x2 = +i;   // projection plus
+        irrep_list[irep].parity = -1;
+        irrep_list[irep+1].omega_x2 = -i; // projection minus
+        irrep_list[irep+1].parity = -1;
+        irep += 2;
+    }
+
+    // generate integer omega irreps
+    // irrep 0g
+    irrep_list[irep].omega_x2 = 0;
+    irrep_list[irep].parity = +1;
+    irrep_a1 = irep;
+    irep += 1;
+    // irreps 1g, ...
+    for (int i = 2; i <= max_omega * 2; i += 2) {
+        irrep_list[irep].omega_x2 = +i;   // projection plus
+        irrep_list[irep].parity = +1;
+        irrep_list[irep+1].omega_x2 = -i; // projection minus
+        irrep_list[irep+1].parity = +1;
+        irep += 2;
+    }
+    // irrep 0u
+    irrep_list[irep].omega_x2 = 0;
+    irrep_list[irep].parity = -1;
+    irep += 1;
+    // irreps 1u, ...
+    for (int i = 2; i <= max_omega * 2; i += 2) {
+        irrep_list[irep].omega_x2 = +i;   // projection plus
+        irrep_list[irep].parity = -1;
+        irrep_list[irep+1].omega_x2 = -i; // projection minus
+        irrep_list[irep].parity = -1;
+        irep += 2;
+    }
+
+    // deallocate old list of irrep names and old multiplication table
+    for (int i = 0; i < nsym; i++) {
+        cc_free(rep_names[i]);
+    }
+    cc_free(rep_names);
+
+    // update list of irrep names
+    nsym = irep;
+    rep_names = (char **) cc_malloc(nsym * sizeof(char *));
+    for (int i = 0; i < nsym; i++) {
+        char buf[64];
+        infty_irrep_to_string_Dinfh(irrep_list+i, buf);
+        rep_names[i] = cc_strdup(buf);
+        printf("%d %s\n", i, rep_names[i]);
+    }
+
+
+    // update multiplication table (for abelian groups only)
+    for (int i = 0; i < nsym; i++) {
+        for (int j = 0; j < nsym; j++) {
+            infty_irrep_t *op1 = irrep_list + i;
+            infty_irrep_t *op2 = irrep_list + j;
+            infty_irrep_t prod;
+            prod.omega_x2 = op1->omega_x2 + op2->omega_x2;
+            prod.parity = op1->parity * op2->parity;
+
+            // find product irrep in the list (-1 if not found)
+            int found = 0;
+            for (int k = 0; k < nsym; k++) {
+                if (irrep_list[k].omega_x2 == prod.omega_x2 && irrep_list[k].parity == prod.parity) {
+                    dir_prod_table_abelian[i][j] = k;
+                    found = 1;
+                    break;
+                }
+            }
+            if (found == 0) {
+                dir_prod_table_abelian[i][j] = -1;
+            }
+        }
+    }
 }
 
 
@@ -686,7 +947,7 @@ void dirac_interface_debug_print()
     printf("irrep direct product table =\n");
     for (int i = 0; i < 2 * dirac_data.nsymrpa; i++) {
         for (int j = 0; j < 2 * dirac_data.nsymrpa; j++) {
-            printf("%2d ", dirac_data.multb[i][j]);//64*i+j]);
+            printf("%2d ", dirac_data.multb[i][j]);
         }
         printf("\n");
     }

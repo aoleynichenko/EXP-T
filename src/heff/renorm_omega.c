@@ -60,6 +60,7 @@ size_t first_nonzero_irrep(size_t *block_dims);
 void renormalize_wave_operator_0h0p_0h1p(size_t dim, slater_det_t *det_list,
                                          double complex *heff, double complex *heff_prime, double complex *omega);
 int get_nroots_for_irrep(char *irrep_name);
+void get_nroots(size_t *block_dims, double complex **eigvalues, size_t *nroots);
 
 
 void restore_intermediate_normalization(size_t *block_dims, slater_det_t **det_list, double complex **heff,
@@ -77,8 +78,8 @@ void restore_intermediate_normalization(size_t *block_dims, slater_det_t **det_l
     double complex *heff_block = heff[vacuum_irrep];
 
     size_t dim_prime = dim + 1;  // dimension of the Heff' matrix
-    double complex *heff_0h0p_1h1p_prime = zzeros(dim_prime, dim_prime);
-    double complex *p_omega_p = zzeros(dim_prime, dim_prime);
+    double complex *heff_0h0p_1h1p_prime = z_zeros(dim_prime, dim_prime);
+    double complex *p_omega_p = z_zeros(dim_prime, dim_prime);
 
     // 0h0p-1h1p: transformation of the Heff to with the (P\OmegaP)^-1 matrix.
     // + store this 0h0p+1h1p block; it will be written to the formatted file
@@ -109,11 +110,15 @@ void restore_intermediate_normalization(size_t *block_dims, slater_det_t **det_l
      * are required to construct properties and quasi-natural orbitals.
      * These eigenvectors are to be stored in the MVCOEF0011 unformatted file.
      */
-    double complex *vl_0011 = zzeros(dim_prime, dim_prime);
-    double complex *vr_0011 = zzeros(dim_prime, dim_prime);
-    double complex *ev_0011 = zzeros(dim_prime, 1);
-    int nroots_irep = get_nroots_for_irrep(vacuum_irrep_name);
-    size_t nroots = cc_opts->nroots_specified ? nroots_irep : dim_prime;
+    double complex *vl_0011 = z_zeros(dim_prime, dim_prime);
+    double complex *vr_0011 = z_zeros(dim_prime, dim_prime);
+    double complex *ev_0011 = z_zeros(dim_prime, 1);
+
+    /*int nroots_irep = get_nroots_for_irrep(vacuum_irrep_name);
+    size_t nroots = cc_opts->nroots_specified ? nroots_irep : dim_prime;*/
+    size_t nroots_array[CC_MAX_NUM_IRREPS];
+    get_nroots(block_dims, eigvalues, nroots_array);
+    size_t nroots = (cc_opts->nroots_specified || cc_opts->roots_cutoff_specified) ? nroots_array[vacuum_irrep] : dim_prime;
 
     eig(dim_prime, heff_0h0p_1h1p_prime, ev_0011, vl_0011, vr_0011);
     if (cc_opts->do_hermit == 1) {
@@ -218,9 +223,9 @@ void renormalize_wave_operator_0h0p_0h1p(size_t dim, slater_det_t *det_list,
 
     // allocate working arrays, init with zeros
     memset(omega, 0, sizeof(double complex) * dimx * dimx);
-    double complex *omega_inv = zzeros(dimx, dimx);
-    double complex *heff_0h0p_1h1p = zzeros(dimx, dimx);
-    double complex *buf = zzeros(dimx, dimx);
+    double complex *omega_inv = z_zeros(dimx, dimx);
+    double complex *heff_0h0p_1h1p = z_zeros(dimx, dimx);
+    double complex *buf = z_zeros(dimx, dimx);
 
     // construct 0h0p+1h1p (extended) block-diagonal Heff matrix
     // Heff 1h1p block will be placed into the right lower angle.

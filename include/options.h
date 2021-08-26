@@ -39,6 +39,7 @@
 
 #include "comdef.h"
 #include "intham.h"
+#include "intham1.h"
 #include "linalg.h"
 #include "selection.h"
 
@@ -250,6 +251,8 @@ struct cc_options {
     double actsp_max;
     int nacth;
     int nactp;
+
+    // options for the "simple" intermediate Hamiltonian
     int main_defined;
     int main_h;
     int main_p;
@@ -288,6 +291,7 @@ struct cc_options {
     int reuse_0h2p;
     int reuse_2h0p;
     int reuse_0h3p;
+    int reuse_1h2p;
 
     // flush non-converged amplitudes to disk
     int do_flush_iter;
@@ -298,12 +302,17 @@ struct cc_options {
     // nuclear repulsion energy
     double enuc;
 
-    // CCSD(0,0) energy
+    // CCSD(0h0p) energy
     double eref;
+
+    // ground state energy in the 0h1p sector
+    double ground_energy_0h1p;
 
     // denominator shifts
     cc_shifttype_t shift_type;
     cc_shift_params_t shifts[MAX_SECTOR_RANK][MAX_SECTOR_RANK];
+
+    cc_shift_params_t orbshifts[MAX_SECTOR_RANK][MAX_SECTOR_RANK];
 
     int do_orbshift;
     int orbshift_power;
@@ -325,8 +334,10 @@ struct cc_options {
     int skip_sector[MAX_SECTOR_RANK][MAX_SECTOR_RANK];
 
     // how many roots should be processed
-    int nroots_specified;  // is 'nroots' option was specified in input file
-    cc_space_t nroots_specs;  // number of lowest roots in each symmetry
+    int nroots_specified;        // is 'nroots' option was specified in input file
+    cc_space_t nroots_specs;     // number of lowest roots in each symmetry
+    int roots_cutoff_specified;  // roots of interest can be limited by some energy bound
+    double roots_cutoff;
 
     // degeneracy threshold (used for representing results)
     double degen_thresh;
@@ -366,7 +377,15 @@ struct cc_options {
     int n_select;
     ampl_selection_t selects[CC_MAX_SELECTION];
 
-    // intermediate hamiltonian parameters
+    // restriction of the spinor space for triples
+    int do_restrict_t3;
+    double restrict_t3_bounds[2];
+
+    // (simple) intermediate Hamiltonian-like shifts
+    int do_intham1;
+    ih1_options_t ih1_opts;
+
+    // (sophisticated) intermediate hamiltonian parameters
     int do_intham;
     intham_param_t intham_params;
 };
@@ -389,5 +408,7 @@ cc_options_t *new_options();
 void delete_options(cc_options_t *);
 
 void print_options(cc_options_t *);
+
+int triples_enabled();
 
 #endif /* CC_OPTIONS_H_INCLUDED */

@@ -62,8 +62,14 @@
 static int cmp_pair_t(const void *op1, const void *op2);
 static void inverse_perm(int n, int *perm, int *out);
 
-// counter of diagrams (for unique ID's)
-int64_t diagrams_count = 0;
+int guess_rank(char *qparts, char *valence, char *order);
+void parse_qp_string(int rank, char *qp_str, int *qp);
+void parse_valence_string(int rank, char *val_str, int *val);
+void parse_order_string(int rank, char *order_str, int *order);
+int guess_storage_class(char *name, int rank, char *qparts, char *valence);
+int64_t diagram_get_unique_id();
+void diagram_init_inverse_index(diagram_t *dg, size_t n_blocks, block_t **block_list);
+void diagram_bind_blocks(diagram_t *dg, size_t n_blocks, block_t **block_list);
 
 
 /**
@@ -81,128 +87,54 @@ int64_t diagrams_count = 0;
  * @note len(qparts) == len(valence) == len(order) == rank of the diagram
  * @note new diagram is not binded to the singly-linked list "dg_stack"
  */
-diagram_t *diagram_new(char *name, char *qparts, char *valence, char *order, int perm_unique)
+diagram_t *diagram_new(char *name, char *qparts, char *valence, char *t3space, char *order, int perm_unique)
 {
-    int rk1, rk2, rk3, rank;
     int qparts_arr[CC_DIAGRAM_MAX_RANK];
     int valence_arr[CC_DIAGRAM_MAX_RANK];
+    int t3space_arr[CC_DIAGRAM_MAX_RANK];
     int order_arr[CC_DIAGRAM_MAX_RANK];
-    int *spinor_blocks_list;
-    block_t *sb;
     size_t i;
-    char c;
-    block_t **sbs_temp;  // temporary storage for the created symmetry blocks
+    block_t **block_list;  // temporary storage for the created symmetry blocks
     int max_sbs;            // max number of sym blocks = (# spinor blocks)^rank
-    int isymb = 0;          // counter of created blocks
-    int *ijkl;              // indices for the arbitrary-nested loop (len = rank)
+    int blocks_counter = 0;          // counter of created blocks
+    int ijkl[CC_DIAGRAM_MAX_RANK];  // indices for the arbitrary-nested loop
     int only_unique = perm_unique;
 
-    // check arguments for correctness and pre-process them
-    rk1 = strlen(qparts);
-    rk2 = strlen(valence);
-    rk3 = strlen(order);
-    if (rk1 != rk2 || rk2 != rk3 || rk1 != rk3) {
-        printf("name=%s\n", name);
-        printf("strlen(qparts='%s') = %d\n", qparts, rk1);
-        printf("strlen(valence='%s') = %d\n", valence, rk2);
-        printf("strlen(order='%s') = %d\n", order, rk3);
-        errquit("lengths of arguments 'qparts', 'valence' and 'order' must "
-                "coincide and be equal to 2, 4, 6 ...");
-    }
-    rank = rk1;
-    if (rank == 0 || rank % 2 == 1) {
-        errquit("lengths of arguments 'qparts', 'valence' and 'order' must "
-                "be equal to 2, 4, 6 ... (actual length == %d)", rank);
-    }
-    // strings -> integer arrays
-    for (i = 0; i < rank; i++) {
-        c = qparts[i];
-        if (c == 'h' || c == 'p') {
-            qparts_arr[i] = c;
-        }
-        else {
-            errquit("wrong quasiparticle symbol: %c (allowed are: h,p)", c);
-        }
-        c = valence[i];
-        if (c == '0' || c == '1') {
-            valence_arr[i] = c - '0';
-        }
-        else {
-            errquit("wrong valence/inactive flag: %c (allowed are: 0,1)", c);
-        }
-        // TODO: careful check of the 'order' argument here
-        c = order[i];
-        if (isdigit(c)) {
-            order_arr[i] = c - '0';
-        }
-        else {
-            errquit("wrong order symbol: %c (only digits are allowed)", c);
-        }
-    }
+    //printf("diagram_new %s: qp=%s val=%s t3=%s ord=%s\n", name, qparts, valence, t3space, order);
 
-    // if the diagram's name starts with '$', only permutationally unique blocks will be treated
-    if (name[0] == '$') {
-        only_unique = 1;
-    }
+    // check arguments for correctness and pre-process them
+    int rank = guess_rank(qparts, valence, order);
+    parse_qp_string(rank, qparts, qparts_arr);
+    parse_valence_string(rank, valence, valence_arr);
+    parse_valence_string(rank, t3space, t3space_arr);
+    parse_order_string(rank, order, order_arr);
 
     // allocate memory for all the metainfo and the diagram itself
     diagram_t *dg = (diagram_t *) cc_malloc(1 * sizeof(diagram_t));
 
     // fill diagram's fields
-    dg->dg_id = diagrams_count++;
+    dg->dg_id = diagram_get_unique_id();
     strncpy(dg->name, name, CC_DIAGRAM_MAX_NAME);
     dg->name[CC_DIAGRAM_MAX_NAME - 1] = '\0';
     dg->rank = rank;
     dg->only_unique = only_unique;
     intcpy(dg->qparts, qparts_arr, rank);
     intcpy(dg->valence, valence_arr, rank);
+    intcpy(dg->t3space, t3space_arr, rank);
     intcpy(dg->order, order_arr, rank);
-
-    // create inverted index (numbers of spinor blocks -> number of block)
-    size_t inv_index_size = int_pow(n_spinor_blocks, rank);
-    dg->inv_index = (size_t *) cc_malloc(inv_index_size * sizeof(size_t));
-    memset(dg->inv_index, 0, inv_index_size * sizeof(size_t));
 
     // permutation which is inverse to the 'order' perm-n
     // is required for the subsequent application of the DPD scheme
     int reverse_order[CC_DIAGRAM_MAX_RANK];
     inverse_perm(rank, order_arr, reverse_order);
 
-    // storage class: RAM or DISK
-    int storage_type = CC_DIAGRAM_IN_MEM;
-    if (strcmp(name, "pppp") == 0 || strcmp(name, "ppppr") == 0) {
-        if (cc_opts->disk_usage_level >= 2) {
-            storage_type = CC_DIAGRAM_ON_DISK;
-        }
-        else {
-            storage_type = CC_DIAGRAM_IN_MEM;
-        }
-    }
-    else if (rank == 4 && cc_opts->disk_usage_level >= 3) { // three inactive 'p' indices
-        int np = 0;
-        for (int i = 0; i < rank; i++) {
-            if (qparts[i] == 'p' && valence[i] == '0') {
-                np++;
-            }
-        }
-        if (np >= 3) {
-            storage_type = CC_DIAGRAM_ON_DISK;
-        }
-    }
-    else if (rank >= 6 && cc_opts->disk_usage_level >= 1) { // triples+ diagrams: always on disk
-        storage_type = CC_DIAGRAM_ON_DISK;
-    }
-    else {
-        storage_type = CC_DIAGRAM_IN_MEM;
-    }
+    int storage_type = guess_storage_class(name, rank, qparts, valence);
 
     // create symmetry blocks
     max_sbs = (int) pow(n_spinor_blocks, rank);
-    sbs_temp = (block_t **) cc_malloc(sizeof(block_t *) * max_sbs);
-    spinor_blocks_list = (int *) cc_malloc(sizeof(int) * rank);
+    block_list = (block_t **) cc_malloc(sizeof(block_t *) * max_sbs);
 
     // dynamically-nested loop over tensor's dimensions
-    ijkl = (int *) cc_malloc(sizeof(int) * rank);
     for (i = 0; i < rank; i++) {
         ijkl[i] = 0;
     }
@@ -220,25 +152,24 @@ diagram_t *diagram_new(char *name, char *qparts, char *valence, char *order, int
             goto next_symblock;
         }
 
-        int is_zero = is_symblock_zero(rank, ijkl, dg->qparts, dg->valence);
+        int is_zero = is_symblock_zero(rank, ijkl, dg->qparts, dg->valence, dg->t3space);
         if (is_zero) {
             goto next_symblock;
         }
 
         // create empty block
-        sb = symblock_new(rank, ijkl, dg->qparts, dg->valence, dg->order, storage_type, only_unique);
-
-        if (sb == NULL) {
+        block_t *block = symblock_new(rank, ijkl, dg->qparts, dg->valence, dg->t3space, dg->order, storage_type, only_unique);
+        if (block == NULL) {
             goto next_symblock;
         }
-
-        // assign fields
-        sb->dg_id = dg->dg_id;
-        sb->sb_id = isymb;
+        /*else {
+            if (rank == 6)
+            printf("nonzero!\n");
+        }*/
 
         // save this block (and count it)
-        sbs_temp[isymb] = sb;
-        isymb++;
+        block_list[blocks_counter] = block;
+        blocks_counter++;
 
         // proceed to the next iteration: new set of indices
         next_symblock:
@@ -256,30 +187,52 @@ diagram_t *diagram_new(char *name, char *qparts, char *valence, char *order, int
         // (next set of indices)
     }
 
+    diagram_bind_blocks(dg, blocks_counter, block_list);
+
+    // cleanup
+    cc_free(block_list);
+
+    return dg;
+}
+
+
+/**
+ * Binds blocks to the diagram.
+ */
+void diagram_bind_blocks(diagram_t *dg, size_t n_blocks, block_t **block_list)
+{
+    dg->n_blocks = n_blocks;
+    dg->blocks = (block_t **) cc_malloc(sizeof(block_t *) * n_blocks);
+
+    for (size_t i = 0; i < n_blocks; i++) {
+        dg->blocks[i] = block_list[i];
+    }
+
+    diagram_init_inverse_index(dg, dg->n_blocks, dg->blocks);
+}
+
+
+/**
+ * Adds blocks to the inverted index.
+ */
+void diagram_init_inverse_index(diagram_t *dg, size_t n_blocks, block_t **block_list)
+{
     int dims[CC_DIAGRAM_MAX_RANK];
-    for (i = 0; i < CC_DIAGRAM_MAX_RANK; i++) {
+    size_t rank = dg->rank;
+
+    for (int i = 0; i < CC_DIAGRAM_MAX_RANK; i++) {
         dims[i] = n_spinor_blocks;
     }
 
-    // bind non-zero blocks to the diagram
-    dg->n_blocks = isymb;
-    dg->blocks = (block_t **) cc_malloc(sizeof(block_t *) * isymb);
-    for (i = 0; i < dg->n_blocks; i++) {
-        dg->blocks[i] = sbs_temp[i];
-        dg->blocks[i]->dg_id = dg->dg_id;
-        dg->blocks[i]->sb_id = i;
+    size_t inv_index_size = int_pow(n_spinor_blocks, dg->rank);
+    dg->inv_index = (size_t *) cc_malloc(inv_index_size * sizeof(size_t));
+    memset(dg->inv_index, 0, inv_index_size * sizeof(size_t));
 
-        // add block to the inverted index
-        size_t ii = as_linear_index(rank, dims, dg->blocks[i]->spinor_blocks);
+    for (size_t i = 0; i < n_blocks; i++) {
+        block_t *block = block_list[i];
+        size_t ii = as_linear_index(rank, dims, block->spinor_blocks);
         dg->inv_index[ii] = i;
     }
-
-    // cleanup
-    cc_free(sbs_temp);
-    cc_free(spinor_blocks_list);
-    cc_free(ijkl);
-
-    return dg;
 }
 
 
@@ -293,6 +246,19 @@ void diagram_get_valence(diagram_t *diag, char *valence)
         valence[i] = '0' + diag->valence[i];
     }
     valence[diag->rank] = '\0';
+}
+
+
+/**
+ * returns list of t3space(1)/general(0) labels for each
+ * dimension of the diagram
+ */
+void diagram_get_t3space(diagram_t *diag, char *t3space)
+{
+    for (size_t i = 0; i < diag->rank; i++) {
+        t3space[i] = '0' + diag->t3space[i];
+    }
+    t3space[diag->rank] = '\0';
 }
 
 
@@ -348,7 +314,7 @@ void diagram_get_memory_used(diagram_t *dg, size_t *ram_used, size_t *disk_used)
  * BUG: returns wrong pointer! to the moment only the block_index parameter
  * can be used safely!
  */
-block_t *diagram_get_block(diagram_t *dg, int *spinor_blocks_nums, size_t *block_index)
+block_t *diagram_get_block(diagram_t *dg, int *spinor_blocks_nums)//, size_t *block_index)
 {
     static int dims[CC_DIAGRAM_MAX_RANK];
     static int initialized = 0;
@@ -360,9 +326,17 @@ block_t *diagram_get_block(diagram_t *dg, int *spinor_blocks_nums, size_t *block
         }
     }
 
+    /*
+     * Some diagrams can contain no integrals due to symmetry reasons
+     * (sometimes for modest-size problems)
+     */
+    if (dg->n_blocks == 0) {
+        return NULL;
+    }
+
     size_t ii = as_linear_index(dg->rank, dims, spinor_blocks_nums);
-    *block_index = dg->inv_index[ii];
-    block_t *ret = dg->blocks[*block_index];
+    size_t block_index = dg->inv_index[ii];
+    block_t *ret = dg->blocks[block_index];
 
     for (int i = 0; i < dg->rank; i++) {
         if (ret->spinor_blocks[i] != spinor_blocks_nums[i]) {
@@ -402,13 +376,15 @@ diagram_t *diagram_copy(diagram_t *dg)
     diagram_t *clone;
     char qparts[CC_DIAGRAM_MAX_RANK];
     char valence[CC_DIAGRAM_MAX_RANK];
+    char t3space[CC_DIAGRAM_MAX_RANK];
     char order[CC_DIAGRAM_MAX_RANK];
 
     diagram_get_quasiparticles(dg, qparts);
     diagram_get_valence(dg, valence);
+    diagram_get_t3space(dg, t3space);
     diagram_get_order(dg, order);
 
-    clone = diagram_new(dg->name, qparts, valence, order, dg->only_unique);
+    clone = diagram_new(dg->name, qparts, valence, t3space, order, dg->only_unique);
 
     // name of the new diagram consist of the old one + "_copy_" + clone's ID
     sprintf(clone->name, "%s_copy_%ld", dg->name, clone->dg_id);
@@ -466,10 +442,7 @@ double complex diagram_get(diagram_t *dg, int *idx)
                 transform(b->rank, b->spinor_blocks, uniq_spinor_blocks, b->perm_to_unique, 0);
                 transform(b->rank, idx, idx_uniq, b->perm_to_unique, 0);
 
-                size_t unique_index = 0;
-                //block_t *uniq_block =
-                diagram_get_block(dg, uniq_spinor_blocks, &unique_index);
-                block_t *uniq_block = dg->blocks[unique_index];
+                block_t *uniq_block = diagram_get_block(dg, uniq_spinor_blocks);
 
                 return b->sign * symblock_get(uniq_block, idx_uniq);
             }
@@ -555,6 +528,11 @@ void diagram_print(diagram_t *dg)
         printf("%1d", dg->valence[i]);
     }
     printf("\n");
+    printf("  t3space: ");
+    for (i = 0; i < dg->rank; i++) {
+        printf("%1d", dg->t3space[i]);
+    }
+    printf("\n");
     printf("  order: ");
     for (i = 0; i < dg->rank; i++) {
         printf("%1d", dg->order[i]);
@@ -579,11 +557,13 @@ void diagram_summary(diagram_t *diag)
 {
     char str_qparts[CC_DIAGRAM_MAX_RANK + 1];
     char str_valence[CC_DIAGRAM_MAX_RANK + 1];
+    char str_t3space[CC_DIAGRAM_MAX_RANK + 1];
     char str_order[CC_DIAGRAM_MAX_RANK + 1];
     size_t n_unique = 0;
 
     diagram_get_quasiparticles(diag, str_qparts);
     diagram_get_valence(diag, str_valence);
+    diagram_get_t3space(diag, str_t3space);
     diagram_get_order(diag, str_order);
 
     for (size_t i = 0; i < diag->n_blocks; i++) {
@@ -593,7 +573,7 @@ void diagram_summary(diagram_t *diag)
         }
     }
 
-    printf(" diagram %s: %s %s %s %d/%d\n", diag->name, str_qparts, str_valence, str_order, n_unique, diag->n_blocks);
+    printf(" diagram %s: %s %s %s %s %d/%d\n", diag->name, str_qparts, str_valence, str_t3space, str_order, n_unique, diag->n_blocks);
 }
 
 
@@ -661,6 +641,7 @@ void diagram_write(diagram_t *dg, char *file_name)
     // quasiparticle type list (h/p), valence, order
     io_write(f, dg->qparts, sizeof(int) * dg->rank);
     io_write(f, dg->valence, sizeof(int) * dg->rank);
+    io_write(f, dg->t3space, sizeof(int) * dg->rank);
     io_write(f, dg->order, sizeof(int) * dg->rank);
 
     // inverted index
@@ -715,7 +696,7 @@ diagram_t *diagram_read(char *file_name)
     // diagram's ID
     io_read(f, &dg->dg_id, sizeof(dg->dg_id));
     // ID is new!
-    dg->dg_id = diagrams_count++;
+    dg->dg_id = diagram_get_unique_id();
 
     // diagram's name (len = CC_DIAGRAM_MAX_NAME)
     io_read(f, dg->name, CC_DIAGRAM_MAX_NAME * sizeof(char));
@@ -729,6 +710,7 @@ diagram_t *diagram_read(char *file_name)
     // quasiparticle type list (h/p), valence, order
     io_read(f, dg->qparts, sizeof(int) * dg->rank);
     io_read(f, dg->valence, sizeof(int) * dg->rank);
+    io_read(f, dg->t3space, sizeof(int) * dg->rank);
     io_read(f, dg->order, sizeof(int) * dg->rank);
 
     // inverted index
@@ -742,8 +724,6 @@ diagram_t *diagram_read(char *file_name)
     dg->blocks = (block_t **) cc_malloc(dg->n_blocks * sizeof(block_t *));
     for (i = 0; i < dg->n_blocks; i++) {
         dg->blocks[i] = symblock_read(f);
-        // set new diagram's unique ID
-        dg->blocks[i]->dg_id = dg->dg_id;
     }
 
     io_close(f);
@@ -789,4 +769,113 @@ static void inverse_perm(int n, int *perm, int *out)
     for (i = 0; i < n; i++) {
         out[i] = tmp[i].a;
     }
+}
+
+
+void parse_qp_string(int rank, char *qp_str, int *qp)
+{
+    for (int i = 0; i < rank; i++) {
+        int c = qp_str[i];
+        if (c == 'h' || c == 'p') {
+            qp[i] = c;
+        }
+        else {
+            errquit("wrong quasiparticle symbol: %c (allowed are: h,p)", c);
+        }
+    }
+}
+
+
+void parse_valence_string(int rank, char *val_str, int *val)
+{
+    for (int i = 0; i < rank; i++) {
+        int c = val_str[i];
+        if (c == '0' || c == '1') {
+            val[i] = c - '0';
+        }
+        else {
+            errquit("wrong valence/inactive flag: %c (allowed are: 0,1)", c);
+        }
+    }
+}
+
+
+void parse_order_string(int rank, char *order_str, int *order)
+{
+    for (int i = 0; i < rank; i++) {
+        int c = order_str[i];
+        if (isdigit(c)) {
+            order[i] = c - '0';
+        }
+        else {
+            errquit("wrong order symbol: %c (only digits are allowed)", c);
+        }
+    }
+}
+
+
+int guess_rank(char *qparts, char *valence, char *order)
+{
+    int rk1 = strlen(qparts);
+    int rk2 = strlen(valence);
+    int rk3 = strlen(order);
+
+    if (rk1 != rk2 || rk2 != rk3 || rk1 != rk3) {
+        printf("strlen(qparts='%s') = %d\n", qparts, rk1);
+        printf("strlen(valence='%s') = %d\n", valence, rk2);
+        printf("strlen(order='%s') = %d\n", order, rk3);
+        errquit("lengths of arguments 'qparts', 'valence' and 'order' must "
+                "coincide and be equal to 2, 4, 6 ...");
+    }
+
+    if (rk1 == 0 || rk1 % 2 == 1) {
+        errquit("lengths of arguments 'qparts', 'valence' and 'order' must "
+                "be equal to 2, 4, 6 ... (actual length == %d)", rk1);
+    }
+
+    return rk1;
+}
+
+
+// storage class: RAM or DISK
+int guess_storage_class(char *name, int rank, char *qparts, char *valence)
+{
+    int storage_type = CC_DIAGRAM_IN_MEM;
+    if (strcmp(name, "pppp") == 0 || strcmp(name, "ppppr") == 0) {
+        if (cc_opts->disk_usage_level >= 2) {
+            storage_type = CC_DIAGRAM_ON_DISK;
+        }
+        else {
+            storage_type = CC_DIAGRAM_IN_MEM;
+        }
+    }
+    else if (rank == 4 && cc_opts->disk_usage_level >= 3) { // three inactive 'p' indices
+        int np = 0;
+        for (int i = 0; i < rank; i++) {
+            if (qparts[i] == 'p' && valence[i] == '0') {
+                np++;
+            }
+        }
+        if (np >= 3) {
+            storage_type = CC_DIAGRAM_ON_DISK;
+        }
+    }
+    else if (rank >= 6 && cc_opts->disk_usage_level >= 1) { // triples+ diagrams: always on disk
+        storage_type = CC_DIAGRAM_ON_DISK;
+    }
+    else {
+        storage_type = CC_DIAGRAM_IN_MEM;
+    }
+    return storage_type;
+}
+
+
+int64_t diagram_get_unique_id()
+{
+    // counter of symmetry blocks (for unique ID's)
+    static int64_t diagrams_count = 0;
+
+    int64_t id = diagrams_count;
+    diagrams_count++;
+    return id;
 }

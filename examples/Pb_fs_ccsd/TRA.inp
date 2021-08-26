@@ -1,0 +1,23 @@
+!                                                                                                   
+!                                                                                                   
+**GENERAL
+.PCMOUT
+**DIRAC                                                                                             
+.WAVE F                                                                                             
+.4INDEX
+**HAMILTONIAN                                                                                       
+.ECP                                                                                                
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+ 14 6                                                                                                  
+**MOLTRA                                                                                            
+.SCHEME
+ 4
+.ACTIVE                                                                                             
+energy -20. 50. 1.
+**PROPERTIES
+.DIPOLE
+*END OF DIRAC                                                                                       
+			

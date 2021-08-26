@@ -36,24 +36,20 @@
 #include "engine.h"
 #include "datamodel.h"
 #include "options.h"
+#include "spinors.h"
 #include "symmetry.h"
 
 
 /**
- * flushes to file sizes of all blocks in the diagram
- * (in order to build distribution)
+ * Prints banner for the sector
  */
-void flush_block_sizes(char *diag_name, char *file_name)
+void print_sector_banner(int sect_h, int sect_p)
 {
-    diagram_t *diag = diagram_stack_find(diag_name);
-    if (diag == NULL) {
-        errquit("flush_block_sizes(): diagram not found");
-    }
-    FILE *f = fopen(file_name, "w");
-    for (size_t i = 0; i < diag->n_blocks; i++) {
-        fprintf(f, "%d\n", diag->blocks[i]->size);
-    }
-    fclose(f);
+    printf("\n");
+    printf("\t\t\t\t*****************\n");
+    printf("\t\t\t\t** Sector %dh%dp **\n", sect_h, sect_p);
+    printf("\t\t\t\t*****************\n");
+    printf("\n");
 }
 
 
@@ -146,6 +142,8 @@ double t1_diagnostic(char *dg_name, int nelec)
     if (dg == NULL) {
         errquit("t1_diagnostic(): diagram '%s' not found", dg_name);
     }
+
+    assert(dg->rank == 2);
 
     for (size_t isb = 0; isb < dg->n_blocks; isb++) {
         block_t *sb = dg->blocks[isb];

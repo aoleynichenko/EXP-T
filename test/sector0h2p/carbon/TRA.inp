@@ -8,6 +8,7 @@ Carbon atom with Intermediate Hamiltonian
 .4INDEX
 **WAVE FUNCTION          
 .SCF        
+.RELCCSD
 *SCF            
 .MAXITR
 200
@@ -20,5 +21,12 @@ Carbon atom with Intermediate Hamiltonian
  4
 .ACTIVE         
 all
+**RELCC
+.FOCKSP
+*CCFSPC
+.DOEA
+.DOEA2
+.NACTP
+ 3 3
 *END OF INPUT   
 

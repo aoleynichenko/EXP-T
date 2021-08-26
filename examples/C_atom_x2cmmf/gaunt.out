@@ -1,0 +1,967 @@
+
+		**********************************************************************************
+		**                                                                              **
+		**                                   E X P - T                                  **
+		**        Relativistic Fock-Space Multireference Coupled Cluster Program        **
+		**                                                                              **
+		**                     version 1.5.6 (14 Aug 2021) development                   **
+		**                                                                              **
+		**********************************************************************************
+		**                                                                              **
+		** EXP-T is free software: you can redistribute it and/or modify                **
+		** it under the terms of the GNU Lesser General Public License as published by  **
+		** the Free Software Foundation, either version 3 of the License, or            **
+		** (at your option) any later version.                                          **
+		**                                                                              **
+		** EXP-T is distributed in the hope that it will be useful,                     **
+		** but WITHOUT ANY WARRANTY; without even the implied warranty of               **
+		** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                **
+		** GNU Lesser General Public License for more details.                          **
+		**                                                                              **
+		** You should have received a copy of the GNU Lesser General Public License     **
+		** along with EXP-T.  If not, see <http://www.gnu.org/licenses/>.               **
+		**                                                                              **
+		**********************************************************************************
+		**                                                                              **
+		** For more information about the EXP-T program system see                      **
+		** http://www.qchem.pnpi.spb.ru/expt                                            **
+		**                                                                              **
+		** This is an experimental code. The authors accept no responsibility           **
+		** for the performance of the code or for the correctness of the results.       **
+		**                                                                              **
+		** If results obtained with this code are published, an                         **
+		** appropriate citation would be:                                               **
+		**                                                                              **
+		** [1] A. Oleynichenko, A. Zaitsevskii, E. Eliav.                               **
+		**     EXP-T, An Extensible Code for Fock Space Relativistic Coupled Cluster    **
+		**     Calculations. See http://www.qchem.pnpi.spb.ru/expt.                     **
+		** [2] A. V. Oleynichenko, A. Zaitsevskii, E. Eliav.                            **
+		**     Towards high performance relativistic electronic structure modelling:    **
+		**     the EXP-T program package. Commun. Comput. Inf. Sci. 1331, 375 (2020).   **
+		**     doi: 10.1007/978-3-030-64616-5_33                                        **
+		**                                                                              **
+		**********************************************************************************
+
+Authors:
+  Alexander Oleynichenko [alexvoleynichenko@gmail.com]
+  Andrei Zaitsevskii
+  Ephraim Eliav
+Compiler: Intel C Compiler 2021 (Intel(R) C++ gcc 11.1 mode)
+BLAS/LAPACK implementation: Intel MKL v 2021.0.3
+Build date: Aug 23 2021 16:53:26
+Run date: Wed Aug 25 00:29:13 2021
+Hostname: alexander
+CUDA disabled
+
+Reading input file: input
+
+
+				****************
+				** Input file **
+				****************
+
+ -----
+ # Test:
+ # (1) C atom
+ # (2) DC - relativistic, 4-comp, cc-pVTZ basis set
+ # (3) symmetry "Cinfv" (actually C32)
+ # (4) external electric field is applied at CC stage "perturbatively"
+ 
+ sector 0h2p
+ nactp 6
+ memory 4 gb
+ title "Test C atom/cc-pVTZ/DC/Cinfv/CCSDT/Field"
+ maxiter 300
+ conv 1e-9
+ model ccsd
+ disk_usage 0
+ x2cmmf
+ 
+ 
+ -----
+
+
+
+				*************
+				** Options **
+				*************
+
+ title            title string - comment                    Test C atom/cc-pVTZ/DC/Cinfv/CCSDT/Field
+ scratch_dir      scratch directory for tmp files           scratch
+ --no-clean       retain scratch directory on exit          no
+ print            print level                               medium
+ arith            recommended arithmetic                    real
+ memory           max allowed RAM usage                     4096.0 Mb
+ compress         compression of integrals on disk          disabled
+ disk_usage       disk usage level                          0 (all data in RAM)
+ tilesize         max dimension of formal blocks (tiles)    100
+ nthreads         number of OpenMP parallel threads         1
+ cuda             calculations on GPU (CUDA)                disabled
+ maxiter          maximum number of CC iterations           300
+ conv             convergence threshold (by amplitudes)     1e-09
+ div_thresh       divergence threshold (by amplitudes)      1000
+ reuse            reuse amplitudes and/or integrals         nothing 
+ skip             skip computations in sectors:             
+ flush            flush amplitudes                          no
+ interface        source of transformed molecular integrals  DIRAC
+ integrals        one-electron Hamiltonian integrals file   MRCONEE
+                  two-electron (Coulomb) integrals file     MDCINT
+                  one-electron property integrals file      MDPROP
+ x2cmmf           X2Cmmf Hamiltonian                        yes
+ gaunt            two-electron (Gaunt) integrals file       not used
+ sector           target Fock space sector                  0h2p
+ model            coupled cluster model (level of theory)   CCSD
+ nacth            number of active hole spinors             0 spinors
+ nactp            number of active particle spinors         6 spinors
+ shifttype        formula for denominator shifts            shifts are disabled
+ nroots           number of roots to be processed           all
+ roots_cutoff     energy cutoff for roots to be processed   all
+ degen_thresh     degeneracy threshold (a.u.)               1.0e-08
+ occ_irreps       occupation numbers of spinors             default (from integral interface)
+ occ              occupation numbers of spinors             default
+ diis             DIIS technique for convergence            enabled
+ diis <n>         DIIS subspace dimension                   10
+ diis triples     DIIS for triples amplitudes               disabled
+ oneprop          interface to OneProp (by L.V.Skripnikov)  disabled
+ twoprop          interface to TwoProp (by D.E.Maison)      disabled
+ oneprop          interface to the MDPROP file              disabled
+ nohermit         hermitization of effective Hamiltonians   disabled
+ dltdm            model-space estimates of tran dipoles     disabled
+ natorb           model-space natural orbitals              disabled
+ prop             model-space estimates of properties       disabled
+ select           selection of cluster amplitudes           disabled
+ restrict_t3      restriction of triples                    disabled
+ intham1          simple intermediate Hamiltonian           disabled
+ intham           intermediate Hamiltonian                  disabled
+
+
+ Creating scratch directory 'scratch' ...
+ Current working directory = /home/alexander/Science/expt/examples/C_atom_x2cmmf
+ Full path to one-electron integrals = /home/alexander/Science/expt/examples/C_atom_x2cmmf/MRCONEE
+ Full path to Coulomb integrals = /home/alexander/Science/expt/examples/C_atom_x2cmmf/MDCINT
+ Full path to properties integrals = /home/alexander/Science/expt/examples/C_atom_x2cmmf/MDPROP
+ Changing working directory to scratch ...
+ Current working directory = /home/alexander/Science/expt/examples/C_atom_x2cmmf/scratch
+ 
+ ******************************************************************
+ **       BINARY INTERFACE TO THE DIRAC PROGRAM PACKAGE          **
+ **                    version 10 Apr 2020                       **
+ ******************************************************************
+ 
+ required unformatted files (produced by DIRAC):
+   MRCONEE -- spinor info & transformed one-electron integrals
+   MDCINT  -- transformed two-electron integrals
+ optional files (DIRAC):
+   MDPROP  -- transformed integrals of one-electron properties
+ optional files (D. E. Maison, L. V. Skripnikov):
+   MGINT   -- transformed Gaunt integrals
+ 
+ HINT: in order to obtain these files, add option .4INDEX to the
+   **DIRAC section of the DIRAC input file; this will enable the
+   code for integrals transformation. Then run:
+   $ pam --inp=<inp-file> --mol=<mol-file> --get="MRCONEE MDCINT"
+ 
+ 
+ Names of integral files:
+ MRCONEE = /home/alexander/Science/expt/examples/C_atom_x2cmmf/MRCONEE
+ MDCINT  = /home/alexander/Science/expt/examples/C_atom_x2cmmf/MDCINT
+ MDPROP  = /home/alexander/Science/expt/examples/C_atom_x2cmmf/MDPROP
+ default integer type in DIRAC              integer(8)
+ 
+ *** MRCONEE FILE ***
+ NSPINORS                                            110
+ was breit in DHF                            F
+ nuclear repulsion energy                     0.000000000000000E+000
+ inversion symmetry (1-no,2-yes)                       2
+ group type (1-real,2-cmplx,4-quater)                  1
+ is spinfree                                           0
+ arithmetic                                 real
+ total num of orb-s (+frozen+deleted)                 55
+ Total SCF energy =                           -36.4222014510366     
+ number of fermion irreps in parent group              4
+ names of these reps (grd, ungrd)             Eg 1Eg        Eg 2Eg      
+   Eu 1Eu        Eu 2Eu      
+ number of spinors active in the transf-n              2           2           0
+           0
+ total number of orb-s of this ircop                  29          26
+ number of occupied frozen (core) spinors   
+   - total                                             0           0
+   - positive energy                                   0           0
+   - negative energy                                   0           0
+ number of deleted spinors                             0           0
+ number of fermion irreps in Abelian subgrp           32
+ names of these irreps                        1g -1g  3g -3g  5g -5g  7g -7g  9g
+  -9g 11g-11g 13g-13g 15g-15g  1u -1u  3u -3u  5u -5u  7u -7u  9u -9u 11u-11u
+  13u-13u 15u-15u  0g  2g -2g  4g -4g  6g -6g  8g -8g 10g-10g 12g-12g 14g-14g
+  16g  0u  2u -2u  4u -4u  6u -6u  8u -8u 10u-10u 12u-12u 14u-14u 16u
+ number of g/u Kramers pairs          29          26
+ number of boson symmetry reps(LUCITA)            8
+ *** END OF MRCONEE FILE ***
+ 
+ *** MDPROP FILE ***
+ path to MDPROP file = 
+ /home/alexander/Science/expt/examples/C_atom_x2cmmf/MDPROP
+ MDPROP file exists
+ property = XDIPLEN 
+ order of parts: Re + i*Im
+ property = YDIPLEN 
+ order of parts: Re + i*Im
+ property = ZDIPLEN 
+ order of parts: Re + i*Im
+ reached end of file MDPROP
+ *** END OF MDPROP FILE ***
+ 
+ ELECTRONIC contribution to dipole moment (DHF level)
+ dx =   0.000000000000000E+000  (re)  0.000000000000000E+000 (im)
+ dy =   0.000000000000000E+000  (re)  0.000000000000000E+000 (im)
+ dz =   0.000000000000000E+000  (re)  0.000000000000000E+000 (im)
+ |d| =   0.000000000000000E+000  a.u. =   0.000000000000000E+000  Debye
+ 1 a.u = 2.54174623 Debye
+ 
+ *** MDCINT FILE ***
+ Wed Aug 25 00:29:13 2021
+ datex                                  25Aug21  
+ timex                                 00:28:57
+ number of Kramers pairs                         55
+ Wed Aug 25 00:29:14 2021
+ *** END OF MDCINT FILE ***
+ 
+ number of VINT* files written                   3878
+ written to disk: 255196456 bytes =    0.24 Gb
+
+		Symmetry & irreducible representations
+		--------------------------------------
+
+ Point group: C16h aka Dinfh
+ Group type: real
+ Arithmetic: real
+ Is abelian: 1
+ Number of irreps: 64
+ Totally symmetric irrep: 0g
+ Representation names:
+  0 1/2g+    1 1/2g-    2 3/2g+    3 3/2g-    4 5/2g+    5 5/2g-    6 7/2g+    7 7/2g-  
+  8 9/2g+    9 9/2g-   10 11/2g+  11 11/2g-  12 13/2g+  13 13/2g-  14 15/2g+  15 15/2g- 
+ 16 1/2u+   17 1/2u-   18 3/2u+   19 3/2u-   20 5/2u+   21 5/2u-   22 7/2u+   23 7/2u-  
+ 24 9/2u+   25 9/2u-   26 11/2u+  27 11/2u-  28 13/2u+  29 13/2u-  30 15/2u+  31 15/2u- 
+ 32 0g      33 1g+     34 1g-     35 2g+     36 2g-     37 3g+     38 3g-     39 4g+    
+ 40 4g-     41 5g+     42 5g-     43 6g+     44 6g-     45 7g+     46 7g-     47 8g+    
+ 48 0u      49 1u+     50 1u-     51 2u+     52 2u-     53 3u+     54 3u-     55 4u+    
+ 56 4u-     57 5u+     58 5u-     59 6u+     60 6u-     61 7u+     62 7u-     63 8u+    
+
+
+				Spinors info
+				------------
+
+     no    rep         occ    active        one-el energy
+    -------------------------------------------------------
+       1   0 "1/2g+ "   1       -         -12.653430625028
+       2   0 "1/2g+ "   1       -          -1.694718179036
+       3   0 "1/2g+ "   0       -          -0.303872772888
+       4   3 "3/2g- "   0       -          -0.058913923253
+       5   0 "1/2g+ "   0       -          -0.058913923251
+       6   0 "1/2g+ "   0       -          -0.058900440593
+       7   4 "5/2g+ "   0       -          -0.058900440585
+       8   3 "3/2g- "   0       -          -0.058900440582
+       9   0 "1/2g+ "   0       -           0.996646321919
+      10   3 "3/2g- "   0       -           1.176439732451
+      11   0 "1/2g+ "   0       -           1.176439732464
+      12   3 "3/2g- "   0       -           1.176519023157
+      13   4 "5/2g+ "   0       -           1.176519023172
+      14   0 "1/2g+ "   0       -           1.176519023184
+      15   4 "5/2g+ "   0       -           4.112050475540
+      16   3 "3/2g- "   0       -           4.112050475540
+      17   7 "7/2g- "   0       -           4.112050475542
+      18   0 "1/2g+ "   0       -           4.112050475547
+      19   4 "5/2g+ "   0       -           4.112154961520
+      20   7 "7/2g- "   0       -           4.112154961522
+      21   8 "9/2g+ "   0       -           4.112154961525
+      22   3 "3/2g- "   0       -           4.112154961526
+      23   0 "1/2g+ "   0       -           4.112154961528
+      24   0 "1/2g+ "   0       -           5.153403306416
+      25   3 "3/2g- "   0       -           5.153403306419
+      26   3 "3/2g- "   0       -           5.153964254011
+      27   4 "5/2g+ "   0       -           5.153964254028
+      28   0 "1/2g+ "   0       -           5.153964254028
+      29   0 "1/2g+ "   0       -          18.835312476561
+      30   1 "1/2g- "   1       -         -12.653430625028
+      31   1 "1/2g- "   1       -          -1.694718179036
+      32   1 "1/2g- "   0       -          -0.303872772888
+      33   2 "3/2g+ "   0       -          -0.058913923253
+      34   1 "1/2g- "   0       -          -0.058913923251
+      35   1 "1/2g- "   0       -          -0.058900440593
+      36   5 "5/2g- "   0       -          -0.058900440585
+      37   2 "3/2g+ "   0       -          -0.058900440582
+      38   1 "1/2g- "   0       -           0.996646321919
+      39   2 "3/2g+ "   0       -           1.176439732451
+      40   1 "1/2g- "   0       -           1.176439732464
+      41   2 "3/2g+ "   0       -           1.176519023157
+      42   5 "5/2g- "   0       -           1.176519023172
+      43   1 "1/2g- "   0       -           1.176519023184
+      44   5 "5/2g- "   0       -           4.112050475540
+      45   2 "3/2g+ "   0       -           4.112050475540
+      46   6 "7/2g+ "   0       -           4.112050475542
+      47   1 "1/2g- "   0       -           4.112050475547
+      48   5 "5/2g- "   0       -           4.112154961520
+      49   6 "7/2g+ "   0       -           4.112154961522
+      50   9 "9/2g- "   0       -           4.112154961525
+      51   2 "3/2g+ "   0       -           4.112154961526
+      52   1 "1/2g- "   0       -           4.112154961528
+      53   1 "1/2g- "   0       -           5.153403306416
+      54   2 "3/2g+ "   0       -           5.153403306419
+      55   2 "3/2g+ "   0       -           5.153964254011
+      56   5 "5/2g- "   0       -           5.153964254028
+      57   1 "1/2g- "   0       -           5.153964254028
+      58   1 "1/2g- "   0       -          18.835312476561
+      59  16 "1/2u+ "   0       ai         -0.864639605901
+      60  16 "1/2u+ "   0       ai         -0.864367785889
+      61  19 "3/2u- "   0       ai         -0.864367785887
+      62  16 "1/2u+ "   0       -          -0.238943260185
+      63  16 "1/2u+ "   0       -          -0.238857898419
+      64  19 "3/2u- "   0       -          -0.238857898416
+      65  16 "1/2u+ "   0       -           0.646132614555
+      66  16 "1/2u+ "   0       -           0.646444811576
+      67  19 "3/2u- "   0       -           0.646444811578
+      68  16 "1/2u+ "   0       -           1.075680577636
+      69  20 "5/2u+ "   0       -           1.075680577642
+      70  19 "3/2u- "   0       -           1.075680577649
+      71  19 "3/2u- "   0       -           1.075706043654
+      72  16 "1/2u+ "   0       -           1.075706043657
+      73  23 "7/2u- "   0       -           1.075706043660
+      74  20 "5/2u+ "   0       -           1.075706043666
+      75  16 "1/2u+ "   0       -           4.585538886341
+      76  16 "1/2u+ "   0       -           4.588788966956
+      77  19 "3/2u- "   0       -           4.588788967022
+      78  19 "3/2u- "   0       -           5.152534279519
+      79  20 "5/2u+ "   0       -           5.152534279532
+      80  16 "1/2u+ "   0       -           5.152534279540
+      81  20 "5/2u+ "   0       -           5.152806660461
+      82  19 "3/2u- "   0       -           5.152806660462
+      83  23 "7/2u- "   0       -           5.152806660468
+      84  16 "1/2u+ "   0       -           5.152806660473
+      85  17 "1/2u- "   0       ai         -0.864639605901
+      86  17 "1/2u- "   0       ai         -0.864367785889
+      87  18 "3/2u+ "   0       ai         -0.864367785887
+      88  17 "1/2u- "   0       -          -0.238943260185
+      89  17 "1/2u- "   0       -          -0.238857898419
+      90  18 "3/2u+ "   0       -          -0.238857898416
+      91  17 "1/2u- "   0       -           0.646132614555
+      92  17 "1/2u- "   0       -           0.646444811576
+      93  18 "3/2u+ "   0       -           0.646444811578
+      94  17 "1/2u- "   0       -           1.075680577636
+      95  21 "5/2u- "   0       -           1.075680577642
+      96  18 "3/2u+ "   0       -           1.075680577649
+      97  18 "3/2u+ "   0       -           1.075706043654
+      98  17 "1/2u- "   0       -           1.075706043657
+      99  22 "7/2u+ "   0       -           1.075706043660
+     100  21 "5/2u- "   0       -           1.075706043666
+     101  17 "1/2u- "   0       -           4.585538886341
+     102  17 "1/2u- "   0       -           4.588788966956
+     103  18 "3/2u+ "   0       -           4.588788967022
+     104  18 "3/2u+ "   0       -           5.152534279519
+     105  21 "5/2u- "   0       -           5.152534279532
+     106  17 "1/2u- "   0       -           5.152534279540
+     107  21 "5/2u- "   0       -           5.152806660461
+     108  18 "3/2u+ "   0       -           5.152806660462
+     109  22 "7/2u+ "   0       -           5.152806660468
+     110  17 "1/2u- "   0       -           5.152806660473
+    -------------------------------------------------------
+
+    irreps             1/2g+ 1/2g- 3/2g+ 3/2g- 5/2g+ 5/2g- 7/2g+ 7/2g- 9/2g+ 9/2g- 1/2u+ 1/2u- 3/2u+ 3/2u- 5/2u+ 5/2u- 7/2u+ 7/2u-
+    occupied inactive      2     2     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+    occupied active        0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+    virtual active         0     0     0     0     0     0     0     0     0     0     2     2     1     1     0     0     0     0
+    virtual inactive      11    11     8     8     5     5     2     2     1     1    10    10     7     7     4     4     2     2
+
+
+				*****************
+				** Sector 0h0p **
+				*****************
+
+
+ Integral sorting for the 0h0p sector
+ started at Wed Aug 25 00:29:15 2021
+ number of spinors                              110
+ number of spinor blocks                        18
+ tile size                                      100
+ max spinor block size                          13
+ size of i/o buffer for integrals and indices   0.375 MB
+ size of the buffer for two-elec integrals      0.027 MB
+ sorting two-electron integrals
+   step    #blocks   ints read    time,s  rate,G/s
+   0 / 18      247     3661262         0      0.41
+   1 / 18      223     3222450         0      0.35
+   2 / 18      154     1029678         0      0.16
+   3 / 18      142      906118         0      0.14
+   4 / 18      123      386870         0      0.08
+   5 / 18      111      349876         0      0.08
+   6 / 18       96       96682         0      0.03
+   7 / 18       84       88780         0      0.03
+   8 / 18       66       25224         0      0.01
+   9 / 18       56       23990         0      0.01
+  10 / 18       99     1411523         0      0.17
+  11 / 18       87     1134551         0      0.13
+  12 / 18       74      477627         0      0.07
+  13 / 18       62      373865         0      0.06
+  14 / 18       50      131366         0      0.03
+  15 / 18       38       99894         0      0.02
+  16 / 18       27       29120         0      0.01
+  17 / 18       17       24208         0      0.01
+   total      1756    13473084         1      0.14
+ sorting one-electron integrals ...
+   Fock matrix reconstruction will be skipped
+ fill 1-electron diagrams ... hh hp ph pp done
+ time for 2-e integrals sorting, sec: 0.90
+ time for DIRAC interface (integral extraction & write), sec: 1.20
+ total time for sorting operations, sec: 2.10
+ finished at at Wed Aug 25 00:29:15 2021
+
+ Initial guess
+ -------------
+ MP2 correlation energy =      -0.067902209833
+       Total MP2 energy =     -36.490103660870
+
+ Solution of amplitude equations (sector 0h0p)			 Wed Aug 25 00:29:15 2021
+ --------------------------------------------------------------------------------------------
+ it.            E(corr)              diffmax(T1)         diffmax(T2)    t,sec       mem,Gb
+ --------------------------------------------------------------------------------------------
+   1      -0.082488514649973    0.00578372529122    0.03444585589101      0.2    0.04/0.04
+   2      -0.089352133746264    0.00280783566734    0.01840848802521      0.2    0.04/0.04
+   3      -0.096759929501355    0.00011731991450    0.00028164518287      0.2    0.04/0.05
+   4      -0.096684303204155    0.00001410903293    0.00019954961940      0.2    0.04/0.05
+   5      -0.096755912407514    0.00000704418207    0.00001954914179      0.2    0.04/0.05
+   6      -0.096748005444498    0.00000119864566    0.00000219405356      0.2    0.05/0.05
+   7      -0.096747116867342    0.00000005984577    0.00000150150903      0.2    0.05/0.05
+   8      -0.096747396991459    0.00000001248291    0.00000042253167      0.2    0.05/0.06
+   9      -0.096747306308967    0.00000002455790    0.00000009947837      0.2    0.05/0.06
+  10      -0.096747316355367    0.00000000415205    0.00000001623578      0.2    0.05/0.06
+  11      -0.096747322556147    0.00000000018977    0.00000000218531      0.2    0.05/0.06
+  12      -0.096747321803435    0.00000000001659    0.00000000005101      0.2    0.05/0.06
+ --------------------------------------------------------------------------------------------
+	converged in 12 iterations
+
+          SCF reference energy =     -36.422201451037
+       CCSD correlation energy =      -0.096747321803
+             Total CCSD energy =     -36.518948772840
+
+ average time per iteration = 0.196 sec
+ (absolute values)
+ Max T1 amplitude (t_ia) [ 31 -> 32 ] = 0.01161027
+   [  31] eps=     -1.69471818 rep=1/2g- inactive occ
+   [  32] eps=     -0.30387277 rep=1/2g- inactive virt
+ Max T2 amplitude (t_ijab) [ 2 31 -> 59 85 ] = 0.15250980
+   [   2] eps=     -1.69471818 rep=1/2g+ inactive occ
+   [  31] eps=     -1.69471818 rep=1/2g- inactive occ
+   [  59] eps=     -0.86463961 rep=1/2u+ active virt
+   [  85] eps=     -0.86463961 rep=1/2u- active virt
+
+ Norm |T1| = 0.01850180
+ Norm |T2| = 0.55359803
+
+ T1 diagnostic = 0.00925090
+ More on T1 diagnostic: [T.J.Lee,P.R.Taylor,IJQC 23,199(1989)]
+
+
+				*****************
+				** Sector 0h1p **
+				*****************
+
+
+ Integral sorting for the 0h1p sector
+ started at Wed Aug 25 00:29:18 2021
+ number of spinors                              110
+ number of spinor blocks                        18
+ tile size                                      100
+ max spinor block size                          13
+ size of i/o buffer for integrals and indices   0.375 MB
+ size of the buffer for two-elec integrals      0.027 MB
+ sorting two-electron integrals
+   step    #blocks   ints read    time,s  rate,G/s
+   0 / 18       47      951549         0      0.13
+   1 / 18       47      951549         0      0.14
+   2 / 18       37      366150         0      0.09
+   3 / 18       37      366150         0      0.09
+   4 / 18       33      160960         0      0.06
+   5 / 18       33      160960         0      0.06
+   6 / 18       27       39298         0      0.02
+   7 / 18       27       39298         0      0.03
+   8 / 18       21       10238         0      0.01
+   9 / 18       21       10238         0      0.01
+  10 / 18       61     1134699         0      0.18
+  11 / 18       61     1147351         0      0.18
+  12 / 18       57      609595         0      0.15
+  13 / 18       57      628023         0      0.15
+  14 / 18       37      161530         0      0.07
+  15 / 18       37      161530         0      0.07
+  16 / 18       31       46672         0      0.03
+  17 / 18       31       46672         0      0.03
+   total       702     6992462         0      0.11
+ sorting one-electron integrals ...
+   Fock matrix reconstruction will be skipped
+ fill 1-electron diagrams ... vh vp pv done
+ time for 2-e integrals sorting, sec: 1.41
+ time for DIRAC interface (integral extraction & write), sec: 1.20
+ total time for sorting operations, sec: 2.61
+ finished at at Wed Aug 25 00:29:18 2021
+
+ Preparing T1 and T2 amplitudes ...
+ Construction of S^(0,1)-independent contributions to the FSCC-equations ...
+
+ Initialization of S1 and S2 amplitudes ...
+
+ Solution of amplitude equations (sector 0h1p)		 Wed Aug 25 00:29:18 2021
+ ---------------------------------------------------------------------------------------
+ it.       diffmax(S1)       diffmax(S2)     max(S1)     max(S2)    t,sec       mem,Gb
+ ---------------------------------------------------------------------------------------
+   1    0.022031236191    0.017929026358    0.014495    0.077855      0.2    0.05/0.06
+   2    0.000393390649    0.007563939940    0.014278    0.085419      0.2    0.05/0.06
+   3    0.001516034323    0.001540498384    0.015741    0.088814      0.2    0.05/0.06
+   4    0.000120371522    0.000189346061    0.015734    0.089815      0.2    0.05/0.06
+   5    0.000006386612    0.000009034793    0.015762    0.089930      0.2    0.06/0.06
+   6    0.000001014057    0.000003154470    0.015762    0.089935      0.2    0.06/0.06
+   7    0.000000177892    0.000000227894    0.015762    0.089936      0.2    0.06/0.07
+   8    0.000000013203    0.000000022159    0.015762    0.089936      0.2    0.06/0.07
+   9    0.000000001511    0.000000002074    0.015762    0.089936      0.2    0.06/0.07
+  10    0.000000000227    0.000000000350    0.015762    0.089936      0.2    0.06/0.07
+ ---------------------------------------------------------------------------------------
+	converged in 10 iterations
+ average time per iteration = 0.209 sec
+ (absolute values)
+ Max S{01}_1 amplitude (s{01}_ia) [ 87 -> 90 ] = 0.01576227
+   [  87] eps=     -0.86436779 rep=3/2u+ active virt
+   [  90] eps=     -0.23885790 rep=3/2u+ inactive virt
+ Max S{01}_2 amplitude (s{01}_ijab) [ 87 31 -> 32 87 ] = 0.08993592
+   [  87] eps=     -0.86436779 rep=3/2u+ active virt
+   [  31] eps=     -1.69471818 rep=1/2g- inactive occ
+   [  32] eps=     -0.30387277 rep=1/2g- inactive virt
+   [  87] eps=     -0.86436779 rep=3/2u+ active virt
+
+ Norm |S{01}_1| = 0.04388481
+ Norm |S{01}_2| = 0.60535429
+
+
+ Effective Hamiltonian analysis
+ List of model space determinants:
+| 1/2u+ #  59 (   -0.864640) > (1/2u+)
+| 1/2u+ #  60 (   -0.864368) > (1/2u+)
+| 1/2u- #  85 (   -0.864640) > (1/2u-)
+| 1/2u- #  86 (   -0.864368) > (1/2u-)
+| 3/2u+ #  87 (   -0.864368) > (3/2u+)
+| 3/2u- #  61 (   -0.864368) > (3/2u-)
+
+ Model space dimension:
+  1/2u+ [2]  1/2u- [2]  3/2u+ [1]  3/2u- [1]
+
+ Sector (0h,1p) -- analysis of model vectors (right vectors)
+ first line : irrep, state number, total energy, eigenvalue
+ other lines: coefficients of contributing determinants (above a threshold of 1.0e-04)
+
+ Irrep 1 (1/2u+) State 1 Energy     -37.413451374656148 Eigenvalue    -0.89450260    0.0000E+00
+    1.00000   0.00000 | 1/2u+ #  59 (   -0.864640) > (1/2u+)
+   -0.00000   0.00000 | 1/2u+ #  60 (   -0.864368) > (1/2u+)
+ Effective configuration:
+      1.000000  1/2u+ #  59 (   -0.864640)
+      0.000000  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      0.000000  1/2u- #  85 (   -0.864640)
+      0.000000  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 1 (1/2u+) State 2 Energy     -37.413185968079318 Eigenvalue    -0.89423720    0.0000E+00
+    0.00000   0.00000 | 1/2u+ #  59 (   -0.864640) > (1/2u+)
+    1.00000   0.00000 | 1/2u+ #  60 (   -0.864368) > (1/2u+)
+ Effective configuration:
+      0.000000  1/2u+ #  59 (   -0.864640)
+      1.000000  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      0.000000  1/2u- #  85 (   -0.864640)
+      0.000000  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 2 (1/2u-) State 1 Energy     -37.413451374656148 Eigenvalue    -0.89450260    0.0000E+00
+    1.00000   0.00000 | 1/2u- #  85 (   -0.864640) > (1/2u-)
+   -0.00000   0.00000 | 1/2u- #  86 (   -0.864368) > (1/2u-)
+ Effective configuration:
+      0.000000  1/2u+ #  59 (   -0.864640)
+      0.000000  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      1.000000  1/2u- #  85 (   -0.864640)
+      0.000000  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 2 (1/2u-) State 2 Energy     -37.413185968079318 Eigenvalue    -0.89423720    0.0000E+00
+    0.00000   0.00000 | 1/2u- #  85 (   -0.864640) > (1/2u-)
+    1.00000   0.00000 | 1/2u- #  86 (   -0.864368) > (1/2u-)
+ Effective configuration:
+      0.000000  1/2u+ #  59 (   -0.864640)
+      0.000000  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      0.000000  1/2u- #  85 (   -0.864640)
+      1.000000  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 3 (3/2u+) State 1 Energy     -37.413185968077627 Eigenvalue    -0.89423720    0.0000E+00
+    1.00000   0.00000 | 3/2u+ #  87 (   -0.864368) > (3/2u+)
+ Effective configuration:
+      0.000000  1/2u+ #  59 (   -0.864640)
+      0.000000  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      0.000000  1/2u- #  85 (   -0.864640)
+      0.000000  1/2u- #  86 (   -0.864368)
+      1.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 4 (3/2u-) State 1 Energy     -37.413185968077627 Eigenvalue    -0.89423720    0.0000E+00
+    1.00000   0.00000 | 3/2u- #  61 (   -0.864368) > (3/2u-)
+ Effective configuration:
+      0.000000  1/2u+ #  59 (   -0.864640)
+      0.000000  1/2u+ #  60 (   -0.864368)
+      1.000000  3/2u- #  61 (   -0.864368)
+      0.000000  1/2u- #  85 (   -0.864640)
+      0.000000  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Heff eigenvalues:
+ (degeneracy threshold = 1.0e-08 a.u.)
+
+ Level  Re(eigenvalue)  Im(eigv)               Abs energy  Rel eigenvalue    Rel eigv, eV  Rel eigv, cm-1  deg  symmetry
+ ------------------------------------------------------------------------------------------------------------------------
+@    1   -0.8945026018  0.00e+00    -37.41345137465614812    0.0000000000    0.0000000000        0.000000   2   1/2u+ 1/2u-
+@    2   -0.8942371952  0.00e+00    -37.41318596807931840    0.0002654066    0.0072220809       58.250011   4   1/2u+ 1/2u- 3/2u+ 3/2u-
+
+ Ionization potential wrt reference state =     0.894502601816 a.u. =  24.3407 eV =  196320.63 cm^-1
+
+				*****************
+				** Sector 0h2p **
+				*****************
+
+
+ Integral sorting for the 0h2p sector
+ started at Wed Aug 25 00:29:20 2021
+ number of spinors                              110
+ number of spinor blocks                        18
+ tile size                                      100
+ max spinor block size                          13
+ size of i/o buffer for integrals and indices   0.375 MB
+ size of the buffer for two-elec integrals      0.027 MB
+ sorting two-electron integrals
+   step    #blocks   ints read    time,s  rate,G/s
+   0 / 18        0           0         0      0.00
+   1 / 18        0           0         0      0.00
+   2 / 18        0           0         0      0.00
+   3 / 18        0           0         0      0.00
+   4 / 18        0           0         0      0.00
+   5 / 18        0           0         0      0.00
+   6 / 18        0           0         0      0.00
+   7 / 18        0           0         0      0.00
+   8 / 18        0           0         0      0.00
+   9 / 18        0           0         0      0.00
+  10 / 18       45      862528         0      0.13
+  11 / 18       33      585556         0      0.09
+  12 / 18       21      153726         0      0.04
+  13 / 18        9       49964         0      0.01
+  14 / 18        0           0         0      0.00
+  15 / 18        0           0         0      0.00
+  16 / 18        0           0         0      0.00
+  17 / 18        0           0         0      0.00
+   total       108     1651774         0      0.03
+ sorting one-electron integrals ...
+   Fock matrix reconstruction will be skipped
+ fill 1-electron diagrams ... done
+ time for 2-e integrals sorting, sec: 1.88
+ time for DIRAC interface (integral extraction & write), sec: 1.20
+ total time for sorting operations, sec: 3.08
+ finished at at Wed Aug 25 00:29:21 2021
+
+ Preparing T1, T2, S{01}_1, S{01}_2 amplitudes ...
+ Construction of S^(0,2)-independent contributions to the FSCC-equations ...
+
+ Initialization of S{02}_2 amplitudes ...
+ Calculated: S{02}_2 and Heff{02}
+ done
+
+ Solution of amplitude equations (sector 0h2p)
+ Wed Aug 25 00:29:21 2021
+ ---------------------------------------------------------
+ it.       diffmax(S2)     max(S2)    t,sec       mem,Gb
+ ---------------------------------------------------------
+   1    0.038562696686    0.153864      0.1    0.06/0.07
+   2    0.019732992373    0.173597      0.1    0.06/0.07
+   3    0.001894186166    0.169802      0.1    0.06/0.07
+   4    0.000704462896    0.170475      0.1    0.06/0.07
+   5    0.000074796717    0.170438      0.1    0.06/0.07
+   6    0.000018421518    0.170457      0.1    0.07/0.07
+   7    0.000003674082    0.170458      0.1    0.07/0.07
+   8    0.000000466759    0.170458      0.1    0.07/0.08
+   9    0.000000043231    0.170458      0.1    0.07/0.08
+  10    0.000000009829    0.170458      0.1    0.07/0.08
+  11    0.000000003321    0.170458      0.1    0.07/0.08
+  12    0.000000000354    0.170458      0.1    0.07/0.08
+ ---------------------------------------------------------
+	converged in 12 iterations
+ average time per iteration = 0.092 sec
+ (absolute values)
+ Max S{02}_2 amplitude (s{02}_ijab) [ 87 61 -> 90 61 ] = 0.17045819
+   [  87] eps=     -0.86436779 rep=3/2u+ active virt
+   [  61] eps=     -0.86436779 rep=3/2u- active virt
+   [  90] eps=     -0.23885790 rep=3/2u+ inactive virt
+   [  61] eps=     -0.86436779 rep=3/2u- active virt
+
+ Norm |S{02}_2| = 1.85027451
+
+
+ Effective Hamiltonian analysis
+ List of model space determinants:
+| 1/2u+ #  59 (   -0.864640) 1/2u- #  85 (   -0.864640) > (  0g)
+| 1/2u+ #  59 (   -0.864640) 1/2u- #  86 (   -0.864368) > (  0g)
+| 1/2u+ #  60 (   -0.864368) 1/2u- #  85 (   -0.864640) > (  0g)
+| 1/2u+ #  60 (   -0.864368) 1/2u- #  86 (   -0.864368) > (  0g)
+| 3/2u- #  61 (   -0.864368) 3/2u+ #  87 (   -0.864368) > (  0g)
+| 1/2u+ #  59 (   -0.864640) 1/2u+ #  60 (   -0.864368) > ( 1g+)
+| 1/2u- #  85 (   -0.864640) 3/2u+ #  87 (   -0.864368) > ( 1g+)
+| 1/2u- #  86 (   -0.864368) 3/2u+ #  87 (   -0.864368) > ( 1g+)
+| 1/2u+ #  59 (   -0.864640) 3/2u- #  61 (   -0.864368) > ( 1g-)
+| 1/2u+ #  60 (   -0.864368) 3/2u- #  61 (   -0.864368) > ( 1g-)
+| 1/2u- #  85 (   -0.864640) 1/2u- #  86 (   -0.864368) > ( 1g-)
+| 1/2u+ #  59 (   -0.864640) 3/2u+ #  87 (   -0.864368) > ( 2g+)
+| 1/2u+ #  60 (   -0.864368) 3/2u+ #  87 (   -0.864368) > ( 2g+)
+| 3/2u- #  61 (   -0.864368) 1/2u- #  85 (   -0.864640) > ( 2g-)
+| 3/2u- #  61 (   -0.864368) 1/2u- #  86 (   -0.864368) > ( 2g-)
+
+ Model space dimension:
+    0g [5]   1g+ [3]   1g- [3]   2g+ [2]   2g- [2]
+
+ Sector (0h,2p) -- analysis of model vectors (right vectors)
+ first line : irrep, state number, total energy, eigenvalue
+ other lines: coefficients of contributing determinants (above a threshold of 1.0e-04)
+
+ Irrep 1 (  0g) State 1 Energy     -37.823785231224633 Eigenvalue    -1.30483646    0.0000E+00
+    0.81753   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u- #  85 (   -0.864640) > (  0g)
+   -0.00000   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u- #  86 (   -0.864368) > (  0g)
+   -0.00000   0.00000 | 1/2u+ #  60 (   -0.864368) 1/2u- #  85 (   -0.864640) > (  0g)
+   -0.40721   0.00000 | 1/2u+ #  60 (   -0.864368) 1/2u- #  86 (   -0.864368) > (  0g)
+   -0.40721   0.00000 | 3/2u- #  61 (   -0.864368) 3/2u+ #  87 (   -0.864368) > (  0g)
+ Effective configuration:
+      0.668450  1/2u+ #  59 (   -0.864640)
+      0.165775  1/2u+ #  60 (   -0.864368)
+      0.165775  3/2u- #  61 (   -0.864368)
+      0.668450  1/2u- #  85 (   -0.864640)
+      0.165775  1/2u- #  86 (   -0.864368)
+      0.165775  3/2u+ #  87 (   -0.864368)
+
+ Irrep 1 (  0g) State 2 Energy     -37.823719500009531 Eigenvalue    -1.30477073    0.0000E+00
+    0.00000   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u- #  85 (   -0.864640) > (  0g)
+    0.70711   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u- #  86 (   -0.864368) > (  0g)
+   -0.70711   0.00000 | 1/2u+ #  60 (   -0.864368) 1/2u- #  85 (   -0.864640) > (  0g)
+    0.00000   0.00000 | 1/2u+ #  60 (   -0.864368) 1/2u- #  86 (   -0.864368) > (  0g)
+   -0.00000   0.00000 | 3/2u- #  61 (   -0.864368) 3/2u+ #  87 (   -0.864368) > (  0g)
+ Effective configuration:
+      0.352665  1/2u+ #  59 (   -0.864640)
+      0.647335  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      0.352715  1/2u- #  85 (   -0.864640)
+      0.647285  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 1 (  0g) State 3 Energy     -37.823588888245418 Eigenvalue    -1.30464012    0.0000E+00
+   -0.00000   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u- #  85 (   -0.864640) > (  0g)
+   -0.40941   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u- #  86 (   -0.864368) > (  0g)
+   -0.40941   0.00000 | 1/2u+ #  60 (   -0.864368) 1/2u- #  85 (   -0.864640) > (  0g)
+   -0.57653   0.00000 | 1/2u+ #  60 (   -0.864368) 1/2u- #  86 (   -0.864368) > (  0g)
+    0.57653   0.00000 | 3/2u- #  61 (   -0.864368) 3/2u+ #  87 (   -0.864368) > (  0g)
+ Effective configuration:
+      0.167615  1/2u+ #  59 (   -0.864640)
+      0.500010  1/2u+ #  60 (   -0.864368)
+      0.332375  3/2u- #  61 (   -0.864368)
+      0.167615  1/2u- #  85 (   -0.864640)
+      0.500010  1/2u- #  86 (   -0.864368)
+      0.332375  3/2u+ #  87 (   -0.864368)
+
+ Irrep 1 (  0g) State 4 Energy     -37.778955840336181 Eigenvalue    -1.26000707    0.0000E+00
+   -0.00000   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u- #  85 (   -0.864640) > (  0g)
+    0.57651   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u- #  86 (   -0.864368) > (  0g)
+    0.57651  -0.00000 | 1/2u+ #  60 (   -0.864368) 1/2u- #  85 (   -0.864640) > (  0g)
+   -0.40943   0.00000 | 1/2u+ #  60 (   -0.864368) 1/2u- #  86 (   -0.864368) > (  0g)
+    0.40943  -0.00000 | 3/2u- #  61 (   -0.864368) 3/2u+ #  87 (   -0.864368) > (  0g)
+ Effective configuration:
+      0.332359  1/2u+ #  59 (   -0.864640)
+      0.500016  1/2u+ #  60 (   -0.864368)
+      0.167625  3/2u- #  61 (   -0.864368)
+      0.332359  1/2u- #  85 (   -0.864640)
+      0.500016  1/2u- #  86 (   -0.864368)
+      0.167625  3/2u+ #  87 (   -0.864368)
+
+ Irrep 1 (  0g) State 5 Energy     -37.723599353680513 Eigenvalue    -1.20465058    0.0000E+00
+    0.57572   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u- #  85 (   -0.864640) > (  0g)
+    0.00000   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u- #  86 (   -0.864368) > (  0g)
+    0.00000   0.00000 | 1/2u+ #  60 (   -0.864368) 1/2u- #  85 (   -0.864640) > (  0g)
+    0.57816   0.00000 | 1/2u+ #  60 (   -0.864368) 1/2u- #  86 (   -0.864368) > (  0g)
+    0.57816   0.00000 | 3/2u- #  61 (   -0.864368) 3/2u+ #  87 (   -0.864368) > (  0g)
+ Effective configuration:
+      0.331550  1/2u+ #  59 (   -0.864640)
+      0.334225  1/2u+ #  60 (   -0.864368)
+      0.334225  3/2u- #  61 (   -0.864368)
+      0.331550  1/2u- #  85 (   -0.864640)
+      0.334225  1/2u- #  86 (   -0.864368)
+      0.334225  3/2u+ #  87 (   -0.864368)
+
+ Irrep 2 ( 1g+) State 1 Energy     -37.823719500008281 Eigenvalue    -1.30477073    0.0000E+00
+   -0.50000   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u+ #  60 (   -0.864368) > ( 1g+)
+    0.86603   0.00000 | 1/2u- #  85 (   -0.864640) 3/2u+ #  87 (   -0.864368) > ( 1g+)
+   -0.00000   0.00000 | 1/2u- #  86 (   -0.864368) 3/2u+ #  87 (   -0.864368) > ( 1g+)
+ Effective configuration:
+      0.250000  1/2u+ #  59 (   -0.864640)
+      0.250000  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      0.750000  1/2u- #  85 (   -0.864640)
+      0.000000  1/2u- #  86 (   -0.864368)
+      0.750000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 2 ( 1g+) State 2 Energy     -37.823588888245339 Eigenvalue    -1.30464012    0.0000E+00
+    0.50142  -0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u+ #  60 (   -0.864368) > ( 1g+)
+    0.28950  -0.00000 | 1/2u- #  85 (   -0.864640) 3/2u+ #  87 (   -0.864368) > ( 1g+)
+    0.81533   0.00000 | 1/2u- #  86 (   -0.864368) 3/2u+ #  87 (   -0.864368) > ( 1g+)
+ Effective configuration:
+      0.251438  1/2u+ #  59 (   -0.864640)
+      0.251438  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      0.083806  1/2u- #  85 (   -0.864640)
+      0.664756  1/2u- #  86 (   -0.864368)
+      0.748562  3/2u+ #  87 (   -0.864368)
+
+ Irrep 2 ( 1g+) State 3 Energy     -37.778955840334788 Eigenvalue    -1.26000707    0.0000E+00
+    0.70608   0.00000 | 1/2u+ #  59 (   -0.864640) 1/2u+ #  60 (   -0.864368) > ( 1g+)
+    0.40765   0.00000 | 1/2u- #  85 (   -0.864640) 3/2u+ #  87 (   -0.864368) > ( 1g+)
+   -0.57902   0.00000 | 1/2u- #  86 (   -0.864368) 3/2u+ #  87 (   -0.864368) > ( 1g+)
+ Effective configuration:
+      0.498562  1/2u+ #  59 (   -0.864640)
+      0.498562  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      0.166178  1/2u- #  85 (   -0.864640)
+      0.335260  1/2u- #  86 (   -0.864368)
+      0.501438  3/2u+ #  87 (   -0.864368)
+
+ Irrep 3 ( 1g-) State 1 Energy     -37.823719500008281 Eigenvalue    -1.30477073    0.0000E+00
+    0.86603   0.00000 | 1/2u+ #  59 (   -0.864640) 3/2u- #  61 (   -0.864368) > ( 1g-)
+   -0.00000   0.00000 | 1/2u+ #  60 (   -0.864368) 3/2u- #  61 (   -0.864368) > ( 1g-)
+   -0.50000   0.00000 | 1/2u- #  85 (   -0.864640) 1/2u- #  86 (   -0.864368) > ( 1g-)
+ Effective configuration:
+      0.750000  1/2u+ #  59 (   -0.864640)
+      0.000000  1/2u+ #  60 (   -0.864368)
+      0.750000  3/2u- #  61 (   -0.864368)
+      0.250000  1/2u- #  85 (   -0.864640)
+      0.250000  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 3 ( 1g-) State 2 Energy     -37.823588888245339 Eigenvalue    -1.30464012    0.0000E+00
+    0.28950   0.00000 | 1/2u+ #  59 (   -0.864640) 3/2u- #  61 (   -0.864368) > ( 1g-)
+    0.81533   0.00000 | 1/2u+ #  60 (   -0.864368) 3/2u- #  61 (   -0.864368) > ( 1g-)
+    0.50142   0.00000 | 1/2u- #  85 (   -0.864640) 1/2u- #  86 (   -0.864368) > ( 1g-)
+ Effective configuration:
+      0.083806  1/2u+ #  59 (   -0.864640)
+      0.664756  1/2u+ #  60 (   -0.864368)
+      0.748562  3/2u- #  61 (   -0.864368)
+      0.251438  1/2u- #  85 (   -0.864640)
+      0.251438  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 3 ( 1g-) State 3 Energy     -37.778955840334788 Eigenvalue    -1.26000707    0.0000E+00
+    0.40765   0.00000 | 1/2u+ #  59 (   -0.864640) 3/2u- #  61 (   -0.864368) > ( 1g-)
+   -0.57902   0.00000 | 1/2u+ #  60 (   -0.864368) 3/2u- #  61 (   -0.864368) > ( 1g-)
+    0.70608   0.00000 | 1/2u- #  85 (   -0.864640) 1/2u- #  86 (   -0.864368) > ( 1g-)
+ Effective configuration:
+      0.166178  1/2u+ #  59 (   -0.864640)
+      0.335260  1/2u+ #  60 (   -0.864368)
+      0.501438  3/2u- #  61 (   -0.864368)
+      0.498562  1/2u- #  85 (   -0.864640)
+      0.498562  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 4 ( 2g+) State 1 Energy     -37.823588888245105 Eigenvalue    -1.30464012    0.0000E+00
+   -0.57899   0.00000 | 1/2u+ #  59 (   -0.864640) 3/2u+ #  87 (   -0.864368) > ( 2g+)
+    0.81533   0.00000 | 1/2u+ #  60 (   -0.864368) 3/2u+ #  87 (   -0.864368) > ( 2g+)
+ Effective configuration:
+      0.335231  1/2u+ #  59 (   -0.864640)
+      0.664769  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      0.000000  1/2u- #  85 (   -0.864640)
+      0.000000  1/2u- #  86 (   -0.864368)
+      1.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 4 ( 2g+) State 2 Energy     -37.778955840334362 Eigenvalue    -1.26000707    0.0000E+00
+    0.81531   0.00000 | 1/2u+ #  59 (   -0.864640) 3/2u+ #  87 (   -0.864368) > ( 2g+)
+    0.57902  -0.00000 | 1/2u+ #  60 (   -0.864368) 3/2u+ #  87 (   -0.864368) > ( 2g+)
+ Effective configuration:
+      0.664730  1/2u+ #  59 (   -0.864640)
+      0.335270  1/2u+ #  60 (   -0.864368)
+      0.000000  3/2u- #  61 (   -0.864368)
+      0.000000  1/2u- #  85 (   -0.864640)
+      0.000000  1/2u- #  86 (   -0.864368)
+      1.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 5 ( 2g-) State 1 Energy     -37.823588888245105 Eigenvalue    -1.30464012    0.0000E+00
+   -0.57899   0.00000 | 3/2u- #  61 (   -0.864368) 1/2u- #  85 (   -0.864640) > ( 2g-)
+    0.81533   0.00000 | 3/2u- #  61 (   -0.864368) 1/2u- #  86 (   -0.864368) > ( 2g-)
+ Effective configuration:
+      0.000000  1/2u+ #  59 (   -0.864640)
+      0.000000  1/2u+ #  60 (   -0.864368)
+      1.000000  3/2u- #  61 (   -0.864368)
+      0.335231  1/2u- #  85 (   -0.864640)
+      0.664769  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Irrep 5 ( 2g-) State 2 Energy     -37.778955840334362 Eigenvalue    -1.26000707    0.0000E+00
+    0.81531   0.00000 | 3/2u- #  61 (   -0.864368) 1/2u- #  85 (   -0.864640) > ( 2g-)
+    0.57902  -0.00000 | 3/2u- #  61 (   -0.864368) 1/2u- #  86 (   -0.864368) > ( 2g-)
+ Effective configuration:
+      0.000000  1/2u+ #  59 (   -0.864640)
+      0.000000  1/2u+ #  60 (   -0.864368)
+      1.000000  3/2u- #  61 (   -0.864368)
+      0.664730  1/2u- #  85 (   -0.864640)
+      0.335270  1/2u- #  86 (   -0.864368)
+      0.000000  3/2u+ #  87 (   -0.864368)
+
+ Heff eigenvalues:
+ (degeneracy threshold = 1.0e-08 a.u.)
+
+ Level  Re(eigenvalue)  Im(eigv)               Abs energy  Rel eigenvalue    Rel eigv, eV  Rel eigv, cm-1  deg  symmetry
+ ------------------------------------------------------------------------------------------------------------------------
+@    1   -1.3048364584  0.00e+00    -37.82378523122463321    0.0000000000    0.0000000000        0.000000   1   0g
+@    2   -1.3047707272  0.00e+00    -37.82371950000953120    0.0000657312    0.0017886375       14.426334   3   0g 1g+ 1g-
+@    3   -1.3046401154  0.00e+00    -37.82358888824541765    0.0001963430    0.0053427646       43.092303   5   0g 1g+ 1g- 2g+ 2g-
+@    4   -1.2600070675  0.00e+00    -37.77895584033618093    0.0448293909    1.2198698706     9838.914039   5   0g 1g+ 1g- 2g+ 2g-
+@    5   -1.2046505808  0.00e+00    -37.72359935368051254    0.1001858775    2.7261966102    21988.258542   1   0g
+
+ Ionization potential wrt reference state =     1.304836458385 a.u. =  35.5064 eV =  286378.50 cm^-1
+
+ time for (sec):
+ -------------------------------------------------------
+  Total time of execution                         8.900
+  Diagram contraction (mult) for <PP||PP>         1.074
+  DIRAC interface (MRCONEE/MDCINT)                1.197
+  Diagram template constr (tmplt)                 0.056
+  Sorting of integrals                            1.883
+  Multidim transposition (reorder)                1.938
+  Energy denominators (diveps)                    0.007
+  0h0p -- Singles equations (T1)                  0.193
+  Diagram contraction (mult)                      2.781
+  mult M <- M x M                                 1.372
+  mult M <- D x M                                 0.000
+  Diagram addition (update)                       0.027
+  0h0p -- Doubles equations (T2)                  2.104
+  Permutation operators                           0.695
+  DIIS extrapolation                              0.076
+  Constant part of 0h1p amplitudes                0.053
+  Extraction of a closed part                     0.018
+  Prediction of intruder states                   0.001
+  Constant part of 0h2p amplitudes                0.156
+ -------------------------------------------------------
+
+
+ memory in usage  = 56129224 bytes = 53.5 Mb = 0.05 Gb
+ max memory usage = 87169472 bytes = 83.1 Mb = 0.08 Gb
+ Disk I/O:
+   files created: 8149   files removed: 0
+   read         766216032 bytes = 0.714 Gb
+   write        300949077 bytes = 0.280 Gb
+
+ EXP-T terminated normally at Wed Aug 25 00:29:22 2021
+ Total run time: 0 days 0 hours 0 minutes 8 seconds 899 milliseconds

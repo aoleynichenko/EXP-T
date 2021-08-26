@@ -47,22 +47,21 @@ double complex slater_01_1_01(slater_det_t *bra, slater_det_t *ket);
 double complex slater_10_1_10(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_02_1_02(slater_det_t *bra, slater_det_t *ket);
-
 double complex slater_02_2_02(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_20_1_20(slater_det_t *bra, slater_det_t *ket);
-
 double complex slater_20_2_20(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_11_1_11(slater_det_t *bra, slater_det_t *ket);
-
 double complex slater_11_2_11(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_03_1_03(slater_det_t *bra, slater_det_t *ket);
-
 double complex slater_03_2_03(slater_det_t *bra, slater_det_t *ket);
-
 double complex slater_03_3_03(slater_det_t *bra, slater_det_t *ket);
+
+double complex slater_12_1_12(slater_det_t *bra, slater_det_t *ket);
+double complex slater_12_2_12(slater_det_t *bra, slater_det_t *ket);
+double complex slater_12_3_12(slater_det_t *bra, slater_det_t *ket);
 
 
 /*******************************************************************************
@@ -130,6 +129,17 @@ void setup_slater(void *source, double complex (*getter)(void *source, void *ind
             slater = slater_03_3_03;
         }
     }
+    else if (bra_sect_h == 1 && bra_sect_p == 2 && ket_sect_h == 1 && ket_sect_p == 2) {
+        if (npart == 1) {
+            slater = slater_12_1_12;
+        }
+        else if (npart == 2) {
+            slater = slater_12_2_12;
+        }
+        else if (npart == 3) {
+            slater = slater_12_3_12;
+        }
+    }
 #endif
     else {
         printf("Cannot evaluate matrix element between Slater determinants of type |%dh%dp> and |%dh%dp>\n",
@@ -177,13 +187,13 @@ double complex slater_11_1_11(slater_det_t *bra, slater_det_t *ket)
     int b = ket->indices[1];
     double complex matr_elem = 0.0 + 0.0 * I;
 
-    // (0) - 1.0 heff1 [ j i ] d_ab
+    // (1) - 1.0 heff1 [ j i ] d_ab
     if (a == b) {
         idx2[0] = j;
         idx2[1] = i;
         matr_elem -= get_element(source_matrix, idx2);
     }
-    // (1) + 1.0 heff1 [ a b ] d_ij
+    // (2) + 1.0 heff1 [ a b ] d_ij
     if (i == j) {
         idx2[0] = a;
         idx2[1] = b;

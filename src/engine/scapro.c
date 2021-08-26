@@ -62,12 +62,9 @@ double complex scalar_product(char *conj1, char *conj2, char *name1, char *name2
 
     double complex scal_prod = 0.0 + 0.0 * I;
     for (size_t isb1 = 0; isb1 < dg1->n_blocks; isb1++) {
-        block_t *block1 = dg1->blocks[isb1];
 
-        size_t isb2;
-        block_t *block2;
-        block2 = diagram_get_block(dg2, block1->spinor_blocks, &isb2);
-        block2 = dg2->blocks[isb2];
+        block_t *block1 = dg1->blocks[isb1];
+        block_t *block2 = diagram_get_block(dg2, block1->spinor_blocks);
 
         if (block1->is_unique == 0 && block2->is_unique == 1) {
             restore_block(dg1, block1);

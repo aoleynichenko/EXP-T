@@ -62,23 +62,6 @@ int set_vacuum_det(slater_det_t *det)
 
 
 /**
- * compares Slater determinants.
- * the lower the number of irrep => the "older" the determinant
- */
-int detcmp(const void *_d1, const void *_d2)
-{
-    const slater_det_t *d1 = (const slater_det_t *) _d1;
-    const slater_det_t *d2 = (const slater_det_t *) _d2;
-    if (d1->sym != d2->sym) {
-        return abs(d1->sym) - abs(d2->sym);
-    }
-    else {
-        return d2->sym - d1->sym;
-    }
-}
-
-
-/**
  * Prints Slater determinant 'det' to the stream 'f'.
  */
 void print_slater_det(FILE *f, int sect_h, int sect_p, slater_det_t *det)

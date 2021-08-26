@@ -152,17 +152,66 @@ void selection_spectator(ampl_selection_t *rule, int *idx, double complex *data)
 }
 
 
-// at least one "bra" index should be valence
 void selection_act_to_act(ampl_selection_t *rule, int *idx, double complex *data)
 {
     int n_val_indices = 0;
-    for (int i = rule->rank / 2; i < rule->rank; i++) {
-        if (is_active(idx[i])) {
-            n_val_indices++;
+
+    // all sectors except 0h0p, for 0h0p triples are completely excluded
+
+    if (rule->sect_h == 0 && rule->sect_p != 0) { // particle sectors
+        for (int i = rule->rank / 2; i < rule->rank; i++) {
+            if (is_active(idx[i])) {
+                n_val_indices++;
+            }
         }
+    }
+    else if (rule->sect_h != 0 && rule->sect_p == 0) { // hole sectors
+        for (int i = 0; i < rule->rank / 2; i++) {
+            if (is_active(idx[i])) {
+                n_val_indices++;
+            }
+        }
+    }
+    else if (rule->sect_h == 1 && rule->sect_p == 1) {
+        // min 3 active indices: 1h, 1p + 1 index of active quasiparticle creation
+        for (int i = 0; i < rule->rank; i++) {
+            if (is_active(idx[i])) {
+                n_val_indices++;
+            }
+        }
+        n_val_indices -= 2; // minus 1h, 1p
     }
 
     if (n_val_indices > 0) {
+        if (rule->task == CC_SELECTION_SET_ZERO) {
+            set_zero(data);
+        }
+        else { /* do nothing*/ }
+    }
+    else {
+        if (rule->task == CC_SELECTION_SET_ZERO_EXCEPT) {
+            set_zero(data);
+        }
+        else { /* do nothing*/ }
+    }
+}
+
+
+void selection_max_2_inact(ampl_selection_t *rule, int *idx, double complex *data)
+{
+    int n_inact_holes = 0;
+    int n_inact_particles = 0;
+
+    for (int i = 0; i < rule->rank; i++) {
+        if (is_inact_hole(idx[i])) {
+            n_inact_holes++;
+        }
+        else if (is_inact_particle(idx[i])) {
+            n_inact_particles++;
+        }
+    }
+
+    if (n_inact_holes <= 2 && n_inact_particles <= 2) {
         if (rule->task == CC_SELECTION_SET_ZERO) {
             set_zero(data);
         }
@@ -224,6 +273,9 @@ void apply_selections(int sect_h, int sect_p, char *diag_name)
                         break;
                     case CC_SELECTION_ACT_TO_ACT:
                         selection_act_to_act(rule, idx, data);
+                        break;
+                    case CC_SELECTION_MAX_2_INACT:
+                        selection_max_2_inact(rule, idx, data);
                         break;
                     case CC_SELECTION_EXC_WINDOW:
                         selection_exc_window(rule, idx, data);

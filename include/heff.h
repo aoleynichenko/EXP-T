@@ -51,11 +51,7 @@ typedef struct {
 
 void heff_analysis(int sect_h, int sect_p, ...);
 
-void diag_heff(int sect_h, int sect_p, ...);
-
 int eigval_cmp(const void *aa, const void *bb);
-
-void eigenvalues_table_old(size_t n_eigenvalues, eigval_t *eigenvalues, double degen_thresh, double max_energy);
 
 void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int state2);
 
@@ -65,12 +61,18 @@ void model_space_property(cc_ms_prop_query_t *prop_query);
 
 void model_space_properties_and_natural_orbitals();
 
-void model_vectors_analysis(int sect_h, int sect_p);
-
-void model_space_props_natorbs(int sect_h, int sect_p);
-
 void print_model_vector(FILE *f_out, int sect_h, int sect_p,
                         int rep_no, char *rep_name, int state_no, double complex energy,
                         size_t len, double complex *coeffs, slater_det_t *det_list, double coef_thresh);
+
+void construct_diagonalize_heff_silent(int sect_h, int sect_p, ...);
+
+void construct_heff(int sect_h, int sect_p, slater_det_t **det_list, size_t *block_sizes, double complex **heff_blocks,
+                    int n_diagrams, char **diagram_names);
+void diagonalize_heff(int sect_h, int sect_p, size_t *block_dims, double complex **heff,
+                      double complex **eigvalues, double complex **coef_left, double complex **coef_right);
+double get_lowest_eigenvalue(size_t *block_dims, double complex **eigvalues);
+
+void write_formatted_heff_0h0p(double total_energy);
 
 #endif /* CC_HEFF_H_INCLUDED */

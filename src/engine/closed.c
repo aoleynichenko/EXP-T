@@ -103,9 +103,7 @@ void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *
         block_t *sb2 = tgt->blocks[isb2];
 
         // obtain corresponding block from the target diagram
-        size_t isb1;
-        diagram_get_block(src, sb2->spinor_blocks, &isb1);
-        block_t *sb1 = src->blocks[isb1];
+        block_t *sb1 = diagram_get_block(src, sb2->spinor_blocks);
 
         if (sb1->is_unique == 0) {
             restore_block(src, sb1);
@@ -206,22 +204,20 @@ void clear_valence(diagram_t *dg)
  ******************************************************************************/
 void closed(char *src_name, char *tgt_name)
 {
-    diagram_t *dg_src;
     char valence[CC_DIAGRAM_MAX_RANK];
-    int i, rank;
 
     timer_new_entry("closed", "Extraction of a closed part");
     timer_start("closed");
 
-    dg_src = diagram_stack_find(src_name);
+    diagram_t *dg_src = diagram_stack_find(src_name);
     if (dg_src == NULL) {
         errquit("closed(): diagram '%s' not found", src_name);
     }
 
     // create a new diagram with the same list of quasiparticles and order,
     // but with indices which all are valence
-    rank = dg_src->rank;
-    for (i = 0; i < rank; i++) {
+    int rank = dg_src->rank;
+    for (int i = 0; i < rank; i++) {
         valence[i] = '1';
     }
     valence[rank] = '\0';
@@ -266,9 +262,7 @@ void expand_diagram(char *name_small, char *name_large)
         symblock_gen_indices(sb1, indices);
 
         // obtain corresponding block from the large diagram
-        size_t isb2;
-        diagram_get_block(dgl, sb1->spinor_blocks, &isb2);
-        block_t *sb2 = dgl->blocks[isb2];
+        block_t *sb2 = diagram_get_block(dgl, sb1->spinor_blocks);
 
         if (sb2->is_unique == 0) {
             restore_block(dgl, sb2);

@@ -132,6 +132,11 @@ int sector01(cc_options_t *opts)
     }
     perform_sorting();
 
+    // setup shifts for the IH-like technique by A. V. Zaitsevskii
+    if (opts->ih1_opts.sectors[0][1] != 0) {
+        intham1_calculate_shifts(0, 1);
+    }
+
     printf("\n Preparing T1 and T2 amplitudes ...\n");
     reorder("t1c", "t1r", "21");
     reorder("t2c", "t2r", "3412");
@@ -334,12 +339,6 @@ int sector01(cc_options_t *opts)
     }
     diagram_write(diagram_stack_find("veff01"), "veff01.dg");
 
-    /*print_ampl_vs_denom("s1c", "s1c_eps.dat");
-    print_ampl_vs_denom("s2c", "s2c_eps.dat");
-    if (triples) {
-        print_ampl_vs_denom("s3c", "s3c_eps.dat");
-    }*/
-
     // construct and diagonalize effective Hamiltonian
     // analyze its eigenvectors & eigenvalues
     heff_analysis(0, 1, "veff01");
@@ -453,8 +452,6 @@ void const_terms_0h1p()
         tmplt("s3_0", "phhppp", "100000", "123456", IS_PERM_UNIQUE);
     }
     dg_stack_pos_t pos = get_stack_pos();
-    //check_unique("s2_0");
-    //clear_non_unique("s2_0");
 
     // s1_0 -- singles
     // dgs1 -- CCS
@@ -494,10 +491,8 @@ void const_terms_0h1p()
     //clear_non_unique("s2_0");
 
     // dgd2b_2
-    // PROBLEM IS HERE!
     reorder("t2c", "r1", "2341");
     mult("vh", "r1", "r2", 1);
-    //perm("r2", "(12)");
     perm("r2", "(34)");
     update("s2_0", -1.0, "r2");
     restore_stack_pos(pos);

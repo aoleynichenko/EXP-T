@@ -235,8 +235,6 @@ void diis_extrapolate(diis_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
     timer_new_entry("diis", "DIIS extrapolation");
     timer_start("diis");
 
-    //printf("\ndiis extrapolate\n");
-
     int dim = q->n;
     int bdim = dim + 1;
 
@@ -250,26 +248,18 @@ void diis_extrapolate(diis_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
     // common for both Singles and Doubles amplitudes and error vectors
     for (int i = 0; i < dim; i++) {
         int j;
-        //printf("Loop i = %d\n", i);
         for (j = i; j < dim; j++) {
-            //printf("  Loop j = %d\n", j);
             double s1 = 0.0, s2 = 0.0, s3 = 0.0;
             if (q->do_t1) {
                 double complex z1 = scalar_product("C", "N", q->e1[i], q->e1[j]);
                 s1 = creal(z1);
             }
             if (q->do_t2) {
-                //printf("begin scapro T2\n");
                 double complex z2 = scalar_product("C", "N", q->e2[i], q->e2[j]);
-                //printf("end scapro T2\n");
                 s2 = creal(z2);
             }
             if (q->do_t3) {
-                //printf("VVV\n");
-                //cc_memory_usage();
                 double complex z3 = scalar_product("C", "N", q->e3[i], q->e3[j]);
-                //cc_memory_usage();
-                //printf("^^^\n");
                 s3 = creal(z3);
             }
             B[i * bdim + j] = s1 + s2 + s3;
@@ -277,8 +267,6 @@ void diis_extrapolate(diis_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
         }
         B[i * bdim + j] = -1.0;
     }
-
-    //printf("\nend of scapros\n");
 
     // -1 -1 -1 ... 0
     for (int i = 0; i < bdim - 1; i++) {
@@ -354,6 +342,6 @@ void diis_extrapolate(diis_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
     cc_free(B);
     cc_free(right);
     cc_free(ipiv);
-    //printf("\nend extrapolate\n");
+
     timer_stop("diis");
 }

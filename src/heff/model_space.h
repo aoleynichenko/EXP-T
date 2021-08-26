@@ -46,6 +46,6 @@ size_t get_model_space_size(int sect_h, int sect_p, int nspinors, spinor_attr_t 
 /**
  * Returns list of model-space determinants.
  */
-slater_det_t **create_model_dets(int sect_h, int sect_p, size_t *ms_rep_sizes);
+slater_det_t **construct_model_space(int sect_h, int sect_p, size_t *ms_rep_sizes);
 
 #endif /* CC_MODEL_SPACE_H_INCLUDED */

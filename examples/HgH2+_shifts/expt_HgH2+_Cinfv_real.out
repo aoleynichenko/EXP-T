@@ -181,7 +181,7 @@ shift 0h1p 3 -0.5 -1.0
  default integer type in DIRAC              integer(8)
  
  *** MRCONEE FILE ***
- nspinors                                             78
+ NSPINORS                                             78
  was breit in DHF                            F
  nuclear repulsion energy                      10.0000000000000     
  inversion symmetry (1-no,2-yes)                       1

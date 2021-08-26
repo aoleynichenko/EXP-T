@@ -95,7 +95,7 @@ void construct_quasi_natural_orbitals(int sect_h, int sect_p, int ms_size, slate
     get_active_space(sect_h, sect_p, &n_active, act_spinors_indices);
 
     // density matrix (DM) construction
-    denmat = zzeros(n_active, n_active);
+    denmat = z_zeros(n_active, n_active);
     construct_ms_density_matrix(sect_h, sect_p, ms_size, coef_left, det_list, ms_size, coef_right, det_list, denmat,
                                 &n_active);
 
@@ -125,8 +125,8 @@ void quasi_natural_orbitals_driver(int sect_h, int sect_p, int rep, int state)
     double const coef_thresh = 1e-4;   // threshold for printing model vec-s coeff-s
 
     int nrep;
-    struct mv_block mv_blocks[64];
-    struct mv_block mv_blocks_0011[64];
+    struct mv_block mv_blocks[CC_MAX_NUM_IRREPS];
+    struct mv_block mv_blocks_0011[CC_MAX_NUM_IRREPS];
 
     char *rep_name = get_irrep_name(rep);
     printf("\n\n *** DENSITY MATRIX AND NATURAL ORBITALS FOR THE IRREP %d (%s) STATE %d ***\n",
@@ -139,10 +139,10 @@ void quasi_natural_orbitals_driver(int sect_h, int sect_p, int rep, int state)
     get_active_space(sect_h, sect_p, &n_active, active_spinors);
 
     // allocate working arrays
-    double *nat_occ = dzeros(n_active, 1);  // NO occ numbers
-    double *conf = dzeros(n_active, 1);
-    double complex *natorb_left = zzeros(n_active, n_active);
-    double complex *natorb_right = zzeros(n_active, n_active);
+    double *nat_occ = d_zeros(n_active, 1);  // NO occ numbers
+    double *conf = d_zeros(n_active, 1);
+    double complex *natorb_left = z_zeros(n_active, n_active);
+    double complex *natorb_right = z_zeros(n_active, n_active);
 
     // extract model vectors and eigenvalues from the MVCOEF* unformatted file
     read_model_vectors_unformatted(sect_h, sect_p, NULL, &nrep, mv_blocks);
@@ -256,17 +256,17 @@ void natural_spinor_configuration(int n_active, double complex *natorb_right, do
 }
 
 
-void get_effective_configuration(int sect_h, int sect_p, int ms_size, slater_det_t *det_list,
-                                 double complex *coef_left, double complex *coef_right, double *config)
+void get_eff_configuration(int sect_h, int sect_p, int ms_size, slater_det_t *det_list,
+                           double complex *coef_left, double complex *coef_right, double *config)
 {
     // construct list of indices of active spinors
     int n_active = 0;
     int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
     get_active_space(sect_h, sect_p, &n_active, active_spinors);
 
-    double complex *natorb_left = zzeros(n_active, n_active);
-    double complex *natorb_right = zzeros(n_active, n_active);
-    double *nat_occ = dzeros(n_active, 1);
+    double complex *natorb_left = z_zeros(n_active, n_active);
+    double complex *natorb_right = z_zeros(n_active, n_active);
+    double *nat_occ = d_zeros(n_active, 1);
 
     construct_quasi_natural_orbitals(
             sect_h, sect_p, ms_size, det_list, coef_left, coef_right,
@@ -297,7 +297,7 @@ void write_NO(char *natorb_file_name, int sect_h, int sect_p,
     // construct 'local indices -> global indices' mapping
     n_active = 0;
     for (int i = 0; i < get_num_spinors(); i++) {
-        if (is_act_hole(i) && sect_h > 0 || is_act_part(i) && sect_p > 0) {
+        if (is_act_hole(i) && sect_h > 0 || is_act_particle(i) && sect_p > 0) {
             active_spinors[n_active] = i;
             n_active++;
         }

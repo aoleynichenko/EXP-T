@@ -35,5 +35,5 @@
 
 void quasi_natural_orbitals_driver(int sect_h, int sect_p, int rep, int state);
 
-void get_effective_configuration(int sect_h, int sect_p, int ms_size, slater_det_t *det_list,
-                                 double complex *coef_left, double complex *coef_right, double *config);
+void get_eff_configuration(int sect_h, int sect_p, int ms_size, slater_det_t *det_list,
+                           double complex *coef_left, double complex *coef_right, double *config);

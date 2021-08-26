@@ -1,0 +1,27 @@
+# Test:
+# (1) C atom in d-aug-cc-pVDZ
+# (2) relativistic
+# (3) symmetry Dinfh
+
+title "Test C atom/d-aug-cc-pVDZ/DC/Dinfh"
+maxiter 300
+conv 1e-9
+sector 0h2p
+nactp 14
+disk_usage 0
+diis 100
+
+#nroots [0g]:4 [1g+]:3 [1g-]:2 [0u]:1
+roots_cutoff 7e4 cm
+
+intham1
+  sectors 0h2p
+  shift_type realimag
+  main 0 8
+  npower 0
+  shift_to barycenter #-0.54 0.38
+  formula box
+end
+
+#reuse integrals 0h0p 0h1p 1h0p 1h1p
+

@@ -177,6 +177,11 @@ int sector10(cc_options_t *opts)
     }
     perform_sorting();
 
+    // setup shifts for the IH-like technique by A. V. Zaitsevskii
+    if (opts->ih1_opts.sectors[1][0] != 0) {
+        intham1_calculate_shifts(1, 0);
+    }
+
     printf("\n Preparing T1 and T2 amplitudes ...\n");
     reorder("t1c", "t1r", "21");
     reorder("t2c", "t2r", "3412");
@@ -242,6 +247,14 @@ int sector10(cc_options_t *opts)
         if (triples) {
             diveps("h3nw");
         }
+
+#ifdef VERSION_DEVEL
+        apply_selections(1, 0, "h1nw");
+        apply_selections(1, 0, "h2nw");
+        if (triples) {
+            apply_selections(1, 0, "h3nw");
+        }
+#endif
 
         if (cc_opts->cc_model == CC_MODEL_CCS) {
             clear("h2nw");

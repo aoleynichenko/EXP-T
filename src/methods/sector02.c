@@ -126,6 +126,11 @@ int sector02(cc_options_t *opts)
     }
     perform_sorting();
 
+    // setup shifts for the IH-like technique by A. V. Zaitsevskii
+    if (opts->ih1_opts.sectors[0][2] != 0) {
+        intham1_calculate_shifts(0, 2);
+    }
+
     printf("\n Preparing T1, T2, S{01}_1, S{01}_2 amplitudes ...\n");
     reorder("s1c", "s1r", "21");
     reorder("s2c", "s2r", "3412");
@@ -326,11 +331,6 @@ int sector02(cc_options_t *opts)
     }
     diagram_write(diagram_stack_find("veff02"), "veff02.dg");
 
-    /*print_ampl_vs_denom("x2c", "x2c_eps.dat");
-    if (triples) {
-        print_ampl_vs_denom("x3c", "x3c_eps.dat");
-    }*/
-
     // construct and diagonalize effective Hamiltonian
     // analyze its eigenvectors & eigenvalues
     heff_analysis(0, 2, "veff01", "veff02");
@@ -426,8 +426,6 @@ void init_amplitudes_0h2p()
  ******************************************************************************/
 void const_terms_0h2p()
 {
-    double t1, t2;
-
     timer_new_entry("const_s02", "Constant part of 0h2p amplitudes");
     timer_start("const_s02");
 
@@ -436,8 +434,6 @@ void const_terms_0h2p()
         tmplt("x3_0", "pphppp", "110000", "123456", IS_PERM_UNIQUE);
     }
     dg_stack_pos_t pos = get_stack_pos();
-    //check_unique("x2_0");
-    //clear_non_unique("x2_0");
 
     // D2b
     mult("s2r", "vh", "r1", 1);

@@ -75,7 +75,7 @@ void construct_ms_density_matrix(int sect_h, int sect_p,
 
     // TODO: refactor, separate utility function (move to spinors.c)
     for (int i = 0; i < nspinors; i++) {
-        if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
+        if ((is_act_hole(i) && sect_h > 0) || (is_act_particle(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
         }
@@ -108,7 +108,7 @@ double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, doub
 
     // TODO: refactor, separate utility function (move to spinors.c)
     for (int i = 0; i < nspinors; i++) {
-        if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
+        if ((is_act_hole(i) && sect_h > 0) || (is_act_particle(i) && sect_p > 0)) {
             active_spinors[n_active] = i;
             n_active++;
         }
@@ -160,9 +160,9 @@ double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, doub
 void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int state2)
 {
     int nrep;
-    struct mv_block mv_blocks[64];
+    struct mv_block mv_blocks[CC_MAX_NUM_IRREPS];
     int nrep_0011;
-    struct mv_block mv_blocks_0011[64];
+    struct mv_block mv_blocks_0011[CC_MAX_NUM_IRREPS];
     double const occ_thresh = 1e-6;   // threshold for printing natural orbitals
     double const coef_thresh = 1e-4;   // threshold for printing model vec-s coeff-s
     // for state 1
@@ -214,11 +214,11 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
     int vac_irrep = get_vacuum_irrep();
 
     // allocate working arrays
-    denmat = zzeros(n_active, n_active);
-    nat_occ = zzeros(n_active, 1);  // NO occ numbers
-    lambda = dzeros(n_active, 1);     // NTO singular values
-    natorb_left = zzeros(n_active, n_active); // for NTOs too
-    natorb_right = zzeros(n_active, n_active);
+    denmat = z_zeros(n_active, n_active);
+    nat_occ = z_zeros(n_active, 1);  // NO occ numbers
+    lambda = d_zeros(n_active, 1);     // NTO singular values
+    natorb_left = z_zeros(n_active, n_active); // for NTOs too
+    natorb_right = z_zeros(n_active, n_active);
 
     // extract model vectors and eigenvalues from the MVCOEF* unformatted file
     read_model_vectors_unformatted(sect_h, sect_p, NULL, &nrep, mv_blocks);
@@ -463,7 +463,7 @@ int density_matrix_element(int sect_h, int sect_p, int p, int q, slater_det_t *b
             if (is_act_hole(p)) {
                 return 1;
             }
-            if (is_act_part(p)) {
+            if (is_act_particle(p)) {
                 return 0;
             }
         }

@@ -67,7 +67,7 @@ static void mult_check_creation_annihilation(diagram_t *dg1, diagram_t *dg2, int
 
 static void mult_check_quasiparticles(diagram_t *dg1, diagram_t *dg2, int ncontr);
 
-static void mult_check_valence(diagram_t *dg1, diagram_t *dg2, int ncontr);
+static void mult_check_valence_t3space(diagram_t *dg1, diagram_t *dg2, int ncontr);
 
 static diagram_t *mult_product_template(diagram_t *dg1, diagram_t *dg2, int ncontr, int perm_unique);
 
@@ -155,7 +155,7 @@ diagram_t *diagram_mult(diagram_t *dg1, diagram_t *dg2, int ncontr, int perm_uni
     timer_new_entry("mult_mdm", "mult M <- D x M");
 
     mult_check_quasiparticles(dg1, dg2, ncontr);
-    mult_check_valence(dg1, dg2, ncontr);
+    mult_check_valence_t3space(dg1, dg2, ncontr);
     mult_check_creation_annihilation(dg1, dg2, ncontr);
 
     diagram_t *tgt = mult_product_template(dg1, dg2, ncontr, perm_unique);
@@ -245,9 +245,6 @@ void mult_algorithm_m_mm(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int nco
         }
         symblock_store(b3);
     }
-    //clear_non_unique("t2c");
-    //clear_non_unique("t2c");
-    //restore_diagram(diagram_stack_find("t2c"));
 }
 
 
@@ -444,14 +441,20 @@ static void mult_check_quasiparticles(diagram_t *dg1, diagram_t *dg2, int ncontr
  * @param dg2 pointer to the second diagram
  * @param ncontr number of lines to be contracted
  */
-static void mult_check_valence(diagram_t *dg1, diagram_t *dg2, int ncontr)
+static void mult_check_valence_t3space(diagram_t *dg1, diagram_t *dg2, int ncontr)
 {
     int rk1 = dg1->rank;
     int rk2 = dg2->rank;
 
     for (int i = 0; i < ncontr; i++) {
         if (dg1->valence[rk1 - 1 - i] != dg2->valence[rk2 - 1 - i]) {
-            printf("dimensions to be contracted are not consistent:\n");
+            printf("dimensions to be contracted are not consistent (by valence):\n");
+            diagram_summary(dg1);
+            diagram_summary(dg2);
+            errquit("error in mult: inconsistent diagrams");
+        }
+        if (dg1->t3space[rk1 - 1 - i] != dg2->t3space[rk2 - 1 - i]) {
+            printf("dimensions to be contracted are not consistent (by t3space):\n");
             diagram_summary(dg1);
             diagram_summary(dg2);
             errquit("error in mult: inconsistent diagrams");
@@ -518,6 +521,7 @@ static diagram_t *mult_product_template(diagram_t *dg1, diagram_t *dg2, int ncon
 {
     char qparts[CC_DIAGRAM_MAX_RANK + 1];
     char valence[CC_DIAGRAM_MAX_RANK + 1];
+    char t3space[CC_DIAGRAM_MAX_RANK + 1];
     char order[CC_DIAGRAM_MAX_RANK + 1];
     int tgt_order[CC_DIAGRAM_MAX_RANK];
     int rk1, rk2, rk3;
@@ -530,10 +534,12 @@ static diagram_t *mult_product_template(diagram_t *dg1, diagram_t *dg2, int ncon
     for (int i = 0; i < rk1 - ncontr; i++) {
         qparts[i] = dg1->qparts[i];
         valence[i] = dg1->valence[i] + '0';
+        t3space[i] = dg1->t3space[i] + '0';
     }
     for (int i = 0; i < rk2 - ncontr; i++) {
         qparts[rk1 - ncontr + i] = dg2->qparts[i];
         valence[rk1 - ncontr + i] = dg2->valence[i] + '0';
+        t3space[rk1 - ncontr + i] = dg2->t3space[i] + '0';
     }
     target_order(dg1->order, rk1, dg2->order, rk2, tgt_order, rk3);
     for (int i = 0; i < rk3; i++) {
@@ -541,10 +547,11 @@ static diagram_t *mult_product_template(diagram_t *dg1, diagram_t *dg2, int ncon
     }
     qparts[rk3] = '\0';
     valence[rk3] = '\0';
+    t3space[rk3] = '\0';
     order[rk3] = '\0';
 
     // construct empty diagram with proper structure
-    return diagram_new("mult-intermediate", qparts, valence, order, perm_unique);
+    return diagram_new("mult-intermediate", qparts, valence, t3space, order, perm_unique);
 }
 
 

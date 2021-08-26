@@ -41,7 +41,9 @@
 #include "spinors.h"
 #include "timer.h"
 
-const double ZERO_THRESH = 1e-14;
+static int *curr_valence;
+
+static const double ZERO_THRESH = 1e-14;
 
 void diveps_block_rank_2(block_t *block);
 
@@ -63,6 +65,7 @@ int count_active_indices(int rank, int *indices);
 
 int count_active_intermediate_indices(int rank, int *indices);
 
+int count_active_interm_quasipart_annihilation_indices(int sect_h, int sect_p, int rank, int *indices);
 
 /**
  * Division of the diagram by the energy denominators
@@ -93,6 +96,7 @@ void diveps(char *name)
 diagram_t *diagram_diveps(diagram_t *dg)
 {
     int rank = dg->rank;
+    curr_valence = dg->valence;
 
     for (size_t isb = 0; isb < dg->n_blocks; isb++) {
         block_t *block = dg->blocks[isb];
@@ -403,7 +407,12 @@ void diveps_block_general(block_t *block)
 
 cc_shifttype_t get_shift_type(int sect_h, int sect_p)
 {
-    return cc_opts->shifts[sect_h][sect_p].type;
+    if (cc_opts->do_intham1) {
+        return cc_opts->ih1_opts.shift_type;
+    }
+    else {
+        return cc_opts->shifts[sect_h][sect_p].type;
+    }
 }
 
 
@@ -412,8 +421,12 @@ int get_attenuation_parameter(int sect_h, int sect_p)
     int npower = cc_opts->shifts[sect_h][sect_p].power;
     int sect_0h0p = (sect_h == 0 && sect_p == 0);
 
-    if (cc_opts->do_orbshift && !sect_0h0p) {
-        npower = cc_opts->orbshift_power;
+    // special cases
+    if (cc_opts->do_intham1) {
+        npower = cc_opts->ih1_opts.npower;
+    }
+    else if (cc_opts->do_orbshift && !sect_0h0p) {
+        npower = cc_opts->orbshifts[sect_h][sect_p].power;
     }
     else if (cc_opts->do_orbshift_0h0p > 0 && sect_0h0p) {
         npower = cc_opts->orbshift_0h0p_power;
@@ -433,7 +446,31 @@ int get_attenuation_parameter(int sect_h, int sect_p)
  */
 double get_shift_value(int sect_h, int sect_p, int rank, int *indices)
 {
-     int sect_0h0p = (sect_h == 0 && sect_p == 0);
+    int sect_0h0p = (sect_h == 0 && sect_p == 0);
+
+    /*
+     * "IH-1": intermediate-Hamiltonian-like shifting technique
+     */
+    if (cc_opts->do_intham1) {
+        if (cc_opts->ih1_opts.sectors[sect_h][sect_p] == 1) {
+            double shift = intham1_get_shift_value(sect_h, sect_p, rank, indices, curr_valence);
+            /*double d = 0.0;
+            for (int i = 0; i < rank/2; i++) {
+                d += get_eps(indices[i]);
+            }
+            for (int i = rank/2; i < rank; i++) {
+                d -= get_eps(indices[i]);
+            }
+            for (int i = 0; i < rank; i++) {
+                printf("%4d", indices[i]);
+            }
+            printf("    %10.6f    d=%10.6f   %s\n", shift, d, (d >= 0) ? "!!!" : "");*/
+            return shift;
+        }
+        else {
+            return 0.0;
+        }
+    }
 
     /*
      * default: constant shifts, which don't depend on the amplitude or its indices
@@ -448,15 +485,18 @@ double get_shift_value(int sect_h, int sect_p, int rank, int *indices)
      * of shifts in the intermediate one-particle space only
      */
     if (cc_opts->do_orbshift && !sect_0h0p) {
-        /* IH-FSCC-like orbital shifts: S = s/2 * num(intermediate annihilation lines */
+        /* IH-FSCC-like orbital shifts: S = s/2 * num(intermediate annihilation lines) */
+        // only active quasiparticle annihilation lines will be accounted for
         if (cc_opts->main_defined) {
-            int n_active_interm = count_active_intermediate_indices(rank, indices);
-            return n_active_interm * cc_opts->orbshift / 2.0;
+            int n_active_interm_ann = count_active_interm_quasipart_annihilation_indices(sect_h, sect_p, rank, indices);
+            //return n_active_interm * cc_opts->orbshift / 2.0;
+            return n_active_interm_ann * cc_opts->orbshifts[sect_h][sect_p].shifts[0] / 2.0;
         }
         /* "Ordinary" orbital shifts: S = s/2 * num(active annihilation lines) */
         else {
             int n_active = count_active_indices(rank, indices);
-            return n_active * cc_opts->orbshift / 2.0;
+            //return n_active * cc_opts->orbshift / 2.0;
+            return n_active * cc_opts->orbshifts[sect_h][sect_p].shifts[0] / 2.0;
         }
     }
     /*
@@ -553,4 +593,24 @@ inline int count_active_intermediate_indices(int rank, int *indices)
     }
 
     return n_active_interm;
+}
+
+
+/*
+ * Counts number of lines which are:
+ * (1) active
+ * (2) intermediate
+ * (3) quasiparticle annihilation
+ */
+inline int count_active_interm_quasipart_annihilation_indices(int sect_h, int sect_p, int rank, int *indices)
+{
+    int n_active_interm_ann = 0;
+
+    for (int i = 0; i < rank; i++) {
+        if (curr_valence[i] == 1) {
+            n_active_interm_ann += is_active_intermediate(indices[i]);
+        }
+    }
+
+    return n_active_interm_ann;
 }

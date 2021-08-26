@@ -37,9 +37,10 @@
 #include "comdef.h"
 #include "options.h"
 
-#define CC_FLAG_OCCUPIED  0x00000001
+//#define CC_FLAG_OCCUPIED  0x00000001
 #define CC_FLAG_ACTIVE    0x00000002
 #define CC_FLAG_MAIN      0x00000004
+#define CC_FLAG_T3_SPACE  0x00000008
 
 // attributes of each spinors:
 //  - sequential number
@@ -51,6 +52,7 @@ typedef struct {
     int repno;
     int blockno;
     double eps;
+    int occ;
     uint32_t space_flags;
 } spinor_attr_t;
 
@@ -87,11 +89,13 @@ int is_act_hole(int idx);
 
 int is_inact_hole(int idx);
 
-int is_part(int idx);
+int is_particle(int idx);
 
-int is_act_part(int idx);
+int is_act_particle(int idx);
 
-int is_inact_part(int idx);
+int is_inact_particle(int idx);
+
+int is_t3_space_spinor(int idx);
 
 double get_eps(int idx);
 
@@ -127,6 +131,6 @@ int get_max_spinor_block_size();
 
 void spinors_cleanup();
 
-int is_symblock_zero(int rank, int *spinor_blocks, int *qparts, int *valence);
+int is_symblock_zero(int rank, int *spinor_blocks, int *qparts, int *valence, int *t3space);
 
 #endif /* CC_SPINORS_H_INCLUDED */

@@ -160,7 +160,6 @@ double diagram_max(diagram_t *dg, int *indices)
  */
 double diagram_diffmax(diagram_t *dg1, diagram_t *dg2, int *indices)
 {
-    size_t isb1, isb2;
     block_t *block1, *block2, *maxblock = NULL;
     int rank;
     double max_val = 0.0;
@@ -173,15 +172,14 @@ double diagram_diffmax(diagram_t *dg1, diagram_t *dg2, int *indices)
         indices[j] = 0;
     }
 
-    for (isb1 = 0; isb1 < dg1->n_blocks; isb1++) {
+    for (size_t isb1 = 0; isb1 < dg1->n_blocks; isb1++) {
         block1 = dg1->blocks[isb1];
         if (block1->is_unique == 0) {
             continue;
         }
 
         // get block2 via its spinor_blocks array
-        diagram_get_block(dg2, block1->spinor_blocks, &isb2);
-        block2 = dg2->blocks[isb2];
+        block2 = diagram_get_block(dg2, block1->spinor_blocks);
 
         symblock_load(block1);
         symblock_load(block2);

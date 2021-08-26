@@ -35,9 +35,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "codata.h"
 #include "platform.h"
 #include "linalg.h"
 #include "error.h"
+#include "intham1.h"
 #include "options.h"
 #include "memory.h"
 
@@ -100,6 +102,7 @@ cc_options_t *new_options()
     opts->escf = 0.0;
     opts->enuc = 0.0;
     opts->eref = 0.0;
+    opts->ground_energy_0h1p = 0.0;
     opts->cc_model = CC_MODEL_CCSD;
     strcpy(opts->cc_model_str, "CCSD");
     opts->sector_h = 0;
@@ -146,12 +149,14 @@ cc_options_t *new_options()
     opts->reuse_0h2p = 0;
     opts->reuse_2h0p = 0;
     opts->reuse_0h3p = 0;
+    opts->reuse_1h2p = 0;
 
     // flush non-converged amplitudes to disk
     opts->do_flush_iter = 0;
 
     // denominator shifts
     memset(opts->shifts, 0, sizeof(opts->shifts));
+    memset(opts->orbshifts, 0, sizeof(opts->orbshifts));
     opts->shift_type = CC_SHIFT_NONE;
 
     opts->do_orbshift = 0;
@@ -177,6 +182,9 @@ cc_options_t *new_options()
     opts->nroots_specified = 0;     // all roots by default
     // number of lowest roots in each symmetry
     memset(&opts->nroots_specs, 0, sizeof(opts->nroots_specs));
+    // roots of interest can be limited by some energy bound
+    opts->roots_cutoff_specified = 0;
+    opts->roots_cutoff = 0.0;
 
     // degeneracy threshold (for printing roots)
     opts->degen_thresh = 1e-8;
@@ -225,9 +233,18 @@ cc_options_t *new_options()
     // selection of amplitudes
     opts->n_select = 0;
 
-    // intermediate hamiltonian parameters
+    // (simple) intermediate hamiltonian ("IH-1") parameters
+    opts->do_intham1 = 0;
+    memset(&opts->ih1_opts, 0, sizeof(opts->ih1_opts));
+
+    // (sophisticated) intermediate hamiltonian parameters
     opts->do_intham = 0;
     memset(&opts->intham_params.main_space, 0, sizeof(opts->intham_params.main_space));
+
+    // restriction of the spinor space for triples
+    opts->do_restrict_t3 = 0;
+    opts->restrict_t3_bounds[0] = 0.0;
+    opts->restrict_t3_bounds[1] = 0.0;
 
     return opts;
 }
@@ -240,6 +257,23 @@ void delete_options(cc_options_t *opts)
         return;
     }
     cc_free(opts);
+}
+
+
+int triples_enabled()
+{
+    int model = cc_opts->cc_model;
+
+    if (model == CC_MODEL_CCSDT_1A ||
+        model == CC_MODEL_CCSDT_1B ||
+        model == CC_MODEL_CCSDT_1B_PRIME ||
+        model == CC_MODEL_CCSDT_2 ||
+        model == CC_MODEL_CCSDT_3 ||
+        model == CC_MODEL_CCSDT) {
+        return 1;
+    }
+
+    return 0;
 }
 
 
@@ -308,6 +342,7 @@ void print_options(cc_options_t *opts)
         opts->reuse_0h2p == 0 &&
         opts->reuse_2h0p == 0 &&
         opts->reuse_0h3p == 0 &&
+        opts->reuse_1h2p == 0 &&
         opts->reuse_integrals_1 == 0 &&
         opts->reuse_integrals_2 == 0) {
         printf("nothing ");
@@ -338,6 +373,9 @@ void print_options(cc_options_t *opts)
     }
     if (opts->reuse_0h3p) {
         printf("0h3p ");
+    }
+    if (opts->reuse_1h2p) {
+        printf("1h2p ");
     }
     printf("\n");
 
@@ -478,8 +516,21 @@ void print_options(cc_options_t *opts)
         printf(" %-15s  %-40s  %s\n", "orbshift", "\"orbital\" shifts (non-trivial sectors)",
                opts->do_orbshift ? "yes" : "no");
         if (opts->do_orbshift) {
-            printf(" %-15s  %-40s  %d\n", "", "\"orbital\" shift attenuation parameter", opts->orbshift_power);
-            printf(" %-15s  %-40s  %f\n", "", "\"orbital\" shift amplitude", opts->orbshift);
+            //printf(" %-15s  %-40s  %d\n", "", "\"orbital\" shift attenuation parameter", opts->orbshift_power);
+            //printf(" %-15s  %-40s  %f\n", "", "\"orbital\" shift amplitude", opts->orbshift);
+            for (int h = 0; h < MAX_SECTOR_RANK; h++) {
+                for (int p = 0; p < MAX_SECTOR_RANK; p++) {
+                    if (!opts->orbshifts[h][p].enabled) {
+                        continue;
+                    }
+                    printf(" orbshift %dh%dp    %-40s  ", h, p, "orbital shift parameters");
+                    cc_shifttype_t type = opts->orbshifts[h][p].type;
+                    int power = opts->orbshifts[h][p].power;
+                    double *shifts = opts->orbshifts[h][p].shifts;
+                    printf("power=%d ", power);
+                    printf("shift=%.3f\n", shifts[0]);
+                }
+            }
         }
         printf(" %-15s  %-40s  %s\n", "orbshift00", "\"orbital\" shifts (0h0p sector)",
                opts->do_orbshift_0h0p ? "yes" : "no");
@@ -519,6 +570,7 @@ void print_options(cc_options_t *opts)
             }
         }
     }
+
     printf(" %-15s  %-40s  ", "nroots", "number of roots to be processed");
     if (opts->nroots_specified == 0) {
         printf("all\n");
@@ -528,6 +580,14 @@ void print_options(cc_options_t *opts)
         print_space(&opts->nroots_specs);
         printf("\n");
     }
+    printf(" %-15s  %-40s  ", "roots_cutoff", "energy cutoff for roots to be processed");
+    if (opts->roots_cutoff_specified == 0) {
+        printf("all\n");
+    }
+    else {
+        printf("%.0f cm^-1\n", opts->roots_cutoff * CODATA_AU_TO_CM);
+    }
+
     printf(" %-15s  %-40s  %.1e\n", "degen_thresh", "degeneracy threshold (a.u.)", opts->degen_thresh);
     printf(" %-15s  %-40s  ", "occ_irreps", "occupation numbers of spinors");
     if (opts->occ_defined != 0) {
@@ -674,6 +734,9 @@ void print_options(cc_options_t *opts)
                 case CC_SELECTION_ACT_TO_ACT:
                     printf("act_to_act ");
                     break;
+                case CC_SELECTION_MAX_2_INACT:
+                    printf("max2inact ");
+                    break;
                 case CC_SELECTION_EXC_WINDOW:
                     printf("exc_window [%g;%g] ", opts->selects[i].e1, opts->selects[i].e2);
                     break;
@@ -687,6 +750,31 @@ void print_options(cc_options_t *opts)
         }
     }
 
+    if (opts->do_restrict_t3 == 1) {
+        printf(" %-15s  %-40s  enabled, %g < eps < %g\n", "restrict_t3", "restriction of triples", opts->restrict_t3_bounds[0], opts->restrict_t3_bounds[1]);
+    }
+    else {
+        printf(" %-15s  %-40s  %s\n", "restrict_t3", "restriction of triples", "disabled");
+    }
+
+    // (simple) intermediate hamiltonian ("IH-1") parameters
+    printf(" %-15s  %-40s  ", "intham1", "simple intermediate Hamiltonian");
+    if (opts->do_intham1) {
+        printf("enabled in sectors: ");
+        for (int h = 0; h < MAX_SECTOR_RANK; h++) {
+            for (int p = 0; p < MAX_SECTOR_RANK; p++) {
+                if (opts->ih1_opts.sectors[h][p]) {
+                    printf("%dh%dp ", h, p);
+                }
+            }
+        }
+        printf("\n");
+    }
+    else {
+        printf("disabled\n");
+    }
+
+    // (sophisticated) intermediate hamiltonian parameters
     printf(" %-15s  %-40s  ", "intham", "intermediate Hamiltonian");
     if (opts->do_intham == 1) {
         printf("enabled\n");

@@ -54,6 +54,7 @@ nohermit        { inc_col(); return KEYWORD_NOHERMIT;     }
 mstdm           { inc_col(); return KEYWORD_MSTDM;        }
 natorb          { inc_col(); return KEYWORD_NATORB;       }
 nroots          { inc_col(); return KEYWORD_NROOTS;       }
+roots_cutoff    { inc_col(); return KEYWORD_ROOTS_CUTOFF; }
 maxiter         { inc_col(); return KEYWORD_MAXITER;      }
 conv            { inc_col(); return KEYWORD_CONV;         }
 div_thresh      { inc_col(); return KEYWORD_DIV_THRESH;   }
@@ -81,12 +82,13 @@ txtprop         { inc_col(); return KEYWORD_TXTPROP;      }
 end             { inc_col(); return KEYWORD_END;          }
 select          { inc_col(); return KEYWORD_SELECT;       }
 intham          { inc_col(); return KEYWORD_INTHAM;       }
-hptt            { inc_col(); return KEYWORD_HPTT;         }
+intham1         { inc_col(); return KEYWORD_INTHAM1;      }
 gaunt           { inc_col(); return KEYWORD_GAUNT;        }
 skip            { inc_col(); return KEYWORD_SKIP;         }
 interface       { inc_col(); return KEYWORD_INTERFACE;    }
 breit           { inc_col(); return KEYWORD_BREIT;        }
 x2cmmf          { inc_col(); return KEYWORD_X2CMMF;       }
+restrict_t3     { inc_col(); return KEYWORD_RESTRICT_T3;  }
 !=              { inc_col(); return TT_NEQ;               }
 =               { inc_col(); return TT_EQ;                }
 \".*\"          { inc_col(); return TT_QUOTE;             }

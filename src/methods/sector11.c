@@ -57,6 +57,7 @@
 #include "diis.h"
 #include "engine.h"
 #include "datamodel.h"
+#include "intham1.h"
 #include "heff.h"
 #include "options.h"
 #include "sort.h"
@@ -201,6 +202,11 @@ int sector11(cc_options_t *opts)
     }
     perform_sorting();
 
+    // setup shifts for the IH-like technique by A. V. Zaitsevskii
+    if (opts->ih1_opts.sectors[1][1] != 0) {
+        intham1_calculate_shifts(1, 1);
+    }
+
     printf("\n Preparing T1, T2, S{01}_1, S{01}_2, S{10}_1, S{10}_2 amplitudes ...\n");
     reorder("s1c", "s1r", "21");
     reorder("s2c", "s2r", "3412");
@@ -266,6 +272,14 @@ int sector11(cc_options_t *opts)
         if (triples) {
             diveps("e3nw");
         }
+
+#ifdef VERSION_DEVEL
+        apply_selections(1, 1, "e1nw");
+        apply_selections(1, 1, "e2nw");
+        if (triples) {
+            apply_selections(1, 1, "e3nw");
+        }
+#endif
 
         if (cc_opts->cc_model == CC_MODEL_CCS) {
             clear("e2nw");

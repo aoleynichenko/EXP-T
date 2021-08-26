@@ -103,7 +103,7 @@ void mvcoef_write_vectors_unformatted(int file_descr, char *rep_name,
  */
 void read_model_vectors_unformatted(int sect_h, int sect_p, char *file_name, int *nrep, struct mv_block *mv_blocks)
 {
-    char mvcoef_file_name[64];
+    char mvcoef_file_name[CC_MAX_NUM_IRREPS];
     double eigval_0;
     double const AU2CM = 219474.6313702;
 

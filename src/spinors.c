@@ -43,9 +43,6 @@
 #include "options.h"
 #include "utils.h"
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-
 // number of one-particle functions (e.g. spinors)
 int NSPINORS;
 
@@ -57,9 +54,13 @@ size_t n_spinor_blocks;
 spinor_block_t *spinor_blocks;
 
 spinor_block_t *spb_hp01[2][2];
+spinor_block_t *spb_hp_val_t3[2][2][2];
 
 // mapping "global spinor index -> local spinor index (in spinor block)"
 int spinor_index_global2local[CC_MAX_SPINORS];
+
+// helper functions
+void spinor_labels_to_string(int idx, char *dst);
 
 
 int get_num_spinors()
@@ -101,18 +102,13 @@ inline int set_main(int idx)
 
 inline int is_hole(int idx)
 {
-    return (spinor_info[idx].space_flags & CC_FLAG_OCCUPIED) ? 1 : 0;
+    return spinor_info[idx].occ == 1;
 }
 
 
 void set_occupied(int idx, int occ_number)
 {
-    if (occ_number == 0) {
-        spinor_info[idx].space_flags &= (~CC_FLAG_OCCUPIED);
-    }
-    else {
-        spinor_info[idx].space_flags |= CC_FLAG_OCCUPIED;
-    }
+    spinor_info[idx].occ = occ_number;
 }
 
 
@@ -128,21 +124,27 @@ inline int is_inact_hole(int idx)
 }
 
 
-inline int is_part(int idx)
+inline int is_particle(int idx)
 {
     return !is_hole(idx);
 }
 
 
-inline int is_act_part(int idx)
+inline int is_act_particle(int idx)
 {
-    return is_part(idx) && is_active(idx);
+    return is_particle(idx) && is_active(idx);
 }
 
 
-inline int is_inact_part(int idx)
+inline int is_inact_particle(int idx)
 {
-    return is_part(idx) && !is_active(idx);
+    return is_particle(idx) && !is_active(idx);
+}
+
+
+inline int is_t3_space_spinor(int idx)
+{
+    return (spinor_info[idx].space_flags & CC_FLAG_T3_SPACE) ? 1 : 0;
 }
 
 
@@ -155,7 +157,7 @@ void get_active_space_size(int *nacth, int *nactp)
         if (is_act_hole(i)) {
             (*nacth)++;
         }
-        else if (is_act_part(i)) {
+        else if (is_act_particle(i)) {
             (*nactp)++;
         }
     }
@@ -172,7 +174,7 @@ void get_active_holes_particles(int *nacth, int *nactp, moindex_t *active_holes_
             active_holes_indices[*nacth] = i;
             (*nacth)++;
         }
-        else if (is_act_part(i)) {
+        else if (is_act_particle(i)) {
             active_parts_indices[*nactp] = i;
             (*nactp)++;
         }
@@ -187,7 +189,7 @@ void get_active_space(int sect_h, int sect_p, int *n_active, int *active_spinors
     // TODO: refactor, separate utility function (move to spinors.c)
     int nspinors = get_num_spinors();
     for (int i = 0; i < nspinors; i++) {
-        if ((is_act_hole(i) && sect_h > 0) || (is_act_part(i) && sect_p > 0)) {
+        if ((is_act_hole(i) && sect_h > 0) || (is_act_particle(i) && sect_p > 0)) {
             active_spinors[*n_active] = i;
             *n_active = *n_active + 1;
         }
@@ -265,6 +267,12 @@ void get_spinor_indices_occupied(int *occ_idx)
 }
 
 
+int get_spinor_irrep(int idx)
+{
+    return spinor_info[idx].repno;
+}
+
+
 void get_spinor_info(int idx, int *repno, int *occ, int *active, double *eps)
 {
     *repno = spinor_info[idx].repno;
@@ -283,9 +291,7 @@ void create_spinor_info(int n_spinors, int *irrep_numbers, double *spinor_energi
         spinor_info[i].repno = irrep_numbers[i];
         spinor_info[i].eps = spinor_energies[i];
         spinor_info[i].space_flags = 0;
-        if (occ_numbers[i] == 1) {
-            spinor_info[i].space_flags |= CC_FLAG_OCCUPIED;
-        }
+        spinor_info[i].occ = occ_numbers[i];
     }
 }
 
@@ -366,39 +372,40 @@ void create_spinor_blocks(int tilesize)
     }
 
     /* beautiful table with information about spinor blocks */
-    printf(" Blocks of molecular spinors:\n");
-    print_hyphens(1, 80);
-    printf("   #  size%*s%s\n", field_width, "irrep", "  spinor indices");
-    print_hyphens(1, 80);
-    for (int i = 0; i < n_spinor_blocks; i++) {
-        size_t sz = spinor_blocks[i].size;
-        char *rep_name = get_irrep_name(spinor_blocks[i].repno);
-        int *indices = spinor_blocks[i].indices;
-        printf(" [%2d] %4d%*s  ", i, sz, field_width, rep_name);
-        for (int j = 0; j < sz; j++) {
-            if (j != 0) {
-                printf(",");
-            }
-            printf("%d", indices[j] + 1);
+    if (cc_opts->print_level >= CC_PRINT_HIGH) {
+        printf(" Blocks of molecular spinors:\n");
+        print_hyphens(1, 80);
+        printf("   #  size%*s%s\n", field_width, "irrep", "  spinor indices");
+        print_hyphens(1, 80);
+        for (int i = 0; i < n_spinor_blocks; i++) {
+            size_t sz = spinor_blocks[i].size;
+            char *rep_name = get_irrep_name(spinor_blocks[i].repno);
+            int *indices = spinor_blocks[i].indices;
+            printf(" [%2d] %4d%*s  ", i, sz, field_width, rep_name);
+            for (int j = 0; j < sz; j++) {
+                if (j != 0) {
+                    printf(",");
+                }
+                printf("%d", indices[j] + 1);
 
-            int nskip = 0;
-            for (int k = j + 1; k < sz; k++) {
-                if (indices[k] == indices[k - 1] + 1) {
-                    nskip++;
+                int nskip = 0;
+                for (int k = j + 1; k < sz; k++) {
+                    if (indices[k] == indices[k - 1] + 1) {
+                        nskip++;
+                    } else {
+                        break;
+                    }
                 }
-                else {
-                    break;
+                if (nskip > 0) {
+                    printf("-%d", indices[j + nskip] + 1);
+                    j += nskip;
                 }
             }
-            if (nskip > 0) {
-                printf("-%d", indices[j + nskip] + 1);
-                j += nskip;
-            }
+            printf("\n");
         }
+        print_hyphens(1, 80);
         printf("\n");
     }
-    print_hyphens(1, 80);
-    printf("\n");
 
     // construct mapping: "global spinor index -> local spinor index"
     for (isp = 0; isp < nspinors; isp++) {
@@ -430,12 +437,20 @@ void create_spinor_blocks(int tilesize)
 }
 
 
-int is_symblock_zero(int rank, int *spinor_blocks, int *qparts, int *valence)
+int is_symblock_zero(int rank, int *spinor_blocks, int *qparts, int *valence, int *t3space)
 {
     for (int i = 0; i < rank; i++) {
         int hp = (qparts[i] == 'h') ? 0 : 1;
         int val = (valence[i] == 1) ? 1 : 0;
-        spinor_block_t *arr = spb_hp01[hp][val];
+        int t3 = (t3space[i] == 1) ? 1 : 0;
+
+        spinor_block_t *arr = NULL;
+        if (!cc_opts->do_restrict_t3) {
+            arr = spb_hp01[hp][val];
+        }
+        else {
+            arr = spb_hp_val_t3[hp][val][t3];
+        }
         int bsize = arr[spinor_blocks[i]].size;
         if (bsize == 0) {
             return 1;
@@ -605,8 +620,13 @@ void setup_active_space(cc_options_t *cc_opts)
     }
 
     /* main & intermediate parts of active space */
-    if (cc_opts->main_defined) {
-        setup_active_space_by_total(cc_opts->main_h, cc_opts->main_p, CC_FLAG_MAIN);
+    if (cc_opts->do_intham1) {
+        setup_active_space_by_total(cc_opts->ih1_opts.main_holes, cc_opts->ih1_opts.main_particles, CC_FLAG_MAIN);
+    }
+
+    /* spinor space for which triple excitations will be allowed */
+    if (cc_opts->cc_model > CC_MODEL_CCSD && cc_opts->do_restrict_t3) {
+        setup_active_space_by_energy(cc_opts->restrict_t3_bounds[0], cc_opts->restrict_t3_bounds[1], CC_FLAG_T3_SPACE);
     }
 }
 
@@ -631,17 +651,45 @@ spinor_block_t *get_spinors_blocks_for_space(int (*selector_fun)(int idx))
 }
 
 
+int is_hole_t3(int idx)
+{
+    return (is_hole(idx) && is_t3_space_spinor(idx)) ? 1 : 0;
+}
+
+int is_particle_t3(int idx)
+{
+    return (is_particle(idx) && is_t3_space_spinor(idx)) ? 1 : 0;
+}
+
+int is_act_hole_t3(int idx)
+{
+    return (is_act_hole(idx) && is_t3_space_spinor(idx)) ? 1 : 0;
+}
+
+int is_act_particle_t3(int idx)
+{
+    return (is_act_particle(idx) && is_t3_space_spinor(idx)) ? 1 : 0;
+}
+
+
 void setup_fast_access_spinor_lists()
 {
-    spinor_block_t *spinor_blocks_h0 = get_spinors_blocks_for_space(is_hole);
-    spinor_block_t *spinor_blocks_p0 = get_spinors_blocks_for_space(is_part);
-    spinor_block_t *spinor_blocks_h1 = get_spinors_blocks_for_space(is_act_hole);
-    spinor_block_t *spinor_blocks_p1 = get_spinors_blocks_for_space(is_act_part);
-
-    spb_hp01[0][0] = spinor_blocks_h0;
-    spb_hp01[0][1] = spinor_blocks_h1;
-    spb_hp01[1][0] = spinor_blocks_p0;
-    spb_hp01[1][1] = spinor_blocks_p1;
+    if (!cc_opts->do_restrict_t3) {
+        spb_hp01[0][0] = get_spinors_blocks_for_space(is_hole);
+        spb_hp01[0][1] = get_spinors_blocks_for_space(is_act_hole);
+        spb_hp01[1][0] = get_spinors_blocks_for_space(is_particle);
+        spb_hp01[1][1] = get_spinors_blocks_for_space(is_act_particle);
+    }
+    else {
+        spb_hp_val_t3[0][0][0] = get_spinors_blocks_for_space(is_hole);
+        spb_hp_val_t3[0][0][1] = get_spinors_blocks_for_space(is_hole_t3);
+        spb_hp_val_t3[0][1][0] = get_spinors_blocks_for_space(is_act_hole);
+        spb_hp_val_t3[0][1][1] = get_spinors_blocks_for_space(is_act_hole_t3);
+        spb_hp_val_t3[1][0][0] = get_spinors_blocks_for_space(is_particle);
+        spb_hp_val_t3[1][0][1] = get_spinors_blocks_for_space(is_particle_t3);
+        spb_hp_val_t3[1][1][0] = get_spinors_blocks_for_space(is_act_particle);
+        spb_hp_val_t3[1][1][1] = get_spinors_blocks_for_space(is_act_particle_t3);
+    }
 }
 
 
@@ -652,6 +700,7 @@ void print_spinor_info_table()
     int virt_i[CC_MAX_NUM_IRREPS];
     int virt_a[CC_MAX_NUM_IRREPS];
     int num_irreps = get_num_irreps();
+    char spaces_label[8];
 
     // set counters to zero
     for (int i = 0; i < num_irreps; i++) {
@@ -668,19 +717,23 @@ void print_spinor_info_table()
     printf("     no    rep         occ    active        one-el energy\n");
     printf("    -------------------------------------------------------\n");
     for (int i = 0; i < NSPINORS; i++) {
-        char main_interm_symbol = ' ';
+        /*char main_interm_symbol = ' ';
         if (is_active_main(i)) {
             main_interm_symbol = 'm';
         }
         else if (cc_opts->main_defined && is_active_intermediate(i)) {
             main_interm_symbol = 'i';
-        }
+        }*/
 
-        printf("    %4d%4d \"%-6s\"%4d       %1s%1c    %20.12f\n",
+        spinor_labels_to_string(i, spaces_label);
+
+        printf("    %4d%4d \"%-6s\"%4d       %-3s   %20.12f\n",
                i + 1, spinor_info[i].repno,
                get_irrep_name(spinor_info[i].repno), is_hole(i),
-               is_active(i) ? "a" : "-",
+               spaces_label,
+               /*is_active(i) ? "a" : "-",
                main_interm_symbol,
+               is_t3_space_spinor(i) ? 't' : ' ',*/
                spinor_info[i].eps);
         // count some statistics
         int rep = spinor_info[i].repno;
@@ -702,7 +755,7 @@ void print_spinor_info_table()
     printf("    -------------------------------------------------------\n\n");
 
     // how many reps have non-zero number of spinors
-    int to_be_printed[64];
+    int to_be_printed[CC_MAX_NUM_IRREPS];
     for (int irep = 0; irep < num_irreps; irep++) {
         if (occ_i[irep] == 0 && occ_a[irep] == 0 && virt_a[irep] == 0 && virt_i[irep] == 0) {
             to_be_printed[irep] = 0;
@@ -738,6 +791,40 @@ void print_spinor_info_table()
         if (to_be_printed[i]) { printf("%6d", virt_i[i]); }
     }
     printf("\n\n");
+}
+
+
+void spinor_labels_to_string(int idx, char *dst)
+{
+    int count = 0;
+
+    strcpy(dst, "");
+
+    // active/inactive spinor
+    if (is_active(idx)) {
+        strcat(dst, "a");
+        count++;
+    }
+
+    // active space: main or intermediate subspaces (for the case of the IH-1 technique)
+    if (is_active_main(idx)) {
+        strcat(dst, "m");
+        count++;
+    }
+    else if (is_active_intermediate(idx)) {
+        strcat(dst, "i");
+        count++;
+    }
+
+    // the "t3" space: only these spinors can be included into triple excitation operators
+    if (is_t3_space_spinor(idx)) {
+        strcat(dst, "t");
+        count++;
+    }
+
+    if (count == 0) {
+        strcat(dst, "-");
+    }
 }
 
 

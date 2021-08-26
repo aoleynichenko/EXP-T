@@ -114,6 +114,8 @@ void get_rep_name(int irep, char *name);
 // get spinor information (by spinor number)
 void get_spinor_info(int idx, int *repno, int *occ, int *active, double *eps);
 
+int get_spinor_irrep(int idx);
+
 void expand_diagram(char *name_small, char *name_large);
 
 void restrict_triples(char *dg_name, double erange_1, double erange_2);

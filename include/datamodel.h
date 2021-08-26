@@ -65,12 +65,6 @@ struct block {
     // TODO: check for collisions with diagrams read from disk!
     int64_t id;
 
-    // unique ID of a diagram to which this block belongs
-    int64_t dg_id;
-
-    // block's number inside the diagram (0, 1, 2, 3, ...)
-    int64_t sb_id;
-
     // tensor rank: 2, 4, 6 ...
     int rank;
 
@@ -108,7 +102,7 @@ struct block {
 typedef struct block block_t;
 
 // constructor and destructor
-block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valence, int *order, int storage_type,
+block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valence, int *t3space, int *order, int storage_type,
                       int only_unique);
 
 void symblock_gen_indices(block_t *block, int *indices);
@@ -151,15 +145,16 @@ struct diagram {
     // tensor rank: 2, 4, 6 ...
     int rank;
 
-    // list of quasiparticles (in natural form)   ["iii"]
+    // list of quasiparticles (in natural form)
     // for each spinor
     // of size [rank] (and all the subsequent arrays too)
     int qparts[CC_DIAGRAM_MAX_RANK];
 
-    // list of valence/inactive (in natural form) ["iiv"]
+    // list of valence/inactive (in natural form)
     int valence[CC_DIAGRAM_MAX_RANK];
+    int t3space[CC_DIAGRAM_MAX_RANK];
 
-    // "reordering" from the "natural" form       ["iiu"]
+    // "reordering" from the "natural" form
     int order[CC_DIAGRAM_MAX_RANK];
 
     // inverted index of blocks
@@ -176,7 +171,7 @@ typedef struct diagram diagram_t;
 
 // creates new object of diagram -- "constructor", but don't binds it to the
 // singly-linked list "dg_stack"
-diagram_t *diagram_new(char *name, char *qparts, char *valence, char *order, int perm_unique);
+diagram_t *diagram_new(char *name, char *qparts, char *valence, char *t3space, char *order, int perm_unique);
 
 // deallocates all memory associated with this object
 void diagram_delete(diagram_t *dg);
@@ -187,6 +182,8 @@ diagram_t *diagram_copy(diagram_t *dg);
 storage_type_t diagram_get_storage_type(diagram_t *dg);
 
 void diagram_get_valence(diagram_t *diag, char *valence);
+
+void diagram_get_t3space(diagram_t *diag, char *t3space);
 
 void diagram_get_quasiparticles(diagram_t *diag, char *qparts);
 
@@ -237,7 +234,7 @@ diagram_t *diagram_mult(diagram_t *dg1, diagram_t *dg2, int ncontr, int perm_uni
 // memory management: on disk or in RAM
 void diagram_set_storage_type(diagram_t *dg, int storage_type);
 
-block_t *diagram_get_block(diagram_t *dg, int *spinor_blocks_nums, size_t *block_index);
+block_t *diagram_get_block(diagram_t *dg, int *spinor_blocks_nums);//, size_t *block_index);
 
 void set_order(char *dg_name, char *new_order);
 

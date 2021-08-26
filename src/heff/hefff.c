@@ -69,6 +69,31 @@ void write_formatted_heff(int sect_h, int sect_p, size_t *block_dims, double com
 
 
 /**
+ * Writes total energy to the file with formatted Heff.
+ * file will be truncated
+ */
+void write_formatted_heff_0h0p(double total_energy)
+{
+    FILE *hefff = fopen("HEFF", "w");
+    if (carith) {
+        fprintf(hefff, "complex      # arithmetic\n");
+    }
+    else {
+        fprintf(hefff, "real         # arithmetic\n");
+    }
+    fprintf(hefff, "0h0p         # sector\n");
+    fprintf(hefff, "   1     1   # rep No & heff size\n");
+    if (carith) {
+        fprintf(hefff, "%21.12E%21.12E\n", total_energy, 0.0);
+    }
+    else {
+        fprintf(hefff, "%21.12E\n", total_energy);
+    }
+    fclose(hefff);
+}
+
+
+/**
  * Opens formatted HEFF file.
  * Writes header lines.
  * Returns pointer to the FILE structure.

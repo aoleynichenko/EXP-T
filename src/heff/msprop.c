@@ -157,7 +157,7 @@ void model_space_property(cc_ms_prop_query_t *prop_query)
 
     // read property matrix elements (in the basis of molecular spinors)
 
-    double complex *prp_spinor = xzeros(CC_COMPLEX, nspinors, nspinors);
+    double complex *prp_spinor = x_zeros(CC_COMPLEX, nspinors, nspinors);
     if (prop_query->source == CC_PROP_FROM_MDPROP) {
         int code = read_prop_single_file(nspinors, prop_query->prop_name, prp_spinor);
         if (code == EXIT_FAILURE) {
@@ -185,8 +185,8 @@ void model_space_property(cc_ms_prop_query_t *prop_query)
             struct mv_block *block2 = &mv_blocks[irep2];
             printf(" < %-4s | prop | %-4s >", block1->rep_name, block2->rep_name);
 
-            double complex *prp_slater = xzeros(CC_COMPLEX, block1->ms_size, block2->ms_size);
-            double complex *prop = xzeros(CC_COMPLEX, block1->nroots, block2->nroots);
+            double complex *prp_slater = x_zeros(CC_COMPLEX, block1->ms_size, block2->ms_size);
+            double complex *prop = x_zeros(CC_COMPLEX, block1->nroots, block2->nroots);
 
             // construct property matrix in the basis of Slater determinants
             matrix_slater_basis(sect_h, sect_p, nspinors, prp_spinor, prp_slater,
@@ -324,17 +324,17 @@ void dipole_length_tdms(int sect_h, int sect_p)
     }
 
     int nrep = 0;
-    struct mv_block mv_blocks[64];
-    char mvcoef_file_name[64];
+    struct mv_block mv_blocks[CC_MAX_NUM_IRREPS];
+    char mvcoef_file_name[CC_MAX_NUM_IRREPS];
     sprintf(mvcoef_file_name, "MVCOEF%d%d", sect_h, sect_p);
     printf(" Reading model vectors from the %s file...\n", mvcoef_file_name);
     read_model_vectors_unformatted(sect_h, sect_p, NULL, &nrep, mv_blocks);
 
     printf(" reading dipole moment integrals in spinor basis...\n");
     double complex *d_spinor[3];
-    d_spinor[0] = zzeros(nspinors, nspinors);
-    d_spinor[1] = zzeros(nspinors, nspinors);
-    d_spinor[2] = zzeros(nspinors, nspinors);
+    d_spinor[0] = z_zeros(nspinors, nspinors);
+    d_spinor[1] = z_zeros(nspinors, nspinors);
+    d_spinor[2] = z_zeros(nspinors, nspinors);
     read_prop_single_file(nspinors, "XDIPLEN", d_spinor[0]);
     read_prop_single_file(nspinors, "YDIPLEN", d_spinor[1]);
     read_prop_single_file(nspinors, "ZDIPLEN", d_spinor[2]);
@@ -417,7 +417,7 @@ void dipole_length_tdms(int sect_h, int sect_p)
         printf("\n");
 
         int nrep_0011;
-        struct mv_block mv_blocks_0011[64];
+        struct mv_block mv_blocks_0011[CC_MAX_NUM_IRREPS];
 
         read_model_vectors_unformatted(1, 1, "MVCOEF0011", &nrep_0011, mv_blocks_0011);
         struct mv_block *b0011 = &mv_blocks_0011[0];
@@ -491,7 +491,7 @@ void model_space_tdms(int sect_h, int sect_p, double complex **dip_mat,
     int non_zero = 0;
     int nspinors = get_num_spinors();
 
-    dm = zzeros(nspinors, nspinors);
+    dm = z_zeros(nspinors, nspinors);
 
     printf(" < %4s | d | %4s >", bra_rep_name, ket_rep_name);
 

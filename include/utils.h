@@ -36,6 +36,8 @@
 #include <stdint.h>
 #include <complex.h>
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 void decompose_time(double t, int *d, int *h, int *m, int *s, int *ms);
 

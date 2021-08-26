@@ -84,4 +84,6 @@ extern int (*dpd_contains_totsym_rank[CC_MAX_NUM_IRREPS])(int *gamma);
 
 void set_point_group_name(char *name);
 
+char *get_point_group_name();
+
 #endif /* CC_SYMMETRY_H_INCLUDED */

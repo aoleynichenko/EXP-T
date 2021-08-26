@@ -83,12 +83,12 @@ void sorting_print_configuration()
     const double io_total_buf_size_mb = io_total_buf_size / (1024.0 * 1024.0);
     const double twoelec_buf_size_mb = pow(get_max_spinor_block_size(), 4) / (1024.0 * 1024.0);
 
-    printf("   number of spinors                              %d\n", get_num_spinors());
-    printf("   number of spinor blocks                        %d\n", n_spinor_blocks);
-    printf("   tile size                                      %d\n", cc_opts->tile_size);
-    printf("   max spinor block size                          %d\n", get_max_spinor_block_size());
-    printf("   size of i/o buffer for integrals and indices   %.3f MB\n", io_total_buf_size_mb);
-    printf("   size of the buffer for two-elec integrals      %.3f MB\n", twoelec_buf_size_mb);
+    printf(" number of spinors                              %d\n", get_num_spinors());
+    printf(" number of spinor blocks                        %d\n", n_spinor_blocks);
+    printf(" tile size                                      %d\n", cc_opts->tile_size);
+    printf(" max spinor block size                          %d\n", get_max_spinor_block_size());
+    printf(" size of i/o buffer for integrals and indices   %.3f MB\n", io_total_buf_size_mb);
+    printf(" size of the buffer for two-elec integrals      %.3f MB\n", twoelec_buf_size_mb);
 }
 
 
@@ -185,9 +185,8 @@ void perform_sorting()
     timer_start("sort");
 
     printf("\n");
-    printf("  Integral sorting routine: integrals for the %dh%dp sector\n", sect_h, sect_p);
-    printf(" ------------------------------------------------------------------------------------------\n");
-    printf("   started at");
+    printf(" Integral sorting for the %dh%dp sector\n", sect_h, sect_p);
+    printf(" started at");
     print_asctime();
 
     // try to use already sorted diagrams (read them from disk)
@@ -247,12 +246,11 @@ void perform_sorting()
     //printf("   total number of bytes read from disk: %ld (%.2f GB)\n", n_bytes_read,
     //       (double) n_bytes_read / (1024.0 * 1024.0 * 1024.0));
     //printf("   sorting performance, Mb/sec: %.2f\n", (double) n_bytes_read / (1024.0 * 1024.0) / timer_get("sort"));
-    printf("   time for 2-e integrals sorting, sec: %.2f\n", timer_get("sort"));
-    printf("   time for DIRAC interface (integral extraction & write), sec: %.2f\n", timer_get("dirac"));
-    printf("   total time for sorting operations, sec: %.2f\n", timer_get("dirac") + timer_get("sort"));
+    printf(" time for 2-e integrals sorting, sec: %.2f\n", timer_get("sort"));
+    printf(" time for DIRAC interface (integral extraction & write), sec: %.2f\n", timer_get("dirac"));
+    printf(" total time for sorting operations, sec: %.2f\n", timer_get("dirac") + timer_get("sort"));
 
-    printf("   finished at at");
+    printf(" finished at at");
     print_asctime();
-    printf(" ------------------------------------------------------------------------------------------\n");
 }
 

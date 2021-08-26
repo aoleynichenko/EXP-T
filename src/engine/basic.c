@@ -66,48 +66,28 @@ void tmplt(char *name, char *qparts, char *valence, char *order, int perm_unique
     // TODO: test it
     dg = diagram_stack_find(name);
 
+    int rank = strlen(qparts);
+    char t3space[64];
+    for (int i = 0; i < rank; i++) {
+        if (rank == 6 && cc_opts->do_restrict_t3) {
+            t3space[i] = '1';
+        }
+        else {
+            t3space[i] = '0';
+        }
+    }
+    t3space[rank] = '\0';
+
     if (dg != NULL) {
-        dg = diagram_new(name, qparts, valence, order, perm_unique);
+        dg = diagram_new(name, qparts, valence, t3space, order, perm_unique);
         diagram_stack_replace(name, dg);
     }
     else {
-        dg = diagram_new(name, qparts, valence, order, perm_unique);
+        dg = diagram_new(name, qparts, valence, t3space, order, perm_unique);
         diagram_stack_push(dg);
     }
 
     timer_stop("tmplt");
-}
-
-
-void check_uniquex(char *name)
-{
-    diagram_t *dg = diagram_stack_find(name);
-    assert(dg != NULL);
-
-    if (dg->only_unique == 1) {
-        return;
-    }
-    dg->only_unique = 1;
-
-    for (size_t i = 0; i < dg->n_blocks; i++) {
-        block_t *b = dg->blocks[i];
-        block_unique(b, dg->qparts, dg->valence, dg->order);
-    }
-}
-
-
-void clear_non_uniquex(char *name)
-{
-    diagram_t *dg = diagram_stack_find(name);
-    assert(dg != NULL);
-
-    for (size_t i = 0; i < dg->n_blocks; i++) {
-        block_t *b = dg->blocks[i];
-        if (b->is_unique) {
-            continue;
-        }
-        memset(b->buf, 0, SIZEOF_WORKING_TYPE * b->size);
-    }
 }
 
 

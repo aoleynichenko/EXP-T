@@ -6,6 +6,7 @@ CO molecule
 .4INDEX
 **WAVE FUNCTION 
 .SCF            
+#.RELCCSD
 *SCF            
 .CLOSED         
 14          
@@ -16,16 +17,6 @@ CO molecule
  4
 .ACTIVE         
 all
-**ANALYZE
-.PRIVEC
-**RELCC         
-.ENERGY         
-.PRINT          
-1               
-*CCENER         
-.MAXIT          
-50              
-.NTOL           
- 9              
+#energy -2.0 2.0 0.001
 *END OF INPUT   
 				

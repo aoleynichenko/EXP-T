@@ -64,12 +64,8 @@
 
 // locally used functions
 int as_linear_index(int n /* rank */, int *dims, int *idx);
-
-// global variables:
-// counter of symmetry blocks (for unique ID's)
-static int64_t blocks_count = 0;
-
 void block_unique(block_t *b, int *qparts, int *valence, int *order);
+int64_t block_get_unique_id();
 
 
 /*******************************************************************************
@@ -83,35 +79,25 @@ void block_unique(block_t *b, int *qparts, int *valence, int *order);
  *                        composed from these spinors
  *                        (array of seq int numbers)
 *******************************************************************************/
-block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valence, int *order, int storage_type,
+block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valence, int *t3space, int *order, int storage_type,
                       int only_unique)
 {
     size_t i, j;
-    int bsize;
     block_t *block = (block_t *) cc_malloc(1 * sizeof(block_t));
 
     // id numbers
-    block->id = blocks_count++;
-    block->dg_id = -1;        // dummy
-    block->sb_id = -1;        // dummy
+    block->id = block_get_unique_id();
 
     // tensor properties
+    block->size = 1;
     block->rank = rank;
     block->indices = (int **) cc_malloc(sizeof(int *) * rank);
     for (i = 0; i < rank; i++) {
         size_t iblock = spinor_blocks_nums[i];
         block->indices[i] = (int *) cc_malloc(sizeof(int) * (spinor_blocks[iblock].size + 1));
-    }
+        block->spinor_blocks[i] = iblock;
 
-    block->size = 1;
-    for (i = 0; i < rank; i++) {
-        // here: take into accout the "valence" labels
-        // if one of dimensions have zero len => block is zero, return
-
-        size_t iblock = spinor_blocks_nums[i];    // ? тут просто копированием spinor_blocks_nums -> spinor_blocks?
-        block->spinor_blocks[i] = iblock;// + 1;
-
-        bsize = 0;
+        size_t bsize = 0;
         for (j = 0; j < spinor_blocks[iblock].size; j++) {
             // это - цикл по всем спинорам в блоке ! крайне дорого !
             // могут быть готовые блочки по h/p,0/1 в каждом блоке спиноров
@@ -131,6 +117,7 @@ block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valen
             else if (qparts[i] == 'p' && occ == 0) {
                 rate++;
             }
+
             if (valence[i] == 1 && act == 1) {
                 rate++;
             }
@@ -138,27 +125,26 @@ block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valen
                 rate++;
             }
 
-            if (rate == 2) {
+            if (cc_opts->do_restrict_t3) {
+                if (t3space[i] == 1 && is_t3_space_spinor(ispinor)) {
+                    rate++;
+                }
+                else if (t3space[i] == 0) {
+                    rate++;
+                }
+            }
+
+            if ((!cc_opts->do_restrict_t3 && rate == 2) || (cc_opts->do_restrict_t3 && rate == 3)) {
+            //if (rate == 2) {
                 block->indices[i][1 + bsize] = ispinor;
                 bsize++;
             }
+
         }
         block->indices[i][0] = bsize;   // и тут вот можно получить ноль! и на этом можно закончить
         block->size *= bsize;
         if (block->size == 0) { break; }
     }
-
-    // вот это -- большая ошибка. Много времени и ресурсов расходуется на то, чтобы осознать ненужность блока...
-    // как минимум все аллокации нужно пропускать, они могут быть долгими
-
-    // cleanup & return if size == 0 (no elements)
-    /*if (block->size == 0) {
-        block->buf = NULL; // in order to use free() safely
-        block->file_name = NULL; // in order to use free() safely
-        symblock_delete(block);
-        blocks_count--;
-        return NULL;
-    }*/
 
     block->is_unique = 1;
     block->sign = 1;
@@ -806,8 +792,6 @@ void symblock_print(block_t *block)
     printf("  --------------------------------------\n");
     printf("  SYMBLOCK\n");
     printf("    ID      %ld\n", block->id);
-    printf("    DG ID   %ld\n", block->dg_id);
-    printf("    SB ID   %ld\n", block->sb_id);
     printf("    rank    %d\n", block->rank);
     printf("    unique  %d\n", block->is_unique);
     printf("    #eqperm %d\n", block->n_equal_perms);
@@ -894,8 +878,6 @@ void symblock_write(int fd, block_t *block)
     static int64_t raw_buf[LEN_RAW_BUF];
 
     io_write_compressed(fd, &block->id, sizeof(block->id));
-    io_write_compressed(fd, &block->dg_id, sizeof(block->dg_id));
-    io_write_compressed(fd, &block->sb_id, sizeof(block->sb_id));
     io_write_compressed(fd, &block->rank, sizeof(block->rank));
 
     // information about uniqueness
@@ -951,9 +933,6 @@ block_t *symblock_read(int fd)
     block = (block_t *) cc_malloc(1 * sizeof(block_t));
 
     io_read_compressed(fd, &block->id, sizeof(block->id));
-    io_read_compressed(fd, &block->dg_id, sizeof(block->dg_id));
-
-    io_read_compressed(fd, &block->sb_id, sizeof(block->sb_id));
     io_read_compressed(fd, &block->rank, sizeof(block->rank));
 
     // information about uniqueness
@@ -970,7 +949,7 @@ block_t *symblock_read(int fd)
     io_read_compressed(fd, block->spinor_blocks, sizeof(int) * CC_DIAGRAM_MAX_RANK);
 
     // set new unique block's ID
-    block->id = blocks_count++;
+    block->id = block_get_unique_id();
 
     // indices
     block->indices = (int **) cc_malloc(sizeof(int *) * block->rank);
@@ -1001,3 +980,16 @@ block_t *symblock_read(int fd)
     return block;
 }
 
+
+/*
+ * Helper functions
+ */
+int64_t block_get_unique_id()
+{
+    // counter of symmetry blocks (for unique ID's)
+    static int64_t blocks_count = 0;
+
+    int64_t id = blocks_count;
+    blocks_count++;
+    return id;
+}

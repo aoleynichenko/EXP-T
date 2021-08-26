@@ -289,15 +289,15 @@ void print_symmetry_info()
     int prt_lvl;
     int repname_len = 0;
     // decorative strings
-    char minus_field[64];   // '----'
-    char equal_field[64];  // '===='
-    char space_field[64];  // '    '
+    char minus_field[CC_MAX_NUM_IRREPS];   // '----'
+    char equal_field[CC_MAX_NUM_IRREPS];  // '===='
+    char space_field[CC_MAX_NUM_IRREPS];  // '    '
 
     prt_lvl = cc_opts->print_level;
 
-    if (prt_lvl < CC_PRINT_HIGH) {
+    /*if (prt_lvl < CC_PRINT_HIGH) {
         return;
-    }
+    }*/
 
     printf("\n");
     printf("\t\tSymmetry & irreducible representations\n");
@@ -352,7 +352,7 @@ void print_symmetry_info()
         }
     }
     // finally print nice table
-    if (is_abelian && nsym <= 32) {
+    if (is_abelian && nsym < 32) {
         printf("\nmultiplication table (for abelian only):\n\n");
         // header
         printf("%s||", space_field);
@@ -369,7 +369,8 @@ void print_symmetry_info()
         for (i = 0; i < nsym; i++) {
             printf("%-*s||", repname_len, rep_names[i]);
             for (j = 0; j < nsym; j++) {
-                printf("%-*s|", repname_len, rep_names[dir_prod_table[i][j][1]]);
+                int prod_rep = dir_prod_table_abelian[i][j];
+                printf("%-*s|", repname_len, (prod_rep != -1) ? rep_names[prod_rep] : "--");
             }
             printf("\n");
             // separator
@@ -387,6 +388,12 @@ void print_symmetry_info()
 void set_point_group_name(char *name)
 {
     strcpy(point_group_name, name);
+}
+
+
+char *get_point_group_name()
+{
+    return point_group_name;
 }
 
 

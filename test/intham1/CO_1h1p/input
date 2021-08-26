@@ -1,0 +1,25 @@
+# Test:
+# (1) CO in cc-pVDZ
+# (2) nonrelativistic
+# (3) symmetry Cinfv
+
+title "Test CO/cc-pVDZ/nonrel/Cinfv"
+maxiter 300
+conv 1e-9
+sector 1h1p
+nacth 8
+nactp 12
+disk_usage 0
+diis 100
+
+
+intham1
+  sectors 0h1p 1h1p
+  shift_type real
+  main 2 6
+  shift_to barycenter #-0.54 0.38
+  formula line
+end
+
+#reuse integrals 0h0p 0h1p 1h0p 1h1p
+

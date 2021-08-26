@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "codata.h"
 #include "lexer.h"
 #include "platform.h"
 #include "error.h"
@@ -67,6 +68,7 @@ void directive_main(cc_options_t *opts);
 void directive_degen_thresh(cc_options_t *opts);
 void directive_natorb(cc_options_t *opts);
 void directive_nroots(cc_options_t *opts);
+void directive_roots_cutoff(cc_options_t *opts);
 void directive_maxiter(cc_options_t *opts);
 void directive_conv(cc_options_t *opts);
 void directive_div_thresh(cc_options_t *opts);
@@ -92,6 +94,8 @@ void directive_mdprop(cc_options_t *opts);
 void directive_txtprop(cc_options_t *opts);
 void directive_interface(cc_options_t *opts);
 void directive_intham(cc_options_t *opts);
+void directive_intham1(cc_options_t *opts);
+void directive_restrict_t3(cc_options_t *opts);
 
 void yyerror(char *s);
 int next_token();
@@ -163,9 +167,9 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_NACTH:
                 directive_nacth(opts);
                 break;
-            case KEYWORD_MAIN:
+            /*case KEYWORD_MAIN:
                 directive_main(opts);
-                break;
+                break;*/
             case KEYWORD_DEGEN_THRESH:
                 directive_degen_thresh(opts);
                 break;
@@ -180,6 +184,9 @@ int readinp(char *file_name, cc_options_t *opts)
                 break;
             case KEYWORD_NROOTS:
                 directive_nroots(opts);
+                break;
+            case KEYWORD_ROOTS_CUTOFF:
+                directive_roots_cutoff(opts);
                 break;
             case KEYWORD_MAXITER:
                 directive_maxiter(opts);
@@ -263,8 +270,14 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_INTERFACE:
                 directive_interface(opts);
                 break;
-            case KEYWORD_INTHAM:
+            case KEYWORD_INTHAM1:  // simple IH-like technique by A.V.Zaitsevskii
+                directive_intham1(opts);
+                break;
+            case KEYWORD_INTHAM:  // sophisticated IH by A.V.Zaitsevskii
                 directive_intham(opts);
+                break;
+            case KEYWORD_RESTRICT_T3:
+                directive_restrict_t3(opts);
                 break;
             case END_OF_LINE:
                 // nothing to do
@@ -877,6 +890,51 @@ void directive_nroots(cc_options_t *opts)
 
 /**
  * Syntax:
+ * roots_cutoff <real cutoff_energy (in cm-1)>
+ */
+void directive_roots_cutoff(cc_options_t *opts)
+{
+    static char *msg = "wrong specification of the energy cutoff!\n"
+                       "A real positive number is expected";
+    static char *msg2= "wrong specification of the energy cutoff!\n"
+                       "Only atomic (au), inverse centimeters (cm) and electron-volt (eV) units are allowed";
+    double cutoff_energy;
+    double factor = 1.0;
+    int token_type;
+
+    token_type = next_token();
+    if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
+        yyerror(msg);
+    }
+
+    cutoff_energy = atof(yytext);
+    if (cutoff_energy <= 0) {
+        yyerror(msg);
+    }
+
+    // units: cm or ev
+    next_token();
+    str_tolower(yytext);
+    if (strcmp(yytext, "au") == 0) {
+        factor = 1.0;
+    }
+    else if (strcmp(yytext, "cm") == 0) {  // cm^-1 => a.u.
+        factor = 1 / CODATA_AU_TO_CM;
+    }
+    else if (strcmp(yytext, "ev") == 0) {  // eV => a.u.
+        factor = 1 / CODATA_AU_TO_EV;
+    }
+    else {
+        yyerror(msg2);
+    }
+
+    opts->roots_cutoff = cutoff_energy * factor;
+    opts->roots_cutoff_specified = 1;
+}
+
+
+/**
+ * Syntax:
  * maxiter <integer max>
  */
 void directive_maxiter(cc_options_t *opts)
@@ -1090,9 +1148,20 @@ void directive_shifttype(cc_options_t *opts)
  */
 void directive_orbshift(cc_options_t *opts)
 {
-    static char *msg = "wrong specification of orbital shifts!";
+    static char *msg      = "wrong specification of orbital shifts!";
+    static char *msg_sect = "wrong specification of denominators shifts!\n"
+                            "Label of the sector is expected";
+
     static char buf[256];
     int token_type;
+    int h, p;
+    int power;
+
+    if (!match(TT_SECTOR)) {
+        yyerror(msg_sect);
+    }
+    h = yytext[0] - '0';
+    p = yytext[2] - '0';
 
     // attenuation parameter or shift ?
     token_type = next_token();
@@ -1107,12 +1176,18 @@ void directive_orbshift(cc_options_t *opts)
     if (token_type == TT_FLOAT) {
         // orbshift <n> <sh>
         opts->do_orbshift = 1;
+        opts->orbshifts[h][p].enabled = 1;
+        opts->orbshifts[h][p].power = atoi(buf);
+        opts->orbshifts[h][p].shifts[0] = atof(yytext);
         opts->orbshift = atof(yytext);
         opts->orbshift_power = atoi(buf);
     }
     else {
         // orbshift <sh>
         opts->do_orbshift = 1;
+        opts->orbshifts[h][p].enabled = 1;
+        opts->orbshifts[h][p].power = 3;
+        opts->orbshifts[h][p].shifts[0] = atof(yytext);
         opts->orbshift = atof(buf);
         opts->orbshift_power = 3;
         put_back(token_type);
@@ -1276,6 +1351,7 @@ void directive_reuse(cc_options_t *opts)
             opts->reuse_1h0p = 1;
             opts->reuse_2h0p = 1;
             opts->reuse_0h3p = 1;
+            opts->reuse_1h2p = 1;
         }
         else if (strcmp(yytext, "0h0p") == 0) {
             opts->reuse_0h0p = 1;
@@ -1297,6 +1373,9 @@ void directive_reuse(cc_options_t *opts)
         }
         else if (strcmp(yytext, "0h3p") == 0) {
             opts->reuse_0h3p = 1;
+        }
+        else if (strcmp(yytext, "1h2p") == 0) {
+            opts->reuse_1h2p = 1;
         }
         else {
             yyerror(msg);
@@ -1835,9 +1914,8 @@ void read_space_specification(cc_space_t *space)
  * Syntax (example):
  * model
  *   ccsdt
- *   0h0p triples off     # set T3 = 0
- *   0h1p doubles -5 20   # T2 != 0 only for excitations with energy in the given range
- *   0h2p triples spectator   # only spectator triples in 0h2p are nonzero
+ *   0h0p t3 act2act != 0
+ *   0h1p t3 eps_window -1 +1 != 0
  *   ...
  * end
  *
@@ -1925,6 +2003,9 @@ void directive_model(cc_options_t *opts)
         else if (token_type == TT_WORD && strcmp(yytext, "act_to_act") == 0) {
             opts->selects[opts->n_select].rule = CC_SELECTION_ACT_TO_ACT;
         }
+        else if (token_type == TT_WORD && strcmp(yytext, "max2inact") == 0) {
+            opts->selects[opts->n_select].rule = CC_SELECTION_MAX_2_INACT;
+        }
         else if (token_type == TT_WORD &&
                  (strcmp(yytext, "exc_window") == 0 ||
                   strcmp(yytext, "eps_window") == 0)) {
@@ -1980,8 +2061,6 @@ void directive_model(cc_options_t *opts)
 }
 
 
-
-
 /**
  * Syntax (example):
  * intham
@@ -1998,7 +2077,7 @@ void directive_intham(cc_options_t *opts)
 
     opts->do_intham = 1;
 
-    // "end of line" or "ccsd... etc" after the opening keyword
+    // "end of line" after the opening keyword
     token_type = next_token();
     if (token_type != END_OF_LINE) {
         yyerror(err_end_of_line);
@@ -2027,6 +2106,38 @@ void directive_intham(cc_options_t *opts)
     if (!main_defined) {
         yyerror(err_no_main);
     }
+}
+
+
+/**
+ * Syntax:
+ * restrict_t3 <double lower_bound> <double upper_bound>
+ */
+void directive_restrict_t3(cc_options_t *opts)
+{
+    static char *msg = "wrong specification of spinor space for triples!\n"
+                       "Two reals are expected";
+    double lower_bound;
+    double upper_bound;
+    int token_type;
+
+    // lower bound for spinor energies
+    token_type = next_token();
+    if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
+        yyerror(msg);
+    }
+    lower_bound = atof(yytext);
+
+    // upper bound for spinor energies
+    token_type = next_token();
+    if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
+        yyerror(msg);
+    }
+    upper_bound = atof(yytext);
+
+    opts->do_restrict_t3 = 1;
+    opts->restrict_t3_bounds[0] = lower_bound;
+    opts->restrict_t3_bounds[1] = upper_bound;
 }
 
 
