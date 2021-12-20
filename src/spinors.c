@@ -493,7 +493,17 @@ void setup_occupation_numbers(cc_options_t *options, int num_spinors, spinor_att
 
     if (options->nelec_defined) {
         int nelec[CC_MAX_NUM_IRREPS];
-        memcpy(nelec, options->nelec, sizeof(options->nelec));
+        memset(nelec, 0, sizeof(nelec));
+
+        // for each irrep: find its occupation number in the 'options' structure
+        for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
+            int irrep_occ = options->irrep_occ_numbers.dim[i];
+            if (irrep_occ > 0) {
+                char *irrep_name = options->irrep_occ_numbers.rep_names[i];
+                int irrep_number = get_rep_number(irrep_name);
+                nelec[irrep_number] = irrep_occ;
+            }
+        }
 
         for (int i = 0; i < num_spinors; i++) {
             int repno = spinor_info[i].repno;
@@ -768,7 +778,7 @@ void print_spinor_info_table()
     // print little statistics
     printf("    irreps            ");
     for (int i = 0; i < num_irreps; i++) {
-        if (to_be_printed[i]) { printf("%6s", rep_names[i]); }
+        if (to_be_printed[i]) { printf("%6s", get_irrep_name(i)); }
     }
     printf("\n");
     printf("    occupied inactive ");

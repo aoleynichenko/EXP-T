@@ -48,8 +48,7 @@ int is_abelian = 0;
 
 // direct product table
 int ***dir_prod_table;
-
-int dir_prod_table_abelian[CC_MAX_NUM_IRREPS][CC_MAX_NUM_IRREPS];
+int **dir_prod_table_abelian;
 
 // representation names
 char **rep_names;
@@ -61,6 +60,42 @@ int irrep_a1;
 int point_group_nz;
 
 char point_group_name[64] = {'\0'};
+
+void setup_symmetry(int group_type, char *group_name, int num_irreps, char **irrep_names, int fully_symmetric_rep, int *mult_table)
+{
+    point_group_nz = group_type;
+    strcpy(point_group_name, group_name);
+    nsym = num_irreps;
+    rep_names = irrep_names;
+    irrep_a1 = fully_symmetric_rep;
+
+    /* general case */
+    dir_prod_table = (int ***) cc_malloc(num_irreps * sizeof(int **));
+    for (int i = 0; i < num_irreps; i++) {
+        dir_prod_table[i] = (int **) cc_malloc(num_irreps * sizeof(int *));
+        for (int j = 0; j < num_irreps; j++) {
+            dir_prod_table[i][j] = (int *) cc_malloc((num_irreps + 1) * sizeof(int));
+            for (int k = 0; k < num_irreps + 1; k++) {
+                dir_prod_table[i][j][k] = -1;
+            }
+            // get values from the dirac_data structure (from MRCONEE files)
+            dir_prod_table[i][j][0] = 1;
+            dir_prod_table[i][j][1] = mult_table[i * num_irreps + j];
+        }
+    }
+
+    /* special case: abelian groups */
+    is_abelian = 1;
+    dir_prod_table_abelian = (int **) cc_malloc(sizeof(int *) * num_irreps);
+    for (int i = 0; i < num_irreps; i++) {
+        dir_prod_table_abelian[i] = (int *) cc_malloc(sizeof(int) * num_irreps);
+    }
+    for (int i = 0; i < num_irreps; i++) {
+        for (int j = 0; j < num_irreps; j++) {
+            dir_prod_table_abelian[i][j] = mult_table[i * num_irreps + j];
+        }
+    }
+}
 
 
 /*******************************************************************************
@@ -314,7 +349,7 @@ void print_symmetry_info()
         printf(" Group type: quaternion\n");
     }
     printf(" Arithmetic: %s\n", carith == 1 ? "complex" : "real");
-    printf(" Is abelian: %d\n", is_abelian);
+    printf(" Is abelian: %s\n", is_abelian ? "yes" : "no");
     printf(" Number of irreps: %d\n", nsym);
     printf(" Totally symmetric irrep: %s\n", get_irrep_name(get_totally_symmetric_irrep()));
     printf(" Representation names:\n");
@@ -324,7 +359,7 @@ void print_symmetry_info()
         }
     }
     for (i = 0; i < nsym; i++) {
-        printf(" %2d %-*s%s", i, repname_len + 1, rep_names[i], (i + 1) % 8 == 0 ? "\n" : "");
+        printf(" %3d %-*s%s", i, repname_len + 1, rep_names[i], (i + 1) % 8 == 0 ? "\n" : "");
     }
 
     for (i = 0; i < repname_len; i++) {
@@ -341,6 +376,7 @@ void print_symmetry_info()
         for (i = 0; i < nsym; i++) {
             for (j = 0; j < nsym; j++) {
                 printf("%-*s  (x)  %-*s  =  ", repname_len, rep_names[i], repname_len, rep_names[j]);
+                printf("[%d]\n", dir_prod_table[i][j][1]);
                 printf("%-*s", repname_len, rep_names[dir_prod_table[i][j][1]]);
                 k = 2;
                 while (dir_prod_table[i][j][k] != -1) {
@@ -422,4 +458,210 @@ void symmetry_cleanup()
 int get_vacuum_irrep()
 {
     return get_totally_symmetric_irrep();
+}
+
+
+/*
+ * Generates list of irreducible representations of the Cinfv group.
+ * For example, list of irreps generated for Cinfv in DIRAC:
+ *
+  0 1/2+    1 1/2-    2 3/2+    3 3/2-    4 5/2+    5 5/2-    6 7/2+    7 7/2-
+  8 9/2+    9 9/2-   10 11/2+  11 11/2-  12 13/2+  13 13/2-  14 15/2+  15 15/2-
+ 16 17/2+  17 17/2-  18 19/2+  19 19/2-  20 21/2+  21 21/2-  22 23/2+  23 23/2-
+ 24 25/2+  25 25/2-  26 27/2+  27 27/2-  28 29/2+  29 29/2-  30 31/2+  31 31/2-
+ 32 0      33 1+     34 1-     35 2+     36 2-     37 3+     38 3-     39 4+
+ 40 4-     41 5+     42 5-     43 6+     44 6-     45 7+     46 7-     47 8+
+ 48 8-     49 9+     50 9-     51 10+    52 10-    53 11+    54 11-    55 12+
+ 56 12-    57 13+    58 13-    59 14+    60 14-    61 15+    62 15-    63 16+
+ */
+char **generate_irreps_Cinfv(int max_omega_x2, int *n_irreps)
+{
+    *n_irreps = max_omega_x2 * 2 + 1;
+
+    char **irrep_names = (char **) cc_malloc((*n_irreps) * sizeof(char *));
+    for (int i = 0; i < (*n_irreps); i++) {
+        irrep_names[i] = (char *) cc_malloc(MAX_IRREP_NAME * sizeof(char));
+    }
+
+    int j = 0;
+    for (int i = 1; i < max_omega_x2; i += 2) {
+        sprintf(irrep_names[j++], "%d/2+", i);
+        sprintf(irrep_names[j++], "%d/2-", i);
+    }
+    sprintf(irrep_names[j++], "0");
+    for (int i = 1; i <= max_omega_x2/2; i++) {
+        sprintf(irrep_names[j++], "%d+", i);
+        sprintf(irrep_names[j++], "%d-", i);
+    }
+
+    return irrep_names;
+}
+
+
+/*
+ * Generates list of irreducible representations of the Dinfh group.
+ * For example, list of irreps generated for Dinfh in DIRAC:
+ *
+  0 1/2g+    1 1/2g-    2 3/2g+    3 3/2g-    4 5/2g+    5 5/2g-    6 7/2g+    7 7/2g-
+  8 9/2g+    9 9/2g-   10 11/2g+  11 11/2g-  12 13/2g+  13 13/2g-  14 15/2g+  15 15/2g-
+ 16 1/2u+   17 1/2u-   18 3/2u+   19 3/2u-   20 5/2u+   21 5/2u-   22 7/2u+   23 7/2u-
+ 24 9/2u+   25 9/2u-   26 11/2u+  27 11/2u-  28 13/2u+  29 13/2u-  30 15/2u+  31 15/2u-
+ 32 0g      33 1g+     34 1g-     35 2g+     36 2g-     37 3g+     38 3g-     39 4g+
+ 40 4g-     41 5g+     42 5g-     43 6g+     44 6g-     45 7g+     46 7g-     47 8g+
+ 48 0u      49 1u+     50 1u-     51 2u+     52 2u-     53 3u+     54 3u-     55 4u+
+ 56 4u-     57 5u+     58 5u-     59 6u+     60 6u-     61 7u+     62 7u-     63 8u+
+ */
+char **generate_irreps_Dinfh(int max_omega_x2, int *n_irreps)
+{
+    *n_irreps = max_omega_x2 * 4 + 2;
+
+    char **irrep_names = (char **) cc_malloc((*n_irreps) * sizeof(char *));
+    for (int i = 0; i < (*n_irreps); i++) {
+        irrep_names[i] = (char *) cc_malloc(MAX_IRREP_NAME * sizeof(char));
+    }
+
+    int j = 0;
+
+    // half-integer irreps, gerade
+    for (int i = 1; i < max_omega_x2; i += 2) {
+        sprintf(irrep_names[j++], "%d/2g+", i);
+        sprintf(irrep_names[j++], "%d/2g-", i);
+    }
+    // half-integer irreps, ungerade
+    for (int i = 1; i < max_omega_x2; i += 2) {
+        sprintf(irrep_names[j++], "%d/2u+", i);
+        sprintf(irrep_names[j++], "%d/2u-", i);
+    }
+
+    // integer irreps, gerade
+    sprintf(irrep_names[j++], "0g");
+    for (int i = 1; i <= max_omega_x2/2; i++) {
+        sprintf(irrep_names[j++], "%dg+", i);
+        sprintf(irrep_names[j++], "%dg-", i);
+    }
+
+    // integer irreps, ungerade
+    sprintf(irrep_names[j++], "0u");
+    for (int i = 1; i <= max_omega_x2/2; i++) {
+        sprintf(irrep_names[j++], "%du+", i);
+        sprintf(irrep_names[j++], "%du-", i);
+    }
+
+    return irrep_names;
+}
+
+
+void parse_infty_irrep_name(char *irrep_name, int *omega_x2, int *sign, int *gerade)
+{
+    char buf[MAX_IRREP_NAME];
+
+    *sign = strchr(irrep_name, '-') ? -1 : 1;
+
+    if (strchr(irrep_name, 'g')) {
+        *gerade = +1;
+    }
+    else if (strchr(irrep_name, 'u')) {
+        *gerade = -1;
+    }
+    else {
+        *gerade = 0;
+    }
+
+    strcpy(buf, irrep_name);
+    char *p_omega_x2 = strtok(buf, "/gu+-");
+    *omega_x2 = atoi(p_omega_x2);
+    int is_half_integer = strchr(irrep_name, '/') != NULL;
+    if (!is_half_integer) {
+        *omega_x2 = (*omega_x2) * 2;
+    }
+}
+
+
+void multiply_irreps_Cinfv(char *irrep_1, char *irrep_2, char *prod_irrep)
+{
+    int omega_x2_1, sign_1, gerade_1;
+    int omega_x2_2, sign_2, gerade_2;
+
+    parse_infty_irrep_name(irrep_1, &omega_x2_1, &sign_1, &gerade_1);
+    parse_infty_irrep_name(irrep_2, &omega_x2_2, &sign_2, &gerade_2);
+
+    int prod_omega_x2 = sign_1 * omega_x2_1 + sign_2 * omega_x2_2;
+    int prod_sign = (prod_omega_x2 < 0) ? -1 : +1;
+    prod_omega_x2 = abs(prod_omega_x2);
+
+    if (prod_omega_x2 == 0) { // zero irrep
+        sprintf(prod_irrep, "0");
+    }
+    else if (prod_omega_x2 % 2 != 0) { // half-integer irrep
+        sprintf(prod_irrep, "%d/2%s", prod_omega_x2, prod_sign == 1 ? "+" : "-");
+    }
+    else { // integer irrep
+        sprintf(prod_irrep, "%d%s", prod_omega_x2 / 2, prod_sign == 1 ? "+" : "-");
+    }
+}
+
+
+void multiply_irreps_Dinfh(char *irrep_1, char *irrep_2, char *prod_irrep)
+{
+    int omega_x2_1, sign_1, gerade_1;
+    int omega_x2_2, sign_2, gerade_2;
+
+    parse_infty_irrep_name(irrep_1, &omega_x2_1, &sign_1, &gerade_1);
+    parse_infty_irrep_name(irrep_2, &omega_x2_2, &sign_2, &gerade_2);
+
+    int prod_omega_x2 = sign_1 * omega_x2_1 + sign_2 * omega_x2_2;
+    int prod_sign = (prod_omega_x2 < 0) ? -1 : +1;
+    prod_omega_x2 = abs(prod_omega_x2);
+    int prod_gerade = gerade_1 * gerade_2;
+
+    if (prod_omega_x2 == 0) { // zero irrep
+        sprintf(prod_irrep, "0%s", prod_gerade ? "g" : "u");
+    }
+    else if (prod_omega_x2 % 2 != 0) { // half-integer irrep
+        sprintf(prod_irrep, "%d/2%s%s", prod_omega_x2, prod_gerade ? "g" : "u", prod_sign == 1 ? "+" : "-");
+    }
+    else { // integer irrep
+        sprintf(prod_irrep, "%d%s%s", prod_omega_x2 / 2, prod_gerade ? "g" : "u", prod_sign == 1 ? "+" : "-");
+    }
+}
+
+
+int search_string(char *str, char **str_list, int list_len)
+{
+    for (int i = 0; i < list_len; i++) {
+        if (strcmp(str_list[i], str) == 0) {
+            return i;
+        }
+    }
+
+    return 0;
+}
+
+
+/*
+ * Constructs irrep multiplication table.
+ * The table will be stored in a linear array 'mul_table'.
+ *
+ * mult_table[i*n_irreps+j] = prod_function(irrep_i, irrep_j)
+ *
+ * returns pointer to the multiplication table
+ */
+int *construct_direct_product_table(int n_irreps, char **irrep_names, void (*prod_function)(char *a, char *b, char *prod))
+{
+    char prod_irrep[MAX_IRREP_NAME];
+
+    int *mult_table = cc_malloc(sizeof(int) * n_irreps * n_irreps);
+
+    for (int i = 0; i < n_irreps; i++) {
+        for (int j = 0; j < n_irreps; j++) {
+            char *irrep_1 = irrep_names[i];
+            char *irrep_2 = irrep_names[j];
+
+            prod_function(irrep_1, irrep_2, prod_irrep);
+
+            mult_table[i * n_irreps + j] = search_string(prod_irrep, irrep_names, n_irreps);
+        }
+    }
+
+    return mult_table;
 }

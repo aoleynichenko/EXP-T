@@ -1,0 +1,16 @@
+# input file for the CCSDT-1b calculation
+print high
+conv 1e-7
+maxiter 100
+model ccsdt-1
+sector 0h0p
+#diis off
+disk_usage 0
+#compress
+#arith complex
+#disk_usage 0
+#nthreads 2
+
+compress_triples 1e-8 float
+
+

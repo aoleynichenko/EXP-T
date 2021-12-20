@@ -1,0 +1,30 @@
+!
+**GENERAL                                                                                           
+.PCMOUT                                                                                             
+**DIRAC                                                                                             
+.TITLE                                                                                              
+H2O ionization potential                                                                                 
+.WAVE F
+.4INDEX
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED
+10
+**MOLTRA                                                                                            
+.SCHEME
+ 4
+.ACTIVE                                                                                             
+energy -100. 20.0 0.1                                                                                
+.PRINT                                                                                              
+1
+.SCHEME
+4                                                                                                   
+**RELCC                                                                                             
+.PRINT                                                                                              
+1                                                                                                   
+*CCENER
+.NTOL
+9
+*END OF DIRAC                                                                                       
+

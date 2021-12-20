@@ -213,6 +213,11 @@ struct cc_options {
     // data compression
     cc_compression_type_t compress;
 
+    // compression of arrays with triples amplitudes
+    int do_compress_triples;
+    double compress_triples_thresh;
+    int compress_triples_data_type;
+
     // orbital range tiling
     int tile_size;
 
@@ -262,7 +267,7 @@ struct cc_options {
 
     // number of electrons in each irrep -- will be useful for open-shell references
     int nelec_defined;
-    int nelec[CC_MAX_NUM_IRREPS];
+    cc_space_t irrep_occ_numbers;
     // occupation numbers of each spinor -- for open-shell references
     int occ_defined;
     char occ[CC_MAX_SPINORS];

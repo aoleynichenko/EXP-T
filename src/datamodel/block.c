@@ -146,6 +146,7 @@ block_t *symblock_new(int rank, int *spinor_blocks_nums, int *qparts, int *valen
         if (block->size == 0) { break; }
     }
 
+    block->is_compressed = 0;
     block->is_unique = 1;
     block->sign = 1;
     block->n_equal_perms = 1;
@@ -733,6 +734,11 @@ void symblock_load(block_t *block)
 {
     int f;
 
+    if (block->storage_type == CC_DIAGRAM_IN_MEM && block->rank == 6 && cc_opts->do_compress_triples) {
+        decompress_triples_rank6(block);
+        return;
+    }
+
     if (block->storage_type != CC_DIAGRAM_ON_DISK) {
         return;
     }
@@ -752,6 +758,11 @@ void symblock_load(block_t *block)
 
 void symblock_unload(block_t *block)
 {
+    if (block->storage_type == CC_DIAGRAM_IN_MEM && block->rank == 6 && cc_opts->do_compress_triples) {
+        compress_triples_rank6(block);
+        return;
+    }
+
     if (block->storage_type != CC_DIAGRAM_ON_DISK) {
         return;
     }
@@ -764,6 +775,11 @@ void symblock_unload(block_t *block)
 void symblock_store(block_t *block)
 {
     int f;
+
+    if (block->storage_type == CC_DIAGRAM_IN_MEM && block->rank == 6 && cc_opts->do_compress_triples) {
+        compress_triples_rank6(block);
+        return;
+    }
 
     if (block->storage_type != CC_DIAGRAM_ON_DISK) {
         return;
@@ -904,7 +920,9 @@ void symblock_write(int fd, block_t *block)
     io_write_compressed(fd, &block->size, sizeof(block->size));
     io_write_compressed(fd, &block->storage_type, sizeof(block->storage_type));
     if (block->storage_type == CC_DIAGRAM_IN_MEM) {
+        symblock_load(block);
         io_write_compressed(fd, block->buf, SIZEOF_WORKING_TYPE * block->size);
+        symblock_unload(block);
     }
     else if (block->storage_type == CC_DIAGRAM_DUMMY) {
         // nothing
@@ -966,6 +984,7 @@ block_t *symblock_read(int fd)
     if (block->storage_type == CC_DIAGRAM_IN_MEM) {
         block->buf = (double complex *) cc_malloc(SIZEOF_WORKING_TYPE * block->size);
         io_read_compressed(fd, block->buf, SIZEOF_WORKING_TYPE * block->size);
+        symblock_unload(block);
     }
     else if (block->storage_type == CC_DIAGRAM_DUMMY) {
         block->buf = NULL;

@@ -40,7 +40,7 @@
 
 typedef struct {
     moindex_t indices[MAX_SECTOR_RANK];
-    int8_t sym;
+    int16_t sym;
 } slater_det_t;
 
 int is_vacuum_det(slater_det_t *det);

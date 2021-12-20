@@ -134,4 +134,10 @@ void predict_intruders(char *diagram_name, int nmax);
 
 void print_ampl_vs_denom(char *name, char *out_file);
 
+size_t count_amplitudes(char *diagram_name);
+
+size_t count_amplitudes_in_range(char *diagram_name, double lower_bound, double upper_bound);
+
+void print_amplitude_distribution_analysis(char *diagram_name);
+
 #endif /* CC_ENGINE_H_INCLUDED */

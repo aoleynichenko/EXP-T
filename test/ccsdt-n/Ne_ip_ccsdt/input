@@ -1,0 +1,19 @@
+# Test:
+# (1) Be atom
+# (2) DC - relativistic, 4-comp, cc-pVDZ basis set
+# (3) symmetry "Cinfv" (actually C32)
+# (4) external electric field is applied at CC stage "perturbatively"
+
+memory 4 gb
+title "Test Be/cc-pVDZ/DC/Cinfv/CCSDT/Field"
+maxiter 300
+nacth 8
+diis triples
+reuse 0h0p
+conv 1e-9
+model ccsdt
+sector 1h0p
+disk_usage 0
+
+
+

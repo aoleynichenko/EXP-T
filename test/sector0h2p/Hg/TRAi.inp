@@ -1,6 +1,7 @@
 !
 **GENERAL
 .PCMOUT
+.ACMOUT
 **DIRAC
 .TITLE
 FS-MRCC calculation: Hg2+ -> Hg+ -> Hg

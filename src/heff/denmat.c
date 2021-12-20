@@ -317,7 +317,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
                 }
                 printf("  %12.6f%12.6f ", creal(coef), cimag(coef));
                 int ispinor = active_spinors[j];
-                printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+                printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
                        spinor_info[ispinor].eps);
             }
             printf("    to:\n");
@@ -328,7 +328,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
                 }
                 printf("  %12.6f%12.6f ", creal(coef), cimag(coef));
                 int ispinor = active_spinors[j];
-                printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+                printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
                        spinor_info[ispinor].eps);
             }
         }
@@ -368,7 +368,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
                 }
                 printf("  %12.6f%12.6f ", creal(coef), cimag(coef));
                 int ispinor = active_spinors[j];
-                printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+                printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
                        spinor_info[ispinor].eps);
             }
         }
@@ -382,7 +382,7 @@ void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int 
             }
             printf("  %12.6f", weight);
             int ispinor = active_spinors[j];
-            printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+            printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
                    spinor_info[ispinor].eps);
         }
 

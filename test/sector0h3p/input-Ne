@@ -1,0 +1,11 @@
+sector 0h3p
+nactp 6
+reuse 0h0p 0h1p 0h2p
+#model ccsdt-1
+maxiter 500
+conv 1e-8
+print high
+shifttype realimag
+#orbshift -0.8
+#disk_usage 0
+memory 8 gb

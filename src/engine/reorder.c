@@ -122,14 +122,11 @@ void reorder(char *src, char *target, char *perm_str)
  * for real and complex numbers
  */
 #define TYPENAME double_complex_t
-
 #include "reorder_block.c"
-
 #undef TYPENAME
+
 #define TYPENAME double
-
 #include "reorder_block.c"
-
 #undef TYPENAME
 
 
@@ -248,19 +245,26 @@ void restore_block(diagram_t *dg, block_t *b)
 
     b->storage_type = CC_DIAGRAM_IN_MEM;
     b->buf = (double complex *) cc_calloc(b->size, SIZEOF_WORKING_TYPE);
+    symblock_store(b);
 
     if (carith) {
         TEMPLATE(reorder_block, double_complex_t)(uniq_block, b, b->perm_from_unique);
+
+        symblock_load(b);
         double complex *zbuf = b->buf;
         for (size_t i = 0; i < b->size; i++) {
             zbuf[i] *= b->sign;
         }
+        symblock_store(b);
     }
     else {
         TEMPLATE(reorder_block, double)(uniq_block, b, b->perm_from_unique);
+
+        symblock_load(b);
         double *dbuf = (double *) b->buf;
         for (size_t i = 0; i < b->size; i++) {
             dbuf[i] *= b->sign;
         }
+        symblock_store(b);
     }
 }

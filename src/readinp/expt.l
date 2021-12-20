@@ -73,6 +73,7 @@ memory          { inc_col(); return KEYWORD_MEMORY;       }
 tilesize        { inc_col(); return KEYWORD_TILESIZE;     }
 disk_usage      { inc_col(); return KEYWORD_DISK_USAGE;   }
 compress        { inc_col(); return KEYWORD_COMPRESS;     }
+compress_triples { inc_col(); return KEYWORD_COMPRESS_TRIPLES; }
 nthreads        { inc_col(); return KEYWORD_NTHREADS;     }
 openmp          { inc_col(); return KEYWORD_OPENMP;       }
 cuda            { inc_col(); return KEYWORD_CUDA;         }

@@ -96,6 +96,7 @@ void directive_interface(cc_options_t *opts);
 void directive_intham(cc_options_t *opts);
 void directive_intham1(cc_options_t *opts);
 void directive_restrict_t3(cc_options_t *opts);
+void directive_compress_triples(cc_options_t *opts);
 
 void yyerror(char *s);
 int next_token();
@@ -251,6 +252,9 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_COMPRESS:
                 opts->compress = CC_COMPRESS_LZ4;
                 break;
+            case KEYWORD_COMPRESS_TRIPLES:
+                directive_compress_triples(opts);
+                break;
             case KEYWORD_CUDA:
                 opts->cuda_enabled = 1;
                 break;
@@ -342,13 +346,6 @@ int readinp(char *file_name, cc_options_t *opts)
             opts->main_h = 0;
         }
     }
-
-    // triples are available in the development version only
-#ifndef VERSION_DEVEL
-    if (opts->cc_model > CC_MODEL_CCSD) {
-        errquit("CC models including triples are not part of the public release");
-    }
-#endif
 }
 
 
@@ -584,25 +581,8 @@ void directive_occ(cc_options_t *opts)
  */
 void directive_occ_irreps(cc_options_t *opts)
 {
-    static char *msg = "wrong specification of irrep occupation numbers!\n"
-                       "A list of non-negative integers separated by spaces is expected";
-    int token_type;
-    int count = 0;
-
     opts->nelec_defined = 1;
-
-    token_type = next_token();
-    while (token_type != END_OF_LINE && token_type != END_OF_FILE) {
-        if (token_type != TT_INTEGER) {
-            yyerror(msg);
-        }
-
-        // note: TT_INTEGER means that the value is already non-negative
-        opts->nelec[count++] = atoi(yytext);
-
-        token_type = next_token();
-    }
-    put_back(token_type);
+    read_space_specification(&opts->irrep_occ_numbers);
 }
 
 
@@ -2138,6 +2118,42 @@ void directive_restrict_t3(cc_options_t *opts)
     opts->do_restrict_t3 = 1;
     opts->restrict_t3_bounds[0] = lower_bound;
     opts->restrict_t3_bounds[1] = upper_bound;
+}
+
+
+void directive_compress_triples(cc_options_t *opts)
+{
+    static char *msg1 = "wrong specification of the triples compression parameters!\n"
+                        "real number is expected";
+    static char *msg2 = "wrong specification of the triples compression parameters!\n"
+                        "allowed data types are 'float' or 'double'";
+    int token_type;
+    int data_type;
+    double zero_thresh;
+
+    // threshold
+    token_type = next_token();
+    if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
+        yyerror(msg1);
+    }
+    zero_thresh = atof(yytext);
+
+    // type: float or double
+    next_token();
+    str_tolower(yytext);
+    if (strcmp(yytext, "float") == 0) {
+        data_type = CC_FLOAT;
+    }
+    else if (strcmp(yytext, "double") == 0) {
+        data_type = CC_DOUBLE;
+    }
+    else {
+        yyerror(msg2);
+    }
+
+    opts->do_compress_triples = 1;
+    opts->compress_triples_thresh = zero_thresh;
+    opts->compress_triples_data_type = data_type;
 }
 
 

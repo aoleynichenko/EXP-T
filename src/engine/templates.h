@@ -33,6 +33,8 @@
 #define TEMPLATES_H_INCLUDED
 
 #define CAT(X, Y) X##_##Y
+#define CAT3(X, Y, Z) X##_##Y##_##Z
 #define TEMPLATE(X, Y) CAT(X,Y)
+#define TEMPLATE2(X, Y, Z) CAT3(X,Y,Z)
 
 #endif /* TEMPLATES_H_INCLUDED */

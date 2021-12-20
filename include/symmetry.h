@@ -41,24 +41,26 @@ enum {
     CC_GROUP_QUATERNION = 4
 };
 
+#define MAX_IRREP_NAME 64
+
 // number of irreps
-extern int nsym;
+//extern int nsym;
 
 // is this group abelian or not
-extern int is_abelian;
+//extern int is_abelian;
 
 // direct product table
-extern int ***dir_prod_table;
-extern int dir_prod_table_abelian[CC_MAX_NUM_IRREPS][CC_MAX_NUM_IRREPS];
+//extern int ***dir_prod_table;
+//extern int dir_prod_table_abelian[CC_MAX_NUM_IRREPS][CC_MAX_NUM_IRREPS];
 
 // representation names
-extern char **rep_names;
+//extern char **rep_names;
 
 // number of totally symmetry irrep
-extern int irrep_a1;
+//extern int irrep_a1;
 
 // point group type (Quaternion, Real, Complex)
-extern int point_group_nz;
+//extern int point_group_nz;
 
 int get_num_irreps();
 
@@ -85,5 +87,19 @@ extern int (*dpd_contains_totsym_rank[CC_MAX_NUM_IRREPS])(int *gamma);
 void set_point_group_name(char *name);
 
 char *get_point_group_name();
+
+void setup_symmetry(int group_type, char *group_name, int num_irreps, char **irrep_names, int fully_symmetric_rep, int *mult_table);
+
+char **generate_irreps_Cinfv(int max_omega_x2, int *n_irreps);
+
+char **generate_irreps_Dinfh(int max_omega_x2, int *n_irreps);
+
+void multiply_irreps_Cinfv(char *irrep_1, char *irrep_2, char *prod_irrep);
+
+void multiply_irreps_Dinfh(char *irrep_1, char *irrep_2, char *prod_irrep);
+
+int *construct_direct_product_table(int n_irreps, char **irrep_names, void (*prod_function)(char *a, char *b, char *prod));
+
+int search_string(char *str, char **str_list, int list_len);
 
 #endif /* CC_SYMMETRY_H_INCLUDED */

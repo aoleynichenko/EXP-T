@@ -42,12 +42,12 @@
 
 // version: MAJOR.MINOR.REVISION
 #define CC_VERSION_MAJOR      1
-#define CC_VERSION_MINOR      5
-#define CC_VERSION_REVISION   6
+#define CC_VERSION_MINOR      6
+#define CC_VERSION_REVISION   0
 
 // date of release:
-#define CC_VERSION_DAY        14
-#define CC_VERSION_MONTH      "Aug"
+#define CC_VERSION_DAY        20
+#define CC_VERSION_MONTH      "Dec"
 #define CC_VERSION_YEAR       2021
 
 #include "platform.h"
@@ -240,7 +240,6 @@ int main(int argc, char **argv)
         }
     }
     else if (opts->sector_h == 0 && opts->sector_p == 3) {
-#ifdef VERSION_DEVEL
         exit_code = sector00(opts);
         if (exit_code == EXIT_FAILURE) {
             goto finalize;
@@ -257,9 +256,6 @@ int main(int argc, char **argv)
         if (exit_code == EXIT_FAILURE) {
             goto finalize;
         }
-#else
-        errquit("THe 0h3p sector is not part of the public release");
-#endif
     }
     else {
         errquit("Fock space sector %dh%dp is not implemented yet", opts->sector_h, opts->sector_p);

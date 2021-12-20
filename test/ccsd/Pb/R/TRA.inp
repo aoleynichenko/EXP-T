@@ -3,6 +3,7 @@
 .TITLE          
 Pb atom
 .WAVE FUNCTION  
+.ANALYZE
 .4INDEX
 **HAMILTONIAN   
 .ECP

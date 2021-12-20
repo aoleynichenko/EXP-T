@@ -1,0 +1,12 @@
+DIRAC
+Na atom
+
+C   2    2 Y X
+        9.    1
+F        0.0      0.0      0.0
+LARGE BASIS cc-pVDZ
+        0.    1
+Gh       0.0      0.0     30.0
+LARGE 0
+FINISH
+

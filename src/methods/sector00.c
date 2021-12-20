@@ -137,11 +137,9 @@ int sector00(cc_options_t *opts)
 
         calc_T1();
         calc_T2();
-#ifdef VERSION_DEVEL
         if (triples) {
             calc_T3(PT_INF);
         }
-#endif
 
         diveps("t1nw");
         diveps("t2nw");
@@ -149,13 +147,11 @@ int sector00(cc_options_t *opts)
             diveps("t3nw");
         }
 
-#ifdef VERSION_DEVEL
         apply_selections(0, 0, "t1nw");
         apply_selections(0, 0, "t2nw");
         if (triples) {
             apply_selections(0, 0, "t3nw");
         }
-#endif
 
         if (opts->cc_model == CC_MODEL_CCS) {
             clear("t2nw");
@@ -293,6 +289,10 @@ int sector00(cc_options_t *opts)
     }
     printf("\n");
 
+    if (triples) {
+        print_amplitude_distribution_analysis("t3c");
+    }
+
     // print T1 diagnostic
     {
         int nelec = get_num_electrons();
@@ -302,11 +302,9 @@ int sector00(cc_options_t *opts)
     }
 
     // [T] and (T) perturbative corrections
-#ifdef VERSION_DEVEL
     if (opts->cc_model == CC_MODEL_CCSD_T3 || opts->cc_model == CC_MODEL_CCSD_T4) {
         t3corr();
     }
-#endif
 
     if (triples) {
         diagram_stack_erase("t3nw");
@@ -596,11 +594,9 @@ void calc_T1()
     restore_stack_pos(pos);
 
     // Triples contribution to Singles
-#ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
         t3_0h0p_contrib_to_singles(PT_INF);
     }
-#endif
 
     timer_stop("00-T1");
 }
@@ -897,11 +893,9 @@ void calc_T2()
     restore_stack_pos(pos);
 
     // Triples contribution to Doubles
-#ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
         t3_0h0p_contrib_to_doubles(PT_INF);
     }
-#endif
 
     timer_stop("00-T2");
 }

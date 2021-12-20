@@ -117,7 +117,6 @@ void setup_slater(void *source, double complex (*getter)(void *source, void *ind
             slater = slater_20_2_20;
         }
     }
-#ifdef VERSION_DEVEL
     else if (bra_sect_h == 0 && bra_sect_p == 3 && ket_sect_h == 0 && ket_sect_p == 3) {
         if (npart == 1) {
             slater = slater_03_1_03;
@@ -140,7 +139,6 @@ void setup_slater(void *source, double complex (*getter)(void *source, void *ind
             slater = slater_12_3_12;
         }
     }
-#endif
     else {
         printf("Cannot evaluate matrix element between Slater determinants of type |%dh%dp> and |%dh%dp>\n",
                bra_sect_h, bra_sect_p, ket_sect_h, ket_sect_p);

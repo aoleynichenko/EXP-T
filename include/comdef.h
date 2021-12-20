@@ -46,6 +46,7 @@ typedef int16_t moindex_t;
 typedef int bool_t;
 
 typedef double complex double_complex_t;
+typedef float complex float_complex_t;
 
 // limits (max size of static arrays)
 #define MAX_SECTOR_RANK 4
@@ -56,6 +57,6 @@ typedef double complex double_complex_t;
 #define CC_MAX_SPINORS 2048
 #define CC_MAX_PATH_LENGTH 1024
 #define CC_MAX_DPD_STACK_SIZE 1024
-#define CC_MAX_NUM_IRREPS 64
+#define CC_MAX_NUM_IRREPS 256
 
 #endif /* CC_COMDEF_H_INCLUDED */

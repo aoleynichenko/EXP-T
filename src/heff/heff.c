@@ -36,6 +36,7 @@
 #include "heff.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -116,7 +117,7 @@ void heff_analysis(int sect_h, int sect_p, ...)
     printf(" Model space dimension:\n");
     for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
         if (block_dims[irrep] != 0) {
-            printf("  %4s [%d]", rep_names[irrep], block_dims[irrep]);
+            printf("  %4s [%d]", get_irrep_name(irrep), block_dims[irrep]);
         }
     }
     printf("\n");
@@ -468,16 +469,19 @@ void print_model_vectors_stdout(int sector_h, int sector_p, slater_det_t **det_l
 
             print_model_vector(stdout, sector_h, sector_p,
                                irrep - first_irrep + 1, irrep_name, i, eigvalues[irrep][i],
-                               dim, coef_right[irrep] + dim * i, det_basis, 0);
+                               dim, coef_right[irrep] + dim * i, det_basis, COEF_THRESH);
 
             get_eff_configuration(sector_h, sector_p, dim, det_basis,
                                   left_vector, right_vector, eff_config);
 
             printf(" Effective configuration:\n");
             for (size_t j = 0; j < n_active; j++) {
+                if (fabs(eff_config[j]) < 1e-2) {
+                    continue;
+                }
                 printf("  %12.6f", eff_config[j]);
                 int ispinor = active_spinors[j];
-                printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+                printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
                        spinor_info[ispinor].eps);
             }
         }

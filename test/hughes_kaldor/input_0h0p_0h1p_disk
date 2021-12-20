@@ -1,0 +1,8 @@
+sector 0h1p
+nactp 6
+model ccsdt-1
+maxiter 500
+conv 1e-8
+print high
+memory 4 gb
+

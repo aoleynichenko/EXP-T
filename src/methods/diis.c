@@ -170,8 +170,6 @@ void diis_put(diis_queue_t *q,
 
     q->n++;
 
-    //print_n_restored();
-
     timer_stop("diis");
 }
 

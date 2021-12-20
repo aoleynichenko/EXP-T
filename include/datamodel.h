@@ -97,6 +97,7 @@ struct block {
     int n_equal_perms;
     int perm_from_unique[CC_DIAGRAM_MAX_RANK];
     int perm_to_unique[CC_DIAGRAM_MAX_RANK];
+    int is_compressed;
 };
 
 typedef struct block block_t;
@@ -133,6 +134,10 @@ void symblock_store(block_t *block);
 
 void symblock_write(int fd, block_t *block);
 
+void compress_triples_rank6(block_t *block);
+
+void decompress_triples_rank6(block_t *block);
+
 block_t *symblock_read(int fd);
 
 struct diagram {
@@ -148,14 +153,14 @@ struct diagram {
     // list of quasiparticles (in natural form)
     // for each spinor
     // of size [rank] (and all the subsequent arrays too)
-    int qparts[CC_DIAGRAM_MAX_RANK];
+    int qparts[CC_DIAGRAM_MAX_RANK]; // iii
 
     // list of valence/inactive (in natural form)
-    int valence[CC_DIAGRAM_MAX_RANK];
+    int valence[CC_DIAGRAM_MAX_RANK]; // iiv
     int t3space[CC_DIAGRAM_MAX_RANK];
 
     // "reordering" from the "natural" form
-    int order[CC_DIAGRAM_MAX_RANK];
+    int order[CC_DIAGRAM_MAX_RANK]; // iiu
 
     // inverted index of blocks
     size_t *inv_index;

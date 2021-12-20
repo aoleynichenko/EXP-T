@@ -199,7 +199,7 @@ void quasi_natural_orbitals_driver(int sect_h, int sect_p, int rep, int state)
             }
             printf("  %12.6f%12.6f ", creal(coef), cimag(coef));
             int ispinor = active_spinors[j];
-            printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+            printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
                    spinor_info[ispinor].eps);
         }
     }
@@ -208,7 +208,7 @@ void quasi_natural_orbitals_driver(int sect_h, int sect_p, int rep, int state)
     for (size_t j = 0; j < n_active; j++) {
         printf("  %12.6f", conf[j]);
         int ispinor = active_spinors[j];
-        printf("  %4s #%4d (%12.6f)\n", rep_names[spinor_info[ispinor].repno], ispinor + 1,
+        printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
                spinor_info[ispinor].eps);
     }
 
@@ -309,7 +309,7 @@ void write_NO(char *natorb_file_name, int sect_h, int sect_p,
     fprintf(f, "spinor info:\n");
     for (int i = 0; i < n_active; i++) {
         int ispinor = active_spinors[i];
-        fprintf(f, "%4d%20.12f%10s\n", ispinor + 1, spinor_info[ispinor].eps, rep_names[spinor_info[ispinor].repno]);
+        fprintf(f, "%4d%20.12f%10s\n", ispinor + 1, spinor_info[ispinor].eps, get_irrep_name(spinor_info[ispinor].repno));
     }
 
     // calculate number of NOs to be printed (with occ_no >= thresh)

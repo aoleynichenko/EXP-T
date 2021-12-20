@@ -1,0 +1,14 @@
+# Test:
+# (1) CO in cc-pVDZ
+# (2) DC - relativistic, 4-comp
+# (3) symmetry "Cinfv" (in fact C32v)
+
+memory 4 gb
+title "Test CO/cc-pVDZ/Dirac-Coulomb/Cinfv"
+#maxiter 3
+conv 1e-9
+model ccsdt-3
+disk_usage 0
+
+
+

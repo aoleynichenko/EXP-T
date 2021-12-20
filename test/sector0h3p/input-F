@@ -1,0 +1,15 @@
+sector 0h3p
+nactp 6
+reuse 0h0p 0h1p 0h2p
+#reuse integrals
+#model ccsdt-1
+maxiter 500
+conv 1e-8
+print high
+shifttype realimag
+#shift_0h2p 3 -0.5 -0.5
+disk_usage 0
+memory 2 gb
+#damping 3 0.5
+#orbshift -0.5
+

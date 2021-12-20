@@ -1,0 +1,40 @@
+**DIRAC         
+.TITLE          
+CO molecule
+.WAVE FUNCTION  
+**HAMILTONIAN
+.OPERATOR
+ ZDIPLEN
+ COMFACTOR
+ 0.0
+#**HAMILTONIAN   
+#.NONREL
+**WAVE FUNCTION 
+.SCF            
+#.RELCCSD        
+*SCF            
+.CLOSED         
+14          
+.ERGCNV         
+1E-12       
+**PROPERTIES
+.DIPOLE    
+.QUADRUPOLE
+.NQCC
+.EFG
+.POLARIZABILITY
+.NMR
+**MOLTRA        
+.ACTIVE         
+all
+**RELCC         
+.ENERGY         
+.PRINT          
+1               
+*CCENER         
+.MAXIT          
+50              
+.NTOL           
+ 9              
+*END OF INPUT   
+				

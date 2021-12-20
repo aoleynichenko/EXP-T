@@ -1,0 +1,5 @@
+# input file for the CCSD(T) calculations
+
+conv 1e-9
+maxiter 100
+#model ccsd(t)

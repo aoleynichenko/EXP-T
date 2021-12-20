@@ -13,8 +13,9 @@ sector 0h2p
 nactp 8
 shifttype real
 shift 0h2p 3 -2.0
-mstdm
+#mstdm
 
 # import integrals from
 integrals MRCONEE-Cs MDCINT-Cs
+
 

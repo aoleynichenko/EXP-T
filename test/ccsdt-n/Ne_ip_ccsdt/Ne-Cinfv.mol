@@ -1,0 +1,12 @@
+DIRAC
+Ne atom in Cinfv symmetry
+
+C   2     Cinfv
+       10.    1
+Ne       0.0      0.0      0.0
+LARGE BASIS cc-pVTZ
+        0.    1
+Gh       0.0      0.0      10.0
+LARGE 0
+FINISH
+

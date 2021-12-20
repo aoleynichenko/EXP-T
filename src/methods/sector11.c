@@ -251,21 +251,17 @@ int sector11(cc_options_t *opts)
 
         calc_E1();
         calc_E2();
-#ifdef VERSION_DEVEL
         if (triples) {
             calc_E3(PT_INF);
         }
-#endif
 
         closed("e2nw", "veff11");
 
         folded_1h1p_singles();
         folded_1h1p_doubles();
-#ifdef VERSION_DEVEL
         if (triples) {
             folded_1h1p_triples(PT_INF);
         }
-#endif
 
         diveps("e1nw");
         diveps("e2nw");
@@ -273,13 +269,11 @@ int sector11(cc_options_t *opts)
             diveps("e3nw");
         }
 
-#ifdef VERSION_DEVEL
         apply_selections(1, 1, "e1nw");
         apply_selections(1, 1, "e2nw");
         if (triples) {
             apply_selections(1, 1, "e3nw");
         }
-#endif
 
         if (cc_opts->cc_model == CC_MODEL_CCS) {
             clear("e2nw");
@@ -394,6 +388,10 @@ int sector11(cc_options_t *opts)
         print_max_ampl("Max S{11}_3 amplitude (s{11}_ijkabc)", "e3c");
     }
     printf("\n");
+
+    if (triples) {
+        print_amplitude_distribution_analysis("e3c");
+    }
 
     delete_diis_queue(diis_queue);
 
@@ -606,11 +604,9 @@ void const_terms_1h1p()
     // T1^4
     diag_T3_1h1p_D9_const();
 
-    #ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
         const_terms_1h1p_triples(PT_INF);
     }
-    #endif
 
     timer_stop("const_s11");
 }
@@ -731,11 +727,9 @@ void calc_E1()
     restore_stack_pos(pos);
 
     // Triples contribution to Singles
-#ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
         t3_1h1p_contrib_to_singles(PT_INF);
     }
-#endif
 
     timer_stop("11-E1");
 }
@@ -1790,11 +1784,9 @@ void calc_E2()
     //diag_T3_1h1p_D9_const();
 
     // Triples contribution to Doubles
-#ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
         t3_1h1p_contrib_to_doubles(PT_INF);
     }
-#endif
 
     timer_stop("11-S2");
 }

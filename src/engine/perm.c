@@ -210,17 +210,23 @@ void elementary_perm(char *src_name, char *perm_str)
 
             if (carith) {
                 TEMPLATE(reorder_block, double_complex_t)(b_perm, b_reordered, inv_perm);
+
+                symblock_load(b_reordered);
                 for (size_t i = 0; i < b_direct->size; i++) {
                     b_tgt->buf[i] += sign * b_reordered->buf[i];
                 }
+                symblock_store(b_reordered);
             }
             else {
                 TEMPLATE(reorder_block, double)(b_perm, b_reordered, inv_perm);
+
+                symblock_load(b_reordered);
                 double *b_tgt_buf = (double *) b_tgt->buf;
                 double *b_reordered_buf = (double *) b_reordered->buf;
                 for (size_t i = 0; i < b_direct->size; i++) {
                     b_tgt_buf[i] += sign * b_reordered_buf[i];
                 }
+                symblock_store(b_reordered);
             }
 
             symblock_delete(b_reordered);

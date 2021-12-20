@@ -1,0 +1,15 @@
+memory 4 gb
+title "Test Ne/cc-pVDZ/NR/Cinfv/CCSDT-1h1p"
+maxiter 300
+#reuse 0h0p
+conv 1e-9
+model ccsdt
+disk_usage 0
+sector 1h1p
+nacth 8
+nactp 8
+diis triples
+diis 100
+reuse 0h0p 0h1p 1h0p
+
+

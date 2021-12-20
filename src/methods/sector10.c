@@ -230,11 +230,9 @@ int sector10(cc_options_t *opts)
 
         calc_H1();
         calc_H2();
-#ifdef VERSION_DEVEL
         if (triples) {
             calc_H3();
         }
-#endif
 
         closed("h1nw", "veff10");
 
@@ -248,13 +246,11 @@ int sector10(cc_options_t *opts)
             diveps("h3nw");
         }
 
-#ifdef VERSION_DEVEL
         apply_selections(1, 0, "h1nw");
         apply_selections(1, 0, "h2nw");
         if (triples) {
             apply_selections(1, 0, "h3nw");
         }
-#endif
 
         if (cc_opts->cc_model == CC_MODEL_CCS) {
             clear("h2nw");
@@ -376,6 +372,10 @@ int sector10(cc_options_t *opts)
         print_ampl_norm("Norm |S{10}_3|", "h3c");
     }
     printf("\n");
+
+    if (triples) {
+        print_amplitude_distribution_analysis("h3c");
+    }
 
     delete_diis_queue(diis_queue);
 
@@ -661,11 +661,9 @@ void calc_H1()
     restore_stack_pos(pos);
 
     // Triples contribution to Singles; for CCSDT-1a, ... only
-#ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
         t3_1h0p_contrib_to_singles();
     }
-#endif
 }
 
 
@@ -732,11 +730,9 @@ void calc_H2()
     diag_T3_1h0p_D9();
 
     // Triples contribution to Doubles
-#ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
         t3_1h0p_contrib_to_doubles();
     }
-#endif
 }
 
 
@@ -1402,9 +1398,7 @@ void folded_1h0p()
 
     // triples
     // this folded diagram appears in PT3 and hence is excluded in the CCSDT-n models
-#ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT) {
         t3_1h0p_contrib_to_folded();
     }
-#endif
 }

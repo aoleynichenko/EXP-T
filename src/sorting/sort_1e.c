@@ -127,7 +127,7 @@ void sort_onel()
                 double f_ii = creal(f_ints[i * nspinors + i]);
                 printf("  %4d%4d \"%-6s\"%4d       %1s     %16.10f     %16.10f     %16.6e\n",
                        i + 1, spinor_info[i].repno,
-                       rep_names[spinor_info[i].repno], is_hole(i),
+                       get_irrep_name(spinor_info[i].repno), is_hole(i),
                        is_active(i) ? "a" : "i", eps, f_ii, f_ii - eps);
             }
             printf("  ---------------------------------------------------------------------------------------------\n");

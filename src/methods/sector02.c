@@ -177,11 +177,9 @@ int sector02(cc_options_t *opts)
         reorder("x2c", "x2cr", "3412");
 
         calc_X2();
-#ifdef VERSION_DEVEL
         if (triples) {
             calc_X3(PT_INF);
         }
-#endif
 
         closed("x2nw", "veff02");
 
@@ -203,12 +201,10 @@ int sector02(cc_options_t *opts)
             diveps("x3nw");
         }
 
-#ifdef VERSION_DEVEL
         apply_selections(0, 2, "x2nw");
         if (triples) {
             apply_selections(0, 2, "x3nw");
         }
-#endif
 
         if (cc_opts->cc_model == CC_MODEL_CCS) {
             clear("x2nw");
@@ -322,6 +318,10 @@ int sector02(cc_options_t *opts)
     }
     printf("\n");
 
+    if (triples) {
+        print_amplitude_distribution_analysis("x3c");
+    }
+
     delete_diis_queue(diis_queue);
 
     // flush amplitudes and effective interaction to disk
@@ -338,14 +338,12 @@ int sector02(cc_options_t *opts)
 
     // perturbative correction to the effective interaction
     // Heff will be re-constructed and diagonalized again with corrections added
-#ifdef VERSION_DEVEL
     if (cc_opts->cc_model == CC_MODEL_CCSD_T3) {
         sector_0h2p_ccsd_t3();
     }
     else if (cc_opts->cc_model == CC_MODEL_CCSD_T4) {
         sector_0h2p_ccsd_t4();
     }
-#endif
 
     return EXIT_SUCCESS;
 }
@@ -626,11 +624,9 @@ void const_terms_0h2p()
     update("x2_0", 1.0, "r5");
     restore_stack_pos(pos);
 
-#ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
         t3_0h2p_const_contrib_to_triples(PT_INF);
     }
-#endif
 
     timer_stop("const_s02");
 }
@@ -724,11 +720,9 @@ void calc_X2()
     restore_stack_pos(pos);
 
     // Triples contribution to Doubles
-#ifdef VERSION_DEVEL
     if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
         t3_0h2p_contrib_to_doubles(PT_INF);
     }
-#endif
 }
 
 
@@ -775,9 +769,7 @@ void folded_0h2p()
     update("x2nw", -1.0, "r2");
     restore_stack_pos(pos);
 
-#ifdef VERSION_DEVEL
     if (triples) {
         t3_0h2p_contrib_to_folded(PT_INF);
     }
-#endif
 }

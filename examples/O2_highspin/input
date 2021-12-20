@@ -1,7 +1,7 @@
-sector 0h0p
-model ccsd
-
-occ_irreps 3 2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 2 2 1 1
+# for gerade irreps:
+occ_irreps [1/2g+]:3 [1/2g-]:2 [3/2g+]:0 [3/2g-]:1
+# for ungerade irreps:
+occ_irreps [1/2u+]:2 [1/2u-]:2 [3/2u+]:1 [3/2u-]:1
 
 # an alternative way of setting spinor occupation numbers:
 #occ 1 1 1 1 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0

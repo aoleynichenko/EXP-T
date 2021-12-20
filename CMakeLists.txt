@@ -95,8 +95,8 @@ if [[ ( "$var" =~ $re_number ) && ( "$var" -ge 0 )]]; then
     echo "$var"
     exit 0
 elif [[ -z "$var" ]]; then
-	echo "default"
-	exit 0
+        echo "default"
+        exit 0
 else
     echo "error"
     exit 1
@@ -240,6 +240,7 @@ set(BASIC_SOURCE
         src/engine/intruders.c    # analysis of possible intruder states
         src/engine/selection.c    # selection of cluster amplitudes
         src/engine/intham1.c      # simple version of intermediate Hamiltonian
+        src/engine/compress_triples.c # compact storage of triples amplitudes
         
         src/heff/msprop.c         # model-space estimations of properties
         src/heff/heff.c           # construction & analysis of Heff and eigenvalues
@@ -265,6 +266,16 @@ set(BASIC_SOURCE
         src/methods/sector02.c    # DEA-FSCC, sector 0h2p
         src/methods/sector20.c    # DIP-FSCC, sector 2h0p
         src/methods/ccutils.c     # utility functions for FSCC models
+
+        src/methods/sector00_ccsdt.c
+        src/methods/sector01_ccsdt.c
+        src/methods/sector10_ccsdt.c
+        src/methods/sector11_ccsdt.c
+        src/methods/sector02_ccsdt.c
+        src/methods/sector03_ccsdt.c
+        src/methods/t3corr_ccsdt.c      # (T) perturbative corrections for the 0h0p sector
+        src/heff/heff_0h3p.c
+        src/heff/intham.c
         
         src/linalg/overlap.c       # interface to BLAS/LAPACK
         src/linalg/projector.c
@@ -315,12 +326,34 @@ else ()
     set(CUDA_SOURCE "")
 endif ()
 
+set(EXPT2PAM_SOURCE
+        src/expt2pam/basis.c
+        src/expt2pam/ecp.c
+        src/expt2pam/elements.c
+        src/expt2pam/error.c
+        src/expt2pam/expt_parse.c
+        src/expt2pam/gen_cfour.c
+        src/expt2pam/gen_pam.c
+        src/expt2pam/gen_turbomole.c
+        src/expt2pam/gen_oneprop.c
+        src/expt2pam/lex.yy.c
+        src/expt2pam/molecule.c
+        src/expt2pam/zmat.c
+        src/expt2pam/geodesic.c
+        src/expt2pam/main.c
+        )
+
 set(HEFFMAN_SOURCE
         src/heffman/nombres_mod.f90
         src/heffman/heff.f90
         src/heffman/hefflib.f90
         src/heffman/puma.f90
         src/heffman/readheff.f90
+        )
+
+set(MKNATORB_SOURCE
+        src/mknatorb/mknatorb.f90
+        src/mknatorb/dfpcmo.f90
         )
 
 set(READ_DFCOEF_SOURCE
@@ -336,8 +369,18 @@ add_executable(
 )
 
 add_executable(
+        expt2pam.x
+        ${EXPT2PAM_SOURCE}
+)
+
+add_executable(
         heffman.x
         ${HEFFMAN_SOURCE}
+)
+
+add_executable(
+        mknatorb.x
+        ${MKNATORB_SOURCE}
 )
 
 add_executable(
@@ -351,10 +394,12 @@ link_libraries("-static")
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
     target_link_libraries(expt.x m ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
     target_link_libraries(heffman.x ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
+    target_link_libraries(expt2pam.x m)
 endif ()
 if (CMAKE_C_COMPILER_ID MATCHES "Intel")
     target_link_libraries(expt.x m ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
     target_link_libraries(heffman.x ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
+    target_link_libraries(expt2pam.x m)
 endif ()
 if (CUDA_FOUND)
     target_link_libraries(expt.x ${CUDA_LIBRARIES} -L${CUDA_TOOLKIT_ROOT_DIR}/lib64 -lcublas)

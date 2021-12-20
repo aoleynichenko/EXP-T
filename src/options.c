@@ -82,6 +82,12 @@ cc_options_t *new_options()
     opts->recommended_arith = CC_ARITH_REAL;
     opts->max_memory_size = 1024u * 1024u * 1024u;  // 1 Gb
     opts->compress = CC_COMPRESS_NONE;
+
+    // compression of arrays with triples amplitudes
+    opts->do_compress_triples = 0;
+    opts->compress_triples_thresh = 1e-10;
+    opts->compress_triples_data_type = CC_DOUBLE;
+
     opts->tile_size = 100;
     opts->disk_usage_level = CC_DISK_USAGE_LEVEL_2;  // rank-6+ and pppp on disk
     opts->nthreads = 1;
@@ -127,9 +133,7 @@ cc_options_t *new_options()
 
     // number of electrons in each irrep (for open-shell reference states)
     opts->nelec_defined = 0;
-    for (i = 0; i < CC_MAX_NUM_IRREPS; i++) {
-        opts->nelec[i] = 0;
-    }
+    memset(&opts->irrep_occ_numbers, 0, sizeof(opts->irrep_occ_numbers));
 
     // occupation numbers for each spinor (for open-shell reference states)
     opts->occ_defined = 0;
@@ -307,6 +311,13 @@ void print_options(cc_options_t *opts)
            opts->recommended_arith == CC_ARITH_REAL ? "real" : "complex");
     printf(" %-15s  %-40s  %.1f Mb\n", "memory", "max allowed RAM usage", opts->max_memory_size / (1024.0 * 1024.0));
     printf(" %-15s  %-40s  %s\n", "compress", "compression of integrals on disk", opts->compress ? "LZ4" : "disabled");
+    if (opts->do_compress_triples) {
+        printf(" %-15s %-40s  yes, thresh=%g, datatype=%s\n", "compress_triples", "compression of triples tensors in RAM",
+               opts->compress_triples_thresh, opts->compress_triples_data_type == CC_FLOAT ? "float" : "double");
+    }
+    else {
+        printf(" %-15s %-40s  %s\n", "compress_triples", "compression of triples tensors in RAM", "disabled");
+    }
     printf(" %-15s  %-40s  ", "disk_usage", "disk usage level");
     switch (opts->disk_usage_level) {
         case CC_DISK_USAGE_LEVEL_0:
@@ -598,8 +609,12 @@ void print_options(cc_options_t *opts)
     }
     else {
         printf("(by irreps) ");
-        for (int i = 0; i < 32; i++) {
-            printf("%d ", opts->nelec[i]);
+        for (int i = 0; i < CC_MAX_NUM_IRREPS; i++) {
+            int occ_number = opts->irrep_occ_numbers.dim[i];
+            char *irrep_name = opts->irrep_occ_numbers.rep_names[i];
+            if (occ_number != 0) {
+                printf("[%s]:%d ", irrep_name, occ_number);
+            }
         }
         printf("\n");
     }

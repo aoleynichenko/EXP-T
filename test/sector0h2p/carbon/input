@@ -21,7 +21,7 @@ sector 0h2p
 model ccsd
 nactp 6
 
-
+natorb [0]:1-[0]:3
 
 #nacth 4
 #nactp 8
