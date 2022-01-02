@@ -356,6 +356,16 @@ set(MKNATORB_SOURCE
         src/mknatorb/dfpcmo.f90
         )
 
+set(TRANSFORM_NATORB_SOURCE
+        src/transform_natorb/main.c
+        src/transform_natorb/read_natural_spinors.c
+        src/transform_natorb/errquit.c
+        src/transform_natorb/read_dirac_output.c
+        src/transform_natorb/print_vectors.c
+        src/transform_natorb/mapping.c
+        src/transform_natorb/transform.c
+)
+
 set(READ_DFCOEF_SOURCE
         src/read_dfcoef/read_dfcoef.f90
         )
@@ -381,6 +391,11 @@ add_executable(
 add_executable(
         mknatorb.x
         ${MKNATORB_SOURCE}
+)
+
+add_executable(
+        expt_transform_natorb.x
+        ${TRANSFORM_NATORB_SOURCE}
 )
 
 add_executable(
