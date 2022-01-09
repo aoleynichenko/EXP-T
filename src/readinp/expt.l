@@ -90,6 +90,7 @@ interface       { inc_col(); return KEYWORD_INTERFACE;    }
 breit           { inc_col(); return KEYWORD_BREIT;        }
 x2cmmf          { inc_col(); return KEYWORD_X2CMMF;       }
 restrict_t3     { inc_col(); return KEYWORD_RESTRICT_T3;  }
+eff_conf        { inc_col(); return KEYWORD_EFF_CONF;     }
 !=              { inc_col(); return TT_NEQ;               }
 =               { inc_col(); return TT_EQ;                }
 \".*\"          { inc_col(); return TT_QUOTE;             }

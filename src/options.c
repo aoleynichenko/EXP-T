@@ -234,6 +234,9 @@ cc_options_t *new_options()
     // calculation of properties (model-space estimation)
     opts->n_ms_props = 0;
 
+    // calculation of "effective configurations" for the target states
+    opts->do_eff_conf = 0;
+
     // selection of amplitudes
     opts->n_select = 0;
 
@@ -711,6 +714,10 @@ void print_options(cc_options_t *opts)
     else {
         printf(" %-15s  %-40s  %s\n", "natorb", "model-space natural orbitals", "disabled");
     }
+
+    // calculation of "effective configurations" for the target states
+    printf(" %-15s  %-40s  %s\n", "eff_conf", "eff configurations for the target states",
+           opts->do_eff_conf ? "enabled" : "disabled");
 
     if (opts->n_ms_props > 0) {
         printf(" %-15s  %-40s  %s", "prop", "model-space estimates of properties", "enabled,");

@@ -15,45 +15,16 @@ FS-MRCC calculation: Hg2+ -> Hg+ -> Hg
 *SCF
 .CLOSED SHELL
  12 6
-**ANALYZE
-.PRIVEC
 **MOLTRA
 .SCHEME
  4
 .ACTIVE
 all
-**RELCC
-.FOCKSP
-.PRINT
-1
-*CCFSPC
-.MAXIT
-200
-.MAXDIM
- 10
-.NTOL
- 9
-.DOEA
-.DOEA2
-.NACTP
- 1 1 3 3
-.DOIH
-*CCIH
-.EPMIN
--50.
-.EPMAX
- 50.
-.IHSCHEME
-1
-.NIH
-3
-.AIH
- -0.5
-.SH_P11
--0.5
-.SH_P12
--1.0
-.SH_P2
--1.0
+**ANALYZE
+.PRIVEC
+*PRIVEC
+.VECPRI
+all
+all
 *END OF DIRAC                                                                                       
 

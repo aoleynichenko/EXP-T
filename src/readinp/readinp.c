@@ -180,6 +180,9 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_MSTDM:
                 opts->do_diplen_tdm = 1;
                 break;
+            case KEYWORD_EFF_CONF:
+                opts->do_eff_conf = 1;
+                break;
             case KEYWORD_NATORB:
                 directive_natorb(opts);
                 break;

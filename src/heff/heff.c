@@ -471,18 +471,24 @@ void print_model_vectors_stdout(int sector_h, int sector_p, slater_det_t **det_l
                                irrep - first_irrep + 1, irrep_name, i, eigvalues[irrep][i],
                                dim, coef_right[irrep] + dim * i, det_basis, COEF_THRESH);
 
-            get_eff_configuration(sector_h, sector_p, dim, det_basis,
-                                  left_vector, right_vector, eff_config);
+            // calculate effective configurations for the target electronic states:
+            // for the given state model-space "natural" spinors (NTS) are calculated and then
+            // the squared weights of molecular spinors in NTSs are multiplied by the NTSs occupation numbers
+            if (cc_opts->do_eff_conf) {
 
-            printf(" Effective configuration:\n");
-            for (size_t j = 0; j < n_active; j++) {
-                if (fabs(eff_config[j]) < 1e-2) {
-                    continue;
+                get_eff_configuration(sector_h, sector_p, dim, det_basis,
+                                      left_vector, right_vector, eff_config);
+
+                printf(" Effective configuration:\n");
+                for (size_t j = 0; j < n_active; j++) {
+                    if (fabs(eff_config[j]) < 1e-2) {
+                        continue;
+                    }
+                    printf("  %12.6f", eff_config[j]);
+                    int ispinor = active_spinors[j];
+                    printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
+                           spinor_info[ispinor].eps);
                 }
-                printf("  %12.6f", eff_config[j]);
-                int ispinor = active_spinors[j];
-                printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
-                       spinor_info[ispinor].eps);
             }
         }
     }

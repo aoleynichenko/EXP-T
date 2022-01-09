@@ -337,7 +337,7 @@ void banner()
     printf("\t\t**        Relativistic Fock-Space Multireference Coupled Cluster Program        **\n");
     printf("\t\t**                                                                              **\n");
 #ifdef VERSION_DEVEL
-    printf("\t\t**                     version %d.%d.%d (%d %s %d) development                   **\n",
+    printf("\t\t**                     version %d.%d.%d (%d %s %d) development                  **\n",
            CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
            CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
 #else

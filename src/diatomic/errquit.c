@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2021 The EXP-T developers.
+ *  Copyright (C) 2018-2022 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -21,47 +21,30 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-#include "linalg.h"
+#include "errquit.h"
 
+#include <stdarg.h>
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 
-#include "memory.h"
+#define MAX_ERR_LEN 1024
 
-
-/**
- * calculates inverse matrix
- * @param n matrix dimension
- * @param A square n x n matrix; will not be destroyed
- * @param Ainv inverse matrix Ainv = A^{-1}
+/*
+ * writes error message & aborts execution
  */
-int inv(size_t n, double complex *A, double complex *Ainv)
+void errquit(char *fmt, ...)
 {
-    int *ipiv;
-    int ret;
+    va_list args;
+    char errbuf[MAX_ERR_LEN];
 
-    ipiv = (int *) cc_malloc(sizeof(int) * (n + 1));
+    va_start(args, fmt);
+    vsprintf(errbuf, fmt, args);
+    errbuf[MAX_ERR_LEN - 1] = '\0';
+    va_end(args);
 
-    memmove(Ainv, A, sizeof(double complex) * n * n);
+    printf("\nERROR:\n");
+    printf("%s\n", errbuf);
 
-#ifdef BLAS_MKL
-    ret = LAPACKE_zgetrf(LAPACK_ROW_MAJOR, n, n, (MKL_Complex16 *) Ainv, n, ipiv);
-#else
-    ret =  LAPACKE_zgetrf(CblasRowMajor, n, n, Ainv, n, ipiv);
-#endif
-
-    if (ret != 0) {
-        cc_free(ipiv);
-        return ret;
-    }
-
-#ifdef BLAS_MKL
-    ret = LAPACKE_zgetri(LAPACK_ROW_MAJOR, n, (MKL_Complex16 *) Ainv, n, ipiv);
-#else
-    ret = LAPACKE_zgetri(CblasRowMajor, n, Ainv, n, ipiv);
-#endif
-
-    cc_free(ipiv);
-
-    return ret;
+    // abort execution
+    exit(1);
 }

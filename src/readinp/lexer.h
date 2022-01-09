@@ -98,6 +98,7 @@ enum {
     KEYWORD_SKIP,
     KEYWORD_INTERFACE,
     KEYWORD_RESTRICT_T3,
+    KEYWORD_EFF_CONF,
     /* special */
     END_OF_LINE,
     END_OF_FILE

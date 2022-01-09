@@ -129,7 +129,9 @@ int main(int argc, char **argv)
     free(nat_spinors_coeffs);
     free(mol_spinor_energies);
     for (int i = 0; i < n_basis_fun; i++) {
-        free(basis_fun_labels[i]);
+        if (basis_fun_labels[i] != NULL) {
+            free(basis_fun_labels[i]);
+        }
     }
     free(basis_fun_labels);
     free(cmo_alpha);

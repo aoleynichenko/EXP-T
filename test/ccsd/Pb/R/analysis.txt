@@ -1,0 +1,52 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  Ts/call  Ts/call  name    
+ 51.18      0.89     0.89                             integrate_function_log3
+ 26.02      1.34     0.45                             fun_type2
+  9.83      1.51     0.17                             angular_type2_integral
+  4.92      1.59     0.09                             modified_bessel_scaled
+  1.73      1.62     0.03                             tabulate_angular_type2_integrals
+  1.16      1.64     0.02                             eval_USP_integral
+  1.16      1.66     0.02                             tabulate_real_spherical_harmonic_coeffs
+  0.87      1.68     0.02                             radial_type2_integral
+  0.58      1.69     0.01                             construct_angular_momentum_matrices_rsh
+  0.58      1.70     0.01                             double_factorial
+  0.58      1.71     0.01                             evaluate_real_spherical_harmonic
+  0.58      1.72     0.01                             factorial_ratio
+  0.58      1.73     0.01                             generate_cartesian_combinations
+  0.29      1.73     0.01                             get_angular_type2_integral
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2021 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

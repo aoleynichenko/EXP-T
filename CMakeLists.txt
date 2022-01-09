@@ -366,6 +366,20 @@ set(TRANSFORM_NATORB_SOURCE
         src/transform_natorb/transform.c
 )
 
+set(DIATOMIC_SOURCE
+        src/diatomic/main.c
+        src/diatomic/errquit.c
+        src/diatomic/cubic_spline.c
+        src/diatomic/read_input.c
+        src/diatomic/input_data.c
+        src/diatomic/harmonic.c
+        src/diatomic/morse.c
+        src/diatomic/numerov.c
+        src/diatomic/expectation.c
+        src/diatomic/utils.c
+        src/diatomic/tranmom.c
+        )
+
 set(READ_DFCOEF_SOURCE
         src/read_dfcoef/read_dfcoef.f90
         )
@@ -396,6 +410,11 @@ add_executable(
 add_executable(
         expt_transform_natorb.x
         ${TRANSFORM_NATORB_SOURCE}
+)
+
+add_executable(
+        expt_diatomic.x
+        ${DIATOMIC_SOURCE}
 )
 
 add_executable(
