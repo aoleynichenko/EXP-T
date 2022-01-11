@@ -21,26 +21,23 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-#include "matrix_element.h"
-#include "read_input.h"
 #include "cubic_spline.h"
 #include "harmonic.h"
 #include "morse.h"
-#include "numerov.h"
-#include "errquit.h"
+#include "read_input.h"
+#include "solver.h"
+#include "tranmom.h"
 #include "units.h"
-#include "string.h"
+#include "write_psi.h"
 #include "utils.h"
-
 
 #define MAX(a, b) (((a)>(b))?(a):(b))
 #define MIN(a, b) (((a)<(b))?(a):(b))
+
 
 void print_header();
 
@@ -48,12 +45,7 @@ void print_footer();
 
 void parse_arguments(int argc, char **argv, char **path_input_file);
 
-void print_energy_levels(input_data_t *input_data, cubic_spline_t *pot, int *nroots, double **energies,
-                         double ***wavefunctions);
 
-void calc_transition_moments(input_data_t *input_data,
-                             int *nroots1, double **energies1, double ***wavefunctions1,
-                             int *nroots2, double **energies2, double ***wavefunctions2);
 
 int main(int argc, char **argv)
 {
@@ -86,7 +78,7 @@ int main(int argc, char **argv)
     printf(" > equilibrium parameters\n\n");
     find_spline_minimum(pot1, &re1, &emin1, 0);
     input_data->min_energy = emin1;
-    printf("   e(min) = %.12f a.u.\n", emin1);
+    printf("   e(min) = %.12f a.u. = %.6f cm^-1\n", emin1, emin1 * ATOMIC_TO_CM);
     printf("   re     = %.4f a.u. = %.4f angstrom\n", re1, re1 * ATOMIC_TO_ANGSTROM);
     printf("\n");
 
@@ -95,6 +87,14 @@ int main(int argc, char **argv)
 
     solve(input_data, pot1, &nroots1, &energies1, &wavefunctions1);
     print_energy_levels(input_data, pot1, nroots1, energies1, wavefunctions1);
+
+    /*
+     * write wavefunctions to the formatted files
+     * (if required)
+     */
+    if (input_data->write_psi) {
+        write_wavefunctions(input_data, nroots1, energies1, wavefunctions1);
+    }
 
     /*
      * solve rovibrational problem for the excited state potential
@@ -131,55 +131,6 @@ int main(int argc, char **argv)
     }
 
     print_footer();
-}
-
-
-/*
- * prints beautiful table with energies of the J-v states
- * and expectation values of properties
- */
-void print_energy_levels(input_data_t *input_data, cubic_spline_t *pot, int *nroots, double **energies,
-                         double ***wavefunctions)
-{
-    int v_min = input_data->v_min;
-    int v_max = input_data->v_max;
-    int J_min = input_data->J_min;
-    int J_max = input_data->J_max;
-
-    double r_min = pot->x[0];
-    double r_max = pot->x[pot->n - 1];
-    int n_rot = J_max - J_min + 1;
-    int n_vib = v_max - v_min + 1;
-    int ngrid = input_data->grid_size;
-    double emin = input_data->min_energy;
-
-    cubic_spline_t *r_spline = construct_cubic_spline(input_data->n_points, input_data->r, input_data->r);
-
-    printf(" > rovibrational energy levels\n\n");
-    printf("     J   v       energy, cm^-1        < r >, A        < prop >\n\n");
-
-    for (int J = J_min; J <= J_max; J++) {
-        int index_J = J - J_min;
-
-        for (int v = v_min; v <= MIN(v_max, nroots[index_J]); v++) {
-            int index_v = v - v_min;
-
-            double E_Jv = energies[index_J][index_v];
-            double *psi = wavefunctions[index_J][index_v];
-
-            double e_cm = (E_Jv - emin) * ATOMIC_TO_CM;
-            double r_v = matrix_element_spline(ngrid, r_min, r_max, psi, psi, r_spline);
-            double prp = 0.0;
-            if (input_data->prop != NULL) {
-                prp = matrix_element_spline(ngrid, r_min, r_max, psi, psi, input_data->prop);
-            }
-
-            printf("@ %4d%4d%20.4f%16.6f%16.6f\n", J, v, e_cm, r_v * ATOMIC_TO_ANGSTROM, prp);
-        }
-        printf("\n");
-    }
-
-    delete_spline(r_spline);
 }
 
 
@@ -226,5 +177,4 @@ void parse_arguments(int argc, char **argv, char **path_input_file)
 
     *path_input_file = argv[1];
 }
-
 

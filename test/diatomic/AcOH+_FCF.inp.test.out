@@ -5,11 +5,11 @@
 	**                              of diatomic molecules                           **
 	**                                                                              **
 	**                              2022 A. Oleynichenko                            **
-	**                       compiled Jan  9 2022 18:49:27                          **
+	**                       compiled Jan 11 2022 13:23:55                          **
 	**                                                                              **
 	**********************************************************************************
 
- > started at Sun Jan  9 18:58:14 2022
+ > started at Tue Jan 11 13:24:44 2022
 
  > echo of the input file
 
@@ -52,11 +52,14 @@
 
  > input data:
 
-   reduced mass       : 15.81830622 (amu) = 28835.00827101 (electron masses)
-   vibrational levels : from 0 to 5
-   rotational levels  : from 0 to 0
-   elec transition    : yes
-   grid size          : 300 points
+   reduced mass        : 15.81830622 (amu) = 28835.00827101 (electron masses)
+   vibrational levels  : from 0 to 5
+   rotational levels   : from 0 to 0
+   elec transition     : yes
+   write wavefun files : no
+   grid size           : 300 points
+   solver (integrator) : numerov
+   mapping of r grid   : identity = off
 
            r [a.u.]          U1(r) [a.u.]  
          3.401507020000   -451.045595000000
@@ -107,7 +110,7 @@
 
  > equilibrium parameters
 
-   e(min) = -451.097340595910 a.u.
+   e(min) = -451.097340595910 a.u. = -99004422.536207 cm^-1
    re     = 3.9249 a.u. = 2.0770 angstrom
 
  > analysis in the harmonic oscillator + rigid rotor approximation
@@ -170,6 +173,9 @@
 
  > rovibronic transition matrix elements
 
+(J',v')    ground level
+(J'',v'')  excited level
+
     J' J''  v' v''        e1,cm^-1        e2,cm^-1   delta e,cm^-1            prop        |prop|^2
 $    0   0   0   0        327.5900       7607.4633       7279.8734       -0.942947        0.889149
 $    0   0   0   1        327.5900       8231.0560       7903.4660        0.320665        0.102826
@@ -208,5 +214,5 @@ $    0   0   5   3       3552.8046       9467.5003       5914.6957       -0.2024
 $    0   0   5   4       3552.8046      10080.5784       6527.7738        0.586408        0.343874
 $    0   0   5   5       3552.8046      10691.0647       7138.2601       -0.446945        0.199760
 
- > finished at Sun Jan  9 18:58:14 2022
+ > finished at Tue Jan 11 13:24:44 2022
 

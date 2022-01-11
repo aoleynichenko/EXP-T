@@ -21,37 +21,11 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-#ifndef EXPT_INPUT_DATA_H
-#define EXPT_INPUT_DATA_H
+#ifndef EXPT_WRITE_PSI_H
+#define EXPT_WRITE_PSI_H
 
-#include "cubic_spline.h"
-#include "mapping.h"
+#include "input_data.h"
 
-enum {
-    SOLVER_NUMEROV,
-    SOLVER_FD2
-};
+void write_wavefunctions(input_data_t *input_data, int *nroots, double **energies, double ***wavefunctions);
 
-typedef struct {
-    double reduced_mass;
-    int v_min;
-    int v_max;
-    int J_min;
-    int J_max;
-    int n_points;
-    int write_psi;
-    double *r;
-    cubic_spline_t *pot1;
-    cubic_spline_t *pot2;
-    cubic_spline_t *prop;
-    int grid_size;
-    int solver;
-    double min_energy;
-    mapping_t *mapping;
-} input_data_t;
-
-void print_input_data(input_data_t *data);
-
-void delete_input_data(input_data_t *data);
-
-#endif //EXPT_INPUT_DATA_H
+#endif //EXPT_WRITE_PSI_H

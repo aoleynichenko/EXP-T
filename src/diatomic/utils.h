@@ -33,4 +33,8 @@ double ***new_3d_array(int n, int m, int k);
 
 void delete_3d_array(double ***A, int n, int m, int k);
 
+double scalar_product(int n, double *a, double *b);
+
+void rescale_array(int len, double *array, double factor);
+
 #endif //EXPT_UTILS_H

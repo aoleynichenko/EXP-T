@@ -31,6 +31,7 @@
 #include "errquit.h"
 #include "units.h"
 #include "input_data.h"
+#include "utils.h"
 
 
 #define MAX_LINE_LEN 1024
@@ -41,8 +42,6 @@ void read_potential_curve(FILE *inp, int *n_points, double **r, double **pot1, d
 void parse_pec_units(char *line, double *distance_conv_factor, double *energy_conv_factor);
 
 int parse_doubles(char *line, double *values);
-
-void rescale_array(int len, double *array, double factor);
 
 int starts_with(char *str, char *pattern);
 
@@ -67,7 +66,10 @@ input_data_t *read_input(char *input_file)
     /*
      * defaults
      */
+    input_data->write_psi = 0;
     input_data->grid_size = 300;
+    input_data->solver = SOLVER_NUMEROV;
+    input_data->mapping = new_mapping(MAPPING_IDENTITY, NULL);
 
     /*
      * open file and read it line-by-line
@@ -165,6 +167,64 @@ input_data_t *read_input(char *input_file)
         }
 
         /*
+         * solver: Numerov ("numerov") or finite-difference ("fd2")
+         */
+        else if (starts_with(line, "solver")) {
+            char solver_name[MAX_LINE_LEN];
+
+            nread = sscanf(line, "%s%s", buf, solver_name);
+            if (nread != 2) {
+                errquit("syntax error in the 'solver' keyword");
+            }
+            if (strcmp(solver_name, "numerov") == 0) {
+                input_data->solver = SOLVER_NUMEROV;
+            }
+            else if (strcmp(solver_name, "fd2") == 0) {
+                input_data->solver = SOLVER_FD2;
+            }
+            else {
+                errquit("unknown solver: %s", solver_name);
+            }
+        }
+
+        /*
+         * mapping of the integration variable
+         */
+        else if (starts_with(line, "mapping")) {
+            char mapping_type[MAX_LINE_LEN];
+
+            nread = sscanf(line, "%s%s", buf, mapping_type);
+            if (nread != 2) {
+                errquit("syntax error in the 'mapping' keyword");
+            }
+            if (strcmp(mapping_type, "meshkov08") == 0) {
+                double params[2];
+
+                nread = sscanf(line, "%s%s%lf%lf", buf, mapping_type, &params[0], &params[1]);
+                if (nread != 4) {
+                    errquit("syntax error in the 'mapping/meshkov08' option");
+                }
+
+                params[0] *= ANGSTROM_TO_ATOMIC;
+
+                if (input_data->mapping != NULL) {
+                    free(input_data->mapping);
+                }
+                input_data->mapping = new_mapping(MAPPING_MESHKOV_08, params);
+            }
+            else {
+                errquit("unknown mapping type: %s", mapping_type);
+            }
+        }
+
+        /*
+         * write vibrational wavefunctions to the formatted files or not
+         */
+        else if (starts_with(line, "write_psi")) {
+            input_data->write_psi = 1;
+        }
+
+        /*
          * potential energy curve U(r)
          */
         else if (starts_with(line, "potential")) {
@@ -203,6 +263,13 @@ input_data_t *read_input(char *input_file)
             free(pot2);
             free(prop);
         }
+    }
+
+    /*
+     * final validation of the options
+     */
+    if (input_data->solver == SOLVER_NUMEROV && input_data->mapping->type != MAPPING_IDENTITY) {
+        errquit("mapping is currently not available for the Numerov integrator, use the FD2 integrator instead");
     }
 
     fclose(inp);
@@ -332,6 +399,7 @@ int parse_doubles(char *line, double *values)
 {
     int count = 0;
     char *buf = my_strdup(line);
+    remove_trailing_whitespaces(buf);
 
     char *pch = strtok(buf, " \t");
     while (pch != NULL) {
@@ -347,14 +415,6 @@ int parse_doubles(char *line, double *values)
 
     free(buf);
     return count;
-}
-
-
-void rescale_array(int len, double *array, double factor)
-{
-    for (int i = 0; i < len; i++) {
-        array[i] *= factor;
-    }
 }
 
 
@@ -374,6 +434,9 @@ void remove_trailing_whitespaces(char *str)
     for (int i = strlen(str) - 1; i >= 0; i--) {
         if (isspace(str[i])) {
             str[i] = '\0';
+        }
+        else {
+            return;
         }
     }
 }

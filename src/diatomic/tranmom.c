@@ -25,6 +25,8 @@
 #include "tranmom.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "units.h"
 #include "matrix_element.h"
 
@@ -52,8 +54,14 @@ void calc_transition_moments(input_data_t *input_data,
 
     double r_min = pot1->x[0];
     double r_max = pot1->x[pot1->n - 1];
+    double *radial_grid = construct_radial_grid(n_grid, r_min, r_max, input_data->mapping);
+    mapping_t *mapping = input_data->mapping;
 
     printf(" > rovibronic transition matrix elements\n");
+
+    printf("\n");
+    printf("(J',v')    ground level\n");
+    printf("(J'',v'')  excited level\n");
 
     // outer two loops: over J' and J''
     for (int J1 = J_min; J1 <= J_max; J1++) {
@@ -65,10 +73,10 @@ void calc_transition_moments(input_data_t *input_data,
             printf("\n    J' J''  v' v''        e1,cm^-1        e2,cm^-1   delta e,cm^-1            prop        |prop|^2\n");
 
             // inner two loops: over v' and v''
-            for (int v1 = v_min; v1 <= MIN(v_max, nroots1[index_J1]); v1++) {
+            for (int v1 = v_min; v1 <= MIN(v_max, nroots1[index_J1]-1); v1++) {
                 int index_v1 = v1 - v_min;
 
-                for (int v2 = v_min; v2 <= MIN(v_max, nroots2[index_J2]); v2++) {
+                for (int v2 = v_min; v2 <= MIN(v_max, nroots2[index_J2]-1); v2++) {
                     int index_v2 = v2 - v_min;
 
                     // bra
@@ -81,7 +89,7 @@ void calc_transition_moments(input_data_t *input_data,
                     double E2_cm = (E2 - min_energy) * ATOMIC_TO_CM;
                     double *psi2 = wavefunctions2[index_J2][index_v2];
 
-                    double prp12 = matrix_element_spline(n_grid, r_min, r_max, psi1, psi2, prop_fun);
+                    double prp12 = matrix_element_spline(n_grid, radial_grid, mapping, psi1, psi2, prop_fun);
 
                     printf("$ %4d%4d%4d%4d%16.4f%16.4f%16.4f%16.6f%16.6f\n", J1, J2, v1, v2, E1_cm, E2_cm, E2_cm-E1_cm, prp12, prp12*prp12);
                 }
@@ -91,4 +99,6 @@ void calc_transition_moments(input_data_t *input_data,
     }
 
     printf("\n");
+
+    free(radial_grid);
 }

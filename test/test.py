@@ -10,6 +10,7 @@ test_dirs = [
     'sector1h1p',
     'sector2h0p',
     'sector0h2p',
+    'diatomic',
     'x2cmmf',
     'efield',
     'ccsdt-n',
@@ -62,6 +63,7 @@ if do_test_full:
         'sector1h1p',
         'sector2h0p',
         'sector0h2p',
+        'diatomic',
         'ccsdt-n',
         'hughes_kaldor',
         'sector0h3p',
@@ -80,7 +82,8 @@ if do_test_quick:
         'highspin',
         'ccsd(t)',
         'sector0h2p',
-        'sector1h1p'
+        'sector1h1p',
+        'diatomic'
     ]
 if do_test_cuda:
     enabled_tests += ['cuda']

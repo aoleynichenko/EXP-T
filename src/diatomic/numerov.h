@@ -27,9 +27,6 @@
 #include "cubic_spline.h"
 #include "input_data.h"
 
-
-void solve(input_data_t *input_data, cubic_spline_t *pot, int **nroots, double ***energies, double ****wavefunctions);
-
 void numerov_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J, double emin, double emax, int *nroots, double **eigenvalues, double **wavefunctions);
 
 #endif //EXPT_NUMEROV_H

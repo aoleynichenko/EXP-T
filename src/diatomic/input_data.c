@@ -33,12 +33,26 @@ void print_input_data(input_data_t *data)
     printf(" > input data:\n");
     printf("\n");
 
-    printf("   reduced mass       : %.8f (amu) = %.8f (electron masses)\n",
+    printf("   reduced mass        : %.8f (amu) = %.8f (electron masses)\n",
            data->reduced_mass * ELECTRON_MASS_TO_AMU, data->reduced_mass);
-    printf("   vibrational levels : from %d to %d\n", data->v_min, data->v_max);
-    printf("   rotational levels  : from %d to %d\n", data->J_min, data->J_max);
-    printf("   elec transition    : %s\n", (data->pot2 != NULL) ? "yes" : "no");
-    printf("   grid size          : %d points\n", data->grid_size);
+    printf("   vibrational levels  : from %d to %d\n", data->v_min, data->v_max);
+    printf("   rotational levels   : from %d to %d\n", data->J_min, data->J_max);
+    printf("   elec transition     : %s\n", (data->pot2 != NULL) ? "yes" : "no");
+    printf("   write wavefun files : %s\n", data->write_psi ? "yes" : "no");
+    printf("   grid size           : %d points\n", data->grid_size);
+    printf("   solver (integrator) : %s\n", (data->solver == SOLVER_NUMEROV) ? "numerov" : "2nd order finite difference (FD2)");
+    printf("   mapping of r grid   : ");
+    if (data->mapping->type == MAPPING_IDENTITY) {
+        printf("identity = off\n");
+    }
+    else if (data->mapping->type == MAPPING_MESHKOV_08) {
+        double re = data->mapping->params[0];
+        double beta = data->mapping->params[1];
+        printf("meshkov08 (re=%g angstroms, beta=%g)\n", re, beta);
+    }
+    else {
+        printf("other\n");
+    }
     printf("\n");
 
     // potential 1

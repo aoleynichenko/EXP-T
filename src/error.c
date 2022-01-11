@@ -46,7 +46,7 @@ void errquit(char *fmt, ...)
     errbuf[MAX_ERR_LEN - 1] = '\0';
     va_end(args);
 
-    printf("\nERROR:\n");
+    printf("\nerror: ");
     printf("%s\n", errbuf);
 
     // abort execution

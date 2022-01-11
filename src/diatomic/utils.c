@@ -70,3 +70,23 @@ void delete_3d_array(double ***A, int n, int m, int k)
     }
     free(A);
 }
+
+
+double scalar_product(int n, double *a, double *b)
+{
+    double sum = 0.0;
+
+    for (int i = 0; i < n; i++) {
+        sum += a[i] * b[i];
+    }
+
+    return sum;
+}
+
+
+void rescale_array(int len, double *array, double factor)
+{
+    for (int i = 0; i < len; i++) {
+        array[i] *= factor;
+    }
+}

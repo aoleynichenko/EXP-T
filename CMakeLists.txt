@@ -368,16 +368,20 @@ set(TRANSFORM_NATORB_SOURCE
 
 set(DIATOMIC_SOURCE
         src/diatomic/main.c
-        src/diatomic/errquit.c
         src/diatomic/cubic_spline.c
-        src/diatomic/read_input.c
-        src/diatomic/input_data.c
+        src/diatomic/errquit.c
+        src/diatomic/finite_diff.c
         src/diatomic/harmonic.c
+        src/diatomic/input_data.c
+        src/diatomic/mapping.c
+        src/diatomic/matrix_element.c
         src/diatomic/morse.c
         src/diatomic/numerov.c
-        src/diatomic/expectation.c
-        src/diatomic/utils.c
+        src/diatomic/read_input.c
+        src/diatomic/solver.c
         src/diatomic/tranmom.c
+        src/diatomic/utils.c
+        src/diatomic/write_psi.c
         )
 
 set(READ_DFCOEF_SOURCE
@@ -428,11 +432,13 @@ link_libraries("-static")
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
     target_link_libraries(expt.x m ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
     target_link_libraries(heffman.x ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
+    target_link_libraries(expt_diatomic.x ${BLAS_LIBRARIES})
     target_link_libraries(expt2pam.x m)
 endif ()
 if (CMAKE_C_COMPILER_ID MATCHES "Intel")
     target_link_libraries(expt.x m ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
     target_link_libraries(heffman.x ${BLAS_LIBRARIES} ${OpenMP_LIBRARIES})
+    target_link_libraries(expt_diatomic.x ${BLAS_LIBRARIES})
     target_link_libraries(expt2pam.x m)
 endif ()
 if (CUDA_FOUND)

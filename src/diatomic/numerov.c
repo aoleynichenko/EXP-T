@@ -46,55 +46,7 @@ void print_matrix(int n, double *A, char *comment);
 
 int inverse_matrix(size_t n, double *A, double *Ainv);
 
-
-void solve(input_data_t *input_data, cubic_spline_t *pot, int **nroots, double ***energies, double ****wavefunctions)
-{
-    int v_min = input_data->v_min;
-    int v_max = input_data->v_max;
-    int J_min = input_data->J_min;
-    int J_max = input_data->J_max;
-    int n_rot = J_max - J_min + 1;
-    int n_vib = v_max - v_min + 1;
-
-    double re, emin;
-    find_spline_minimum(pot, &re, &emin, 0);
-    double emax = MIN(pot->y[0], pot->y[pot->n-1]);
-
-    int ngrid = input_data->grid_size;
-
-    *nroots = (int *) calloc(n_rot, sizeof(int));
-    *energies = new_2d_array(n_rot, n_vib);
-    *wavefunctions = new_3d_array(n_rot, n_vib, ngrid);
-
-    for (int J = J_min; J <= J_max; J++) {
-
-        int index_J = J - J_min;
-
-        int nroots_J = 0;
-        double *E_J = NULL;
-        double *psi_J = NULL;
-
-        numerov_matrix_solver(input_data, pot, J, emin, emax, &nroots_J, &E_J, &psi_J);
-
-        for (int v = v_min; v <= MIN(v_max,nroots_J); v++) {
-            int index_v = v - v_min;
-
-            // save number of vibrational states
-            (*nroots)[index_J] = nroots_J;
-
-            // save energy
-            (*energies)[index_J][index_v] = E_J[v];
-
-            // save wavefunction
-            double *target_psi = (*wavefunctions)[index_J][index_v];
-            double *source_psi = psi_J + ngrid * v;
-            memcpy(target_psi, source_psi, sizeof(double) * ngrid);
-        }
-
-        free(E_J);
-        free(psi_J);
-    }
-}
+void fd2_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J, double emin, double emax, int *nroots, double **eigenvalues, double **wavefunctions);
 
 
 void numerov_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J, double emin, double emax, int *nroots, double **eigenvalues, double **wavefunctions)

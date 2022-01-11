@@ -56,19 +56,21 @@ class Filter:
         if len(self.ans) > len(nums):
             return False
         
-        # check for coincidence
+        # check for coincidence.
+        # values which should be skipped are denoted with the None
         for i,e in enumerate(self.eps):
-            if abs(nums[i]-self.ans[i]) >= e:
+            if (self.ans[i] is not None) and abs(nums[i]-self.ans[i]) >= e:
                 return False
         return True
 
 
 class Test:
 	
-    def __init__(self, name, inp, filters):
+    def __init__(self, name, inp, filters, binary=FSCC_PATH):
         self.inp = inp
         self.filters = filters
         self.name = name
+        self.binary = binary
 	
     """
     Returns True if OK, False if the test was failed.
@@ -81,7 +83,7 @@ class Test:
 
         output_name = self.inp + ".test.out"
         matches = [False for f in self.filters]
-        cmd = FSCC_PATH + " " + options + " " + self.inp + " | tee " + output_name
+        cmd = self.binary + " " + options + " " + self.inp + " | tee " + output_name
 		
         # remove temporary files
         if options != "--no-clean":

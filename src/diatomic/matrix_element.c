@@ -24,14 +24,12 @@
 #include "matrix_element.h"
 
 
-double matrix_element_spline(int N, double rmin, double rmax, double *psi_bra, double *psi_ket, cubic_spline_t *f)
+double matrix_element_spline(int N, double *radial_grid, mapping_t *map, double *psi_bra, double *psi_ket, cubic_spline_t *f)
 {
-    double l = rmax - rmin;
-    double h = 1.0 / (N + 1);
-
     double sum = 0.0;
+
     for (int i = 0; i < N; i++) {
-        double ri = rmin + (i + 1) * h * l;
+        double ri = radial_grid[i];
         sum += psi_bra[i] * psi_ket[i] * evaluate_spline(f, ri);
     }
 
