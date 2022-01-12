@@ -213,7 +213,7 @@ if (CMAKE_C_COMPILER_ID MATCHES "Intel")
     set(coptim "-g -O3 -xHost -std=c99 ${OpenMP_C_FLAGS}")
 endif ()
 set(CMAKE_C_FLAGS_DEBUG "")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${cflags} ${coptim} ${cdefcuda} ${BLAS_LIBRARY_MACROS} -DVERSION_DEVEL")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${cflags} ${coptim} ${cdefcuda} ${BLAS_LIBRARY_MACROS}")
 
 ################################ Source files ##################################
 
@@ -255,7 +255,6 @@ set(BASIC_SOURCE
 
         src/interfaces/dirac_interface.c       # interface to the DIRAC package
         src/interfaces/dirac_binary.f90        # reads DIRAC's binary integral files
-        src/interfaces/tm2c_interface_devel.c
 
         src/io/io.c               # cross-platform input/output
         src/io/lz4.c              # LZ4 compression algorithm implementation
@@ -274,7 +273,6 @@ set(BASIC_SOURCE
         src/methods/sector11_ccsdt.c
         src/methods/sector02_ccsdt.c
         src/methods/sector03_ccsdt.c
-        src/methods/sector12_devel.c
         src/methods/t3corr_ccsdt.c      # (T) perturbative corrections for the 0h0p sector
         src/heff/heff_0h3p.c
         src/heff/intham.c
