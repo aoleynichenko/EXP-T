@@ -29,7 +29,7 @@
 
 #define MAX_ERR_LEN 1024
 
-/*
+/**
  * writes error message & aborts execution
  */
 void errquit(char *fmt, ...)

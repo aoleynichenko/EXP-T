@@ -26,12 +26,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "mkl.h"
 
+#include "blas_lapack.h"
 #include "cubic_spline.h"
 #include "input_data.h"
 
 
+/**
+ * matrix solver of radial Schrodinger equation
+ * based on the 2nd order formula for numerical differentiation.
+ *
+ * See also the paper:
+ * V. V. Meshkov, A. V. Stolyarov, R. J. Le Roy
+ * Adaptive analytical mapping procedure for efficiently solving the radial Schrodinger equation
+ * Phys. Rev. A 78, 052510 (2008)
+ * doi: 10.1103/PhysRevA.78.052510
+ */
 void fd2_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J, double emin, double emax, int *nroots, double **eigenvalues, double **wavefunctions)
 {
     int N = input_data->grid_size;
@@ -39,7 +49,6 @@ void fd2_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J, dou
     double rmax = pot->x[pot->n - 1];
     double l = rmax - rmin;
     double mu = input_data->reduced_mass;
-    double gamma2 = 2 * mu * l * l;
 
     mapping_t *map = input_data->mapping;
     double ymin = map->r2y(map, rmin);
@@ -113,16 +122,6 @@ void fd2_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J, dou
             for (int j = 0; j < N; j++) {
                 psi[j] = /*sqrt(g[j]) * */ eigenvec[root_count * N + j];
             }
-
-            // normalize wavefunction to unity
-            /*double s = 0.0;
-            for (int i = 0; i < N; i++) {
-                s += psi[i] * psi[i];// * g[i] * g[i];
-            }
-
-            printf("s = %f\n", s);
-
-            rescale_array(N, psi, 1.0/sqrt(s));*/
 
             root_count++;
         }

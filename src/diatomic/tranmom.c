@@ -34,8 +34,9 @@
 #define MIN(a, b) (((a)<(b))?(a):(b))
 
 
-/*
- * calculation of transition moments < psi_i | prop | psi_j >
+/**
+ * calculation of transition moments < psi_i | prop | psi_j >.
+ * prints table with transition moments.
  */
 void calc_transition_moments(input_data_t *input_data,
                              int *nroots1, double **energies1, double ***wavefunctions1,
@@ -89,7 +90,7 @@ void calc_transition_moments(input_data_t *input_data,
                     double E2_cm = (E2 - min_energy) * ATOMIC_TO_CM;
                     double *psi2 = wavefunctions2[index_J2][index_v2];
 
-                    double prp12 = matrix_element_spline(n_grid, radial_grid, mapping, psi1, psi2, prop_fun);
+                    double prp12 = matrix_element_spline(n_grid, radial_grid, psi1, psi2, prop_fun);
 
                     printf("$ %4d%4d%4d%4d%16.4f%16.4f%16.4f%16.6f%16.6f\n", J1, J2, v1, v2, E1_cm, E2_cm, E2_cm-E1_cm, prp12, prp12*prp12);
                 }

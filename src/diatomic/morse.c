@@ -29,12 +29,24 @@
 #include "units.h"
 
 
+/**
+ * Morse potential energy function.
+ *
+ * @param r radial variable
+ * @param re equilibrium internuclear separation
+ * @param a alpha parameter
+ * @param De dissociation energy
+ */
 double morse_potential(double r, double re, double a, double De)
 {
     return De * (exp(-2.0*a*(r-re)) - 2.0 * exp(-a*(r-re)));
 }
 
 
+/**
+ * estimates we, wexe, De, vmax parameters of the potential using
+ * the analytic formulas for the Morse oscillator
+ */
 void morse_analysis(input_data_t *data, cubic_spline_t *pot, double rmin)
 {
     printf(" > analysis in the morse approximation\n\n");

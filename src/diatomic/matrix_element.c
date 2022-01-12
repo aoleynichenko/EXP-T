@@ -24,7 +24,11 @@
 #include "matrix_element.h"
 
 
-double matrix_element_spline(int N, double *radial_grid, mapping_t *map, double *psi_bra, double *psi_ket, cubic_spline_t *f)
+/**
+ * evaluation of the matrix element <psi1|M(r)|psi2>.
+ * Operator M(r) is given by the spline.
+ */
+double matrix_element_spline(int N, double *radial_grid, double *psi_bra, double *psi_ket, cubic_spline_t *f)
 {
     double sum = 0.0;
 

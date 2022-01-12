@@ -36,7 +36,7 @@ mapping_t *new_mapping_identity();
 mapping_t *new_mapping_meshkov_08(double re, double beta);
 
 
-/*
+/**
  * constructs new mapping with given parameters 'params' and return
  * pointer to it.
  *
@@ -58,6 +58,9 @@ mapping_t *new_mapping(int type, double *params)
 }
 
 
+/**
+ * deallocates memory associates with the 'map' object
+ */
 void delete_mapping(mapping_t *map)
 {
     if (map->params != NULL) {
@@ -67,7 +70,7 @@ void delete_mapping(mapping_t *map)
 }
 
 
-/*
+/**
  * constructs radial grid for the given mapping
  */
 double *construct_radial_grid(int n_points, double rmin, double rmax, mapping_t *map)
@@ -88,7 +91,7 @@ double *construct_radial_grid(int n_points, double rmin, double rmax, mapping_t 
 }
 
 
-/*
+/**
  * restores wavefunction psi(r) = sqrt( dr/dy(y) ) * phi(y).
  * psi[] and phi[] arrays must be pre-allocated.
  */
@@ -104,7 +107,7 @@ void restore_wavefunction(int n_points, double *radial_grid, mapping_t *mapping,
 }
 
 
-/*
+/**
  * "Identity" mapping:
  * y = r
  */
@@ -152,7 +155,7 @@ double F_identity(mapping_t *map, double y)
 }
 
 
-/*
+/**
  * mapping procedure proposed by V. V. Meshkov and co-authors
  * for calculations of highly excited rovibrational states near the dissociation limit
  *

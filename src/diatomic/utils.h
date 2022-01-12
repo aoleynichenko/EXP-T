@@ -21,9 +21,13 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-
 #ifndef EXPT_UTILS_H
 #define EXPT_UTILS_H
+
+#define MAX(a,b) (((a)>(b))?(a):(b))
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
+double *new_double_array(int n, double *values);
 
 double **new_2d_array(int n, int m);
 
@@ -33,8 +37,12 @@ double ***new_3d_array(int n, int m, int k);
 
 void delete_3d_array(double ***A, int n, int m, int k);
 
-double scalar_product(int n, double *a, double *b);
-
 void rescale_array(int len, double *array, double factor);
+
+double *new_zero_matrix(int n);
+
+double *new_tridiagonal_matrix(int n, double diag_values, double offdiag_values);
+
+void print_matrix(int n, double *A, char *comment);
 
 #endif //EXPT_UTILS_H

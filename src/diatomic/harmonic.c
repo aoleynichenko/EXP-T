@@ -37,6 +37,10 @@
 double rotational_constant(double r_e, double reduced_mass);
 
 
+/**
+ * based on the given potential, calculates molecular constants
+ * in the harmonic + rigid rotor approximation
+ */
 void harmonic_analysis(input_data_t *data, cubic_spline_t *pot, double rmin)
 {
     printf(" > analysis in the harmonic oscillator + rigid rotor approximation\n\n");
@@ -51,8 +55,8 @@ void harmonic_analysis(input_data_t *data, cubic_spline_t *pot, double rmin)
 }
 
 
-/*
- * Returns harmonic frequency w_e (in atomic units of energy)
+/**
+ * returns harmonic frequency w_e (in atomic units of energy)
  */
 void calculate_harmonic_frequency(cubic_spline_t *pot, double rmin, double reduced_mass, double *we)
 {
@@ -61,8 +65,8 @@ void calculate_harmonic_frequency(cubic_spline_t *pot, double rmin, double reduc
 }
 
 
-/*
- * Returns rigid-rotor value of the rotational constant (in atomic units of energy)
+/**
+ * returns rigid-rotor value of the rotational constant (in atomic units of energy)
  * B = 1/(2*mu*r^2)
  */
 double rotational_constant(double r_e, double reduced_mass)

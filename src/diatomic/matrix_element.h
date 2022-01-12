@@ -27,6 +27,6 @@
 #include "cubic_spline.h"
 #include "mapping.h"
 
-double matrix_element_spline(int N, double *radial_grid, mapping_t *map, double *psi_bra, double *psi_ket, cubic_spline_t *f);
+double matrix_element_spline(int N, double *radial_grid, double *psi_bra, double *psi_ket, cubic_spline_t *f);
 
 #endif //EXPT_MATRIX_ELEMENT_H

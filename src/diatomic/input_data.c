@@ -84,6 +84,9 @@ void print_input_data(input_data_t *data)
 }
 
 
+/**
+ * deallocates memory used by the 'data' object
+ */
 void delete_input_data(input_data_t *data)
 {
     free(data->r);

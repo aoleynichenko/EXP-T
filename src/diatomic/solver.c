@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "mkl.h"
 
 #include "input_data.h"
 #include "finite_diff.h"
@@ -35,11 +34,21 @@
 #include "units.h"
 #include "utils.h"
 
-#define MAX(a, b) (((a)>(b))?(a):(b))
-#define MIN(a, b) (((a)<(b))?(a):(b))
 
-
-
+/**
+ * Provides interface to the solvers of the radial Schrodinger equation.
+ * Currently implemented solvers are:
+ * - Numerov matrix solver
+ * - Finite difference 2nd order matrix solver
+ *
+ * Returns arrays 'nroots', 'energies' and 'wavefunctions'
+ * (these arrays are allocated inside the function).
+ * Energies and wavefunctions are obtained for J = Jmin ... Jmax.
+ * Number of roots obtained for the given J is stored in (*nroots)[J].
+ * Energy of the (J,v) state is stored in (*energies)[J][v].
+ * Wavefunction values at each point of the radial grid are stored
+ * as the one-dimensional array (*wavefunctions)[J][v].
+ */
 void solve(input_data_t *input_data, cubic_spline_t *pot, int **nroots, double ***energies, double ****wavefunctions)
 {
     int v_min = input_data->v_min;
@@ -96,7 +105,7 @@ void solve(input_data_t *input_data, cubic_spline_t *pot, int **nroots, double *
 }
 
 
-/*
+/**
  * prints beautiful table with energies of the J-v states
  * and expectation values of properties
  */
@@ -115,7 +124,6 @@ void print_energy_levels(input_data_t *input_data, cubic_spline_t *pot, int *nro
     int ngrid = input_data->grid_size;
     double emin = input_data->min_energy;
     double *radial_grid = construct_radial_grid(ngrid, r_min, r_max, input_data->mapping);
-    mapping_t *mapping = input_data->mapping;
 
     cubic_spline_t *r_spline = construct_cubic_spline(input_data->n_points, input_data->r, input_data->r);
 
@@ -132,10 +140,10 @@ void print_energy_levels(input_data_t *input_data, cubic_spline_t *pot, int *nro
             double *psi = wavefunctions[index_J][index_v];
 
             double e_cm = (E_Jv - emin) * ATOMIC_TO_CM;
-            double r_v = matrix_element_spline(ngrid, radial_grid, mapping, psi, psi, r_spline);
+            double r_v = matrix_element_spline(ngrid, radial_grid, psi, psi, r_spline);
             double prp = 0.0;
             if (input_data->prop != NULL) {
-                prp = matrix_element_spline(ngrid, radial_grid, mapping, psi, psi, input_data->prop);
+                prp = matrix_element_spline(ngrid, radial_grid, psi, psi, input_data->prop);
             }
 
             printf("@ %4d%4d%20.4f%16.6f%16.6f\n", J, v, e_cm, r_v * ATOMIC_TO_ANGSTROM, prp);

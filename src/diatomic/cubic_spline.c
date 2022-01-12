@@ -42,7 +42,7 @@ void sort_pairs_ascending(int n, double *x, double *y);
 void spline_find_piece(cubic_spline_t *spline, double x, int *low, int *high);
 
 
-/*
+/**
  * Constructs and returns the cubic spline object.
  * Natural spline is assumed (boundary conditions: y''[0] = y''[n-1] = 0.0)
  */
@@ -98,7 +98,7 @@ cubic_spline_t *construct_cubic_spline(int n, double *x, double *y)
 }
 
 
-/*
+/**
  * Evaluates the value of the spline at the given point 'x'
  */
 double evaluate_spline(cubic_spline_t *spline, double x)
@@ -118,7 +118,7 @@ double evaluate_spline(cubic_spline_t *spline, double x)
 }
 
 
-/*
+/**
  * Deallocation of the cubic spline object
  */
 void delete_spline(cubic_spline_t *spline)
@@ -132,7 +132,7 @@ void delete_spline(cubic_spline_t *spline)
 }
 
 
-/*
+/**
  * Calculates the first derivative at the point 'x'
  */
 double spline_first_derivative(cubic_spline_t *spline, double x)
@@ -155,7 +155,7 @@ double spline_first_derivative(cubic_spline_t *spline, double x)
 }
 
 
-/*
+/**
  * Calculates the second derivative at the point 'x'
  */
 double spline_second_derivative(cubic_spline_t *spline, double x)
@@ -177,7 +177,7 @@ double spline_second_derivative(cubic_spline_t *spline, double x)
 }
 
 
-/*
+/**
  * Calculates the third derivative at the point 'x'
  */
 double spline_third_derivative(cubic_spline_t *spline, double x)
@@ -197,28 +197,28 @@ double spline_third_derivative(cubic_spline_t *spline, double x)
 }
 
 
-/*
+/**
  * find right place in the table by means of bisection
  */
-void spline_find_piece(cubic_spline_t *spline, double x, int *low, int *high)
+void spline_find_piece(cubic_spline_t *spline, double x, int *index_low, int *index_high)
 {
-    int klo = 0;
-    int khi = spline->n - 1;
-    while (khi - klo > 1) {
-        int k = (khi + klo) >> 1;
+    int low = 0;
+    int high = spline->n - 1;
+    while (high - low > 1) {
+        int k = (high + low) >> 1;
         if (spline->x[k] > x) {
-            khi = k;
+            high = k;
         } else {
-            klo = k;
+            low = k;
         }
     }
 
-    *low = klo;
-    *high = khi;
+    *index_low = low;
+    *index_high = high;
 }
 
 
-/*
+/**
  * Returns the minimum point (xmin,ymin) for the given spline-interpolated function
  */
 void find_spline_minimum(cubic_spline_t *spline, double *xmin, double *ymin, int print_level)
@@ -301,7 +301,7 @@ void find_spline_minimum(cubic_spline_t *spline, double *xmin, double *ymin, int
 }
 
 
-/*
+/**
  * Sorts pairs of points (x[i],y[i]) by the x[i] values (in an ascending order)
  */
 void sort_pairs_ascending(int n, double *x, double *y)

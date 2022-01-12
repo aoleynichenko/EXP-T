@@ -37,6 +37,20 @@
 #define MAX_LINE_LEN 1024
 #define MAX_NUM_POINTS 1024
 
+void parse_option_masses(input_data_t *input_data, char *line);
+
+void parse_option_viblevels(input_data_t *input_data, char *line);
+
+void parse_option_rotlevels(input_data_t *input_data, char *line);
+
+void parse_option_grid_size(input_data_t *input_data, char *line);
+
+void parse_option_solver(input_data_t *input_data, char *line);
+
+void parse_option_mapping(input_data_t *input_data, char *line);
+
+void parse_option_potential(input_data_t *input_data, FILE *file, char *line);
+
 void read_potential_curve(FILE *inp, int *n_points, double **r, double **pot1, double **pot2, double **prop);
 
 void parse_pec_units(char *line, double *distance_conv_factor, double *energy_conv_factor);
@@ -49,17 +63,14 @@ void remove_trailing_whitespaces(char *str);
 
 char *my_strdup(char *s);
 
-double *new_double_array(int n, double *values);
 
-
+/**
+ * reads user-specified options (masses, potentials, etc) from the formatted text file.
+ * returns structure containing all the necessary information.
+ */
 input_data_t *read_input(char *input_file)
 {
     char line[MAX_LINE_LEN];
-    char buf[MAX_LINE_LEN];
-    int nread;
-    double mass1, mass2;
-    double distance_conv_factor = 1.0;
-    double energy_conv_factor = 1.0;
 
     input_data_t *input_data = (input_data_t *) calloc(1, sizeof(input_data_t));
 
@@ -74,20 +85,20 @@ input_data_t *read_input(char *input_file)
     /*
      * open file and read it line-by-line
      */
-    FILE *inp = fopen(input_file, "r");
-    if (inp == NULL) {
+    FILE *inp_file = fopen(input_file, "r");
+    if (inp_file == NULL) {
         errquit("cannot open input file '%s'", input_file);
     }
 
     printf(" > echo of the input file\n\n");
-    while (fgets(line, MAX_LINE_LEN, inp) != NULL) {
+    while (fgets(line, MAX_LINE_LEN, inp_file) != NULL) {
         printf("   %s", line);
     }
     printf("\n");
 
-    rewind(inp);
+    rewind(inp_file);
 
-    while (fgets(line, MAX_LINE_LEN, inp) != NULL) {
+    while (fgets(line, MAX_LINE_LEN, inp_file) != NULL) {
 
         /*
          * skip comments
@@ -99,169 +110,57 @@ input_data_t *read_input(char *input_file)
         /*
          * atomic masses
          */
-        else if (starts_with(line, "masses")) {
-            nread = sscanf(line, "%s%lf%lf", buf, &mass1, &mass2);
-            if (nread != 3) {
-                errquit("syntax error in 'masses' keyword");
-            }
-            input_data->reduced_mass = mass1 * mass2 / (mass1 + mass2) * AMU_TO_ELECTRON_MASS;
+        if (starts_with(line, "masses")) {
+            parse_option_masses(input_data, line);
         }
 
         /*
          * lower and upper vibrational quantum number (v)
          */
-        else if (starts_with(line, "viblevels")) {
-            int lower, upper;
-
-            nread = sscanf(line, "%s%d%d", buf, &lower, &upper);
-            if (nread != 3) {
-                errquit("syntax error in the 'viblevels' keyword");
-            }
-            if (lower < 0 || upper < 0) {
-                errquit("vibrational numbers should be non-negative");
-            }
-            if (lower > upper) {
-                errquit("wrong order of vibrational numbers");
-            }
-
-            input_data->v_min = lower;
-            input_data->v_max = upper;
+        if (starts_with(line, "viblevels")) {
+            parse_option_viblevels(input_data, line);
         }
 
         /*
          * lower and upper rotational quantum number (J)
          */
-        else if (starts_with(line, "rotlevels")) {
-            int lower, upper;
-
-            nread = sscanf(line, "%s%d%d", buf, &lower, &upper);
-            if (nread != 3) {
-                errquit("syntax error in the 'rotlevels' keyword");
-            }
-            if (lower < 0 || upper < 0) {
-                errquit("rotational numbers should be non-negative");
-            }
-            if (lower > upper) {
-                errquit("wrong order of rotational numbers");
-            }
-
-            input_data->J_min = lower;
-            input_data->J_max = upper;
+        if (starts_with(line, "rotlevels")) {
+            parse_option_rotlevels(input_data, line);
         }
 
         /*
          * number of points in the integration grid
          */
-        else if (starts_with(line, "grid_size")) {
-            int grid_size;
-
-            nread = sscanf(line, "%s%d", buf, &grid_size);
-            if (nread != 2) {
-                errquit("syntax error in the 'grid_size' keyword");
-            }
-            if (grid_size <= 0) {
-                errquit("grid size must be positive");
-            }
-
-            input_data->grid_size = grid_size;
+        if (starts_with(line, "grid_size")) {
+            parse_option_grid_size(input_data, line);
         }
 
         /*
-         * solver: Numerov ("numerov") or finite-difference ("fd2")
+         * solver: Numerov or finite-difference
          */
-        else if (starts_with(line, "solver")) {
-            char solver_name[MAX_LINE_LEN];
-
-            nread = sscanf(line, "%s%s", buf, solver_name);
-            if (nread != 2) {
-                errquit("syntax error in the 'solver' keyword");
-            }
-            if (strcmp(solver_name, "numerov") == 0) {
-                input_data->solver = SOLVER_NUMEROV;
-            }
-            else if (strcmp(solver_name, "fd2") == 0) {
-                input_data->solver = SOLVER_FD2;
-            }
-            else {
-                errquit("unknown solver: %s", solver_name);
-            }
+        if (starts_with(line, "solver")) {
+            parse_option_solver(input_data, line);
         }
 
         /*
          * mapping of the integration variable
          */
-        else if (starts_with(line, "mapping")) {
-            char mapping_type[MAX_LINE_LEN];
-
-            nread = sscanf(line, "%s%s", buf, mapping_type);
-            if (nread != 2) {
-                errquit("syntax error in the 'mapping' keyword");
-            }
-            if (strcmp(mapping_type, "meshkov08") == 0) {
-                double params[2];
-
-                nread = sscanf(line, "%s%s%lf%lf", buf, mapping_type, &params[0], &params[1]);
-                if (nread != 4) {
-                    errquit("syntax error in the 'mapping/meshkov08' option");
-                }
-
-                params[0] *= ANGSTROM_TO_ATOMIC;
-
-                if (input_data->mapping != NULL) {
-                    free(input_data->mapping);
-                }
-                input_data->mapping = new_mapping(MAPPING_MESHKOV_08, params);
-            }
-            else {
-                errquit("unknown mapping type: %s", mapping_type);
-            }
+        if (starts_with(line, "mapping")) {
+            parse_option_mapping(input_data, line);
         }
 
         /*
          * write vibrational wavefunctions to the formatted files or not
          */
-        else if (starts_with(line, "write_psi")) {
+        if (starts_with(line, "write_psi")) {
             input_data->write_psi = 1;
         }
 
         /*
          * potential energy curve U(r)
          */
-        else if (starts_with(line, "potential")) {
-
-            int n_points = 0;
-            double *r = NULL;
-            double *pot1 = NULL;
-            double *pot2 = NULL;
-            double *prop = NULL;
-
-            // check if units are specified
-            parse_pec_units(line, &distance_conv_factor, &energy_conv_factor);
-
-            // read points
-            read_potential_curve(inp, &n_points, &r, &pot1, &pot2, &prop);
-
-            // transform curve to atomic units (bohrs, Hartrees)
-            rescale_array(n_points, r, distance_conv_factor);
-            rescale_array(n_points, pot1, energy_conv_factor);
-            if (pot2) {
-                rescale_array(n_points, pot2, energy_conv_factor);
-            }
-
-            // potentials and property curves are stored as splines
-            input_data->n_points = n_points;
-            input_data->r = r;
-            input_data->pot1 = construct_cubic_spline(n_points, r, pot1);
-            if (pot2) {
-                input_data->pot2 = construct_cubic_spline(n_points, r, pot2);
-            }
-            if (prop) {
-                input_data->prop = construct_cubic_spline(n_points, r, prop);
-            }
-
-            free(pot1);
-            free(pot2);
-            free(prop);
+        if (starts_with(line, "potential")) {
+            parse_option_potential(input_data, inp_file, line);
         }
     }
 
@@ -272,9 +171,216 @@ input_data_t *read_input(char *input_file)
         errquit("mapping is currently not available for the Numerov integrator, use the FD2 integrator instead");
     }
 
-    fclose(inp);
+    fclose(inp_file);
 
     return input_data;
+}
+
+
+/**
+ * atomic masses
+ *
+ * syntax:
+ * masses <real mass1> <real mass2>
+ */
+void parse_option_masses(input_data_t *input_data, char *line)
+{
+    char buf[MAX_LINE_LEN];
+    double mass1, mass2;
+
+    int nread = sscanf(line, "%s%lf%lf", buf, &mass1, &mass2);
+    if (nread != 3) {
+        errquit("syntax error in 'masses' keyword");
+    }
+
+    input_data->reduced_mass = mass1 * mass2 / (mass1 + mass2) * AMU_TO_ELECTRON_MASS;
+}
+
+
+/**
+ * lower and upper vibrational quantum number (v)
+ *
+ * syntax:
+ * viblevels <integer vmin> <integer vmax>
+ */
+void parse_option_viblevels(input_data_t *input_data, char *line)
+{
+    char buf[MAX_LINE_LEN];
+    int lower, upper;
+
+    int nread = sscanf(line, "%s%d%d", buf, &lower, &upper);
+    if (nread != 3) {
+        errquit("syntax error in the 'viblevels' keyword");
+    }
+    if (lower < 0 || upper < 0) {
+        errquit("vibrational numbers should be non-negative");
+    }
+    if (lower > upper) {
+        errquit("wrong order of vibrational numbers");
+    }
+
+    input_data->v_min = lower;
+    input_data->v_max = upper;
+}
+
+
+/**
+ * lower and upper rotational quantum number (J)
+ *
+ * syntax:
+ * rotlevels <integer Jmin> <integer Jmax>
+ */
+void parse_option_rotlevels(input_data_t *input_data, char *line)
+{
+    char buf[MAX_LINE_LEN];
+    int lower, upper;
+
+    int nread = sscanf(line, "%s%d%d", buf, &lower, &upper);
+    if (nread != 3) {
+        errquit("syntax error in the 'rotlevels' keyword");
+    }
+    if (lower < 0 || upper < 0) {
+        errquit("rotational numbers should be non-negative");
+    }
+    if (lower > upper) {
+        errquit("wrong order of rotational numbers");
+    }
+
+    input_data->J_min = lower;
+    input_data->J_max = upper;
+}
+
+
+/**
+ * number of points in the integration grid
+ *
+ * syntax:
+ * grid_size <integer number-of-points>
+ */
+void parse_option_grid_size(input_data_t *input_data, char *line)
+{
+    char buf[MAX_LINE_LEN];
+    int grid_size;
+
+    int nread = sscanf(line, "%s%d", buf, &grid_size);
+    if (nread != 2) {
+        errquit("syntax error in the 'grid_size' keyword");
+    }
+    if (grid_size <= 0) {
+        errquit("grid size must be positive");
+    }
+
+    input_data->grid_size = grid_size;
+}
+
+
+/**
+ * solver: Numerov or finite-difference
+ *
+ * syntax:
+ * solver [ numerov | fd2 ]
+ */
+void parse_option_solver(input_data_t *input_data, char *line)
+{
+    char buf[MAX_LINE_LEN];
+    char solver_name[MAX_LINE_LEN];
+
+    int nread = sscanf(line, "%s%s", buf, solver_name);
+    if (nread != 2) {
+        errquit("syntax error in the 'solver' keyword");
+    }
+    if (strcmp(solver_name, "numerov") == 0) {
+        input_data->solver = SOLVER_NUMEROV;
+    } else if (strcmp(solver_name, "fd2") == 0) {
+        input_data->solver = SOLVER_FD2;
+    } else {
+        errquit("unknown solver: %s", solver_name);
+    }
+}
+
+
+/**
+ * mapping of the integration variable
+ *
+ * syntax:
+ * mapping meshkov08 <double ra (angstroms)> <double beta>
+ */
+void parse_option_mapping(input_data_t *input_data, char *line)
+{
+    char buf[MAX_LINE_LEN];
+    char mapping_type[MAX_LINE_LEN];
+
+    int nread = sscanf(line, "%s%s", buf, mapping_type);
+    if (nread != 2) {
+        errquit("syntax error in the 'mapping' keyword");
+    }
+    if (strcmp(mapping_type, "meshkov08") == 0) {
+        double params[2];
+
+        nread = sscanf(line, "%s%s%lf%lf", buf, mapping_type, &params[0], &params[1]);
+        if (nread != 4) {
+            errquit("syntax error in the 'mapping/meshkov08' option");
+        }
+
+        params[0] *= ANGSTROM_TO_ATOMIC;
+
+        if (input_data->mapping != NULL) {
+            free(input_data->mapping);
+        }
+        input_data->mapping = new_mapping(MAPPING_MESHKOV_08, params);
+    } else {
+        errquit("unknown mapping type: %s", mapping_type);
+    }
+}
+
+
+/**
+ * potential energy curve U(r)
+ *
+ * syntax:
+ * potential [<units of r>] [<units of energy>]
+ * <r>  <U1> [<property(R)>] [<U2>]
+ * ...
+ * end
+ */
+void parse_option_potential(input_data_t *input_data, FILE *file, char *line)
+{
+    double distance_conv_factor = 1.0;
+    double energy_conv_factor = 1.0;
+
+    int n_points = 0;
+    double *r = NULL;
+    double *pot1 = NULL;
+    double *pot2 = NULL;
+    double *prop = NULL;
+
+    // check if units are specified
+    parse_pec_units(line, &distance_conv_factor, &energy_conv_factor);
+
+    // read points
+    read_potential_curve(file, &n_points, &r, &pot1, &pot2, &prop);
+
+    // transform curve to atomic units (bohrs, Hartrees)
+    rescale_array(n_points, r, distance_conv_factor);
+    rescale_array(n_points, pot1, energy_conv_factor);
+    if (pot2) {
+        rescale_array(n_points, pot2, energy_conv_factor);
+    }
+
+    // potentials and property curves are stored as splines
+    input_data->n_points = n_points;
+    input_data->r = r;
+    input_data->pot1 = construct_cubic_spline(n_points, r, pot1);
+    if (pot2) {
+        input_data->pot2 = construct_cubic_spline(n_points, r, pot2);
+    }
+    if (prop) {
+        input_data->prop = construct_cubic_spline(n_points, r, prop);
+    }
+
+    free(pot1);
+    free(pot2);
+    free(prop);
 }
 
 
@@ -341,6 +447,13 @@ void read_potential_curve(FILE *inp, int *n_points, double **r, double **pot1, d
 }
 
 
+/**
+ * extracts units of distance and energy from the 'line' string.
+ *
+ * allowed units are:
+ *   distance: angstrom, atomic = bohr = au
+ *   energy:   cm-1 = cm, atomic = hartree
+ */
 void parse_pec_units(char *line, double *distance_conv_factor, double *energy_conv_factor)
 {
     *distance_conv_factor = ATOMIC_TO_ATOMIC;
@@ -358,13 +471,11 @@ void parse_pec_units(char *line, double *distance_conv_factor, double *energy_co
         if (count == 1) {
             if (strcmp(pch, "angstrom") == 0) {
                 *distance_conv_factor = ANGSTROM_TO_ATOMIC;
-            }
-            else if (strcmp(pch, "atomic") == 0 ||
-                     strcmp(pch, "bohr") == 0 ||
-                     strcmp(pch, "au") == 0) {
+            } else if (strcmp(pch, "atomic") == 0 ||
+                       strcmp(pch, "bohr") == 0 ||
+                       strcmp(pch, "au") == 0) {
                 // nothing to do
-            }
-            else {
+            } else {
                 errquit("wrong units of distance: '%s'\n"
                         "allowed units are 'angstrom', 'atomic', 'bohr', 'au'",
                         pch);
@@ -374,17 +485,16 @@ void parse_pec_units(char *line, double *distance_conv_factor, double *energy_co
         /*
          * units of energy
          */
-        else if (count == 2) {
+        if (count == 2) {
             if (strcmp(pch, "cm-1") == 0 ||
                 strcmp(pch, "cm") == 0) {
                 *energy_conv_factor = CM_TO_ATOMIC;
-            }
-            else if (strcmp(pch, "atomic") == 0) {
+            } else if (strcmp(pch, "atomic") == 0 ||
+                       strcmp(pch, "hartree") == 0) {
                 // nothing to do
-            }
-            else {
+            } else {
                 errquit("wrong units of energy: '%s'\n"
-                        "allowed units are 'cm-1', 'atomic'",
+                        "allowed units are 'cm-1', 'cm', 'atomic', 'hartree'",
                         pch);
             }
         }
@@ -434,8 +544,7 @@ void remove_trailing_whitespaces(char *str)
     for (int i = strlen(str) - 1; i >= 0; i--) {
         if (isspace(str[i])) {
             str[i] = '\0';
-        }
-        else {
+        } else {
             return;
         }
     }
@@ -454,13 +563,3 @@ char *my_strdup(char *s)
 }
 
 
-double *new_double_array(int n, double *values)
-{
-    double *arr = (double *) calloc(n, sizeof(double));
-
-    for (int i = 0; i < n; i++) {
-        arr[i] = values[i];
-    }
-
-    return arr;
-}

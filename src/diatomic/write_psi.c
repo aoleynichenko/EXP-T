@@ -40,6 +40,9 @@
 void write_wavefunction_file(int v, int J, int n_points, double *radial_grid, mapping_t *mapping, double *psi);
 
 
+/**
+ * flushes wavefunctions into the formatted files.
+ */
 void write_wavefunctions(input_data_t *input_data, int *nroots, double **energies, double ***wavefunctions)
 {
     int v_min = input_data->v_min;

@@ -23,32 +23,29 @@
 
 #include "numerov.h"
 
-#include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "mkl.h"
 
+#include "blas_lapack.h"
 #include "cubic_spline.h"
 #include "input_data.h"
-#include "units.h"
 #include "utils.h"
 
 
-#define MAX(a,b) (((a)>(b))?(a):(b))
-#define MIN(a,b) (((a)<(b))?(a):(b))
-
-double *new_zero_matrix(int n);
-
-double *new_tridiagonal_matrix(int n, double diag_values, double offdiag_values);
-
-void print_matrix(int n, double *A, char *comment);
-
 int inverse_matrix(size_t n, double *A, double *Ainv);
 
-void fd2_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J, double emin, double emax, int *nroots, double **eigenvalues, double **wavefunctions);
 
-
+/**
+ * Matrix Numerov method for integration of the radial Schrodinger equation.
+ * Uniform grid is used.
+ *
+ * For details on the method, see, for example:
+ *
+ * M. Pillai, J. Goglio, T. G. Walker,
+ * Matrix Numerov method for solving Schrodinger’s equation.
+ * Am. J. Phys. 80, 1017 (2012)
+ * doi: 10.1119/1.4748813
+ */
 void numerov_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J, double emin, double emax, int *nroots, double **eigenvalues, double **wavefunctions)
 {
     int N = input_data->grid_size;
@@ -117,7 +114,9 @@ void numerov_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J,
         }
     }
 
-    // clean up
+    /*
+     * clean up
+     */
     free(A);
     free(B);
     free(Binv);
@@ -126,56 +125,9 @@ void numerov_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J,
 }
 
 
-/*
- * allocates square matrix filled with zeros
- */
-double *new_zero_matrix(int n)
-{
-    return (double *) calloc(n * n, sizeof(double));
-}
-
-
-/*
- * allocates square tridiagonal n x n matrix.
- *
- * elements on the main diagonal are equal to 'diag_values',
- * and elements on the 1st and -1st diagonals are equal to 'offdiag_values'.
- * other elements are zero.
- */
-double *new_tridiagonal_matrix(int n, double diag_values, double offdiag_values)
-{
-    double *A = (double *) calloc(n * n, sizeof(double));
-
-    for (int i = 0; i < n; i++) {
-        A[i * n + i] = diag_values;
-    }
-    for (int i = 1; i < n; i++) {
-        A[(i - 1) * n + i] = offdiag_values;
-        A[i * n + (i - 1)] = offdiag_values;
-    }
-
-    return A;
-}
-
-
-/*
- * prints n x n matrix to stdout
- */
-void print_matrix(int n, double *A, char *comment)
-{
-    printf(" Matrix %dx%d: %s\n", n, n, comment);
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            printf("%10.6f", A[i * n + j]);
-        }
-        printf("\n");
-    }
-}
-
-
 /**
  * calculates inverse matrix
- * @param n matrix dimensino
+ * @param n matrix dimension
  * @param A square n x n matrix; will not be destroyed
  * @param Ainv inverse matrix Ainv = A^{-1}
  */
@@ -188,14 +140,14 @@ int inverse_matrix(size_t n, double *A, double *Ainv)
 
     memmove(Ainv, A, sizeof(double) * n * n);
 
-    ret = LAPACKE_dgetrf(CblasRowMajor, n, n, Ainv, n, ipiv);
+    ret = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, n, n, Ainv, n, ipiv);
 
     if (ret != 0) {
         free(ipiv);
         return ret;
     }
 
-    ret = LAPACKE_dgetri(CblasRowMajor, n, Ainv, n, ipiv);
+    ret = LAPACKE_dgetri(LAPACK_ROW_MAJOR, n, Ainv, n, ipiv);
 
     free(ipiv);
 

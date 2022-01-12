@@ -24,6 +24,19 @@
 #include "utils.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+
+
+double *new_double_array(int n, double *values)
+{
+    double *arr = (double *) calloc(n, sizeof(double));
+
+    for (int i = 0; i < n; i++) {
+        arr[i] = values[i];
+    }
+
+    return arr;
+}
 
 
 double **new_2d_array(int n, int m)
@@ -72,21 +85,60 @@ void delete_3d_array(double ***A, int n, int m, int k)
 }
 
 
-double scalar_product(int n, double *a, double *b)
-{
-    double sum = 0.0;
-
-    for (int i = 0; i < n; i++) {
-        sum += a[i] * b[i];
-    }
-
-    return sum;
-}
-
-
+/*
+ * array := factor * array
+ */
 void rescale_array(int len, double *array, double factor)
 {
     for (int i = 0; i < len; i++) {
         array[i] *= factor;
     }
 }
+
+
+/**
+ * allocates square matrix filled with zeros
+ */
+double *new_zero_matrix(int n)
+{
+    return (double *) calloc(n * n, sizeof(double));
+}
+
+
+/**
+ * allocates square tridiagonal n x n matrix.
+ *
+ * elements on the main diagonal are equal to 'diag_values',
+ * and elements on the 1st and -1st diagonals are equal to 'offdiag_values'.
+ * other elements are zero.
+ */
+double *new_tridiagonal_matrix(int n, double diag_values, double offdiag_values)
+{
+    double *A = (double *) calloc(n * n, sizeof(double));
+
+    for (int i = 0; i < n; i++) {
+        A[i * n + i] = diag_values;
+    }
+    for (int i = 1; i < n; i++) {
+        A[(i - 1) * n + i] = offdiag_values;
+        A[i * n + (i - 1)] = offdiag_values;
+    }
+
+    return A;
+}
+
+
+/**
+ * prints n x n matrix to stdout
+ */
+void print_matrix(int n, double *A, char *comment)
+{
+    printf(" Matrix %dx%d: %s\n", n, n, comment);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            printf("%10.6f", A[i * n + j]);
+        }
+        printf("\n");
+    }
+}
+
