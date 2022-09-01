@@ -1,0 +1,51 @@
+maxiter 300
+conv 1e-9
+sector 0h2p
+nactp 24
+disk_usage 0
+diis 100
+x2cmmf
+
+print "eff config"
+roots_cutoff 90000 cm
+
+
+ih_imms
+  sectors 0h2p
+  subspace energy -1.0 -0.5
+  subspace energy -0.5 -0.3
+  main_occ 2 0 0
+  main_occ 1 1 0
+end
+
+
+spinor_labels
+# gerade
+  3  3s
+  4  3d3/2
+  5  3d3/2
+  6  3d5/2
+  7  3d5/2
+  8  3d5/2
+  23 3s
+  24 3d3/2
+  25 3d3/2
+  26 3d5/2
+  27 3d5/2
+  28 3d5/2
+#ungerade
+  41 2p1/2
+  42 2p3/2
+  43 2p3/2
+  44 3p1/2
+  45 3p3/2
+  46 3p3/2
+  67 2p1/2
+  68 2p3/2
+  69 2p3/2
+  70 3p1/2
+  71 3p3/2
+  72 3p3/2
+end
+
+

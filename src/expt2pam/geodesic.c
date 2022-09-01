@@ -5,6 +5,13 @@
 
 #include "geodesic.h"
 
+//
+//  geodesic
+//  geometry builder
+//  Copyright (c) 2013 Robby Kraft
+//  MIT open source license
+//
+
 ////////////////////////////////////////////////////////////////////
 //                        PLATONIC SOLIDS                         //
 //           centered at origin          radius = 1               //

@@ -1,9 +1,0 @@
-sector 0h2p
-nactp 6
-reuse 0h0p 0h1p
-model ccsdt-1'
-maxiter 500
-conv 1e-8
-print high
-memory 4 gb
-

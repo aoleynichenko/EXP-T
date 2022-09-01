@@ -33,6 +33,9 @@ enum {
 };
 
 typedef struct {
+    double mass1;
+    double mass2;
+    int charge;
     double reduced_mass;
     int v_min;
     int v_max;

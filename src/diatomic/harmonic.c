@@ -36,6 +36,8 @@
 
 double rotational_constant(double r_e, double reduced_mass);
 
+double distortion_constant(double r_e, double reduced_mass, double we);
+
 
 /**
  * based on the given potential, calculates molecular constants
@@ -50,7 +52,11 @@ void harmonic_analysis(input_data_t *data, cubic_spline_t *pot, double rmin)
     printf("   we = %.4f cm^-1\n", we * ATOMIC_TO_CM);
 
     double Be = rotational_constant(rmin, data->reduced_mass);
-    printf("   Be = %.4f cm^-1\n", Be * ATOMIC_TO_CM);
+    printf("   Be = %.6f cm^-1\n", Be * ATOMIC_TO_CM);
+
+    double De = distortion_constant(rmin, data->reduced_mass, we);
+    printf("   De = %.6f cm^-1\n", De * ATOMIC_TO_CM);
+
     printf("\n");
 }
 
@@ -73,4 +79,15 @@ double rotational_constant(double r_e, double reduced_mass)
 {
     double I = reduced_mass * r_e * r_e;
     return 1.0 / (2 * I);
+}
+
+
+/**
+ * returns the centrifugal distortion constant (in atomic units of energy)
+ * D = 4 B^3 / w^2
+ */
+double distortion_constant(double r_e, double reduced_mass, double we)
+{
+    double B = rotational_constant(r_e, reduced_mass);
+    return 4.0 * B * B * B / (we * we);
 }

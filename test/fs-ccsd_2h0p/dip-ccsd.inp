@@ -1,0 +1,21 @@
+#
+# Double ionization potential of the ethylene molecule.
+# Experimental geometry, cc-pVDZ basis set is used.
+# Electronic states of C2H4^{2+} are obtained in the 2h0p FS sector.
+#
+# See also for ADC calculations:
+# E. Ohrendorf, H. Koeppel, L. S. Cederbaum, F. Tarantelli, A. Sgamellotti.
+# Doubly ionized states of ethylene: Auger spectrum, potential energy
+# surfaces and nuclear dynamics.
+# J. Chem. Phys. 91, 1734 (1989).
+# DOI: 10.1063/1.457080
+#
+
+sector 2h0p
+nacth 12
+
+disk_usage 0
+conv 1e-7
+maxiter 100
+diis 100
+

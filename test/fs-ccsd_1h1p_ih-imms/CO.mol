@@ -1,0 +1,12 @@
+DIRAC
+CO molecule
+
+C   2     Cinfv
+        6.    1
+C        0.0      0.0      0.0
+LARGE BASIS aug-cc-pVDZ
+        8.    1
+O        0.0      0.0      2.132
+LARGE BASIS aug-cc-pVDZ
+FINISH
+

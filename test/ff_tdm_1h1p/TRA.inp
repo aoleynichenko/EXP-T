@@ -1,0 +1,31 @@
+!
+**DIRAC         
+.TITLE          
+CO molecule
+.WAVE FUNCTION  
+.4INDEX
+#**HAMILTONIAN   
+#.NONREL
+**WAVE FUNCTION 
+.SCF            
+*SCF            
+.CLOSED         
+14        
+.ERGCNV         
+1E-12           
+**MOLTRA        
+.SCHEME
+ 4
+.ACTIVE         
+energy -10 10 0
+**RELCC         
+.ENERGY         
+.PRINT          
+1               
+*CCENER         
+.MAXIT          
+50              
+.NTOL           
+ 9              
+*END OF INPUT   
+				

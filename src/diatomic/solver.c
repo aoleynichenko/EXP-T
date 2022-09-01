@@ -35,6 +35,11 @@
 #include "utils.h"
 
 
+double operator_r(double r);
+
+double operator_inv_r2(double r);
+
+
 /**
  * Provides interface to the solvers of the radial Schrodinger equation.
  * Currently implemented solvers are:
@@ -117,6 +122,7 @@ void print_energy_levels(input_data_t *input_data, cubic_spline_t *pot, int *nro
     int J_min = input_data->J_min;
     int J_max = input_data->J_max;
 
+    double mu = input_data->reduced_mass;
     double r_min = pot->x[0];
     double r_max = pot->x[pot->n - 1];
     int n_rot = J_max - J_min + 1;
@@ -128,7 +134,8 @@ void print_energy_levels(input_data_t *input_data, cubic_spline_t *pot, int *nro
     cubic_spline_t *r_spline = construct_cubic_spline(input_data->n_points, input_data->r, input_data->r);
 
     printf(" > rovibrational energy levels\n\n");
-    printf("     J   v       energy, cm^-1        < r >, A        < prop >\n\n");
+    printf("                        energy           < r >         < B_v >         <prop>\n");
+    printf("     J   v             (cm^-1)           (Ang)         (cm^-1)               \n\n");
 
     for (int J = J_min; J <= J_max; J++) {
         int index_J = J - J_min;
@@ -140,13 +147,15 @@ void print_energy_levels(input_data_t *input_data, cubic_spline_t *pot, int *nro
             double *psi = wavefunctions[index_J][index_v];
 
             double e_cm = (E_Jv - emin) * ATOMIC_TO_CM;
-            double r_v = matrix_element_spline(ngrid, radial_grid, psi, psi, r_spline);
+            double r_v = matrix_element_fun(ngrid, radial_grid, psi, psi, operator_r);
+            double B_v = 1/(2*mu) * matrix_element_fun(ngrid, radial_grid, psi, psi, operator_inv_r2);
             double prp = 0.0;
             if (input_data->prop != NULL) {
                 prp = matrix_element_spline(ngrid, radial_grid, psi, psi, input_data->prop);
             }
 
-            printf("@ %4d%4d%20.4f%16.6f%16.6f\n", J, v, e_cm, r_v * ATOMIC_TO_ANGSTROM, prp);
+            printf("@ %4d%4d%20.4f%16.6f%16.6f%16.6f\n",
+                   J, v, e_cm, r_v * ATOMIC_TO_ANGSTROM, B_v * ATOMIC_TO_CM, prp);
         }
         printf("\n");
     }
@@ -154,3 +163,22 @@ void print_energy_levels(input_data_t *input_data, cubic_spline_t *pot, int *nro
     free(radial_grid);
     delete_spline(r_spline);
 }
+
+
+/**
+ * Operator: M(r) = r
+ */
+double operator_r(double r)
+{
+    return r;
+}
+
+
+/**
+ * Operator: M(r) = 1/r^2
+ */
+double operator_inv_r2(double r)
+{
+    return 1.0 / (r * r);
+}
+

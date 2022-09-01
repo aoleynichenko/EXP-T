@@ -1,8 +1,0 @@
-# input file for the CCSD(T) calculations
-
-conv 1e-9
-maxiter 100
-integrals MRCONEE-2 MDCINT-2
-#model ccsd(t)
-disk_usage 0
-

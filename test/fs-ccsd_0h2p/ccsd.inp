@@ -1,0 +1,17 @@
+# Test:
+# (1) Excited states of the LiNa diatomic molecule
+# (2) FSCC scheme: LiNa2+ -> LiNa+ -> LiNa (sector 0h2p)
+# (3) Basis set: cc-pVDZ (it is just a test!)
+# (4) DC - relativistic, 4-comp
+
+title "Test LiNa/cc-pVDZ/Dirac-Coulomb/sector 0h2p"
+maxiter 500
+conv 1e-7
+sector 0h2p
+nactp 8
+model ccsd
+shifttype real
+shift 0h2p 3 -0.5
+disk_usage 0
+flush_amplitudes_txt
+

@@ -1,0 +1,27 @@
+!
+!
+!
+**DIRAC         
+.TITLE          
+LiF molecule
+.WAVE FUNCTION  
+.PROPERTIES
+.4INDEX
+**INTEGRALS
+.NUCMOD 
+ 1
+**WAVE FUNCTION          
+.SCF
+*SCF            
+.CLOSED         
+ 12
+.ERGCNV         
+1E-10           
+**PROPERTIES
+.DIPOLE
+**MOLTRA
+.ACTIVE
+all
+*END OF INPUT   
+
+				

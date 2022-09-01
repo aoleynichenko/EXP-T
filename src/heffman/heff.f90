@@ -433,6 +433,16 @@ lire1:do while (not_end == 0)
       enddo
       write(6,'(/15x,a/15x,a)') '         effective spin-orbit interactions, cm-1          ', &
                                 ' basis: so-free states projected onto so-coupled subspace '                  
+
+      do iii = 1, mainms
+          do jjj = iii + 1, mainms
+              write(6,'(a3,2i3,f16.6)') '@SO', iii, jjj, real(heffectif(iii,jjj))
+          end do
+      end do
+      do iii = 1, mainms
+          write(6,'(a7,2i3,f16.6)') '@SODIAG', iii, iii, real(heffectif(iii,iii))
+      end do
+
       call imprec(heffectif,mainms,mainms,6)
 !      
 !      

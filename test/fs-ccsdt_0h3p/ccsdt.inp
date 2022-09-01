@@ -1,0 +1,20 @@
+# Test:
+# (1) N atom
+# (2) DC - relativistic, X2Cmmf, cc-pVTZ basis set
+# (3) symmetry "Cinfv" (actually C32)
+
+title "Test N atom/cc-pVTZ/DC/Cinfv/CCSDT(0h3p)"
+print medium
+
+sector 0h3p
+model ccsdt
+nactp 6
+x2cmmf
+
+memory 4 gb
+maxiter 300
+diis triples
+conv 1e-7
+disk_usage 0
+
+

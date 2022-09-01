@@ -2,7 +2,7 @@
 #
 # Smart testing system.
 #
-# 2017-2020 Alexander Oleynichenko
+# 2017-2022 Alexander Oleynichenko
 # alexvoleynichenko@gmail.com
 #
 
@@ -66,11 +66,12 @@ class Filter:
 
 class Test:
 	
-    def __init__(self, name, inp, filters, binary=FSCC_PATH):
+    def __init__(self, name, inp, filters, binary=FSCC_PATH, output=None):
         self.inp = inp
         self.filters = filters
         self.name = name
         self.binary = binary
+        self.output = output
 	
     """
     Returns True if OK, False if the test was failed.
@@ -78,11 +79,16 @@ class Test:
     """
     def run(self, options=" "):
         import time
-		
+        
         sys.stdout.flush()
 
-        output_name = self.inp + ".test.out"
+        if not self.output:
+            output_name = self.inp + ".test.out"
+        else:
+            output_name = self.output
+        
         matches = [False for f in self.filters]
+        
         cmd = self.binary + " " + options + " " + self.inp + " | tee " + output_name
 		
         # remove temporary files
@@ -92,6 +98,7 @@ class Test:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         out, err = p.communicate()
         t2 = time.time()
+        
         result = out.decode().split('\n')
         for lin in result:
             for i,f in enumerate(self.filters):
@@ -103,20 +110,31 @@ class Test:
             clean()
 
         status = False not in matches
-        print('    %-40s%10.3f sec %15s' % (self.name[:40], (t2-t1), 'PASSED' if status else 'FAILED'))
-        # print detailed info about failure
-        if not status:
-            print("\n      Failure diagnostics")
-            print("      Input file : ", self.inp)
-            print("      Output file: ", output_name)
-            print("      !  Text pattern         Expected value        Epsilon          Status")
-            for i,f in enumerate(self.filters):
-                print("      ! %50s         %s" % (str(f), "Passed" if matches[i] else "Failed"))
-            print("-------------------------------- last 10 lines --------------------------------------")
-            os.system("tail -10 %s" % (output_name))
-            print("-------------------------------- lines with @ ---------------------------------------")
-            os.system("cat %s | grep '^@'" % (output_name))
-            print("-------------------------------------------------------------------------------------")
-        return status
+        
+        #
+        # return codes:
+        # 0: success
+        # 1: error
+        #
+        return 0 if status else 1
+        
+        
+        
+        
+        #print('    %-40s%10.3f sec %15s' % (self.name[:40], (t2-t1), 'PASSED' if status else 'FAILED'))
+        ## print detailed info about failure
+        #if not status:
+        #    print("\n      Failure diagnostics")
+        #    print("      Input file : ", self.inp)
+        #    print("      Output file: ", output_name)
+        #    print("      !  Text pattern         Expected value        Epsilon          Status")
+        #    for i,f in enumerate(self.filters):
+        #        print("      ! %50s         %s" % (str(f), "Passed" if matches[i] else "Failed"))
+        #    print("-------------------------------- last 10 lines --------------------------------------")
+        #    os.system("tail -10 %s" % (output_name))
+        #    print("-------------------------------- lines with @ ---------------------------------------")
+        #    os.system("cat %s | grep '^@'" % (output_name))
+        #    print("-------------------------------------------------------------------------------------")
+        #return status
 
 

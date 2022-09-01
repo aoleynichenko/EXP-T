@@ -1,0 +1,45 @@
+#
+# Low-lying electronic states of CH+.
+# Reference state: CH^{3+}.
+#
+# More on composition of electronic states of CH+:
+# Z. Biglari, A. Shayesteh, A. Maghari, Comp. Theor. Chem. 1047, 22 (2014).
+# doi: 10.1016/j.comptc.2014.08.012
+#
+
+sector 0h2p
+model ccsd
+nactp 8
+print "eff config"
+
+maxiter 100
+conv 1e-7
+diis 100
+disk_usage 0
+
+#
+# here we exclude the 4_sigma^2 configuration
+#
+ih_imms
+  sectors 0h2p
+  subspace energy -1.5 -1.0  # 3_sigma, 1_pi => can be doubly occupied
+  subspace energy -1.0 -0.7  # 4_sigma       => can be singly occupied
+  main_occ 2 0
+  main_occ 1 1
+end
+
+#
+# mnemonic names of spin-orbitals
+#
+spinor_labels
+ 2   3_sigma
+ 3   1_pi
+ 4   1_pi
+ 5   4_sigma
+ 33  3_sigma
+ 34  1_pi
+ 35  1_pi
+ 36  4_sigma
+end
+
+

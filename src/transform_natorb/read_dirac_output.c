@@ -41,7 +41,7 @@ void parse_num_basis_functions(char *buf, int *n_basis_fun);
 void parse_electronic_eigenvalue(char *buf, double *eigenvalue);
 
 void parse_quaternion_coeffs_block(FILE *inp_file, double complex *coeffs_alpha, double complex *coeffs_beta,
-                                   char **basis_fun_labels);
+                                   int n_basis_fun, char **basis_fun_labels);
 
 void extract_integers(char *buf, int *integer_list, int *n_numbers);
 
@@ -138,7 +138,7 @@ void read_dirac_output(
                     dirac_out,
                     *coeffs_alpha + (*n_basis_fun) * count_spinors,
                     *coeffs_beta + (*n_basis_fun) * count_spinors,
-                    *basis_fun_labels
+                    *n_basis_fun, *basis_fun_labels
             );
 
             count_spinors++;
@@ -164,6 +164,7 @@ void extract_integers(char *buf, int *integer_list, int *n_numbers)
     while (pch != NULL) {
         integer_list[*n_numbers] = atoi(pch);
         *n_numbers = *n_numbers + 1;
+
         pch = strtok(NULL, " ");
     }
 }
@@ -181,7 +182,7 @@ void parse_electronic_eigenvalue(char *buf, double *eigenvalue)
 
 
 void parse_quaternion_coeffs_block(FILE *inp_file, double complex *coeffs_alpha, double complex *coeffs_beta,
-                                   char **basis_fun_labels)
+                                   int n_basis_fun, char **basis_fun_labels)
 {
     char buf[MAX_BUF_SIZE];
 
@@ -195,6 +196,10 @@ void parse_quaternion_coeffs_block(FILE *inp_file, double complex *coeffs_alpha,
         // index of the basis function
         char *pch = strtok(buf, " ");
         int index = atoi(pch) - 1;
+        if (index >= n_basis_fun) {
+            errquit("index of basis function exceeds the total size of the large basis\n"
+                    "use the *PRIVEC/.AOLAB flag in the DIRAC input file while generating spinors");
+        }
 
         // buffer to which the label of the basis function will be stored
         char label[MAX_BUF_SIZE];

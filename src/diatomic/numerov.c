@@ -78,10 +78,11 @@ void numerov_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J,
     cblas_dgemm(CblasRowMajor, CblasNoTrans,  CblasNoTrans, N, N, N, -1.0/gamma2, Binv, N, A, N, 1.0, V, N);
 
     /*
-     * find eigenvalues and eigenvectors
+     * find eigenvalues and eigenvectors.
+     * we declare the column-major order to obtain the eigenvectors stored row-wise.
      */
     double *w = (double *) calloc(N, sizeof(double));
-    LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U', N, V, N, w);
+    LAPACKE_dsyev(LAPACK_COL_MAJOR, 'V', 'U', N, V, N, w);
 
     /*
      * calculate number of roots in the given energy range [emin,emax]
@@ -106,9 +107,8 @@ void numerov_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J,
 
             (*eigenvalues)[root_count] = w[i];
 
-            for (int j = 0; j < N; j++) {
-                (*wavefunctions)[root_count * N + j] = V[j * N + root_count];
-            }
+            int offset = root_count * N;
+            memcpy(*wavefunctions + offset, V + offset, sizeof(double) * N);
 
             root_count++;
         }

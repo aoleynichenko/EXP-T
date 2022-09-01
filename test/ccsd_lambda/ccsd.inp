@@ -1,0 +1,12 @@
+sector 0h0p
+model ccsd
+diis 500
+maxiter 200
+disk_usage 0
+conv 1e-9
+
+occ 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+analyt_prop ZDIPLEN
+
+

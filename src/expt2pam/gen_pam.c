@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2021 The EXP-T developers.
+ *  Copyright (C) 2018-2022 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -149,7 +149,7 @@ void gen_pam(FILE *out, molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t *ecp_li
         fprintf(out, "      %3d.   %2d\n", i, n_atoms);
         for (int j = 0, k = 1; j < mol->n_atoms; j++) {
             if (mol->charges[j] == i) {
-                fprintf(out, "%s%d%16.10f%16.10f%16.10f\n", elem_sym, k++, mol->x[j], mol->y[j], mol->z[j]);
+                fprintf(out, "%s%16.10f%16.10f%16.10f\n", elem_sym, mol->x[j], mol->y[j], mol->z[j]);
             }
         }
 

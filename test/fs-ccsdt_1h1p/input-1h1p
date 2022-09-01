@@ -1,0 +1,17 @@
+sector 1h1p
+model ccsdt
+nacth 6
+nactp 8
+
+memory 2 gb
+reuse 0h0p
+
+diis 50
+diis triples
+maxiter 200
+disk_usage 0
+conv 1e-6
+
+print "model vectors"
+
+

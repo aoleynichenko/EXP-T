@@ -1,0 +1,12 @@
+sector 0h0p
+model ccsdt
+
+memory 2 gb
+diis 50
+maxiter 200
+disk_usage 0
+conv 1e-6
+diis triples
+
+
+

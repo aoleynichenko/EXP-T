@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2021 The EXP-T developers.
+ *  Copyright (C) 2018-2022 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -140,7 +140,7 @@ int match(int required_type);
 void str_tolower(char *s);
 int parse_state_spec(char *buf, char *rep_name, int *state_no);
 void set_input_file_name(char *file_name);
-void parse_sector(char *s, int *h, int *p);
+void parse_sector_label(char *s, int *h, int *p);
 int angular_momentum_to_int(char *lstr);
 
 

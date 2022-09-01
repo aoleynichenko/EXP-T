@@ -1,0 +1,100 @@
+file: HEFFM
+#
+#        file with one effective hamiltonian or a sequence of heff
+#        e.g. heff for one field value,
+#             heff for spin-orbit (nearly) switched off
+#             simply heff you want to get the eigenstates
+#             sequence you want to pade-extrapolate 
+#        if you are doing ff transition moment calculations or 
+#        so separation, you have to supply a second file,
+#
+#file: second_file_name (optional)
+file: HEFFP
+#
+#             heff for another field value, or
+#             heff for pin-orbit switched on,
+#             respectively
+#
+sector: 0011
+#
+#       or 1h0p, 1h1p, 2h0p, 0h2p - the fock space sector you are 
+#       interested in (heff files for higher sectors 
+#       contain several heffs) 
+#
+rep: 1
+#
+#       (co)representation you want to see
+#       e.g.  rep: 1 for fully symmetrical rep
+#
+main: 10
+#
+#     or main: <number1>-<number2> 
+#
+#       ff_tdm or one-point pade approximation: simply the number 
+#       of lowest states or the range of states of given sector and
+#       symmetry you want to see
+#       
+#       so separation, projected approximant construction:
+#       subspace used for projection
+#
+#       e.g.   main: 10  (equivalently, main: 1-10)
+#       or     main: 6-7
+#
+#       to perform pade extrapolation, you have to indicate
+#
+#[0/1]
+#
+#      (or [1/1], [0/2] etc; you should have L+M+2 heff's to
+#       build the [L/M] approximant  
+#
+#       to cut off the states above "main:" subset before 
+#       the extrapolation, indicate 
+#       [0/1] cut
+#
+#
+#
+#       only to perform ff tdm calculations, add
+#
+#step: <step length> 
+step: 0.00002
+#
+#       e.g. step: 0.00002
+#       difference of field strenghts (a.u.) in two finite-field 
+#       calculations. the presence of this line activated the
+#       ff tdm calculation mode, if you do not need it, delete this line
+#
+#
+#
+#       only for so separation (quasidiabatiization) calculations, add
+#  
+#scale: <small number>
+#
+#       fraction of effective spin-orbit retained in "scalar"
+#       calculations to get good relativistic symmetries
+#       e.g. scale: 0.0001
+#       delete this line if you do not want to diabatize anything
+#
+#
+#
+#ground: <energy in atomic units> (optional)
+#
+#       useful only when you have to compute energies with
+#       respect to some state (normally ground) which belongs
+#       to another rep or sector 
+#
+#
+print: 1
+#
+#       print: 0 or print: 1 are normally ok; enlarging 
+#       this number, you can get any amount of superfluous
+#       information listed
+#
+#Bloch
+#       activates the computation of finite-field
+#       transition dipoles with Bloch effective Hamiltonian
+#       eigenvectors. otherwise, ff computations are 
+#       performed with des Cloizeaux effective Hamiltonian
+#       eigenvectors  
+
+
+      

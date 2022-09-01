@@ -1,0 +1,1003 @@
+
+		**********************************************************************************
+		**                                                                              **
+		**                                   E X P - T                                  **
+		**        Relativistic Fock-Space Multireference Coupled Cluster Program        **
+		**                                                                              **
+		**                         version 1.7.0 (21 Aug 2022)                         **
+		**                                                                              **
+		**********************************************************************************
+		**                                                                              **
+		** EXP-T is free software: you can redistribute it and/or modify                **
+		** it under the terms of the GNU Lesser General Public License as published by  **
+		** the Free Software Foundation, either version 3 of the License, or            **
+		** (at your option) any later version.                                          **
+		**                                                                              **
+		** EXP-T is distributed in the hope that it will be useful,                     **
+		** but WITHOUT ANY WARRANTY; without even the implied warranty of               **
+		** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                **
+		** GNU Lesser General Public License for more details.                          **
+		**                                                                              **
+		** You should have received a copy of the GNU Lesser General Public License     **
+		** along with EXP-T.  If not, see <http://www.gnu.org/licenses/>.               **
+		**                                                                              **
+		**********************************************************************************
+		**                                                                              **
+		** For more information about the EXP-T program system see                      **
+		** http://www.qchem.pnpi.spb.ru/expt                                            **
+		**                                                                              **
+		** This is an experimental code. The authors accept no responsibility           **
+		** for the performance of the code or for the correctness of the results.       **
+		**                                                                              **
+		** If results obtained with this code are published, an                         **
+		** appropriate citation would be:                                               **
+		**                                                                              **
+		** [1] A. Oleynichenko, A. Zaitsevskii, E. Eliav.                               **
+		**     EXP-T, An Extensible Code for Fock Space Relativistic Coupled Cluster    **
+		**     Calculations. See http://www.qchem.pnpi.spb.ru/expt.                     **
+		** [2] A. V. Oleynichenko, A. Zaitsevskii, E. Eliav.                            **
+		**     Towards high performance relativistic electronic structure modelling:    **
+		**     the EXP-T program package. Commun. Comput. Inf. Sci. 1331, 375 (2020).   **
+		**     doi: 10.1007/978-3-030-64616-5_33                                        **
+		**                                                                              **
+		**********************************************************************************
+
+Authors:
+  Alexander Oleynichenko [alexvoleynichenko@gmail.com]
+  Andrei Zaitsevskii
+  Ephraim Eliav
+Compiler: GNU C Compiler 12.1.1
+BLAS/LAPACK implementation: undetected
+Build date: Aug 22 2022 15:36:37
+Run date: Thu Sep  1 08:17:52 2022
+Hostname: alexander
+CUDA disabled
+
+Reading input file: ccsd.inp
+
+
+				****************
+				** Input file **
+				****************
+
+ -----
+ #
+ # Low-lying electronic states of CH+.
+ # Reference state: CH^{3+}.
+ #
+ # More on composition of electronic states of CH+:
+ # Z. Biglari, A. Shayesteh, A. Maghari, Comp. Theor. Chem. 1047, 22 (2014).
+ # doi: 10.1016/j.comptc.2014.08.012
+ #
+ 
+ sector 0h2p
+ model ccsd
+ nactp 8
+ print "eff config"
+ 
+ maxiter 100
+ conv 1e-7
+ diis 100
+ disk_usage 0
+ 
+ #
+ # here we exclude the 4_sigma^2 configuration
+ #
+ ih_imms
+   sectors 0h2p
+   subspace energy -1.5 -1.0  # 3_sigma, 1_pi => can be doubly occupied
+   subspace energy -1.0 -0.7  # 4_sigma       => can be singly occupied
+   main_occ 2 0
+   main_occ 1 1
+ end
+ 
+ #
+ # mnemonic names of spin-orbitals
+ #
+ spinor_labels
+  2   3_sigma
+  3   1_pi
+  4   1_pi
+  5   4_sigma
+  33  3_sigma
+  34  1_pi
+  35  1_pi
+  36  4_sigma
+ end
+ 
+ 
+ -----
+
+
+
+				*************
+				** Options **
+				*************
+
+ title            title string - comment                    no title
+ scratch_dir      scratch directory for tmp files           scratch
+ --no-clean       retain scratch directory on exit          yes
+ print            print level                               medium
+ flush_amplitude  write formatted files with cluser ampl-s  no
+ arith            recommended arithmetic                    real
+ memory           max allowed RAM usage                     1024.0 Mb
+ compress         compression of integrals on disk          disabled
+ compress_triples compression of triples tensors in RAM     disabled
+ disk_usage       disk usage level                          0 (all data in RAM)
+ tilesize         max dimension of formal blocks (tiles)    100
+ nthreads         number of OpenMP parallel threads         1
+ cuda             calculations on GPU (CUDA)                disabled
+ maxiter          maximum number of CC iterations           100
+ conv_thresh      convergence threshold (by amplitudes)     1e-07
+ div_thresh       divergence threshold (by amplitudes)      1000
+ reuse            reuse amplitudes and/or integrals         nothing
+
+ skip             skip computations in sectors:             
+ flush            flush amplitudes                          no
+ interface        source of transformed molecular integrals  DIRAC
+ integrals        one-electron Hamiltonian integrals file   MRCONEE
+                  two-electron (Coulomb) integrals file     MDCINT
+                  one-electron property integrals file      MDPROP
+ x2cmmf           X2Cmmf Hamiltonian                        no
+ gaunt            two-electron (Gaunt) integrals file       not used
+ sector           target Fock space sector                  0h2p
+ model            coupled cluster model (level of theory)   CCSD
+ nacth            number of active hole spinors             0 spinors
+ nactp            number of active particle spinors         8 spinors
+ shifttype        formula for denominator shifts            real simulation of imaginary shifts
+ nroots           number of roots to be processed           all
+ roots_cutoff     energy cutoff for roots to be processed   all
+ degen_thresh     degeneracy threshold (a.u.)               1.0e-08
+ occ_irreps       occupation numbers of spinors             default (from integral interface)
+ occ              occupation numbers of spinors             default
+ diis             DIIS technique for convergence            enabled
+ diis <n>         DIIS subspace dimension                   100
+ diis triples     DIIS for triples amplitudes               disabled
+ oneprop          interface to OneProp (by L.V.Skripnikov)  disabled
+ twoprop          interface to TwoProp (by D.E.Maison)      disabled
+ oneprop          interface to the MDPROP file              disabled
+ density 0h0p     construct density matrix in 0h0p          disabled
+ nohermit         hermitization of effective Hamiltonians   disabled
+ dltdm            model-space estimates of tran dipoles     disabled
+ natorb           model-space natural orbitals              disabled
+ prop             model-space estimates of properties       disabled
+ select           selection of cluster amplitudes           disabled
+ restrict_t3      restriction of triples                    disabled
+ intham1          simple intermediate Hamiltonian           enabled in sectors: 0h2p 
+
+
+ Scratch directory 'scratch' exists
+ Current working directory = /home/alexander/Science/expt/examples/CH+_ih-imms
+ Full path to one-electron integrals = /home/alexander/Science/expt/examples/CH+_ih-imms/MRCONEE
+ Full path to Coulomb integrals = /home/alexander/Science/expt/examples/CH+_ih-imms/MDCINT
+ Full path to properties integrals = /home/alexander/Science/expt/examples/CH+_ih-imms/MDPROP
+ Changing working directory to scratch ...
+ Current working directory = /home/alexander/Science/expt/examples/CH+_ih-imms/scratch
+
+ ******************************************************************
+ **       BINARY INTERFACE TO THE DIRAC PROGRAM PACKAGE          **
+ **                    version 10 Apr 2020                       **
+ ******************************************************************
+
+ required unformatted files (produced by DIRAC):
+   MRCONEE -- spinor info & transformed one-electron integrals
+   MDCINT  -- transformed two-electron integrals
+ optional files (DIRAC):
+   MDPROP  -- transformed integrals of one-electron properties
+ optional files (D. E. Maison, L. V. Skripnikov):
+   MGINT   -- transformed Gaunt integrals
+
+ HINT: in order to obtain these files, add option .4INDEX to the
+   **DIRAC section of the DIRAC input file; this will enable the
+   code for integrals transformation. Then run:
+   $ pam --inp=<inp-file> --mol=<mol-file> --get="MRCONEE MDCINT"
+
+
+ Names of integral files:
+ MRCONEE = /home/alexander/Science/expt/examples/CH+_ih-imms/MRCONEE
+ MDCINT  = /home/alexander/Science/expt/examples/CH+_ih-imms/MDCINT
+ MDPROP  = /home/alexander/Science/expt/examples/CH+_ih-imms/MDPROP
+ MDPROP unformatted file is not found!
+ will be continued without properties
+ default integer type in DIRAC              integer(8)
+
+ *** MRCONEE FILE ***
+ NSPINORS                                             62
+ was breit in DHF                            F
+ nuclear repulsion energy                     -30.487748614672793     
+ inversion symmetry (1-no,2-yes)                       1
+ group type (1-real,2-cmplx,4-quater)                  1
+ is spinfree                                           1
+ arithmetic                                 real
+ total num of orb-s (+frozen+deleted)                 32
+ Total SCF energy =                           -35.611251049566377     
+ number of fermion irreps in parent group              2
+ names of these reps (grd, ungrd)              E  1E         E  2E      
+ number of spinors active in the transf-n              1           1
+ total number of orb-s of this ircop                  31
+ number of occupied frozen (core) spinors   
+   - total                                             1
+   - positive energy                                   1
+   - negative energy                                   0
+ number of deleted spinors                             0
+ number of fermion irreps in Abelian subgrp           16
+ names of these irreps                      A1 aB1 aB2 aA2 aA1 bB1 bB2 bA2 bA1 3B1 3B2 3A2 3A1 3B1 3B2 3A2 3A1 0B1 0B2 0A2 0A1 4B1 4B2 4A2 4A1 2B1 2B2 2A2 2A1 2B1 2B2 2A2 2
+ number of g/u Kramers pairs          32
+ number of boson symmetry reps(LUCITA)            4
+ *** END OF MRCONEE FILE ***
+
+ *** MDPROP FILE ***
+ path to MDPROP file = /home/alexander/Science/expt/examples/CH+_ih-imms/MDPROP
+ MDPROP file does not exist, properties integrals cannot be read
+ *** END OF MDPROP FILE ***
+
+ expectation value of dipole moment at the SCF level cannot be calculated
+
+ *** MDCINT FILE ***
+ Thu Sep  1 08:17:52 2022
+ datex                                   1Sep22  
+ timex                                 08:05:30
+ number of Kramers pairs                         31
+ Thu Sep  1 08:17:52 2022
+ *** END OF MDCINT FILE ***
+
+ number of VINT* files written                   256
+ written to disk: 30087424 bytes =    0.03 Gb
+
+		Symmetry & irreducible representations
+		--------------------------------------
+
+ Point group: C2v
+ Group type: real
+ Arithmetic: real
+ Is abelian: yes
+ Number of irreps: 32
+ Totally symmetric irrep: A1_0
+ Representation names:
+   0 A1_a       1 B2_a       2 B1_a       3 A2_a       4 A1_b       5 B2_b       6 B1_b       7 A2_b    
+   8 A1_-3/2    9 B2_-3/2   10 B1_-3/2   11 A2_-3/2   12 A1_+3/2   13 B2_+3/2   14 B1_+3/2   15 A2_+3/2 
+  16 A1_0      17 B2_0      18 B1_0      19 A2_0      20 A1_2      21 B2_2      22 B1_2      23 A2_2    
+  24 A1_+1     25 B2_+1     26 B1_+1     27 A2_+1     28 A1_-1     29 B2_-1     30 B1_-1     31 A2_-1   
+
+
+				Spinors info
+				------------
+
+     no    rep         occ    active        one-el energy
+    -------------------------------------------------------
+       1   0 "A1_a  "   1       -          -2.213677151255
+       2   0 "A1_a  "   0       a          -1.433380409037    3_sigma
+       3   2 "B1_a  "   0       a          -1.299223333763    1_pi
+       4   1 "B2_a  "   0       a          -1.299223333763    1_pi
+       5   0 "A1_a  "   0       a          -0.779001744929    4_sigma
+       6   0 "A1_a  "   0       -          -0.593513759933
+       7   2 "B1_a  "   0       -          -0.540655457874
+       8   1 "B2_a  "   0       -          -0.540655457874
+       9   0 "A1_a  "   0       -          -0.522039682532
+      10   2 "B1_a  "   0       -          -0.488979138699
+      11   1 "B2_a  "   0       -          -0.488979138699
+      12   3 "A2_a  "   0       -          -0.452958951502
+      13   0 "A1_a  "   0       -          -0.452958951502
+      14   0 "A1_a  "   0       -          -0.348216274819
+      15   0 "A1_a  "   0       -          -0.261128034504
+      16   2 "B1_a  "   0       -          -0.250794156811
+      17   1 "B2_a  "   0       -          -0.250794156811
+      18   0 "A1_a  "   0       -          -0.206815105596
+      19   1 "B2_a  "   0       -          -0.165737679192
+      20   2 "B1_a  "   0       -          -0.165737679192
+      21   0 "A1_a  "   0       -          -0.151688606931
+      22   0 "A1_a  "   0       -          -0.045550292620
+      23   1 "B2_a  "   0       -           0.310621488074
+      24   2 "B1_a  "   0       -           0.310621488074
+      25   3 "A2_a  "   0       -           0.393981397018
+      26   0 "A1_a  "   0       -           0.393981397018
+      27   0 "A1_a  "   0       -           0.467825163625
+      28   0 "A1_a  "   0       -           0.854155737398
+      29   1 "B2_a  "   0       -           0.900362971233
+      30   2 "B1_a  "   0       -           0.900362971233
+      31   0 "A1_a  "   0       -           1.347951056580
+      32   4 "A1_b  "   1       -          -2.213677151255
+      33   4 "A1_b  "   0       a          -1.433380409037    3_sigma
+      34   6 "B1_b  "   0       a          -1.299223333763    1_pi
+      35   5 "B2_b  "   0       a          -1.299223333763    1_pi
+      36   4 "A1_b  "   0       a          -0.779001744929    4_sigma
+      37   4 "A1_b  "   0       -          -0.593513759933
+      38   6 "B1_b  "   0       -          -0.540655457874
+      39   5 "B2_b  "   0       -          -0.540655457874
+      40   4 "A1_b  "   0       -          -0.522039682532
+      41   6 "B1_b  "   0       -          -0.488979138699
+      42   5 "B2_b  "   0       -          -0.488979138699
+      43   7 "A2_b  "   0       -          -0.452958951502
+      44   4 "A1_b  "   0       -          -0.452958951502
+      45   4 "A1_b  "   0       -          -0.348216274819
+      46   4 "A1_b  "   0       -          -0.261128034504
+      47   6 "B1_b  "   0       -          -0.250794156811
+      48   5 "B2_b  "   0       -          -0.250794156811
+      49   4 "A1_b  "   0       -          -0.206815105596
+      50   5 "B2_b  "   0       -          -0.165737679192
+      51   6 "B1_b  "   0       -          -0.165737679192
+      52   4 "A1_b  "   0       -          -0.151688606931
+      53   4 "A1_b  "   0       -          -0.045550292620
+      54   5 "B2_b  "   0       -           0.310621488074
+      55   6 "B1_b  "   0       -           0.310621488074
+      56   7 "A2_b  "   0       -           0.393981397018
+      57   4 "A1_b  "   0       -           0.393981397018
+      58   4 "A1_b  "   0       -           0.467825163625
+      59   4 "A1_b  "   0       -           0.854155737398
+      60   5 "B2_b  "   0       -           0.900362971233
+      61   6 "B1_b  "   0       -           0.900362971233
+      62   4 "A1_b  "   0       -           1.347951056580
+    -------------------------------------------------------
+
+    irreps              A1_a  B2_a  B1_a  A2_a  A1_b  B2_b  B1_b  A2_b
+    occupied inactive      1     0     0     0     1     0     0     0
+    occupied active        0     0     0     0     0     0     0     0
+    virtual active         2     1     1     0     2     1     1     0
+    virtual inactive      12     6     6     2    12     6     6     2
+
+
+
+				*****************
+				** Sector 0h0p **
+				*****************
+
+
+
+ Integral sorting for the 0h0p sector
+ started at Thu Sep  1 08:17:52 2022
+ number of spinors                              62
+ number of spinor blocks                        8
+ tile size                                      100
+ max spinor block size                          15
+ size of i/o buffer for integrals and indices   0.375 MB
+ size of the buffer for two-elec integrals      0.048 MB
+ sorting two-electron integrals
+   step    #blocks   ints read    time,s  rate,G/s
+   0 /  8       60     1888612         0      1.18
+   1 /  8       28      264334         0      0.40
+   2 /  8       23      245910         0      0.38
+   3 /  8       18       24884         0      0.12
+   4 /  8       61     1961752         0      1.39
+   5 /  8       28      264334         0      0.40
+   6 /  8       23      245910         0      0.40
+   7 /  8       18       24884         0      0.12
+   total       259     4920620         0      0.80
+ sorting one-electron integrals ...
+   Fock matrix reconstruction ...
+   SCF energy (energy of reference determinant) =     -35.611251049567 a.u.
+ max deviation of the diagonal elements of the reconstructed Fock matrix and orbital energies = 2.309241e-08
+ fill 1-electron diagrams ... hh hp ph pp done
+ time for 2-e integrals sorting, sec: 0.08
+ time for DIRAC interface (integral extraction & write), sec: 0.10
+ total time for sorting operations, sec: 0.17
+ finished at at Thu Sep  1 08:17:52 2022
+
+ Initial guess
+ -------------
+ Contributions to the MP2 energy:
+   one-particle    -0.0000000000   0.0000000000
+   two-particle    -0.0339360763   0.0000000000
+ MP2 correlation energy =      -0.033936076327
+       Total MP2 energy =     -35.645187125894
+
+ solution of amplitude equations (sector 0h0p)		 Thu Sep  1 08:17:52 2022
+ ---------------------------------------------------------------------------------------
+ it.       diffmax(T1)       diffmax(T2)     max(T1)     max(T2)    t,sec       mem,Gb
+ ---------------------------------------------------------------------------------------
+   1    0.009187884613    0.029741241444    0.009188    0.101566      0.0    0.01/0.01
+   2    0.008765081093    0.015397528193    0.017953    0.116963      0.0    0.01/0.01
+   3    0.004499649763    0.003058254187    0.029808    0.132942      0.0    0.01/0.01
+   4    0.001133560459    0.001102142550    0.035043    0.137663      0.0    0.01/0.01
+   5    0.000092984794    0.000209200330    0.036803    0.139517      0.0    0.01/0.01
+   6    0.000022934955    0.000066162550    0.036854    0.139748      0.0    0.01/0.01
+   7    0.000008939799    0.000005026147    0.036866    0.139827      0.0    0.01/0.01
+   8    0.000000439508    0.000001046119    0.036856    0.139826      0.0    0.01/0.01
+   9    0.000000111142    0.000000288029    0.036855    0.139826      0.0    0.01/0.01
+  10    0.000000061911    0.000000070752    0.036856    0.139826      0.0    0.01/0.01
+ ---------------------------------------------------------------------------------------
+ converged in 10 iterations
+
+ average time per iteration = 0.018 sec
+
+
+          SCF reference energy =     -35.611251049566
+       CCSD correlation energy =      -0.054178417081
+             Total CCSD energy =     -35.665429466648
+
+
+ (absolute values)
+ Max T{0h0p}_1 amplitude (t{00}_ia) [ 1 -> 2 ] = 0.03685557
+   [   1] eps=     -2.21367714 rep=A1_a inactive occ
+   [   2] eps=     -1.43338043 rep=A1_a active virt
+ Max T{0h0p}_2 amplitude (t{00}_ijab) [ 1 32 -> 2 33 ] = 0.13982622
+   [   1] eps=     -2.21367714 rep=A1_a inactive occ
+   [  32] eps=     -2.21367714 rep=A1_b inactive occ
+   [   2] eps=     -1.43338043 rep=A1_a active virt
+   [  33] eps=     -1.43338043 rep=A1_b active virt
+
+ Norm |T{0h0p}_1| = 0.05332285
+ Norm |T{0h0p}_2| = 0.44351357
+
+ T1 diagnostic = 0.03770495
+ More on T1 diagnostic: [T.J.Lee,P.R.Taylor,IJQC 23,199(1989)]
+
+
+
+				*****************
+				** Sector 0h1p **
+				*****************
+
+
+
+ Integral sorting for the 0h1p sector
+ started at Thu Sep  1 08:17:52 2022
+ number of spinors                              62
+ number of spinor blocks                        8
+ tile size                                      100
+ max spinor block size                          15
+ size of i/o buffer for integrals and indices   0.375 MB
+ size of the buffer for two-elec integrals      0.048 MB
+ sorting two-electron integrals
+   step    #blocks   ints read    time,s  rate,G/s
+   0 /  8       26      901684         0      0.68
+   1 /  8       17      215824         0      0.36
+   2 /  8       17      216510         0      0.36
+   3 /  8       12       27226         0      0.12
+   4 /  8       44     1389008         0      0.75
+   5 /  8       34      390572         0      0.64
+   6 /  8       34      391258         0      0.62
+   7 /  8       24       49156         0      0.22
+   total       208     3581238         0      0.58
+ sorting one-electron integrals ...
+   Fock matrix reconstruction ...
+   SCF energy (energy of reference determinant) =     -35.611251049567 a.u.
+ fill 1-electron diagrams ... vh vp pv done
+ time for 2-e integrals sorting, sec: 0.14
+ time for DIRAC interface (integral extraction & write), sec: 0.10
+ total time for sorting operations, sec: 0.23
+ finished at at Thu Sep  1 08:17:52 2022
+ Construction of T^(0h1p)-independent contributions to the FSCC-equations ...
+
+ Initialization of T1 and T2 amplitudes ...
+
+ solution of amplitude equations (sector 0h1p)		 Thu Sep  1 08:17:52 2022
+ ---------------------------------------------------------------------------------------
+ it.       diffmax(T1)       diffmax(T2)     max(T1)     max(T2)    t,sec       mem,Gb
+ ---------------------------------------------------------------------------------------
+   1    0.106022157797    0.949738159119    0.105230    1.336898      0.0    0.01/0.01
+   2    0.131484945177    1.744166846255    0.236715    3.081065      0.0    0.01/0.01
+   3    0.081724055774    1.216350763650    0.133108    1.956960      0.0    0.01/0.01
+   4    0.004539199208    0.188561991141    0.021167    0.201165      0.0    0.01/0.01
+   5    0.007925646472    0.264103089457    0.038482    0.681467      0.0    0.01/0.01
+   6    0.007575232495    0.223396111023    0.038117    0.667265      0.0    0.01/0.01
+   7    0.006909775556    0.137272684884    0.027818    0.611994      0.0    0.01/0.01
+   8    0.001605235053    0.013244255439    0.028605    0.493207      0.0    0.01/0.01
+   9    0.001230097096    0.015596590645    0.028470    0.491437      0.0    0.01/0.01
+  10    0.000177417432    0.000249292144    0.028646    0.499750      0.0    0.01/0.01
+  11    0.000069910827    0.000767850714    0.028680    0.500743      0.0    0.01/0.01
+  12    0.000019156704    0.000297039843    0.028662    0.499860      0.0    0.01/0.01
+  13    0.000006527015    0.000161241741    0.028659    0.499799      0.0    0.01/0.02
+  14    0.000001165300    0.000005507366    0.028662    0.499935      0.0    0.01/0.02
+  15    0.000000264704    0.000000536801    0.028661    0.499915      0.0    0.01/0.02
+  16    0.000000066930    0.000001202332    0.028661    0.499912      0.0    0.01/0.02
+  17    0.000000020312    0.000000077071    0.028661    0.499913      0.0    0.01/0.02
+ ---------------------------------------------------------------------------------------
+ converged in 17 iterations
+
+ average time per iteration = 0.030 sec
+
+
+ (absolute values)
+ Max T{0h1p}_1 amplitude (t{01}_ia) [ 36 -> 53 ] = 0.02866122
+   [  36] eps=     -0.77900174 rep=A1_b active virt
+   [  53] eps=     -0.04555029 rep=A1_b inactive virt
+ Max T{0h1p}_2 amplitude (t{01}_ijab) [ 36 1 -> 3 34 ] = 0.49991328
+   [  36] eps=     -0.77900174 rep=A1_b active virt
+   [   1] eps=     -2.21367714 rep=A1_a inactive occ
+   [   3] eps=     -1.29922333 rep=B1_a active virt
+   [  34] eps=     -1.29922333 rep=B1_b active virt
+
+ Norm |T{0h1p}_1| = 0.08106794
+ Norm |T{0h1p}_2| = 1.85191087
+
+ Model space dimension:
+  A1_a [2]  B2_a [1]  B1_a [1]  A1_b [2]  B2_b [1]  B1_b [1]
+
+ Sector (0h,1p) -- analysis of model vectors (right vectors)
+ first line : irrep, state number, total energy, eigenvalue
+ other lines: coefficients of contributing determinants (above a threshold of 1.0e-04)
+
+ Irrep 1 (A1_a) State 1 Energy     -37.124172142696565 Eigenvalue    -1.45874268    0.0000E+00
+ effective configuration:
+      0.999999  A1_a #   2 (   -1.433380)  3_sigma
+
+ Irrep 1 (A1_a) State 2 Energy     -36.492626098216917 Eigenvalue    -0.82719663    0.0000E+00
+ effective configuration:
+      0.994520  A1_a #   5 (   -0.779002)  4_sigma
+
+ Irrep 2 (B2_a) State 1 Energy     -36.998868275183476 Eigenvalue    -1.33343881    0.0000E+00
+ effective configuration:
+      1.000000  B2_a #   4 (   -1.299223)  1_pi
+
+ Irrep 3 (B1_a) State 1 Energy     -36.998868275183490 Eigenvalue    -1.33343881    0.0000E+00
+ effective configuration:
+      1.000000  B1_a #   3 (   -1.299223)  1_pi
+
+ Irrep 5 (A1_b) State 1 Energy     -37.124172142695883 Eigenvalue    -1.45874268    0.0000E+00
+ effective configuration:
+      0.999999  A1_b #  33 (   -1.433380)  3_sigma
+
+ Irrep 5 (A1_b) State 2 Energy     -36.492626099639388 Eigenvalue    -0.82719663    0.0000E+00
+ effective configuration:
+      0.994520  A1_b #  36 (   -0.779002)  4_sigma
+
+ Irrep 6 (B2_b) State 1 Energy     -36.998868275183476 Eigenvalue    -1.33343881    0.0000E+00
+ effective configuration:
+      1.000000  B2_b #  35 (   -1.299223)  1_pi
+
+ Irrep 7 (B1_b) State 1 Energy     -36.998868275183490 Eigenvalue    -1.33343881    0.0000E+00
+ effective configuration:
+      1.000000  B1_b #  34 (   -1.299223)  1_pi
+
+
+ sum of effective configurations over the electronic states considered
+ (this output can be used to choose a main model space in IH-IMMS calculations)
+
+      1.005479  A1_a #   2 (   -1.433380)  3_sigma
+      1.000000  B1_a #   3 (   -1.299223)  1_pi
+      1.000000  B2_a #   4 (   -1.299223)  1_pi
+      0.994521  A1_a #   5 (   -0.779002)  4_sigma
+      1.005479  A1_b #  33 (   -1.433380)  3_sigma
+      1.000000  B1_b #  34 (   -1.299223)  1_pi
+      1.000000  B2_b #  35 (   -1.299223)  1_pi
+      0.994521  A1_b #  36 (   -0.779002)  4_sigma
+
+
+
+ Heff eigenvalues:
+ (degeneracy threshold = 1.0e-08 a.u.)
+
+ Level  Re(eigenvalue)  Im(eigv)               Abs energy  Rel eigenvalue    Rel eigv, eV  Rel eigv, cm-1  deg  symmetry
+ ------------------------------------------------------------------------------------------------------------------------
+@    1   -1.4587426760  0.00e+00    -37.12417214269656540    0.0000000000    0.0000000000        0.000000   2   A1_a A1_b
+@    2   -1.3334388085  0.00e+00    -36.99886827518349008    0.1253038675    3.4096919370    27501.020131   4   B2_a B1_a B2_b B1_b
+@    3   -0.8271966330  0.00e+00    -36.49262609963938786    0.6315460431   17.1852433098   138608.334989   2   A1_a A1_b
+
+ Ionization potential 0h1p -> 0h0p =     1.458742676049 a.u. =  39.6944 eV =  320157.01 cm^-1
+
+
+				*****************
+				** Sector 0h2p **
+				*****************
+
+
+
+ Intermediate Hamiltonian-like shifts
+   target sectors: 0h2p 
+   spinor subspaces:
+                emin            emax
+   0     -1.50000000     -1.00000000
+   1     -1.00000000     -0.70000000
+   main subspaces of model determinants:
+       emin     -1.50000000     -1.00000000
+       emax     -1.00000000     -0.70000000
+    1  0h2p               2               0
+    2  0h2p               1               1
+       0h2p  determinant frontier energy = auto
+   formula for denominator shifts: realimag
+   attenuation parameter (npower): 5
+   scale shift by: 1
+   shift for model space determinants
+   frontier energy for this sector: -2.07823
+
+        1  | A1_a #   2 (   -1.433380) A1_b #  33 (   -1.433380) > (A1_0)  main    Ene= -2.86676086  Shift=  0.00000000i
+        2  | A1_a #   2 (   -1.433380) A1_b #  36 (   -0.779002) > (A1_0)  main    Ene= -2.21238217  Shift=  0.00000000i
+        3  | B1_a #   3 (   -1.299223) B1_b #  34 (   -1.299223) > (A1_0)  main    Ene= -2.59844667  Shift=  0.00000000i
+        4  | B2_a #   4 (   -1.299223) B2_b #  35 (   -1.299223) > (A1_0)  main    Ene= -2.59844667  Shift=  0.00000000i
+        5  | A1_a #   5 (   -0.779002) A1_b #  33 (   -1.433380) > (A1_0)  main    Ene= -2.21238217  Shift=  0.00000000i
+        6  | A1_a #   5 (   -0.779002) A1_b #  36 (   -0.779002) > (A1_0)  int     Ene= -1.55800348  Shift= -0.52022158i
+        7  | A1_a #   2 (   -1.433380) B2_b #  35 (   -1.299223) > (B2_0)  main    Ene= -2.73260377  Shift=  0.00000000i
+        8  | B2_a #   4 (   -1.299223) A1_b #  33 (   -1.433380) > (B2_0)  main    Ene= -2.73260377  Shift=  0.00000000i
+        9  | B2_a #   4 (   -1.299223) A1_b #  36 (   -0.779002) > (B2_0)  main    Ene= -2.07822507  Shift=  0.00000000i
+       10  | A1_a #   5 (   -0.779002) B2_b #  35 (   -1.299223) > (B2_0)  main    Ene= -2.07822507  Shift=  0.00000000i
+       11  | A1_a #   2 (   -1.433380) B1_b #  34 (   -1.299223) > (B1_0)  main    Ene= -2.73260377  Shift=  0.00000000i
+       12  | B1_a #   3 (   -1.299223) A1_b #  33 (   -1.433380) > (B1_0)  main    Ene= -2.73260377  Shift=  0.00000000i
+       13  | B1_a #   3 (   -1.299223) A1_b #  36 (   -0.779002) > (B1_0)  main    Ene= -2.07822507  Shift=  0.00000000i
+       14  | A1_a #   5 (   -0.779002) B1_b #  34 (   -1.299223) > (B1_0)  main    Ene= -2.07822507  Shift=  0.00000000i
+       15  | B1_a #   3 (   -1.299223) B2_b #  35 (   -1.299223) > (A2_0)  main    Ene= -2.59844667  Shift=  0.00000000i
+       16  | B2_a #   4 (   -1.299223) B1_b #  34 (   -1.299223) > (A2_0)  main    Ene= -2.59844667  Shift=  0.00000000i
+       17  | A1_a #   2 (   -1.433380) A1_a #   5 (   -0.779002) > (A1_+1)  main    Ene= -2.21238217  Shift=  0.00000000i
+       18  | A1_a #   2 (   -1.433380) B2_a #   4 (   -1.299223) > (B2_+1)  main    Ene= -2.73260377  Shift=  0.00000000i
+       19  | B2_a #   4 (   -1.299223) A1_a #   5 (   -0.779002) > (B2_+1)  main    Ene= -2.07822507  Shift=  0.00000000i
+       20  | A1_a #   2 (   -1.433380) B1_a #   3 (   -1.299223) > (B1_+1)  main    Ene= -2.73260377  Shift=  0.00000000i
+       21  | B1_a #   3 (   -1.299223) A1_a #   5 (   -0.779002) > (B1_+1)  main    Ene= -2.07822507  Shift=  0.00000000i
+       22  | B1_a #   3 (   -1.299223) B2_a #   4 (   -1.299223) > (A2_+1)  main    Ene= -2.59844667  Shift=  0.00000000i
+       23  | A1_b #  33 (   -1.433380) A1_b #  36 (   -0.779002) > (A1_-1)  main    Ene= -2.21238217  Shift=  0.00000000i
+       24  | A1_b #  33 (   -1.433380) B2_b #  35 (   -1.299223) > (B2_-1)  main    Ene= -2.73260377  Shift=  0.00000000i
+       25  | B2_b #  35 (   -1.299223) A1_b #  36 (   -0.779002) > (B2_-1)  main    Ene= -2.07822507  Shift=  0.00000000i
+       26  | A1_b #  33 (   -1.433380) B1_b #  34 (   -1.299223) > (B1_-1)  main    Ene= -2.73260377  Shift=  0.00000000i
+       27  | B1_b #  34 (   -1.299223) A1_b #  36 (   -0.779002) > (B1_-1)  main    Ene= -2.07822507  Shift=  0.00000000i
+       28  | B1_b #  34 (   -1.299223) B2_b #  35 (   -1.299223) > (A2_-1)  main    Ene= -2.59844667  Shift=  0.00000000i
+
+
+ Integral sorting for the 0h2p sector
+ started at Thu Sep  1 08:17:53 2022
+ number of spinors                              62
+ number of spinor blocks                        8
+ tile size                                      100
+ max spinor block size                          15
+ size of i/o buffer for integrals and indices   0.375 MB
+ size of the buffer for two-elec integrals      0.048 MB
+ sorting two-electron integrals
+   step    #blocks   ints read    time,s  rate,G/s
+   0 /  8       15      475440         0      0.32
+   1 /  8       12      136864         0      0.21
+   2 /  8        9      126182         0      0.21
+   3 /  8        0           0         0      0.00
+   4 /  8       12      358200         0      0.28
+   5 /  8        9       87514         0      0.15
+   6 /  8        6       76832         0      0.12
+   7 /  8        0           0         0      0.00
+   total        63     1261032         0      0.22
+ sorting one-electron integrals ...
+   Fock matrix reconstruction ...
+   SCF energy (energy of reference determinant) =     -35.611251049567 a.u.
+ fill 1-electron diagrams ... done
+ time for 2-e integrals sorting, sec: 0.19
+ time for DIRAC interface (integral extraction & write), sec: 0.10
+ total time for sorting operations, sec: 0.28
+ finished at at Thu Sep  1 08:17:53 2022
+ Construction of T^(0h2p)-independent contributions to the FSCC-equations ...
+
+ Initialization of T{0h2p}_2 amplitudes ...
+ Calculated: T{0h2p}_2 and Heff{0h2p}
+ done
+
+
+ Warning: intruder states are possible!
+ [1] Denominator [ 5 36 -> 2 37 ] = 4.6889E-01
+     [   5] eps=     -0.77900174 rep=A1_a active virt
+     [  36] eps=     -0.77900174 rep=A1_b active virt
+     [   2] eps=     -1.43338043 rep=A1_a active virt
+     [  37] eps=     -0.59351376 rep=A1_b inactive virt
+ [2] Denominator [ 5 36 -> 2 40 ] = 3.9742E-01
+     [   5] eps=     -0.77900174 rep=A1_a active virt
+     [  36] eps=     -0.77900174 rep=A1_b active virt
+     [   2] eps=     -1.43338043 rep=A1_a active virt
+     [  40] eps=     -0.52203968 rep=A1_b inactive virt
+ [3] Denominator [ 5 36 -> 13 33 ] = 3.2834E-01
+     [   5] eps=     -0.77900174 rep=A1_a active virt
+     [  36] eps=     -0.77900174 rep=A1_b active virt
+     [  13] eps=     -0.45295895 rep=A1_a inactive virt
+     [  33] eps=     -1.43338043 rep=A1_b active virt
+ [4] Denominator [ 5 36 -> 7 34 ] = 2.8188E-01
+     [   5] eps=     -0.77900174 rep=A1_a active virt
+     [  36] eps=     -0.77900174 rep=A1_b active virt
+     [   7] eps=     -0.54065546 rep=B1_a inactive virt
+     [  34] eps=     -1.29922333 rep=B1_b active virt
+ [5] Denominator [ 5 36 -> 10 34 ] = 2.3020E-01
+     [   5] eps=     -0.77900174 rep=A1_a active virt
+     [  36] eps=     -0.77900174 rep=A1_b active virt
+     [  10] eps=     -0.48897914 rep=B1_a inactive virt
+     [  34] eps=     -1.29922333 rep=B1_b active virt
+
+ solution of amplitude equations (sector 0h2p)		 Thu Sep  1 08:17:53 2022
+ ---------------------------------------------------------
+ it.       diffmax(T2)     max(T2)    t,sec       mem,Gb
+ ---------------------------------------------------------
+   1    0.257223769485    0.215488      0.0    0.01/0.02
+   2    0.410375167131    0.462475      0.0    0.01/0.02
+   3    0.054242734811    0.309671      0.0    0.01/0.02
+   4    0.037209149026    0.305995      0.0    0.01/0.02
+   5    0.015014944373    0.317203      0.0    0.01/0.02
+   6    0.002082763776    0.317386      0.0    0.02/0.02
+   7    0.000864770086    0.318172      0.0    0.02/0.02
+   8    0.000693687286    0.319079      0.0    0.02/0.02
+   9    0.000299006284    0.319023      0.0    0.02/0.02
+  10    0.000104691468    0.319119      0.0    0.02/0.02
+  11    0.000027482850    0.319110      0.0    0.02/0.02
+  12    0.000011793949    0.319111      0.0    0.02/0.02
+  13    0.000005665523    0.319110      0.0    0.02/0.02
+  14    0.000001767086    0.319109      0.0    0.02/0.02
+  15    0.000000810034    0.319109      0.0    0.02/0.02
+  16    0.000000344296    0.319109      0.0    0.02/0.02
+  17    0.000000117368    0.319109      0.0    0.02/0.02
+  18    0.000000018487    0.319109      0.0    0.02/0.02
+ ---------------------------------------------------------
+ converged in 18 iterations
+
+ average time per iteration = 0.036 sec
+
+
+ (absolute values)
+ Max T{0h2p}_2 amplitude (t{02}_ijab) [ 5 3 -> 2 7 ] = 0.31910901
+   [   5] eps=     -0.77900174 rep=A1_a active virt
+   [   3] eps=     -1.29922333 rep=B1_a active virt
+   [   2] eps=     -1.43338043 rep=A1_a active virt
+   [   7] eps=     -0.54065546 rep=B1_a inactive virt
+
+ Norm |T{0h2p}_2| = 3.20044827
+
+ Model space dimension:
+  A1_0 [6]  B2_0 [4]  B1_0 [4]  A2_0 [2]  A1_+1 [1]  B2_+1 [2]  B1_+1 [2]  A2_+1 [1]  A1_-1 [1]  B2_-1 [2]  B1_-1 [2]  A2_-1 [1]
+
+ Sector (0h,2p) -- analysis of model vectors (right vectors)
+ first line : irrep, state number, total energy, eigenvalue
+ other lines: coefficients of contributing determinants (above a threshold of 1.0e-04)
+
+ Irrep 1 (A1_0) State 1 Energy     -38.006596251796964 Eigenvalue    -2.34116679    0.0000E+00
+ effective configuration:
+      0.961944  A1_a #   2 (   -1.433380)  3_sigma
+      0.010601  B1_a #   3 (   -1.299223)  1_pi
+      0.010601  B2_a #   4 (   -1.299223)  1_pi
+      0.016854  A1_a #   5 (   -0.779002)  4_sigma
+      0.961944  A1_b #  33 (   -1.433380)  3_sigma
+      0.010601  B1_b #  34 (   -1.299223)  1_pi
+      0.010601  B2_b #  35 (   -1.299223)  1_pi
+      0.016854  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 99.7%
+
+ Irrep 1 (A1_0) State 2 Energy     -37.748284897637681 Eigenvalue    -2.08285543    0.0000E+00
+ effective configuration:
+      0.500000  B1_a #   3 (   -1.299223)  1_pi
+      0.500000  B2_a #   4 (   -1.299223)  1_pi
+      0.500000  B1_b #  34 (   -1.299223)  1_pi
+      0.500000  B2_b #  35 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 1 (A1_0) State 3 Energy     -37.697929424402624 Eigenvalue    -2.03249996    0.0000E+00
+ effective configuration:
+      0.023464  A1_a #   2 (   -1.433380)  3_sigma
+      0.486726  B1_a #   3 (   -1.299223)  1_pi
+      0.486726  B2_a #   4 (   -1.299223)  1_pi
+      0.023464  A1_b #  33 (   -1.433380)  3_sigma
+      0.486726  B1_b #  34 (   -1.299223)  1_pi
+      0.486726  B2_b #  35 (   -1.299223)  1_pi
+ fraction of main space determinants: 99.7%
+
+ Irrep 1 (A1_0) State 4 Energy     -37.603716823472304 Eigenvalue    -1.93828736    0.0000E+00
+ effective configuration:
+      0.500000  A1_a #   2 (   -1.433380)  3_sigma
+      0.500000  A1_a #   5 (   -0.779002)  4_sigma
+      0.500000  A1_b #  33 (   -1.433380)  3_sigma
+      0.500000  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 1 (A1_0) State 5 Energy     -37.515899246170541 Eigenvalue    -1.85046978    0.0000E+00
+ effective configuration:
+      0.514074  A1_a #   2 (   -1.433380)  3_sigma
+      0.484555  A1_a #   5 (   -0.779002)  4_sigma
+      0.514074  A1_b #  33 (   -1.433380)  3_sigma
+      0.484555  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 99.6%
+
+ Irrep 1 (A1_0) State 6 Energy     -36.866811682866221 Eigenvalue    -1.20138222    0.0000E+00
+ effective configuration:
+      0.973155  A1_a #   5 (   -0.779002)  4_sigma
+      0.973155  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 2.7%
+
+ Irrep 2 (B2_0) State 1 Energy     -37.964133748561224 Eigenvalue    -2.29870428    0.0000E+00
+ effective configuration:
+      0.496015  A1_a #   2 (   -1.433380)  3_sigma
+      0.500000  B2_a #   4 (   -1.299223)  1_pi
+      0.496015  A1_b #  33 (   -1.433380)  3_sigma
+      0.500000  B2_b #  35 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 2 (B2_0) State 2 Energy     -37.885840868984552 Eigenvalue    -2.22041140    0.0000E+00
+ effective configuration:
+      0.494055  A1_a #   2 (   -1.433380)  3_sigma
+      0.500000  B2_a #   4 (   -1.299223)  1_pi
+      0.494055  A1_b #  33 (   -1.433380)  3_sigma
+      0.500000  B2_b #  35 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 2 (B2_0) State 3 Energy     -37.434211123533508 Eigenvalue    -1.76878166    0.0000E+00
+ effective configuration:
+      0.500000  B2_a #   4 (   -1.299223)  1_pi
+      0.493621  A1_a #   5 (   -0.779002)  4_sigma
+      0.500000  B2_b #  35 (   -1.299223)  1_pi
+      0.493621  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 2 (B2_0) State 4 Energy     -37.428811211037036 Eigenvalue    -1.76338174    0.0000E+00
+ effective configuration:
+      0.500000  B2_a #   4 (   -1.299223)  1_pi
+      0.496671  A1_a #   5 (   -0.779002)  4_sigma
+      0.500000  B2_b #  35 (   -1.299223)  1_pi
+      0.496671  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 3 (B1_0) State 1 Energy     -37.964133748561231 Eigenvalue    -2.29870428    0.0000E+00
+ effective configuration:
+      0.496015  A1_a #   2 (   -1.433380)  3_sigma
+      0.500000  B1_a #   3 (   -1.299223)  1_pi
+      0.496015  A1_b #  33 (   -1.433380)  3_sigma
+      0.500000  B1_b #  34 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 3 (B1_0) State 2 Energy     -37.885840868984559 Eigenvalue    -2.22041140    0.0000E+00
+ effective configuration:
+      0.494055  A1_a #   2 (   -1.433380)  3_sigma
+      0.500000  B1_a #   3 (   -1.299223)  1_pi
+      0.494055  A1_b #  33 (   -1.433380)  3_sigma
+      0.500000  B1_b #  34 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 3 (B1_0) State 3 Energy     -37.434211123533501 Eigenvalue    -1.76878166    0.0000E+00
+ effective configuration:
+      0.500000  B1_a #   3 (   -1.299223)  1_pi
+      0.493621  A1_a #   5 (   -0.779002)  4_sigma
+      0.500000  B1_b #  34 (   -1.299223)  1_pi
+      0.493621  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 3 (B1_0) State 4 Energy     -37.428811211037029 Eigenvalue    -1.76338174    0.0000E+00
+ effective configuration:
+      0.500000  B1_a #   3 (   -1.299223)  1_pi
+      0.496671  A1_a #   5 (   -0.779002)  4_sigma
+      0.500000  B1_b #  34 (   -1.299223)  1_pi
+      0.496671  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 4 (A2_0) State 1 Energy     -37.819829396041975 Eigenvalue    -2.15439993    0.0000E+00
+ effective configuration:
+      0.500000  B1_a #   3 (   -1.299223)  1_pi
+      0.500000  B2_a #   4 (   -1.299223)  1_pi
+      0.500000  B1_b #  34 (   -1.299223)  1_pi
+      0.500000  B2_b #  35 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 4 (A2_0) State 2 Energy     -37.748284897637681 Eigenvalue    -2.08285543    0.0000E+00
+ effective configuration:
+      0.500000  B1_a #   3 (   -1.299223)  1_pi
+      0.500000  B2_a #   4 (   -1.299223)  1_pi
+      0.500000  B1_b #  34 (   -1.299223)  1_pi
+      0.500000  B2_b #  35 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 9 (A1_+1) State 1 Energy     -37.603716823408760 Eigenvalue    -1.93828736    0.0000E+00
+ effective configuration:
+      1.000000  A1_a #   2 (   -1.433380)  3_sigma
+      1.000000  A1_a #   5 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 10 (B2_+1) State 1 Energy     -37.964133748633365 Eigenvalue    -2.29870428    0.0000E+00
+ effective configuration:
+      0.992029  A1_a #   2 (   -1.433380)  3_sigma
+      1.000000  B2_a #   4 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 10 (B2_+1) State 2 Energy     -37.434211123078946 Eigenvalue    -1.76878166    0.0000E+00
+ effective configuration:
+      0.012758  A1_a #   2 (   -1.433380)  3_sigma
+      1.000000  B2_a #   4 (   -1.299223)  1_pi
+      0.987242  A1_a #   5 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 11 (B1_+1) State 1 Energy     -37.964133748633373 Eigenvalue    -2.29870428    0.0000E+00
+ effective configuration:
+      0.992029  A1_a #   2 (   -1.433380)  3_sigma
+      1.000000  B1_a #   3 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 11 (B1_+1) State 2 Energy     -37.434211123078938 Eigenvalue    -1.76878166    0.0000E+00
+ effective configuration:
+      0.012758  A1_a #   2 (   -1.433380)  3_sigma
+      1.000000  B1_a #   3 (   -1.299223)  1_pi
+      0.987242  A1_a #   5 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 12 (A2_+1) State 1 Energy     -37.819829396041975 Eigenvalue    -2.15439993    0.0000E+00
+ effective configuration:
+      1.000000  B1_a #   3 (   -1.299223)  1_pi
+      1.000000  B2_a #   4 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 13 (A1_-1) State 1 Energy     -37.603716823535848 Eigenvalue    -1.93828736    0.0000E+00
+ effective configuration:
+      1.000000  A1_b #  33 (   -1.433380)  3_sigma
+      1.000000  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 14 (B2_-1) State 1 Energy     -37.964133748489083 Eigenvalue    -2.29870428    0.0000E+00
+ effective configuration:
+      0.992029  A1_b #  33 (   -1.433380)  3_sigma
+      1.000000  B2_b #  35 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 14 (B2_-1) State 2 Energy     -37.434211123988078 Eigenvalue    -1.76878166    0.0000E+00
+ effective configuration:
+      0.012758  A1_b #  33 (   -1.433380)  3_sigma
+      1.000000  B2_b #  35 (   -1.299223)  1_pi
+      0.987242  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 15 (B1_-1) State 1 Energy     -37.964133748489090 Eigenvalue    -2.29870428    0.0000E+00
+ effective configuration:
+      0.992029  A1_b #  33 (   -1.433380)  3_sigma
+      1.000000  B1_b #  34 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+ Irrep 15 (B1_-1) State 2 Energy     -37.434211123988071 Eigenvalue    -1.76878166    0.0000E+00
+ effective configuration:
+      0.012758  A1_b #  33 (   -1.433380)  3_sigma
+      1.000000  B1_b #  34 (   -1.299223)  1_pi
+      0.987242  A1_b #  36 (   -0.779002)  4_sigma
+ fraction of main space determinants: 100.0%
+
+ Irrep 16 (A2_-1) State 1 Energy     -37.819829396041975 Eigenvalue    -2.15439993    0.0000E+00
+ effective configuration:
+      1.000000  B1_b #  34 (   -1.299223)  1_pi
+      1.000000  B2_b #  35 (   -1.299223)  1_pi
+ fraction of main space determinants: 100.0%
+
+
+ sum of effective configurations over the electronic states considered
+ (this output can be used to choose a main model space in IH-IMMS calculations)
+
+      7.016606  A1_a #   2 (   -1.433380)  3_sigma
+      7.007437  B1_a #   3 (   -1.299223)  1_pi
+      7.007437  B2_a #   4 (   -1.299223)  1_pi
+      6.968519  A1_a #   5 (   -0.779002)  4_sigma
+      7.016606  A1_b #  33 (   -1.433380)  3_sigma
+      7.007437  B1_b #  34 (   -1.299223)  1_pi
+      7.007437  B2_b #  35 (   -1.299223)  1_pi
+      6.968519  A1_b #  36 (   -0.779002)  4_sigma
+
+
+
+ Heff eigenvalues:
+ (degeneracy threshold = 1.0e-08 a.u.)
+
+ Level  Re(eigenvalue)  Im(eigv)               Abs energy  Rel eigenvalue    Rel eigv, eV  Rel eigv, cm-1  % main  deg  symmetry
+ --------------------------------------------------------------------------------------------------------------------------------
+@    1   -2.3411667851  0.00e+00    -38.00659625179696377    0.0000000000    0.0000000000        0.000000    99.7   1   A1_0
+@    2   -2.2987042820  0.00e+00    -37.96413374863337253    0.0424625032    1.1554635746     9319.442229   100.0   6   B2_0 B1_0 B2_+1 B1_+1 B2_-1 B1_-1
+@    3   -2.2204114023  0.00e+00    -37.88584086898455894    0.1207553828    3.2859213630    26502.743128   100.0   2   B2_0 B1_0
+@    4   -2.1543999294  0.00e+00    -37.81982939604197469    0.1867668558    5.0821850499    40990.586818   100.0   3   A2_0 A2_+1 A2_-1
+@    5   -2.0828554310  0.00e+00    -37.74828489763768147    0.2583113542    7.0290100298    56692.789231   100.0   2   A1_0 A2_0
+@    6   -2.0324999578  0.00e+00    -37.69792942440262351    0.3086668274    8.3992522616    67744.538156    99.7   1   A1_0
+@    7   -1.9382873569  0.00e+00    -37.60371682353584788    0.4028794283   10.9629077330    88421.814001   100.0   3   A1_0 A1_+1 A1_-1
+@    8   -1.8504697795  0.00e+00    -37.51589924617054095    0.4906970056   13.3525457499   107695.544421    99.6   1   A1_0
+@    9   -1.7687816573  0.00e+00    -37.43421112398807793    0.5723851278   15.5753927943   125624.014924   100.0   6   B2_0 B1_0 B2_+1 B1_+1 B2_-1 B1_-1
+@   10   -1.7633817444  0.00e+00    -37.42881121103703634    0.5777850408   15.7223319113   126809.158828   100.0   2   B2_0 B1_0
+@   11   -1.2013822162  0.00e+00    -36.86681168286622068    1.1397845689   31.0151181424   250153.798100     2.7   1   A1_0
+
+ Ionization potential 0h2p -> 0h1p =     0.882424109100 a.u. =  24.0120 eV =  193669.71 cm^-1
+ Ionization potential 0h1p -> 0h0p =     1.458742676049 a.u. =  39.6944 eV =  320157.01 cm^-1
+
+ time for (sec):
+ -------------------------------------------------------
+  Total time of execution                         1.694
+  Diagram contraction (mult) for <PP||PP>         0.356
+  DIRAC interface (MRCONEE/MDCINT)                0.096
+  Diagram template constr (tmplt)                 0.012
+  Sorting of integrals                            0.187
+  Multidim transposition (reorder)                0.306
+  Energy denominators (diveps)                    0.010
+  0h0p -- Singles equations (T1)                  0.032
+  Diagram contraction (mult)                      0.766
+  mult M <- M x M                                 0.622
+  mult M <- D x M                                 0.000
+  Diagram addition (update)                       0.016
+  0h0p -- Doubles equations (T2)                  0.144
+  Permutation operators                           0.166
+  DIIS extrapolation                              0.051
+  Constant part of 0h1p amplitudes                0.008
+  Extraction of a closed part                     0.013
+  Prediction of intruder states                   0.000
+  Constant part of 0h2p amplitudes                0.040
+ -------------------------------------------------------
+
+
+ memory in usage  = 11996460 bytes = 11.4 Mb = 0.01 Gb
+ max memory usage = 22258564 bytes = 21.2 Mb = 0.02 Gb
+ Disk I/O:
+   files created: 615   files removed: 0
+   read          90449856 bytes = 0.084 Gb
+   write         40885690 bytes = 0.038 Gb
+
+ EXP-T terminated normally at Thu Sep  1 08:17:54 2022
+ Total run time: 0 days 0 hours 0 minutes 1 seconds 693 milliseconds

@@ -1,9 +1,0 @@
-title "Test Xe+/2c-ECP(gatchina)/D2/sector 1h0p"
-maxiter 500
-conv 1e-9
-sector 1h0p
-nacth 6
-
-# import integrals from
-integrals MRCONEE-D2 MDCINT-D2
-

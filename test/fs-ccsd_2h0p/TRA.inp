@@ -1,0 +1,22 @@
+!
+**DIRAC         
+.TITLE          
+C2H4 molecule
+.WAVE FUNCTION  
+.4INDEX
+**HAMILTONIAN
+.NONREL
+**WAVE FUNCTION          
+.SCF
+*SCF            
+#.CLOSED         
+# 12          
+.ERGCNV         
+1E-12           
+**MOLTRA        
+.SCHEME
+ 4
+.ACTIVE         
+all
+*END OF INPUT   
+				

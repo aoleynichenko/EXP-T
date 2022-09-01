@@ -89,7 +89,9 @@ void fd2_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J, dou
 
     /*
      * find eigenvalues and eigenvectors.
-     * eigenvalues will be stored in the 'diagonal' array
+     * eigenvalues will be stored in the 'diagonal' array.
+     * we declare the column-major order to obtain the eigenvectors stored row-wise.
+     *
      */
     double *eigenvec = (double *) calloc(N * N, sizeof(double));
     LAPACKE_dstev(LAPACK_COL_MAJOR, 'V', N, diagonal, off_diag, eigenvec, N);
@@ -117,11 +119,8 @@ void fd2_matrix_solver(input_data_t *input_data, cubic_spline_t *pot, int J, dou
         if (emin <= diagonal[i] && diagonal[i] <= emax) {
 
             (*eigenvalues)[root_count] = diagonal[i];
-            double *psi = *wavefunctions + root_count * N;
-
-            for (int j = 0; j < N; j++) {
-                psi[j] = /*sqrt(g[j]) * */ eigenvec[root_count * N + j];
-            }
+            int offset = root_count * N;
+            memcpy(*wavefunctions + offset, eigenvec + offset, sizeof(double) * N);
 
             root_count++;
         }

@@ -26,15 +26,32 @@
 
 /**
  * evaluation of the matrix element <psi1|M(r)|psi2>.
- * Operator M(r) is given by the spline.
+ * Operator M(r) is given by the function.
  */
-double matrix_element_spline(int N, double *radial_grid, double *psi_bra, double *psi_ket, cubic_spline_t *f)
+double matrix_element_fun(int N, double *radial_grid, double *psi_bra, double *psi_ket, double (*M)(double r))
 {
     double sum = 0.0;
 
     for (int i = 0; i < N; i++) {
         double ri = radial_grid[i];
-        sum += psi_bra[i] * psi_ket[i] * evaluate_spline(f, ri);
+        sum += psi_bra[i] * psi_ket[i] * M(ri);
+    }
+
+    return sum;
+}
+
+
+/**
+ * evaluation of the matrix element <psi1|M(r)|psi2>.
+ * Operator M(r) is given by the spline.
+ */
+double matrix_element_spline(int N, double *radial_grid, double *psi_bra, double *psi_ket, cubic_spline_t *M)
+{
+    double sum = 0.0;
+
+    for (int i = 0; i < N; i++) {
+        double ri = radial_grid[i];
+        sum += psi_bra[i] * psi_ket[i] * evaluate_spline(M, ri);
     }
 
     return sum;

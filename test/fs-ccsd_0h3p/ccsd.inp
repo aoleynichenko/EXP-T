@@ -1,0 +1,8 @@
+sector 0h3p
+nactp 6
+
+maxiter 500
+conv 1e-8
+disk_usage 0
+memory 2 gb
+

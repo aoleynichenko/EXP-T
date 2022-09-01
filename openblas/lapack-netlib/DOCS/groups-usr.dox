@@ -527,7 +527,7 @@
  *   This is the group of complex16 LAPACK TESTING EIG routines.
  *
  * @defgroup aux_eig aux
- *   @ingroup eig
+ *   @ingroup eigensolver
  *   This is the group of auxiliary LAPACK TESTING EIG routines.
  *
  ****

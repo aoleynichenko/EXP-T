@@ -39,6 +39,8 @@
 
 void parse_option_masses(input_data_t *input_data, char *line);
 
+void parse_option_charge(input_data_t *input_data, char *line);
+
 void parse_option_viblevels(input_data_t *input_data, char *line);
 
 void parse_option_rotlevels(input_data_t *input_data, char *line);
@@ -62,6 +64,8 @@ int starts_with(char *str, char *pattern);
 void remove_trailing_whitespaces(char *str);
 
 char *my_strdup(char *s);
+
+double charge_modified_reduced_mass(double mass1, double mass2, int charge);
 
 
 /**
@@ -112,6 +116,13 @@ input_data_t *read_input(char *input_file)
          */
         if (starts_with(line, "masses")) {
             parse_option_masses(input_data, line);
+        }
+
+        /*
+         * net charge of the molecule
+         */
+        if (starts_with(line, "charge")) {
+            parse_option_charge(input_data, line);
         }
 
         /*
@@ -171,6 +182,11 @@ input_data_t *read_input(char *input_file)
         errquit("mapping is currently not available for the Numerov integrator, use the FD2 integrator instead");
     }
 
+    /*
+     * post-processing of input parameters
+     */
+    input_data->reduced_mass = charge_modified_reduced_mass(input_data->mass1, input_data->mass2, input_data->charge);
+
     fclose(inp_file);
 
     return input_data;
@@ -193,7 +209,28 @@ void parse_option_masses(input_data_t *input_data, char *line)
         errquit("syntax error in 'masses' keyword");
     }
 
-    input_data->reduced_mass = mass1 * mass2 / (mass1 + mass2) * AMU_TO_ELECTRON_MASS;
+    input_data->mass1 = mass1;
+    input_data->mass2 = mass2;
+}
+
+
+/**
+ * net charge of the molecule
+ *
+ * syntax:
+ * charge <integer net-charge>
+ */
+void parse_option_charge(input_data_t *input_data, char *line)
+{
+    char buf[MAX_LINE_LEN];
+    int charge;
+
+    int nread = sscanf(line, "%s%d", buf, &charge);
+    if (nread != 2) {
+        errquit("syntax error in the 'charge' keyword");
+    }
+
+    input_data->charge = charge;
 }
 
 
@@ -502,6 +539,29 @@ void parse_pec_units(char *line, double *distance_conv_factor, double *energy_co
         pch = strtok(NULL, " ");
         count++;
     }
+}
+
+
+/**
+ * calculates the Watson's "charge-modified reduced mass".
+ * masses are assumed to be in amu.
+ * returns the value in the electron mass units.
+ *
+ * see also:
+ * [1] J. K. G. Watson, The isotope dependence of diatomic Dunham coefficients.
+ *     J. Mol. Spectrosc. 80, 411 (1980)
+ *     doi: 10.1016/0022-2852(80)90152-6
+ * [2] R. J. Le Roy, LEVEL: A computer program for solving the radial
+ *     Schrödinger equation for bound and quasibound levels.
+ *     JQSRT, 186, 167 (2017)
+ *     doi: 10.1016/j.jqsrt.2016.05.028
+ */
+double charge_modified_reduced_mass(double mass1, double mass2, int charge)
+{
+    mass1 = mass1 * AMU_TO_ELECTRON_MASS;
+    mass2 = mass2 * AMU_TO_ELECTRON_MASS;
+
+    return mass1 * mass2 / (mass1 + mass2 - charge);
 }
 
 

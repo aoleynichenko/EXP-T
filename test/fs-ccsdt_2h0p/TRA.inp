@@ -1,0 +1,15 @@
+!
+**DIRAC         
+.TITLE          
+Mg atom
+.WAVE FUNCTION  
+.4INDEX
+**WAVE FUNCTION          
+.SCF
+**MOLTRA        
+.SCHEME
+ 4
+.ACTIVE         
+energy -5 50 0
+*END OF INPUT   
+				

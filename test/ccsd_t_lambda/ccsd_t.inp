@@ -1,0 +1,14 @@
+sector 0h0p
+memory 8 gb
+model ccsd(t)
+diis 500
+maxiter 200
+disk_usage 0
+conv 1e-10
+
+#oneprop 0.00001 0 "ZDIPLEN"
+density 0h0p
+
+analyt_prop ZDIPLEN
+
+

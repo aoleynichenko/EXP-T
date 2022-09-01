@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2021 The EXP-T developers.
+ *  Copyright (C) 2018-2022 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -48,6 +48,7 @@ void gen_cfour_ZMAT(FILE *out, molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t 
 char angular_momentum_to_char(int l);
 int basis_get_max_ang_mom(basis_t *bas);
 void str_toupper(char *s);
+void gen_cfour_print_identity_matrix(FILE *out, int n);
 
 
 void gen_cfour(FILE *out, molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t *ecp_lib)
@@ -131,8 +132,10 @@ void gen_cfour_ZMAT(FILE *out, molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t 
 
 void gen_cfour_GENBAS(FILE *out, basis_lib_t *bas_lib)
 {
-    char elem_sym[8];
-    int nfun_L[16]; // number of uncontracted functions for each value of L
+    const int MAX_NUM_BLOCKS = 32;
+    int n_blocks = 0;
+    int block_ang_momentum[MAX_NUM_BLOCKS];
+    int block_num_functions[MAX_NUM_BLOCKS];
 
     for (int ielem = 0; ielem < N_CHEM_ELEMENTS; ielem++) {
         basis_t *bas = bas_lib->basis_list[ielem];
@@ -140,70 +143,151 @@ void gen_cfour_GENBAS(FILE *out, basis_lib_t *bas_lib)
             continue;
         }
 
+        /*
+         * label of the chemical element and name of the basis set
+         */
+        char elem_sym[8];
         get_element_symbol(bas->element, elem_sym);
         str_toupper(elem_sym);
         fprintf(out, "\n%s:UNCONT\n", elem_sym);
+
+        /*
+         * determine maximum angular momentum of basis function
+         */
         int max_L = basis_get_max_ang_mom(bas);
-        for (int i = 0; i <= max_L; i++) {
-            fprintf(out, "    %c", tolower(angular_momentum_to_char(i)));
+
+        /*
+         * no more than 10 functions can be placed into one block.
+         * if there are > 10 primitive Gaussians, several blocks are created.
+         */
+        for (int L = 0; L <= max_L; L++) {
+            int n_fun_L = 0;
+            for (int i = 0; i < bas->nfun; i++) {
+                if (bas->functions[i]->l == L) {
+                    n_fun_L++;
+                }
+            }
+
+            while (n_fun_L > 0) {
+                int MAX_FUN_PER_BLOCK = 10;
+
+                // maximum number of functions in the block depends on L
+                if (L == 6) {
+                    MAX_FUN_PER_BLOCK = 4;
+                }
+
+                int n_fun_block = 0;
+                if (n_fun_L > MAX_FUN_PER_BLOCK) {
+                    n_fun_block = MAX_FUN_PER_BLOCK;
+                }
+                else {
+                    n_fun_block = n_fun_L;
+                }
+
+                block_num_functions[n_blocks] = n_fun_block;
+                block_ang_momentum[n_blocks] = L;
+                n_blocks++;
+
+                n_fun_L -= n_fun_block;
+            }
+        }
+
+        /*
+         * header:
+         * comment line
+         */
+        for (int i = 0; i < n_blocks; i++) {
+            int L = block_ang_momentum[i];
+            fprintf(out, "    %c", tolower(angular_momentum_to_char(L)));
         }
         fprintf(out, "\n\n");
-        fprintf(out, "%3d\n", max_L + 1);
-        for (int i = 0; i <= max_L; i++) {
-            fprintf(out, "    %1d", i);
+
+        /*
+         * header:
+         * number of basis functions in each block
+         */
+        fprintf(out, "%3d\n", n_blocks);
+        for (int i = 0; i < n_blocks; i++) {
+            int L = block_ang_momentum[i];
+            fprintf(out, "    %1d", L);
         }
         fprintf(out, "\n");
 
-        // count number of primitive Gaussians for each L
-        memset(nfun_L, 0, sizeof(nfun_L));
-        for (int l = 0; l <= max_L; l++) {
-            for (int i = 0; i < bas->nfun; i++) {
-                if (bas->functions[i]->l == l) {
-                    nfun_L[l]++;
-                }
-            }
-        }
-        // and print it
-        for (int l = 0; l <= max_L; l++) {
-            fprintf(out, "%5d", nfun_L[l]);
+        for (int i = 0; i < n_blocks; i++) {
+            fprintf(out, "%5d", block_num_functions[i]);
         }
         fprintf(out, "\n");
-        for (int l = 0; l <= max_L; l++) {
-            fprintf(out, "%5d", nfun_L[l]);
+        for (int i = 0; i < n_blocks; i++) {
+            fprintf(out, "%5d", block_num_functions[i]);
         }
         fprintf(out, "\n");
 
-        // for each l: print exponents and identity matrix of coeff-s
-        for (int l = 0; l <= max_L; l++) {
-            fprintf(out, "\n");
-            int nexp = 0;
-            for (int i = 0; i < bas->nfun; i++) {
-                if (bas->functions[i]->l != l) {
+        /*
+         * for each block:
+         * print exponents and identity matrix of coeff-s
+         */
+        for (int L = 0; L <= max_L; L++) {
+            int offs = 0;
+
+            for (int iblock = 0; iblock < n_blocks; iblock++) {
+
+                if (L != block_ang_momentum[iblock]) {
                     continue;
                 }
-                nexp++;
-                double e = bas->functions[i]->e[0];
-                fprintf(out, "%14.8f", e);
-                if (nexp % 5 == 0) {
+
+                fprintf(out, "\n");
+
+                /*
+                 * print exponents
+                 */
+                int count = 0;
+                int i;
+                for (i = offs; i < bas->nfun; i++) {
+                    if (bas->functions[i]->l == L) {
+
+                        if (count < block_num_functions[iblock]) {
+                            double e = bas->functions[i]->e[0];
+                            fprintf(out, "%14.8f", e);
+                            if ((count+1) % 5 == 0) {
+                                fprintf(out, "\n");
+                            }
+                        }
+                        else {
+                            break;
+                        }
+
+                        count++;
+                    }
+                }
+                offs = i;
+
+                if ((count) % 5 != 0) {
                     fprintf(out, "\n");
                 }
-            }
-            fprintf(out, "\n");
-            if (nexp % 5 != 0) {
                 fprintf(out, "\n");
-            }
-            for (int i = 0; i < nexp; i++) {
-                for (int j = 0; j < nexp; j++) {
-                    if (i == j) {
-                        fprintf(out, " 1.");
-                    }
-                    else {
-                        fprintf(out, " 0.");
-                    }
-                }
-                fprintf(out, "\n");
+
+                /*
+                 * coefficients
+                 */
+                gen_cfour_print_identity_matrix(out, block_num_functions[iblock]);
             }
         }
+    }
+}
+
+
+void gen_cfour_print_identity_matrix(FILE *out, int n)
+{
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == j) {
+                fprintf(out, " 1.");
+            }
+            else {
+                fprintf(out, " 0.");
+            }
+        }
+        fprintf(out, "\n");
     }
 }
 

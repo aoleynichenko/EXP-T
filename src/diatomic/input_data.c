@@ -33,6 +33,9 @@ void print_input_data(input_data_t *data)
     printf(" > input data:\n");
     printf("\n");
 
+    printf("   atomic mass 1       : %.8f (amu)\n", data->mass1);
+    printf("   atomic mass 2       : %.8f (amu)\n", data->mass2);
+    printf("   net charge          : %+d\n", data->charge);
     printf("   reduced mass        : %.8f (amu) = %.8f (electron masses)\n",
            data->reduced_mass * ELECTRON_MASS_TO_AMU, data->reduced_mass);
     printf("   vibrational levels  : from %d to %d\n", data->v_min, data->v_max);

@@ -1,0 +1,24 @@
+!
+**DIRAC         
+.TITLE          
+Nitrogen atom
+.4INDEX
+.WAVE FUNCTION
+**HAMILTONIAN
+.GAUNT
+.X2Cmmf
+**WAVE FUNCTION
+.SCF
+*SCF            
+.CLOSED         
+4
+.ERGCNV         
+1E-12       
+**MOLTRA        
+.SCHEME
+ 4
+.ACTIVE         
+all
+*END OF INPUT
+
+		

@@ -1,0 +1,9 @@
+maxiter 500
+conv 1e-6
+sector 2h0p
+nacth 2
+disk_usage 0
+model ccsdt
+memory 1 gb
+
+

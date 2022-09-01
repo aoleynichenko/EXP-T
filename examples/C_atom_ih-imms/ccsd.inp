@@ -1,0 +1,48 @@
+sector 0h2p
+nactp 24
+memory 4 gb
+maxiter 300
+diis 300
+conv 1e-9
+model ccsd
+disk_usage 0
+x2cmmf
+
+print "eff config"
+
+ih_imms
+  sectors 0h2p
+  subspace energy -1.0 -0.5   # 2p
+  subspace energy -0.5 -0.2   # 3s, 3p, 3d
+  main_occ 2 0   # 2p^2
+  main_occ 1 1   # 2p3s, 2p3p, 2p3d
+end
+
+spinor_labels
+  3   3s
+  4   3d
+  5   3d
+  6   3d
+  7   3d
+  8   3d
+  29  3s
+  30  3d
+  31  3d
+  32  3d
+  33  3d
+  34  3d
+  53  2p
+  54  2p
+  55  2p
+  89  2p
+  90  2p
+  91  2p
+  56  3p
+  57  3p
+  58  3p
+  92  3p
+  93  3p
+  94  3p
+end
+
+

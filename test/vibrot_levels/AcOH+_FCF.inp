@@ -1,0 +1,41 @@
+#
+# AcOH+.dat
+# =========
+#
+# calculation of Frank-Condon factors for the (1)1/2-(1)3/2 transition in AcOH+
+# potential curves were calculated by the relativistic FS-CCSD(0h1p) method,
+# 
+# for more details, see:
+# A. Oleynichenko, L. V. Skripnikov, A. V. Zaitsevskii, V. V. Flambaum
+# Laser-coolable AcOH+ ion for CP-violation searches (2022)
+# arXiv:2112.02307 [physics.atom-ph]
+#
+# A. Oleynichenko, 9 Jan 2022
+#
+
+#          Ac         OH
+masses 227.028000 17.003000
+
+rotlevels 0 0
+viblevels 0 5
+
+# columns are:
+# r    potential1(r)   optional:property(r)    optional:potential2(r)
+#
+# units:  dist   energy
+potential atomic atomic
+0.340150702E+01  -0.451045595E+03   1.0  -0.451004746E+03
+0.349599333E+01  -0.451064998E+03   1.0  -0.451025470E+03
+0.359047964E+01  -0.451079018E+03   1.0  -0.451040834E+03
+0.368496594E+01  -0.451088543E+03   1.0  -0.451051696E+03
+0.377945225E+01  -0.451094322E+03   1.0  -0.451058791E+03
+0.387393856E+01  -0.451096994E+03   1.0  -0.451062746E+03
+0.396842486E+01  -0.451097103E+03   1.0  -0.451064095E+03
+0.406291117E+01  -0.451095111E+03   1.0  -0.451063297E+03
+0.415739747E+01  -0.451091413E+03   1.0  -0.451060740E+03
+0.425188378E+01  -0.451086341E+03   1.0  -0.451056758E+03
+0.434637009E+01  -0.451080177E+03   1.0  -0.451051631E+03
+0.444085639E+01  -0.451073161E+03   1.0  -0.451045598E+03
+0.453534270E+01  -0.451065491E+03   1.0  -0.451038858E+03
+end
+

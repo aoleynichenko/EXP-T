@@ -289,6 +289,7 @@
       use nombres_mod
       implicit none
 
+!      implicit complex*16(z)
       complex(kind=pd), intent(in)  :: zvecnon(m,*)
       complex(kind=pd), intent(out) ::zvecorth(m,*)
       character(len=16),intent(in)  :: label
@@ -472,10 +473,10 @@
          write(6,'(1x,2a,f16.2)')  '        diagonal, au      diagonal, cm-1  '
          do i=1,n
          if(abs(ground-666.d+0) <= 1.d-5) then
-            write(6,'(i6,f17.7,f17.2)')i, real(zheffectif(i,i),kind=pd),     &
+         write(6,'(a2,i6,f20.10,f17.2)')'@E',i, real(zheffectif(i,i),kind=pd), &
            (real(zheffectif(i,i))-real(zheffectif(1,1)))*au2cm 
          else
-            write(6,'(i6,f17.7,f17.2)')i, real(zheffectif(i,i),kind=pd), &    
+         write(6,'(a2,i6,f20.10,f17.2)')'@E',i, real(zheffectif(i,i),kind=pd), &
                                 (real(zheffectif(i,i),kind=pd)-ground)*au2cm
          endif
          enddo
