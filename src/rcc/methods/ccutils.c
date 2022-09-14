@@ -44,6 +44,7 @@
 #include "symmetry.h"
 #include "utils.h"
 
+extern int calc_veff12;
 
 /**
  * Finds solution of coupled cluster equations by the Jacobi procedure
@@ -120,14 +121,16 @@ int solve_amplitude_equations(
         /*
          * get effective interaction operator
          */
-        if (sector_h + sector_p == 1) {
-            closed(singles_buf, veff);
-        }
-        else if (sector_h + sector_p == 2) {
-            closed(doubles_buf, veff);
-        }
-        else if (sector_h + sector_p == 3) {
-            closed(triples_buf, veff);
+        if (veff) {
+            if (sector_h + sector_p == 1) {
+                closed(singles_buf, veff);
+            }
+            else if (sector_h + sector_p == 2) {
+                closed(doubles_buf, veff);
+            }
+            else if (sector_h + sector_p == 3) {
+                closed(triples_buf, veff);
+            }
         }
 
         /*

@@ -53,8 +53,6 @@ double complex calculate_vacuum_expectation_value(int nspinors, double complex *
 
 double complex sector_0h0p_calculate_overlap(int nspinors, double complex *dm);
 
-void diagram_conjugate(char *source_name, char *target_name);
-
 void sector_0h0p_analytic_density_matrix_expectation(int pt_order);
 
 

@@ -37,7 +37,7 @@
   data structure which is used to store data about model vectors read from
   unformatted files (see also code in heff.c)
  */
-struct mv_block {
+typedef struct mv_block {
     char rep_name[64];
     size_t ms_size;
     size_t nroots;
@@ -46,13 +46,24 @@ struct mv_block {
     slater_det_t *dets;
     double complex *vl;
     double complex *vr;
-};
+} mv_block_t;
+
+void mvblock_free(struct mv_block *block);
 
 int mvcoef_open(int sect_h, int sect_p);
+
 void mvcoef_close(int file_descr, double lowest_root);
+
 void mvcoef_write_vectors_unformatted(int file_descr, char *rep_name,
                                       size_t nroots, size_t dim, slater_det_t *det_list,
                                       double complex *ev, double complex *vl, double complex *vr);
-void read_model_vectors_unformatted(int sect_h, int sect_p, char *file_name, int *nrep, struct mv_block *mv_blocks);
+
+void mvcoef_read_vectors_unformatted(int sect_h, int sect_p, char *file_name, int *nrep, struct mv_block *mv_blocks);
+
+void mvcoef_read_vectors_unformatted_for_state(
+        int sect_h, int sect_p, char *file_name, char *irrep_name, int state,
+        int *ms_dim, slater_det_t **det_list, double *eigenvalue, double *exc_energy_cm,
+        double complex **coef_left, double complex **coef_right
+);
 
 #endif /* CC_MVCOEF_H_INCLUDED */

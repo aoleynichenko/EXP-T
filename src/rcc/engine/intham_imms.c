@@ -43,7 +43,6 @@
 #include "spinors.h"
 #include "symmetry.h"
 #include "utils.h"
-#include "../heff/slater_det.h"
 #include "../heff/model_space.h"
 
 
@@ -442,5 +441,30 @@ double intham_imms_get_model_det_shift(int sect_h, int sect_p, slater_det_t *det
     }
 
     return shift;
+}
+
+
+/**
+ * calculates fraction of main space determinants in the given model vector.
+ * to be used with the simple Intermediate Hamiltonian technique.
+ */
+double get_fraction_of_main_space_determinants(
+        int sector_h,
+        int sector_p,
+        size_t dim,
+        slater_det_t *det_list,
+        const double complex *model_vector
+)
+{
+    double fraction_main = 0.0;
+
+    for (size_t j = 0; j < dim; j++) {
+        if (intham_imms_is_main_space_det(sector_h, sector_p, det_list + j)) {
+            double complex coef = model_vector[j];
+            fraction_main += cabs(coef) * cabs(coef);
+        }
+    }
+
+    return fraction_main;
 }
 

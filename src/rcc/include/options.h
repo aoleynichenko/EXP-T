@@ -217,7 +217,7 @@ struct cc_options {
      * print level
      */
     int print_level;
-    int print_det_list;
+    int print_model_space;
     int print_model_vectors;
     int print_eff_config;
 
@@ -274,6 +274,11 @@ struct cc_options {
      * CC model: CCSD, CCSD-T(3), CCSDT-1, etc
      */
     cc_model_t cc_model;
+
+    /*
+     * Hughes & Kaldor version of FS-CCSD(1h2p)
+     */
+    int hughes_kaldor_1h2p;
 
     /*
      * target Fock space sector
@@ -362,6 +367,7 @@ struct cc_options {
     double ground_energy_0h3p;
     double ground_energy_1h0p;
     double ground_energy_2h0p;
+    double ground_energy_3h0p;
 
     /*
      * denominator shifts

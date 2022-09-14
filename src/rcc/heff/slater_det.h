@@ -33,7 +33,6 @@
 #include <stdio.h>
 
 #include "comdef.h"
-#include "engine.h"
 
 typedef struct {
     moindex_t indices[MAX_SECTOR_RANK];

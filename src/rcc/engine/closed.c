@@ -98,7 +98,7 @@ void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *
     for (size_t isb2 = 0; isb2 < tgt->n_blocks; isb2++) {
         block_t *sb2 = tgt->blocks[isb2];
 
-        // obtain corresponding block from the target diagram
+        // obtain corresponding block from the source diagram
         block_t *sb1 = diagram_get_block(src, sb2->spinor_blocks);
 
         if (sb1->is_unique == 0) {

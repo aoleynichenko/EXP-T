@@ -25,30 +25,24 @@
  * Calculation of density matrices and natural orbitals.
  * Associated header file: heff.h
  *
- * 2019-2021 Alexander Oleynichenko
+ * 2019-2022 Alexander Oleynichenko
  */
 
 #include <complex.h>
-#include <math.h>
-#include <stdio.h>
 #include <string.h>
 
-#include "io.h"
-#include "linalg.h"
-#include "memory.h"
-#include "mvcoef.h"
 #include "slater_rules.h"
 #include "spinors.h"
 #include "symmetry.h"
 #include "options.h"
-#include "utils.h"
+
 
 // functions used in this module
 int cmp_natorb_occupations(double complex occ1, double complex occ2);
 
-void write_NO(char *natorb_file_name, int sect_h, int sect_p,
-              int dim, double *occ_numbers, double complex *nat_orbs,
-              double occ_thresh);
+void write_natural_spinors_formatted(char *natorb_file_name, int sect_h, int sect_p,
+                                     int dim, double *occ_numbers, double complex *nat_orbs,
+                                     double occ_thresh);
 
 int density_matrix_element(int sect_h, int sect_p, int p, int q, slater_det_t *bra, slater_det_t *ket);
 
@@ -60,10 +54,10 @@ void sort_vectors(int n, double complex *ev, double complex *vl, double complex 
  * @param dm (output) density matrix, size n_active x n_active
  * @param dim_dm (output) n_active
  */
-void construct_ms_density_matrix(int sect_h, int sect_p,
-                                 int dim_bra, double complex *coef_bra, slater_det_t *dets_bra,
-                                 int dim_ket, double complex *coef_ket, slater_det_t *dets_ket,
-                                 double complex *dm, int *dim_dm)
+void construct_model_space_density_matrix(int sect_h, int sect_p,
+                                          int dim_bra, double complex *coef_bra, slater_det_t *dets_bra,
+                                          int dim_ket, double complex *coef_ket, slater_det_t *dets_ket,
+                                          double complex *dm, int *dim_dm)
 {
     // only 'valence' parts of DMs are be constructed
     // dim DMs = n_active x n_active
@@ -98,328 +92,10 @@ void construct_ms_density_matrix(int sect_h, int sect_p,
 }
 
 
-double complex contract_prop_with_dm(int sect_h, int sect_p, size_t dim_dm, double complex *dm, double complex *prp)
-{
-    int n_active = 0;
-    int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
-    int nspinors = get_num_spinors();
-
-    // TODO: refactor, separate utility function (move to spinors.c)
-    for (int i = 0; i < nspinors; i++) {
-        if ((is_act_hole(i) && sect_h > 0) || (is_act_particle(i) && sect_p > 0)) {
-            active_spinors[n_active] = i;
-            n_active++;
-        }
-    }
-
-    double complex sum = 0.0 + 0.0 * I;
-    for (int i = 0; i < n_active; i++) {
-        for (int j = 0; j < n_active; j++) {
-            int p = active_spinors[i];
-            int q = active_spinors[j];
-            sum += dm[i * n_active + j] * prp[p * nspinors + q];
-        }
-    }
-
-    return sum;
-}
-
-
-/**
- * Computes density matrix for (a) selected electronic state; (b) selected pair
- * of electronic states (transition density matrix).
- * Performs diagonalization (in order to obtain NOs or NTOs).
- *
- * NOTE: density matrices computed are not true density matrices since only
- * model vectors are used to compute them. However, this do not seem to be a
- * problem, since density matrices, NOs and NTOs produced are used only for
- * semi-quantitative estimation and visualization purposes.
- *
- * Algorithm notes:
- * (1) Only 'valence' part of the density matrix is constructed =>
- *     dim = nacth * (h > 0) + nactp * (p > 0) for the (h,p) FS sector
- * (2) in all formulas for density matrices we must use global indices of
- *     spinors, however, rows and columns of DMs are enumerated with local
- *     indices; local indices are transformed into global when needed.
- * (3) the 1h1p sector is the special case:
- *     - calculation of approximate natural orbitals for the 0h0p state is
- *       meaningless (NOs = MOs)
- *     - 0h0p - 1h1p transitions ("CIS-like") require separate code for the DM
- *       evaluation (again, two cases: 0h0p->1h1p and 1h1p->0h0p, are not equal
- *       in case of non-hermitian Hamiltonian
- *     - 1h1p - 1h1p transitions can be calculated in the usual way
- *     NOTE: state numbering for the case of the 1h1p sector as a target
- *       must be quite different: state 1 == 0h0p, states from 1h1p: 2,3,4...
- *       (numbering is shifted by 1)
- *
- */
-void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int state2)
-{
-    int nrep;
-    struct mv_block mv_blocks[CC_MAX_NUM_IRREPS];
-    int nrep_0011;
-    struct mv_block mv_blocks_0011[CC_MAX_NUM_IRREPS];
-    double const occ_thresh = 1e-6;   // threshold for printing natural orbitals
-    double const coef_thresh = 1e-4;   // threshold for printing model vec-s coeff-s
-    // for state 1
-    char *rep_name1;
-    size_t ms_size1;
-    slater_det_t *dets1;
-    double eigval_1;
-    double energy_cm_1;
-    double complex *coef_left1, *coef_right1;
-    // for state 2
-    char *rep_name2;
-    size_t ms_size2;
-    slater_det_t *dets2;
-    double eigval_2;
-    double energy_cm_2;
-    double complex *coef_left2, *coef_right2;
-
-    rep_name1 = get_irrep_name(rep1);
-    rep_name2 = get_irrep_name(rep2);
-
-    // NOs or NTOs (transitions) ?
-    int tran = !((rep1 == rep2) && (state1 == state2));
-
-    // print header for this module
-    if (!tran) {
-        printf("\n\n *** DENSITY MATRIX AND NATURAL ORBITALS FOR THE IRREP %d (%s) STATE %d ***\n", rep1 + 1, rep_name1,
-               state1 + 1);
-    }
-    else {
-        printf("\n\n ***   TRANSITION DENSITY MATRIX AND NATURAL TRANSITION ORBITALS   ***\n");
-        printf(" *** FOR THE IRREP %2d (%s) STATE %2d  --->  IRREP %2d (%s) STATE %2d TRANSITION ***\n",
-               rep1, rep_name1, state1 + 1, rep2, rep_name2, state2 + 1);
-    }
-
-    // only 'valence' parts of DMs are be constructed
-    // dim DMs = n_active x n_active
-    int n_active = 0;
-    int active_spinors[CC_MAX_SPINORS]; // local -> global spinor index mapping
-    double complex *denmat;
-    double complex *nat_occ, *natorb_left, *natorb_right;
-    double *lambda;
-
-    get_active_space(sect_h, sect_p, &n_active, active_spinors);
-
-    // in the 1h1p sector states:
-    // 0h0p => state 1
-    // 1h1p => states 2, 3, ...
-    // (only in the irrep containing the 0h0p state)
-    int vac_irrep = get_vacuum_irrep();
-
-    // allocate working arrays
-    denmat = z_zeros(n_active, n_active);
-    nat_occ = z_zeros(n_active, 1);  // NO occ numbers
-    lambda = d_zeros(n_active, 1);     // NTO singular values
-    natorb_left = z_zeros(n_active, n_active); // for NTOs too
-    natorb_right = z_zeros(n_active, n_active);
-
-    // extract model vectors and eigenvalues from the MVCOEF* unformatted file
-    read_model_vectors_unformatted(sect_h, sect_p, NULL, &nrep, mv_blocks);
-    struct mv_block *mvb1 = NULL, *mvb2 = NULL;
-    struct mv_block *b0011 = NULL;
-    // vectors with the intermediate normalization restored (0h0p and 1h1p are mixed)
-    // to be used for 00->11, 11->00 and 11->11 matrix elements by default
-    if (sect_h == 1 && sect_p == 1) {
-        read_model_vectors_unformatted(1, 1, "MVCOEF0011", &nrep_0011, mv_blocks_0011);
-        b0011 = &mv_blocks_0011[0];
-    }
-    for (size_t ib = 0; ib < nrep; ib++) {
-        if (strcmp(mv_blocks[ib].rep_name, rep_name1) == 0) {
-            if (sect_h == 1 && sect_p == 1 && rep1 == vac_irrep) {
-                printf(" Mixed 0h0p+1h1p vectors will be used in <bra|\n");
-                mvb1 = b0011;
-            }
-            else {
-                mvb1 = mv_blocks + ib;
-            }
-        }
-        if (strcmp(mv_blocks[ib].rep_name, rep_name2) == 0) {
-            if (sect_h == 1 && sect_p == 1 && rep2 == vac_irrep) {
-                printf(" Mixed 0h0p+1h1p vectors will be used in |ket>\n");
-                mvb2 = b0011;
-            }
-            else {
-                mvb2 = mv_blocks + ib;
-            }
-        }
-    }
-
-    // state 1
-    ms_size1 = mvb1->ms_size;
-    dets1 = mvb1->dets;
-    eigval_1 = creal(mvb1->eigval[state1]);
-    energy_cm_1 = mvb1->energy_cm[state1];
-    coef_left1 = mvb1->vl + ms_size1 * state1;
-    coef_right1 = mvb1->vr + ms_size1 * state1;
-
-    // state 2
-    ms_size2 = mvb2->ms_size;
-    dets2 = mvb2->dets;
-    eigval_2 = creal(mvb2->eigval[state2]);
-    energy_cm_2 = mvb2->energy_cm[state2];
-    coef_left2 = mvb2->vl + ms_size2 * state2;
-    coef_right2 = mvb2->vr + ms_size2 * state2;
-
-    // density matrix (DM) construction
-    // the same code for both cases of DMs and transition DMs
-    printf(" Model density matrix construction...\n");
-    construct_ms_density_matrix(sect_h, sect_p, ms_size1, coef_left1, dets1, ms_size2, coef_right2, dets2, denmat,
-                                &n_active);
-
-
-    // calculate natural transition spinors (NTOs)
-    // SVD of transition density matrix
-    if (tran) {
-        // SVD: T = U*S*VH
-        // U = eigenvectors of T*TH
-        // V = eigenvectors of TH*T
-        // S = sqrt(eigenvalues of U or V)
-        // pairs (eigenvalue,eigenvector) must be sorted in descending order (by eigenvalue)
-        svd(n_active, denmat, lambda, natorb_left, natorb_right);
-    }
-        // calculate natural spinors (NOs)
-        // diagonalize density matrix
-    else {
-        // тут происходит очень неустойчивая диагонализация матрицы с кучей нулевых собственных значений
-        // но почему все нормально на неортогонализованных векторах?
-        // потому что диагонализуемая матрица плотности неэрмитова!
-        eigensolver(n_active, denmat, nat_occ, natorb_left, natorb_right);
-        sort_vectors(n_active, nat_occ, natorb_left, natorb_right, cmp_natorb_occupations);
-    }
-
-    // print occ-s and NOs to stdout
-    if (tran) {
-        printf(" Symmetry: %s --> %s\n", rep_name1, rep_name2);
-        printf(" State 1: %10.2f cm^-1 (%s)\n", energy_cm_1, rep_name1);
-        printf(" State 2: %10.2f cm^-1 (%s)\n", energy_cm_2, rep_name2);
-
-        double sum_lambda_sq = 0.0;  // sum of weights
-        int count = 1;
-        for (int i = 0; i < n_active; i++) {
-            sum_lambda_sq += lambda[i] * lambda[i];
-            if (lambda[i] * lambda[i] < occ_thresh) {
-                continue;
-            }
-
-            printf(" [%d] Squared singular value (weight) = %.6f\n", count++, lambda[i] * lambda[i]);
-            printf("    from:\n");
-            for (size_t j = 0; j < n_active; j++) {
-                double complex coef = natorb_left[n_active * i + j];
-                if (cabs(coef) < coef_thresh) {
-                    continue;
-                }
-                printf("  %12.6f%12.6f ", creal(coef), cimag(coef));
-                int ispinor = active_spinors[j];
-                printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
-                       spinor_info[ispinor].eps);
-            }
-            printf("    to:\n");
-            for (size_t j = 0; j < n_active; j++) {
-                double complex coef = natorb_right[n_active * i + j];
-                if (cabs(coef) < coef_thresh) {
-                    continue;
-                }
-                printf("  %12.6f%12.6f ", creal(coef), cimag(coef));
-                int ispinor = active_spinors[j];
-                printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
-                       spinor_info[ispinor].eps);
-            }
-        }
-        printf(" Sum of weights = %.6f\n", sum_lambda_sq);
-
-        // flush full information about NOs to the formatted file
-        char natorb_file_name[256];
-        sprintf(natorb_file_name, "NTO_%dh%dp_%s_%d_%s_%d_INITIAL.dat",
-                sect_h, sect_p, rep_name1, state1 + 1, rep_name2, state2 + 1);
-        str_replace(natorb_file_name, '/', '|');  // for some irrep names with '/' in order to prevent bugs
-        write_NO(natorb_file_name, sect_h, sect_p, n_active, lambda, natorb_left, occ_thresh);
-        sprintf(natorb_file_name, "NTO_%dh%dp_%s_%d_%s_%d_FINAL.dat",
-                sect_h, sect_p, rep_name1, state1 + 1, rep_name2, state2 + 1);
-        str_replace(natorb_file_name, '/', '|');
-        write_NO(natorb_file_name, sect_h, sect_p, n_active, lambda, natorb_right, occ_thresh);
-    }
-    else {
-        printf(" Symmetry of this electronic state: %s\n", rep_name1);
-        printf(" Eigenvalue   = %.8f a.u.\n", eigval_1);
-        printf(" Energy level = %.2f cm^-1\n", energy_cm_1);
-        int count = 1;
-        double complex sum_occ = 0.0 + 0.0 * I;  // trace
-        for (int i = 0; i < n_active; i++) {
-            sum_occ += nat_occ[i];
-            if (cimag(nat_occ[i]) > 1e-13) {
-                printf(" Imaginary occupation number: %.3e %.3e\n", creal(nat_occ[i]), cimag(nat_occ[i]));
-            }
-            if (fabs(creal(nat_occ[i])) < occ_thresh) {
-                continue;
-            }
-
-            printf(" [%d] Occ number = %.6f\n", count++, creal(nat_occ[i]));
-            for (size_t j = 0; j < n_active; j++) {
-                double complex coef = natorb_right[n_active * i + j];
-                if (cabs(coef) < coef_thresh) {
-                    continue;
-                }
-                printf("  %12.6f%12.6f ", creal(coef), cimag(coef));
-                int ispinor = active_spinors[j];
-                printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
-                       spinor_info[ispinor].eps);
-            }
-        }
-        printf(" Sum of occ numbers = %.6f (must be = %d)\n", creal(sum_occ), -sect_h + sect_p);
-        printf(" Configuration (weights):\n");
-        for (size_t j = 0; j < n_active; j++) {
-            double weight = 0.0;
-            for (size_t i = 0; i < n_active; i++) {
-                double complex coef = natorb_right[n_active * i + j];
-                weight += nat_occ[i] * cabs(coef) * cabs(coef);
-            }
-            printf("  %12.6f", weight);
-            int ispinor = active_spinors[j];
-            printf("  %4s #%4d (%12.6f)\n", get_irrep_name(spinor_info[ispinor].repno), ispinor + 1,
-                   spinor_info[ispinor].eps);
-        }
-
-        // flush full information about NOs to the formatted file
-        char natorb_file_name[256];
-        sprintf(natorb_file_name, "NATORB_%dh%dp_%s_%d.dat", sect_h, sect_p, rep_name1, state1 + 1);
-        str_replace(natorb_file_name, '/', '|');  // for some irrep names with '/' in order to prevent bugs
-        for (int i = 0; i < n_active; i++) {
-            lambda[i] = creal(nat_occ[i]);
-        }
-        write_NO(natorb_file_name, sect_h, sect_p, n_active, lambda, natorb_right, occ_thresh);
-    }
-
-    // cleanup
-    cc_free(denmat);
-    cc_free(nat_occ);
-    cc_free(lambda);
-    cc_free(natorb_left);
-    cc_free(natorb_right);
-    for (size_t irep = 0; irep < nrep; irep++) {
-        struct mv_block *b = &mv_blocks[irep];
-        cc_free(b->dets);
-        cc_free(b->eigval);
-        cc_free(b->energy_cm);
-        cc_free(b->vl);
-        cc_free(b->vr);
-    }
-
-    if (tran) {
-        printf(" *** end of TRANSITION DENSITY MATRIX AND NATURAL TRANSITION ORBITALS module ***\n");
-    }
-    else {
-        printf(" *** end of DENSITY MATRIX AND NATURAL ORBITALS module ***\n");
-    }
-}
-
-
 /**
  * density_matrix_element*
  *
- * matrix elements of the a_p^+ a_q operator (in the determinantal basis)
+ * matrix elements of the a_p^+ a_q operator (in the determinant basis)
  * these matrix elements are simply integers (since all formulas contain only
  * Kronecker delta symbols)
  *
@@ -435,11 +111,15 @@ int density_matrix_element_0h2p(int p, int q, slater_det_t *bra, slater_det_t *k
 
 int density_matrix_element_2h0p(int p, int q, slater_det_t *bra, slater_det_t *ket);
 
+int density_matrix_element_3h0p(int p, int q, slater_det_t *bra, slater_det_t *ket);
+
 int density_matrix_element_0h0p_1h1p(int p, int q, slater_det_t *bra, slater_det_t *ket);
 
 int density_matrix_element_1h1p_0h0p(int p, int q, slater_det_t *bra, slater_det_t *ket);
 
 int density_matrix_element_0h3p(int p, int q, slater_det_t *bra, slater_det_t *ket);
+
+int density_matrix_element_1h2p(int p, int q, slater_det_t *bra, slater_det_t *ket);
 
 
 int density_matrix_element(int sect_h, int sect_p, int p, int q, slater_det_t *bra, slater_det_t *ket)
@@ -481,6 +161,12 @@ int density_matrix_element(int sect_h, int sect_p, int p, int q, slater_det_t *b
     }
     else if (sect_h == 2 && sect_p == 0) {
         return density_matrix_element_2h0p(p, q, bra, ket);
+    }
+    else if (sect_h == 3 && sect_p == 0) {
+        return density_matrix_element_3h0p(p, q, bra, ket);
+    }
+    else if (sect_h == 1 && sect_p == 2) {
+        return density_matrix_element_1h2p(p, q, bra, ket);
     }
     else {
         errquit("no density matrix elements implementation for the %dh%dp sector", sect_h, sect_p);
@@ -579,11 +265,61 @@ int density_matrix_element_2h0p(int p, int q, slater_det_t *bra, slater_det_t *k
     - d_jl d_iq d_kp
     */
 
-    return
-            -(j == q) * (i == k) * (l == p)
-            + (j == q) * (i == l) * (k == p)
-            + (j == k) * (i == q) * (l == p)
-            - (j == l) * (i == q) * (k == p);
+    return -(j == q) * (i == k) * (l == p)
+           + (j == q) * (i == l) * (k == p)
+           + (j == k) * (i == q) * (l == p)
+           - (j == l) * (i == q) * (k == p);
+}
+
+
+int density_matrix_element_3h0p(int p, int q, slater_det_t *bra, slater_det_t *ket)
+{
+    int i = bra->indices[0];
+    int j = bra->indices[1];
+    int k = ket->indices[2];
+    int l = ket->indices[0];
+    int m = ket->indices[1];
+    int n = ket->indices[2];
+
+    /*
+    + d_kq d_jl d_im d_np
+    - d_kq d_jl d_in d_mp
+    - d_kq d_jm d_il d_np
+    + d_kq d_jm d_in d_lp
+    + d_kq d_jn d_il d_mp
+    - d_kq d_jn d_im d_lp
+    - d_kl d_jq d_im d_np
+    + d_kl d_jq d_in d_mp
+    + d_kl d_jm d_iq d_np
+    - d_kl d_jn d_iq d_mp
+    + d_km d_jq d_il d_np
+    - d_km d_jq d_in d_lp
+    - d_km d_jl d_iq d_np
+    + d_km d_jn d_iq d_lp
+    - d_kn d_jq d_il d_mp
+    + d_kn d_jq d_im d_lp
+    + d_kn d_jl d_iq d_mp
+    - d_kn d_jm d_iq d_lp
+    */
+
+    return +(k == q) * (j == l) * (i == m) * (n == p)
+           - (k == q) * (j == l) * (i == n) * (m == p)
+           - (k == q) * (j == m) * (i == l) * (n == p)
+           + (k == q) * (j == m) * (i == n) * (l == p)
+           + (k == q) * (j == n) * (i == l) * (m == p)
+           - (k == q) * (j == n) * (i == m) * (l == p)
+           - (k == l) * (j == q) * (i == m) * (n == p)
+           + (k == l) * (j == q) * (i == n) * (m == p)
+           + (k == l) * (j == m) * (i == q) * (n == p)
+           - (k == l) * (j == n) * (i == q) * (m == p)
+           + (k == m) * (j == q) * (i == l) * (n == p)
+           - (k == m) * (j == q) * (i == n) * (l == p)
+           - (k == m) * (j == l) * (i == q) * (n == p)
+           + (k == m) * (j == n) * (i == q) * (l == p)
+           - (k == n) * (j == q) * (i == l) * (m == p)
+           + (k == n) * (j == q) * (i == m) * (l == p)
+           + (k == n) * (j == l) * (i == q) * (m == p)
+           - (k == n) * (j == m) * (i == q) * (l == p);
 }
 
 
@@ -635,4 +371,65 @@ int density_matrix_element_0h3p(int p, int q, slater_det_t *bra, slater_det_t *k
            - (c == f) * (b == p) * (a == e) * (d == q)
            - (c == f) * (b == d) * (a == p) * (e == q)
            + (c == f) * (b == e) * (a == p) * (d == q);
+}
+
+
+int density_matrix_element_1h2p(int p, int q, slater_det_t *bra, slater_det_t *ket)
+{
+    int i = bra->indices[0];
+    int a = bra->indices[1];
+    int b = bra->indices[2];
+    int j = ket->indices[0];
+    int c = ket->indices[1];
+    int d = ket->indices[2];
+
+    /*
+    + d_iq d_bc d_ad d_jp
+    - d_iq d_bd d_ac d_jp
+    + d_ij d_bp d_ac d_dq
+    - d_ij d_bp d_ad d_cq
+    - d_ij d_bc d_ap d_dq
+    + d_ij d_bd d_ap d_cq
+    */
+
+    return +(i == q) * (b == c) * (a == d) * (j == p)
+           - (i == q) * (b == d) * (a == c) * (j == p)
+           + (i == j) * (b == p) * (a == c) * (d == q)
+           - (i == j) * (b == p) * (a == d) * (c == q)
+           - (i == j) * (b == c) * (a == p) * (d == q)
+           + (i == j) * (b == d) * (a == p) * (c == q);
+}
+
+
+int density_matrix_element_0h1p_1h2p(int p, int q, slater_det_t *bra, slater_det_t *ket)
+{
+    int a = bra->indices[0];
+    int i = ket->indices[0];
+    int b = ket->indices[1];
+    int c = ket->indices[2];
+
+    /*
+    + d_ab d_ip d_cq
+    - d_ac d_ip d_bq
+    */
+
+    return + (a == b) * (i == p) * (c == q)
+           - (a == c) * (i == p) * (b == q);
+}
+
+
+int density_matrix_element_1h2p_0h1p(int p, int q, slater_det_t *bra, slater_det_t *ket)
+{
+    int i = bra->indices[0];
+    int a = bra->indices[1];
+    int b = bra->indices[2];
+    int c = ket->indices[0];
+
+    /*
+    + d_iq d_bp d_ac
+    - d_iq d_bc d_ap
+    */
+
+    return + (i == q) * (b == p) * (a == c)
+           - (i == q) * (b == c) * (a == p);
 }

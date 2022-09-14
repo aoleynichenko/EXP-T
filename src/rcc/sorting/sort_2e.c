@@ -254,8 +254,8 @@ size_t read_twoel_block_unformatted(char *vint_file_name, double complex ****vin
                                     double complex factor2, size_t *n_bytes_read)
 {
     int32_t nint;
-    int32_t iint;
-    int i, j, k, l;
+    //int32_t iint;
+    //int i, j, k, l;
     size_t n_integrals_read = 0;
     size_t nbr = 0;
     int fd;
@@ -285,12 +285,14 @@ size_t read_twoel_block_unformatted(char *vint_file_name, double complex ****vin
         else {
             io_read_compressed(fd, buf_integrals, nint * sizeof(double));
         }
-        for (iint = 0; iint < nint; iint++) {
+
+        //#pragma omp parallel for shared(nint,arith,factor1,factor2,dfactor1,dfactor2,buf_indices,buf_integrals,spinor_index_global2local,vint_array) default(none) schedule(static)
+        for (int32_t iint = 0; iint < nint; iint++) {
             // absolute spinor indices
-            i = buf_indices[iint * 4] - 1; // -1 since numeration from 0 in C and from 1 in F90
-            j = buf_indices[iint * 4 + 1] - 1;
-            k = buf_indices[iint * 4 + 2] - 1;
-            l = buf_indices[iint * 4 + 3] - 1;
+            int i = buf_indices[iint * 4] - 1; // -1 since numeration from 0 in C and from 1 in F90
+            int j = buf_indices[iint * 4 + 1] - 1;
+            int k = buf_indices[iint * 4 + 2] - 1;
+            int l = buf_indices[iint * 4 + 3] - 1;
             i = spinor_index_global2local[i];
             j = spinor_index_global2local[j];
             k = spinor_index_global2local[k];
@@ -307,6 +309,7 @@ size_t read_twoel_block_unformatted(char *vint_file_name, double complex ****vin
                 vint_array[i][j][k][l] = dfactor1 * vint_array[i][j][k][l] + dfactor2 * v_ijkl + 0.0 * I;
             }
         }
+
         n_integrals_read += nint;
         if (arith == CC_ARITH_REAL) {
             nbr += nint * sizeof(double) + nint * 4 * sizeof(int16_t) + sizeof(int32_t);

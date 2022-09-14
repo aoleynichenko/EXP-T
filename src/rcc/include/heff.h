@@ -40,36 +40,18 @@
 #include "engine.h"
 #include "options.h"
 #include "../heff/slater_rules.h"
-
-typedef struct {
-    double complex eigval;
-    int repno;
-    double percent_main;
-} eigval_t;
+#include "../heff/ms_prop.h"
+#include "../heff/ms_nat_spinors.h"
 
 void heff_analysis(int sect_h, int sect_p, ...);
 
-int eigval_cmp(const void *aa, const void *bb);
-
-void density_matrix(int sect_h, int sect_p, int rep1, int state1, int rep2, int state2);
+void construct_model_space_natural_spinors(int sect_h, int sect_p, int rep1, int state1, int rep2, int state2);
 
 void dipole_length_tdms(int sect_h, int sect_p);
 
 void model_space_property(cc_ms_prop_query_t *prop_query, int approximation);
 
 void model_space_properties_and_natural_orbitals();
-
-void print_model_vector(FILE *f_out, int sect_h, int sect_p,
-                        int rep_no, char *rep_name, int state_no, double complex energy,
-                        size_t len, double complex *coeffs, slater_det_t *det_list, double coef_thresh);
-
-void construct_diagonalize_heff_silent(int sect_h, int sect_p, ...);
-
-void construct_heff(int sect_h, int sect_p, slater_det_t **det_list, size_t *block_sizes, double complex **heff_blocks,
-                    int n_diagrams, char **diagram_names);
-void diagonalize_heff(int sect_h, int sect_p, size_t *block_dims, double complex **heff,
-                      double complex **eigvalues, double complex **coef_left, double complex **coef_right);
-double get_lowest_eigenvalue(size_t *block_dims, double complex **eigvalues);
 
 void write_formatted_heff_0h0p(double total_energy);
 

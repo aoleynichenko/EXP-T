@@ -27,11 +27,11 @@
 // version: MAJOR.MINOR.REVISION
 #define CC_VERSION_MAJOR      1
 #define CC_VERSION_MINOR      7
-#define CC_VERSION_REVISION   0
+#define CC_VERSION_REVISION   1
 
 // date of release:
-#define CC_VERSION_DAY        21
-#define CC_VERSION_MONTH      "Aug"
+#define CC_VERSION_DAY        14
+#define CC_VERSION_MONTH      "Sep"
 #define CC_VERSION_YEAR       2022
 
 #endif // CC_VERSION_H_INCLUDED

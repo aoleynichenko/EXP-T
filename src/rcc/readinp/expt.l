@@ -91,6 +91,7 @@ spinor_labels   { inc_col(); return KEYWORD_SPINOR_LABELS;}
 flush_amplitudes_txt { inc_col(); return KEYWORD_FLUSH_AMPLITUDES_TXT; }
 analyt_prop     { inc_col(); return KEYWORD_ANALYT_PROP;  }
 density         { inc_col(); return KEYWORD_DENSITY;      }
+hughes_kaldor_1h2p { inc_col(); return KEYWORD_HUGHES_KALDOR; }
 !=              { inc_col(); return TT_NEQ;               }
 =               { inc_col(); return TT_EQ;                }
 \".*\"          { inc_col(); return TT_QUOTE;             }

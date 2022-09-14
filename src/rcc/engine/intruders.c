@@ -322,11 +322,20 @@ void predict_intruders_for_diagram(char *diagram_name, int nmax)
 
         // print more information about these spinors in order to simplify analysis
         for (i = 0; i < rk; i++) {
-            get_spinor_info(max_denoms[iden].idx[i], &repno, &occ, &active, &spinor_e);
-            printf("     [%4d] eps=%16.8f rep=%s %s %s\n",
-                   max_denoms[iden].idx[i] + 1, spinor_e, get_irrep_name(repno),
+            int ispinor = max_denoms[iden].idx[i];
+
+            get_spinor_info(ispinor, &repno, &occ, &active, &spinor_e);
+
+            printf("     [%4d] eps=%16.8f rep=%s %s %s",
+                   ispinor + 1, spinor_e, get_irrep_name(repno),
                    (active == 1) ? "active" : "inactive",
                    (occ == 1) ? "occ" : "virt");
+
+            if (cc_opts->spinor_labels[ispinor] != NULL) {
+                printf(" (%s)", cc_opts->spinor_labels[ispinor]);
+            }
+
+            printf("\n");
         }
     }
 

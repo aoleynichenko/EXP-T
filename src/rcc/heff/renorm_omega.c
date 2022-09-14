@@ -42,26 +42,37 @@
 #include <assert.h>
 #include <string.h>
 
+#include "formatted_heff.h"
 #include "datamodel.h"
 #include "io.h"
 #include "mvcoef.h"
 #include "slater_det.h"
-#include "../linalg/cblas_lapacke.h"
 
 
-size_t first_nonzero_irrep(size_t *block_dims);
-FILE *hefff_open(int sect_h, int sect_p, char *label);
-void hefff_close(FILE *hefff);
-void hefff_write_block(FILE *hefff, int carith, int rep_no, size_t dim, double complex *heff);
-size_t first_nonzero_irrep(size_t *block_dims);
 void renormalize_wave_operator_0h0p_0h1p(size_t dim, slater_det_t *det_list,
                                          double complex *heff, double complex *heff_prime, double complex *omega);
+
 int get_nroots_for_irrep(char *irrep_name);
+
 void get_nroots(size_t *block_dims, double complex **eigvalues, size_t *nroots);
 
+void omega_0h0p_0h1p(size_t dim, slater_det_t *det_list_1h1p, double complex *omega,
+                     char *exc_oper_name, char *deexc_oper_name);
 
-void restore_intermediate_normalization(size_t *block_dims, slater_det_t **det_list, double complex **heff,
-                                        double complex **eigvalues)
+
+/**
+ * Restores the intermediate normalization of the wave operator \Omega = { exp(T) }.
+ * Transformed block of Heff and transformation matrix (P \Omega P)
+ * are written to a formatted file.
+ * Model vectors of the transformed Heff block are written
+ * to the unformatted MVCOEF0011 file.
+ */
+void restore_intermediate_normalization(
+        size_t *block_dims,
+        slater_det_t **det_list,
+        double complex **heff,
+        double complex **eigvalues
+)
 {
     if (!(cc_opts->sector_h == 1 && cc_opts->sector_p == 1)) {
         return;
@@ -78,17 +89,24 @@ void restore_intermediate_normalization(size_t *block_dims, slater_det_t **det_l
     double complex *heff_0h0p_1h1p_prime = z_zeros(dim_prime, dim_prime);
     double complex *p_omega_p = z_zeros(dim_prime, dim_prime);
 
-    // 0h0p-1h1p: transformation of the Heff to with the (P\OmegaP)^-1 matrix.
-    // + store this 0h0p+1h1p block; it will be written to the formatted file
-    // AFTER all blocks belonging to the "pure" 1h1p sector
+    /*
+     * 0h0p-1h1p: transformation of the Heff to with the (P\OmegaP)^-1 matrix.
+     * + store this 0h0p+1h1p block; it will be written to the formatted file
+     * AFTER all blocks belonging to the "pure" 1h1p sector
+     */
     renormalize_wave_operator_0h0p_0h1p(dim, det_basis, heff_block, heff_0h0p_1h1p_prime, p_omega_p);
 
-    // write the 0h0p+1h1p transformed Heff block
-    // together with the transformation P \Omega P matrix
-    FILE *hefff = hefff_open(1, 1, "0011");
-    // heff block
-    hefff_write_block(hefff, arith == CC_ARITH_COMPLEX, vacuum_irrep-first_irrep+1, dim_prime, heff_0h0p_1h1p_prime);
-    // P \omega P
+    /*
+     * write the 0h0p+1h1p transformed Heff block
+     * together with the transformation P \Omega P matrix
+     */
+    FILE *hefff = open_formatted_heff_file(1, 1, "0011");
+    hefff_write_block(hefff, arith == CC_ARITH_COMPLEX, vacuum_irrep - first_irrep + 1, dim_prime,
+                      heff_0h0p_1h1p_prime);
+
+    /*
+     * P \Omega P
+     */
     for (int i = 0; i < dim_prime * dim_prime; i++) {
         if (arith == CC_ARITH_COMPLEX) {
             fprintf(hefff, "%21.12E%21.12E", creal(p_omega_p[i]), cimag(p_omega_p[i]));
@@ -100,7 +118,7 @@ void restore_intermediate_normalization(size_t *block_dims, slater_det_t **det_l
         }
     }
     if (dim * dim % 2 != 0) { fprintf(hefff, "\n"); }
-    hefff_close(hefff);
+    close_formatted_heff_file(hefff);
 
     /*
      * The 0h0p-1h1p Heff block should be diagonalized since its eigenvectors
@@ -111,19 +129,26 @@ void restore_intermediate_normalization(size_t *block_dims, slater_det_t **det_l
     double complex *vr_0011 = z_zeros(dim_prime, dim_prime);
     double complex *ev_0011 = z_zeros(dim_prime, 1);
 
-    /*int nroots_irep = get_nroots_for_irrep(vacuum_irrep_name);
-    size_t nroots = cc_opts->nroots_specified ? nroots_irep : dim_prime;*/
     size_t nroots_array[CC_MAX_NUM_IRREPS];
     get_nroots(block_dims, eigvalues, nroots_array);
-    size_t nroots = (cc_opts->nroots_specified || cc_opts->roots_cutoff_specified) ? nroots_array[vacuum_irrep] : dim_prime;
+    size_t nroots = dim_prime;
+    if (cc_opts->nroots_specified || cc_opts->roots_cutoff_specified) {
+        nroots = nroots_array[vacuum_irrep];
+    }
 
     eigensolver(dim_prime, heff_0h0p_1h1p_prime, ev_0011, vl_0011, vr_0011);
+
+    /*
+     * hermitization (if required)
+     */
     if (cc_opts->do_hermit == 1) {
         loewdin_orth(dim_prime, vr_0011, vr_0011, cc_opts->print_level == CC_PRINT_DEBUG ? 5 : 0);
         memcpy(vl_0011, vr_0011, dim_prime * dim_prime * sizeof(double complex));
     }
 
-    // print model vectors to the unformatted file MVCOEF**
+    /*
+     * print model vectors to the unformatted file MVCOEF**
+     */
     slater_det_t *det_list_0011 = (slater_det_t *) cc_malloc(sizeof(slater_det_t) * dim_prime);
     det_list_0011[0].indices[0] = 0;
     det_list_0011[0].indices[1] = 0;
@@ -135,14 +160,83 @@ void restore_intermediate_normalization(size_t *block_dims, slater_det_t **det_l
     mvcoef_write_vectors_unformatted(f_mvcoef_0011, vacuum_irrep_name, nroots + 1, dim_prime, det_list_0011, ev_0011,
                                      vl_0011, vr_0011);
 
-    //double lowest_root = get_lowest_eigenvalue(block_dims, eigvalues);
     mvcoef_close(f_mvcoef_0011, 0.0);  // lowest root == 0.0
+
+    /*
+     * clean-up
+     */
     cc_free(vl_0011);
     cc_free(vr_0011);
     cc_free(ev_0011);
-
     cc_free(heff_0h0p_1h1p_prime);
     cc_free(p_omega_p);
+}
+
+
+/**
+ * Performs renormalization of the wave operator \Omega in order to force
+ * intermediate normalization P\OmegaP=P in the P=0h0p+1h1p model space.
+ *
+ * @param dim dimension of the Heff block in the 1h1p subspace
+ * @param det_list list of Slater determinants; their symmetry
+ *      must coincide with the symmetry of the vacuum determinant
+ * @param heff Heff block in the 1h1p subspace
+ * @param heff_prime Heff block in the 0h0p+1h1p subspace, transformed
+ *      accordingly with renormalized wave operator \Omega
+ *      dim(heff') = dim(heff)+1
+ * @param omega transformation matrix (model-space part of the wave operator)
+ *      dim(omega) = dim(heff)+1
+ */
+void renormalize_wave_operator_0h0p_0h1p(size_t dim, slater_det_t *det_list,
+                                         double complex *heff, double complex *heff_prime, double complex *omega)
+{
+    size_t dimx = dim + 1;  // dimension of eXtended (0h0p+1h1p) matrices
+    double complex alpha = 1.0 + 0.0 * I;
+    double complex beta = 0.0 + 0.0 * I;
+
+    /*
+     * allocate working arrays, init with zeros
+     */
+    memset(omega, 0, sizeof(double complex) * dimx * dimx);
+    double complex *omega_inv = z_zeros(dimx, dimx);
+    double complex *heff_0h0p_1h1p = z_zeros(dimx, dimx);
+    double complex *buf = z_zeros(dimx, dimx);
+
+    /*
+     * construct 0h0p+1h1p (extended) block-diagonal Heff matrix
+     * Heff 1h1p block will be placed into the right lower angle.
+     * Ecorr is subtracted from the whole diagonal.
+     */
+    for (size_t i = 0; i < dim; i++) {
+        for (size_t j = 0; j < dim; j++) {
+            heff_0h0p_1h1p[dimx * (i + 1) + j + 1] = heff[dim * i + j];
+        }
+    }
+
+    /*
+     * construct P \Omega P matrix (P=0h0p+1h1p)
+     */
+    omega_0h0p_0h1p(dim, det_list, omega, "t1c", "e1c");
+
+    /*
+     * construct inverse matrix (P \Omega P)^{-1}
+     */
+    inverse_matrix(dimx, omega, omega_inv);
+
+    /*
+     * Heff' = { (P\OmegaP) * { Heff * (P\OmegaP)^-1 } }
+     */
+    xgemm(CC_DOUBLE_COMPLEX, "N", "N",
+          dimx, dimx, dimx, &alpha, heff_0h0p_1h1p, dimx, omega_inv, dimx, &beta, buf, dimx);
+    xgemm(CC_DOUBLE_COMPLEX, "N", "N",
+          dimx, dimx, dimx, &alpha, omega, dimx, buf, dimx, &beta, heff_prime, dimx);
+
+    /*
+     * deallocate working arrays
+     */
+    cc_free(omega_inv);
+    cc_free(heff_0h0p_1h1p);
+    cc_free(buf);
 }
 
 
@@ -202,71 +296,4 @@ void omega_0h0p_0h1p(size_t dim, slater_det_t *det_list_1h1p, double complex *om
                     (i == j) * (a == b) + diagram_get_2(dg_exc, i, a) * diagram_get_2(dg_deexc, b, j);
         }
     }
-}
-
-
-/**
- * Performs renormalization of the wave operator \Omega in order to force
- * intermediate normalization P\OmegaP=P in the P=0h0p+1h1p model space.
- *
- * @param dim dimension of the Heff block in the 1h1p subspace
- * @param det_list list of Slater determinants; their symmetry
- *      must coincide with the symmetry of the vacuum determinant
- * @param heff Heff block in the 1h1p subspace
- * @param heff_prime Heff block in the 0h0p+1h1p subspace, transformed
- *      accordingly with renormalized wave operator \Omega
- *      dim(heff') = dim(heff)+1
- * @param omega transformation matrix (model-space part of the wave operator)
- *      dim(omega) = dim(heff)+1
- */
-void renormalize_wave_operator_0h0p_0h1p(size_t dim, slater_det_t *det_list,
-                                         double complex *heff, double complex *heff_prime, double complex *omega)
-{
-    size_t dimx = dim + 1;  // dimension of eXtended (0h0p+1h1p) matrices
-    double complex alpha = 1.0 + 0.0 * I;
-    double complex beta = 0.0 + 0.0 * I;
-
-    /*
-     * allocate working arrays, init with zeros
-     */
-    memset(omega, 0, sizeof(double complex) * dimx * dimx);
-    double complex *omega_inv = z_zeros(dimx, dimx);
-    double complex *heff_0h0p_1h1p = z_zeros(dimx, dimx);
-    double complex *buf = z_zeros(dimx, dimx);
-
-    /*
-     * construct 0h0p+1h1p (extended) block-diagonal Heff matrix
-     * Heff 1h1p block will be placed into the right lower angle.
-     * Ecorr is subtracted from the whole diagonal.
-     */
-    for (size_t i = 0; i < dim; i++) {
-        for (size_t j = 0; j < dim; j++) {
-            heff_0h0p_1h1p[dimx * (i + 1) + j + 1] = heff[dim * i + j];
-        }
-    }
-
-    /*
-     * construct P \Omega P matrix (P=0h0p+1h1p)
-     */
-    omega_0h0p_0h1p(dim, det_list, omega, "t1c", "e1c");
-
-    /*
-     * construct inverse matrix (P \Omega P)^{-1}
-     */
-    inverse_matrix(dimx, omega, omega_inv);
-
-    /*
-     * Heff' = { (P\OmegaP) * { Heff * (P\OmegaP)^-1 } }
-     */
-    xgemm(CC_DOUBLE_COMPLEX, "N", "N",
-                dimx, dimx, dimx, &alpha, heff_0h0p_1h1p, dimx, omega_inv, dimx, &beta, buf, dimx);
-    xgemm(CC_DOUBLE_COMPLEX, "N", "N",
-                dimx, dimx, dimx, &alpha, omega, dimx, buf, dimx, &beta, heff_prime, dimx);
-
-    /*
-     * deallocate working arrays
-     */
-    cc_free(omega_inv);
-    cc_free(heff_0h0p_1h1p);
-    cc_free(buf);
 }

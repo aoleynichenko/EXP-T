@@ -32,6 +32,7 @@
 
 #include <string.h>
 
+#include "memory.h"
 #include "spinors.h"
 #include "symmetry.h"
 
@@ -178,17 +179,33 @@ slater_det_t **construct_model_space(int sect_h, int sect_p, size_t *ms_rep_size
             }
         }
     }
+    else if (sect_h == 3 && sect_p == 0) {
+        count = 0;
+        for (int k = 0; k < nacth; k++) {
+            for (int m = k + 1; m < nacth; m++) {
+                for (int l = m + 1; l < nacth; l++) {
+                    moindex_t idx_k = active_holes_indices[k];
+                    moindex_t idx_m = active_holes_indices[m];
+                    moindex_t idx_l = active_holes_indices[l];
+                    det_buf[count].indices[0] = idx_k;
+                    det_buf[count].indices[1] = idx_m;
+                    det_buf[count].indices[2] = idx_l;
+
+                    int rep_k = spinor_info[idx_k].repno;
+                    int rep_m = spinor_info[idx_m].repno;
+                    int rep_l = spinor_info[idx_l].repno;
+                    int rep_km = mulrep2_abelian(rep_k, rep_m);
+                    int rep_kml = mulrep2_abelian(rep_km, rep_l);
+                    det_buf[count].sym = rep_kml;
+
+                    ms_rep_sizes[rep_kml]++;
+                    count++;
+                }
+            }
+        }
+    }
     else if (sect_h == 1 && sect_p == 1) {
         count = 0;
-        // add the 0h0p vacuum determinant -- if required
-        /*if (cc_opts->mixed) {
-            int rep_00 = get_totally_symmetric_irrep(); // is valid only for closed-shell references!
-            det_buf[0].indices[0] = 0;
-            det_buf[0].indices[1] = 0;
-            det_buf[0].sym = rep_00;
-            ms_rep_sizes[rep_00]++;
-            count++;
-        }*/
         // 1h1p determinants
         for (int i = 0; i < nacth; i++) {
             for (int a = 0; a < nactp; a++) {
@@ -287,3 +304,29 @@ slater_det_t **construct_model_space(int sect_h, int sect_p, size_t *ms_rep_size
 
     return det_basis;
 }
+
+
+/**
+ * Prints information about model space determinants.
+ */
+void print_model_space_info(int sect_h, int sect_p, size_t *block_dims, slater_det_t **det_basis)
+{
+    if (cc_opts->print_model_space) {
+        printf(" List of model space determinants:\n");
+        for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+            for (int i = 0; i < block_dims[irrep]; i++) {
+                print_slater_det(stdout, sect_h, sect_p, det_basis[irrep] + i);
+            }
+        }
+        printf("\n");
+    }
+
+    printf(" Model space dimensions:\n");
+    for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
+        if (block_dims[irrep] != 0) {
+            printf("  [%3d] dim = %-6d %-4s\n", irrep, block_dims[irrep], get_irrep_name(irrep));
+        }
+    }
+    printf("\n");
+}
+

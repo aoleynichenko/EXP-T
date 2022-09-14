@@ -56,8 +56,8 @@ int sector_2h0p(cc_options_t *opts);
 
 int sector_0h3p(cc_options_t *opts);
 
-int sector12(cc_options_t *opts);
+int sector_3h0p(cc_options_t *opts);
 
-void mixed_00_11(cc_options_t *opts);
+int sector_1h2p(cc_options_t *opts);
 
 #endif /* CC_METHODS_H_INCLUDED */

@@ -265,7 +265,6 @@ int sector_1h1p(cc_options_t *opts)
      * analyze its eigenvectors & eigenvalues
      */
     heff_analysis(1, 1, "veff01", "veff10", "veff11");
-    model_space_properties_and_natural_orbitals(1, 1);
 
     /*
      * Ionization potential and electron affinity
@@ -275,6 +274,12 @@ int sector_1h1p(cc_options_t *opts)
 
     print_ionization_potential("Ionization potential 0h0p -> 1h0p", ip);
     print_ionization_potential("Electron affinity    0h0p -> 0h1p", ea);
+
+    /*
+     * calculate quasi-natural orbitals and model-space estimates of properties
+     */
+    calculate_model_space_properties(1, 1);
+    calculate_model_space_natural_spinors(1, 1);
 
     return EXIT_SUCCESS;
 }

@@ -2,7 +2,7 @@
 # experimental geometry for the ground state
 #
 geometry units angstrom
-  symmetry Cs xz
+  symmetry Cinfv
   C  0.0000  0.0000  0.0000
   O  0.0000  0.0000  1.1282
 end

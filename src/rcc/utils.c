@@ -339,3 +339,19 @@ void print_asctime()
     time_t tm = time(0);
     printf(" %s", asctime(localtime(&tm)));
 }
+
+
+/**
+ * gets real parts of the array of complex numbers.
+ * arrays should be pre-allocated.
+ *
+ * @param n
+ * @param array_complex
+ * @param array_real
+ */
+void array_get_real_part(size_t n, double complex *array_complex, double *array_real)
+{
+    for (size_t i = 0; i < n; i++) {
+        array_complex[i] = creal(array_real[i]);
+    }
+}

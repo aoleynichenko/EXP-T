@@ -330,6 +330,9 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_FLUSH_AMPLITUDES_TXT:
                 opts->do_flush_amplitudes_txt = 1;
                 break;
+            case KEYWORD_HUGHES_KALDOR:
+                opts->hughes_kaldor_1h2p = 1;
+                break;
             case KEYWORD_SPINOR_LABELS:
                 directive_spinor_labels(opts);
                 break;
@@ -455,7 +458,7 @@ void directive_print(cc_options_t *opts)
     static char *msg = "wrong print mode!\n"
                        "Possible values are: low, medium, high, debug\n"
                        "Additional printing options:\n"
-                       "  \"det list\"\n"
+                       "  \"model space\"\n"
                        "  \"eff config\"\n"
                        "  \"model vectors\"\n";
 
@@ -486,8 +489,8 @@ void directive_print(cc_options_t *opts)
         yytext = yytext + 1;
         yytext[strlen(yytext) - 1] = '\0';
 
-        if (strcmp(yytext, "det list") == 0) {
-            opts->print_det_list = 1;
+        if (strcmp(yytext, "model space") == 0) {
+            opts->print_model_space = 1;
         }
         else if (strcmp(yytext, "model vectors") == 0) {
             opts->print_model_vectors = 1;

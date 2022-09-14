@@ -23,10 +23,12 @@
 
 /*
  * Operations with formatted files containing effective Hamiltonians.
- * The format of formatted HEFFF files was primarily introduced by
- * A. Zaitsevskii.
- * 2019-2021 Alexander Oleynichenko
+ * The format of formatted HEFFF files was primarily introduced by A. Zaitsevskii.
+ *
+ * 2019-2022 Alexander Oleynichenko
  */
+
+#include "formatted_heff.h"
 
 #include <complex.h>
 #include <stdio.h>
@@ -35,10 +37,6 @@
 #include "options.h"
 #include "symmetry.h"
 
-FILE *hefff_open(int sect_h, int sect_p, char *label);
-void hefff_close(FILE *hefff);
-void hefff_write_block(FILE *hefff, int carith, int rep_no, size_t dim, double complex *heff);
-size_t first_nonzero_irrep(size_t *block_dims);
 
 /**
  * Writes blocks of the effective Hamiltonian to the formatted file 'HEFF'
@@ -53,7 +51,7 @@ void write_formatted_heff(int sect_h, int sect_p, size_t *block_dims, double com
     int first_irrep = first_nonzero_irrep(block_dims);
 
     // open file with formatted Heff
-    FILE *hefff = hefff_open(sect_h, sect_p, NULL);
+    FILE *hefff = open_formatted_heff_file(sect_h, sect_p, NULL);
 
     for (int irep = 0; irep < get_num_irreps(); irep++) {
         if (block_dims[irep] == 0) {
@@ -64,7 +62,7 @@ void write_formatted_heff(int sect_h, int sect_p, size_t *block_dims, double com
         hefff_write_block(hefff, arith == CC_ARITH_COMPLEX, irep - first_irrep + 1, ms_size, heff_block);
     }
 
-    hefff_close(hefff);
+    close_formatted_heff_file(hefff);
 }
 
 
@@ -98,7 +96,7 @@ void write_formatted_heff_0h0p(double total_energy)
  * Writes header lines.
  * Returns pointer to the FILE structure.
  */
-FILE *hefff_open(int sect_h, int sect_p, char *label)
+FILE *open_formatted_heff_file(int sect_h, int sect_p, char *label)
 {
     FILE *hefff;
 
@@ -121,7 +119,7 @@ FILE *hefff_open(int sect_h, int sect_p, char *label)
 /**
  * Closes formatted HEFF file.
  */
-void hefff_close(FILE *hefff)
+void close_formatted_heff_file(FILE *hefff)
 {
     fclose(hefff);
 }

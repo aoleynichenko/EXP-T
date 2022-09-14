@@ -171,3 +171,19 @@ char *cc_strdup(const char *src)
 }
 
 
+/*
+ * Duplicate a block of bytes.
+ */
+void *cc_memdup(const void *src, size_t n_bytes)
+{
+    void *dest = cc_malloc(n_bytes);
+    if (dest == NULL) {
+        return NULL;
+    }
+
+    memcpy(dest, src, n_bytes);
+
+    return dest;
+}
+
+

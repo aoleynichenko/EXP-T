@@ -44,8 +44,11 @@
 #include "slater_det.h"
 #include "symmetry.h"
 
-void restore_intermediate_normalization(size_t *block_dims, slater_det_t **det_list, double complex **heff,
-                                        double complex **eigvalues);
-
+void restore_intermediate_normalization(
+        size_t *block_dims,
+        slater_det_t **det_list,
+        double complex **heff,
+        double complex **eigvalues
+);
 
 #endif /* CC_RENORM_OMEGA_H_INCLUDED */

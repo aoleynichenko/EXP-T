@@ -97,4 +97,6 @@ void print_hyphens(int offs, int len);
 
 void print_asctime();
 
+void array_get_real_part(size_t n, double complex *array_complex, double *array_real);
+
 #endif /* CC_UTILS_H_INCLUDED */

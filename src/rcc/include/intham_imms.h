@@ -31,6 +31,7 @@
 #define CC_INTHAM_IMMS_H_INCLUDED
 
 #include "comdef.h"
+#include "../heff/slater_det.h"
 
 #define IH_IMMS_MAX_SPINOR_SUBSPACES 50
 #define IH_IMMS_MAX_MAIN_SUBSPACES   50
@@ -53,5 +54,13 @@ int intham_imms_in_sector(int sect_h, int sect_p);
 void intham_imms_setup(int sect_h, int sect_p);
 
 double intham_imms_get_shift_value(int sect_h, int sect_p, int rank, int *indices, int *valence_labels);
+
+double get_fraction_of_main_space_determinants(
+        int sector_h,
+        int sector_p,
+        size_t dim,
+        slater_det_t *det_list,
+        const double complex *model_vector
+);
 
 #endif /* CC_INTHAM_IMMS_H_INCLUDED */

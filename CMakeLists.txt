@@ -159,21 +159,24 @@ add_executable(expt.x
         src/rcc/engine/scapro.c       # dot product of two diagrams
         src/rcc/engine/intruders.c    # analysis of possible intruder states
         src/rcc/engine/selection.c    # selection of cluster amplitudes
-        src/rcc/engine/intham_imms.c    # simple version of intermediate Hamiltonian
+        src/rcc/engine/intham_imms.c  # simple version of intermediate Hamiltonian
         src/rcc/engine/compress_triples.c # compact storage of triples amplitudes
         src/rcc/engine/conjugate.c    # Hermitian conjugation of a diagram
 
-        src/rcc/heff/msprop.c         # model-space estimations of properties
         src/rcc/heff/heff.c           # construction & analysis of Heff and eigenvalues
         src/rcc/heff/denmat.c         # model-space density matrices
-        src/rcc/heff/natorb.c         # quasi-natural orbitals
         src/rcc/heff/slater_rules.c   # Slater rules
         src/rcc/heff/slater_det.c     # Slater determinants
         src/rcc/heff/model_space.c    # operations with model spaces
         src/rcc/heff/renorm_omega.c   # restoration of the intermediate normalization
         src/rcc/heff/mvcoef.c         # operations with MVCOEF files (unformatted, model vectors)
-        src/rcc/heff/hefff.c          # operations with formatted HEFF files (eff Hamiltonians)
-        src/rcc/heff/heff_0h3p.c
+        src/rcc/heff/formatted_heff.c # operations with formatted HEFF files (eff Hamiltonians)
+        src/rcc/heff/eff_config.c
+        src/rcc/heff/model_vectors.c
+        src/rcc/heff/eigenvalues.c
+        src/rcc/heff/ms_tdm.c
+        src/rcc/heff/ms_prop.c        # model-space estimations of properties
+        src/rcc/heff/ms_nat_spinors.c # quasi-natural [transition] spinors
 
         src/rcc/interfaces/dirac_interface.c       # interface to the DIRAC package
         src/rcc/interfaces/dirac_binary.f90        # reads DIRAC's binary integral files
@@ -197,6 +200,7 @@ add_executable(expt.x
         src/rcc/methods/sector02_ccsdt.c
         src/rcc/methods/sector20_ccsdt.c
         src/rcc/methods/sector03_ccsdt.c
+        src/rcc/methods/sector30_ccsdt.c
         src/rcc/methods/sector12_devel.c
         src/rcc/methods/sector00_t3_correction.c      # (T) perturbative corrections for the 0h0p sector
 
@@ -354,6 +358,7 @@ add_test(NAME fs-ccsd_1h1p          COMMAND python test.py WORKING_DIRECTORY ../
 add_test(NAME fs-ccsd_0h2p          COMMAND python test.py WORKING_DIRECTORY ../test/fs-ccsd_0h2p        )
 add_test(NAME fs-ccsd_0h2p_ih-imms  COMMAND python test.py WORKING_DIRECTORY ../test/fs-ccsd_0h2p_ih-imms)
 add_test(NAME fs-ccsd_1h1p_ih-imms  COMMAND python test.py WORKING_DIRECTORY ../test/fs-ccsd_1h1p_ih-imms)
+add_test(NAME fs-ccsd_1h2p          COMMAND python test.py WORKING_DIRECTORY ../test/fs-ccsd_1h2p        )
 
 # triples
 add_test(NAME ccsd_t                COMMAND python test.py WORKING_DIRECTORY ../test/ccsd_t              )
@@ -369,6 +374,7 @@ add_test(NAME ccsd_t_lambda         COMMAND python test.py WORKING_DIRECTORY ../
 add_test(NAME ff_tdm_0h1p           COMMAND python test.py WORKING_DIRECTORY ../test/ff_tdm_0h1p         )
 add_test(NAME ms_tdm_1h1p           COMMAND python test.py WORKING_DIRECTORY ../test/ms_tdm_1h1p         )
 add_test(NAME ff_tdm_1h1p           COMMAND python test.py WORKING_DIRECTORY ../test/ff_tdm_1h1p         )
+add_test(NAME ms_tdm_0h2p           COMMAND python test.py WORKING_DIRECTORY ../test/ms_tdm_0h2p         )
 
 # utilities
 add_test(NAME vibrot_levels         COMMAND python test.py WORKING_DIRECTORY ../test/vibrot_levels       )

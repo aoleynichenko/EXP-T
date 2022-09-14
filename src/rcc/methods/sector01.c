@@ -137,13 +137,18 @@ int sector_0h1p(cc_options_t *opts)
      * analyze its eigenvectors & eigenvalues
      */
     heff_analysis(0, 1, "veff01");
-    model_space_properties_and_natural_orbitals(0, 1);
 
     /*
      * Ionization potential
      */
     double ion_pot = -cc_opts->ground_energy_0h1p;
     print_ionization_potential("Ionization potential 0h1p -> 0h0p", ion_pot);
+
+    /*
+     * calculate quasi-natural orbitals and model-space estimates of properties
+     */
+    calculate_model_space_properties(0, 1);
+    calculate_model_space_natural_spinors(0, 1);
 
     /*
      * perturbative correction to the effective interaction

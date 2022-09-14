@@ -25,7 +25,7 @@
  * Model vectors are stored on disk in binary files MVCOEF**.
  * This file provides interface for operating with the MVCOEF file format.
  *
- * 2020-2021 Alexander Oleynichenko
+ * 2020-2022 Alexander Oleynichenko
  */
 
 #include "mvcoef.h"
@@ -99,11 +99,37 @@ void mvcoef_write_vectors_unformatted(int file_descr, char *rep_name,
  *
  * @note: this function allocates arrays! they must be deallocated!
  */
-void read_model_vectors_unformatted(int sect_h, int sect_p, char *file_name, int *nrep, struct mv_block *mv_blocks)
+void mvcoef_read_vectors_unformatted(int sect_h, int sect_p, char *file_name, int *nrep, struct mv_block *mv_blocks)
 {
     char mvcoef_file_name[CC_MAX_NUM_IRREPS];
     double eigval_0;
     double const AU2CM = 219474.6313702;
+
+    /*
+     * special case of the 0h0p sector
+     */
+    if (sect_h == 0 && sect_p == 0) {
+        *nrep = 1;
+
+        mv_blocks[0].eigval = z_zeros(1, 1);
+        mv_blocks[0].energy_cm = d_zeros(1, 1);
+        mv_blocks[0].nroots = 1;
+        mv_blocks[0].ms_size = 1;
+
+        int vac_irrep = get_vacuum_irrep();
+        char *vac_irrep_name = get_irrep_name(vac_irrep);
+        strcpy(mv_blocks[0].rep_name, vac_irrep_name);
+
+        mv_blocks[0].dets = (slater_det_t *) cc_calloc(1, sizeof(slater_det_t));
+        mv_blocks[0].dets[0].sym = vac_irrep;
+
+        mv_blocks[0].vl = z_zeros(1, 1);
+        mv_blocks[0].vr = z_zeros(1, 1);
+        mv_blocks[0].vl[0] = 1.0;
+        mv_blocks[0].vr[0] = 1.0;
+
+        return;
+    }
 
     *nrep = 0;
 
@@ -156,4 +182,60 @@ void read_model_vectors_unformatted(int sect_h, int sect_p, char *file_name, int
             b->energy_cm[i] = (creal(b->eigval[i]) - eigval_0) * AU2CM;
         }
     }
+}
+
+
+void mvcoef_read_vectors_unformatted_for_state(
+        int sect_h, int sect_p, char *file_name, char *irrep_name, int state,
+        int *ms_dim, slater_det_t **det_list, double *eigenvalue, double *exc_energy_cm,
+        double complex **coef_left, double complex **coef_right
+)
+{
+    /*
+     * extract model vectors and eigenvalues from the MVCOEF* unformatted file
+     */
+    int nrep;
+    struct mv_block mv_blocks[CC_MAX_NUM_IRREPS];
+    mvcoef_read_vectors_unformatted(sect_h, sect_p, file_name, &nrep, mv_blocks);
+
+    /*
+     * get model vectors for the required irrep
+     */
+    struct mv_block *mvb1 = NULL;
+    for (size_t iblock = 0; iblock < nrep; iblock++) {
+        if (strcmp(mv_blocks[iblock].rep_name, irrep_name) == 0) {
+            mvb1 = mv_blocks + iblock;
+        }
+    }
+
+    /*
+     * return data via working arrays
+     */
+    size_t ms_size = mvb1->ms_size;
+    *ms_dim = (int) ms_size;
+    *det_list = (slater_det_t *) cc_memdup(mvb1->dets, sizeof(slater_det_t) * ms_size);
+    *eigenvalue = creal(mvb1->eigval[state]);
+    *exc_energy_cm = mvb1->energy_cm[state];
+    *coef_left = (double complex *) cc_memdup(mvb1->vl + ms_size * state, sizeof(double complex) * ms_size);
+    *coef_right = (double complex *) cc_memdup(mvb1->vr + ms_size * state, sizeof(double complex) * ms_size);
+
+    /*
+     * clean up
+     */
+    for (size_t irep = 0; irep < nrep; irep++) {
+        mvblock_free(mv_blocks + irep);
+    }
+}
+
+
+/**
+ * Deallocates memory used by the mvblock_t structure.
+ */
+void mvblock_free(struct mv_block *block)
+{
+    cc_free(block->dets);
+    cc_free(block->eigval);
+    cc_free(block->energy_cm);
+    cc_free(block->vl);
+    cc_free(block->vr);
 }

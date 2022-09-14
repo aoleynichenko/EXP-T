@@ -163,7 +163,6 @@ int main(int argc, char **argv)
             goto finalize;
         }
     }
-    /*
     else if (opts->sector_h == 1 && opts->sector_p == 2) {
         exit_code = sector_0h0p(opts);
         if (exit_code == EXIT_FAILURE) {
@@ -185,13 +184,11 @@ int main(int argc, char **argv)
         if (exit_code == EXIT_FAILURE) {
             goto finalize;
         }
-        exit_code = sector12(opts);
+        exit_code = sector_1h2p(opts);
         if (exit_code == EXIT_FAILURE) {
             goto finalize;
         }
-        errquit("THe 1h2p sector is not part of the public release");
     }
-    */
     else if (opts->sector_h == 0 && opts->sector_p == 2) {
         exit_code = sector_0h0p(opts);
         if (exit_code == EXIT_FAILURE) {
@@ -234,6 +231,24 @@ int main(int argc, char **argv)
             goto finalize;
         }
         exit_code = sector_0h3p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+    }
+    else if (opts->sector_h == 3 && opts->sector_p == 0) {
+        exit_code = sector_0h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_1h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_2h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_3h0p(opts);
         if (exit_code == EXIT_FAILURE) {
             goto finalize;
         }

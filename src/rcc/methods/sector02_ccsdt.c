@@ -1868,7 +1868,6 @@ void sector_0h2p_ccsd_t3()
 
     // construction and diagonalization of the effective Hamiltonian
     heff_analysis(0, 2, "veff01_pt3", "veff02_pt3");
-    model_space_properties_and_natural_orbitals(0, 2);
 
     timer_stop("02-T(3)");
 }
@@ -1966,7 +1965,6 @@ void sector_0h2p_ccsd_t4()
      * construct and diagonalize Heff
      */
     heff_analysis(0, 2, "veff01", "veff02");
-    model_space_properties_and_natural_orbitals(0, 2);
 
     /*
      * save PT-corrected diagrams for future uses in the higher sectors

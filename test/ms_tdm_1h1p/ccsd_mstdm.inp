@@ -1,0 +1,25 @@
+sector 1h1p
+nacth 10
+nactp 18
+memory 2 gb
+
+maxiter 300
+conv 1e-9
+disk_usage 0
+diis 100
+
+roots_cutoff 75000 cm
+
+mstdm
+
+ih_imms
+  sectors 1h0p 1h1p
+  subspace energy -2.0 -0.7
+  subspace energy -0.7 -0.3
+  subspace energy -0.3  0.2
+  subspace energy  0.2  0.5
+  main_occ 0 1 0 0
+  main_occ 0 1 1 0
+end
+
+

@@ -24,6 +24,10 @@
 /*
  * Fock space sector 1h2p.
  *
+ * For more details, see:
+ * S. R. Hughes, U. Kaldor. Fock-space coupled-cluster method: The (1,2) sector.
+ * Phys. Rev. A 47, 4705 (1993). doi: 10.1103/PhysRevA.47.4705
+ *
  * 2021-2022 Alexander Oleynichenko
  */
 
@@ -42,94 +46,180 @@
 #include "spinors.h"
 #include "utils.h"
 
-void heff12_ccsd();
-void solve_amplitude_equations_1h2p();
+void heff12_ccsd_1h2p_dependent();
+
+void heff12_ccsd_const();
+
+void sort_integrals_1h2p();
+
+int solve_amplitude_equations_1h2p();
+
 void linsys_solver();
+
 int iterative_solver();
+
 void add_eps_to_diagonal(char *name);
+
 void calc_1h2p_intermediates();
 
+void init_amplitudes_1h2p();
+
+void construct_doubles_1h2p();
+
+void construct_folded_1h2p();
+
 void ampl_equations_1h2p_D1();
+
 void ampl_equations_1h2p_D2a_1();
+
 void ampl_equations_1h2p_D2a_2();
+
 void ampl_equations_1h2p_D2b();
+
 void ampl_equations_1h2p_D2c();
+
 void ampl_equations_1h2p_D2d();
+
 void ampl_equations_1h2p_D2e_1();
+
 void ampl_equations_1h2p_D2e_2();
+
 void ampl_equations_1h2p_D3a();
+
 void ampl_equations_1h2p_D3b();
+
 void ampl_equations_1h2p_D3c();
+
 void ampl_equations_1h2p_D3d_1();
+
 void ampl_equations_1h2p_D3d_2();
+
 void ampl_equations_1h2p_D4a();
+
 void ampl_equations_1h2p_D4b_1();
+
 void ampl_equations_1h2p_D4b_2();
+
 void ampl_equations_1h2p_D5a();
+
 void ampl_equations_1h2p_D5b_1();
+
 void ampl_equations_1h2p_D5b_2();
+
 void ampl_equations_1h2p_D5c_1();
+
 void ampl_equations_1h2p_D5c_2();
+
 void ampl_equations_1h2p_D5d_1();
+
 void ampl_equations_1h2p_D5d_2();
+
 void ampl_equations_1h2p_D5e_1();
+
 void ampl_equations_1h2p_D5e_2();
+
 void ampl_equations_1h2p_D5f();
+
 void ampl_equations_1h2p_D5g_1();
+
 void ampl_equations_1h2p_D5g_2();
+
 void ampl_equations_1h2p_D5h();
+
 void ampl_equations_1h2p_D6a();
+
 void ampl_equations_1h2p_D6b();
+
 void ampl_equations_1h2p_D6c_1();
+
 void ampl_equations_1h2p_D6c_2();
+
 void ampl_equations_1h2p_D7a();
+
 void ampl_equations_1h2p_D7b();
+
 void ampl_equations_1h2p_D7c_1();
+
 void ampl_equations_1h2p_D7c_2();
+
 void ampl_equations_1h2p_D7d();
+
 void ampl_equations_1h2p_D7e_1();
+
 void ampl_equations_1h2p_D7e_2();
+
 void ampl_equations_1h2p_D8a_1();
+
 void ampl_equations_1h2p_D8a_2();
+
 void ampl_equations_1h2p_D8b();
+
 void ampl_equations_1h2p_D9();
 
 void ampl_equations_1h2p_folded_F1();
+
 void ampl_equations_1h2p_folded_F2();
+
 void ampl_equations_1h2p_folded_F3();
+
 void ampl_equations_1h2p_folded_F4();
+
 void ampl_equations_1h2p_folded_F5();
+
 void ampl_equations_1h2p_folded_F6();
+
 void ampl_equations_1h2p_folded_F7();
+
 void ampl_equations_1h2p_folded_F8();
+
 void ampl_equations_1h2p_folded_F9();
 
-void diag_heff_1h2p_i_jk_c_ab__inv_h2_p13(int pt_order);
-void diag_heff_1h2p_i_jk_c_ab__inv_h3_p12(int pt_order);
-void diag_heff_1h2p_i_jk_c_ab__inv_h1_p23(int pt_order);
-void diag_heff_1h2p_i_jk_c_ab__inv_h3_p23(int pt_order);
+void ampl_equations_1h2p_folded_F10();
 
-void diag_heff_1h2p_ijk_c_ab__inv_h2_p13(int pt_order);
-void diag_heff_1h2p_ijk_c_ab__inv_h3_p12(int pt_order);
-void diag_heff_1h2p_ijk_c_ab__inv_h1_p23(int pt_order);
-void diag_heff_1h2p_ijk_c_ab__inv_h3_p13(int pt_order);
-void diag_heff_1h2p_ijk_c_ab__inv_h2_p12(int pt_order);
-void diag_heff_1h2p_ijk_c_ab__inv_h3_p23(int pt_order);
+void diag_heff_1h2p_i_jk_c_ab__inv_h2_p13_const(int pt_order);
 
-void diag_heff_1h2p_k_ij_a_bc__inv_h1_p23(int pt_order);
-void diag_heff_1h2p_k_ij_a_bc__inv_h3_p12(int pt_order);
-void diag_heff_1h2p_k_ij_a_bc__inv_h2_p13(int pt_order);
-void diag_heff_1h2p_k_ij_a_bc__inv_h1_p12(int pt_order);
+void diag_heff_1h2p_i_jk_c_ab__inv_h3_p12_const(int pt_order);
 
-void diag_heff_1h2p_k_ij_abc__inv_h1_p23(int pt_order);
-void diag_heff_1h2p_k_ij_abc__inv_h2_p13(int pt_order);
-void diag_heff_1h2p_k_ij_abc__inv_h3_p12(int pt_order);
-void diag_heff_1h2p_k_ij_abc__inv_h1_p12(int pt_order);
-void diag_heff_1h2p_k_ij_abc__inv_h2_p12(int pt_order);
-void diag_heff_1h2p_k_ij_abc__inv_h3_p13(int pt_order);
+void diag_heff_1h2p_i_jk_c_ab__inv_h1_p23_const(int pt_order);
+
+void diag_heff_1h2p_i_jk_c_ab__inv_h3_p23_m2c(int pt_order);
+
+void diag_heff_1h2p_ijk_c_ab__inv_h2_p13_const(int pt_order);
+
+void diag_heff_1h2p_ijk_c_ab__inv_h3_p12_const(int pt_order);
+
+void diag_heff_1h2p_ijk_c_ab__inv_h1_p23_const(int pt_order);
+
+void diag_heff_1h2p_ijk_c_ab__inv_h3_p13_const(int pt_order);
+
+void diag_heff_1h2p_ijk_c_ab__inv_h2_p12_const(int pt_order);
+
+void diag_heff_1h2p_ijk_c_ab__inv_h3_p23_const(int pt_order);
+
+void diag_heff_1h2p_k_ij_a_bc__inv_h1_p23_const(int pt_order);
+
+void diag_heff_1h2p_k_ij_a_bc__inv_h3_p12_const(int pt_order);
+
+void diag_heff_1h2p_k_ij_a_bc__inv_h2_p13_const(int pt_order);
+
+void diag_heff_1h2p_k_ij_a_bc__inv_h1_p12_m2c(int pt_order);
+
+void diag_heff_1h2p_k_ij_abc__inv_h1_p23_const(int pt_order);
+
+void diag_heff_1h2p_k_ij_abc__inv_h2_p13_const(int pt_order);
+
+void diag_heff_1h2p_k_ij_abc__inv_h3_p12_const(int pt_order);
+
+void diag_heff_1h2p_k_ij_abc__inv_h1_p12_m2c(int pt_order);
+
+void diag_heff_1h2p_k_ij_abc__inv_h2_p12_const(int pt_order);
+
+void diag_heff_1h2p_k_ij_abc__inv_h3_p13_const(int pt_order);
+
+void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *new_valence, int extract_valence);
 
 
-int sector12(cc_options_t *opts)
+int sector_1h2p(cc_options_t *opts)
 {
     printf("\n");
     printf("\t\t\t\t*****************\n");
@@ -137,8 +227,93 @@ int sector12(cc_options_t *opts)
     printf("\t\t\t\t*****************\n");
     printf("\n");
 
+    if (opts->hughes_kaldor_1h2p) {
+        printf("\n");
+        printf(" The Hughes-Kaldor version of the FS-CCSD(1h2p) method will be used\n");
+        printf(" (folded terms with Heff{1h2p} will be excluded).\n");
+        printf("\n");
+    }
+
     opts->curr_sector_h = 1;
     opts->curr_sector_p = 2;
+
+    // setup shifts for the IH-like technique by A. V. Zaitsevskii
+    if (intham_imms_in_sector(1, 2)) {
+        intham_imms_setup(1, 2);
+    }
+
+    sort_integrals_1h2p();
+    init_amplitudes_1h2p();
+    predict_intruders_for_diagram("m2nw", 10);
+
+    /*
+     * initial approximation to Veff{1h2p}.
+     * includes diagrams independent on the T{1h2p} cluster amplitudes.
+     */
+    heff12_ccsd_const();
+
+    /*
+     * main loop
+     */
+    int success = solve_amplitude_equations(
+            1, 2, NULL, NULL, "m2c", "m2nw", NULL, NULL, NULL,
+            NULL, construct_doubles_1h2p, NULL, construct_folded_1h2p
+    );
+    if (success == EXIT_FAILURE) {
+        return EXIT_FAILURE;
+    }
+
+    /*
+     * analyze cluster amplitudes and write them to disk
+     */
+    print_cluster_operator_analysis(1, 2, NULL, "m2c", NULL);
+    save_cluster_amplitudes(1, 2, NULL, "m2c", NULL, NULL);
+    if (cc_opts->do_flush_amplitudes_txt) {
+        save_cluster_amplitudes_formatted(1, 2, NULL, "m2c", NULL);
+    }
+
+    /*
+     * effective Hamiltonian construction and analysis
+     */
+    copy("veff12_const", "veff12");
+    heff12_ccsd_1h2p_dependent();
+
+    heff_analysis(1, 2, "veff01", "veff10", "veff11", "veff02", "veff12");
+
+    /*
+     * calculate quasi-natural orbitals and model-space estimates of properties
+     */
+    calculate_model_space_properties(1, 2);
+    calculate_model_space_natural_spinors(1, 2);
+
+    return EXIT_SUCCESS;
+}
+
+
+void sort_integrals_1h2p()
+{
+    /*
+     * two-electron integrals
+     */
+    request_sorting("gvhv", "hphp", "1101", "1234");
+    request_sorting("pphv", "pphp", "0001", "1234");
+    request_sorting("gvhh", "hphh", "1100", "1234");
+    request_sorting("vghg", "phhh", "1101", "1234");
+    request_sorting("vghh", "phhh", "1100", "1234");
+    request_sorting("vvhv", "pphp", "1101", "1234");
+    request_sorting("gphh", "hphh", "1000", "1234");
+    request_sorting("pvhv", "pphp", "0101", "1234");
+    request_sorting("pghg", "phhh", "0101", "1234");
+    request_sorting("pghv", "phhp", "0101", "2431");
+    request_sorting("pvvv", "pppp", "0111", "1234");
+    request_sorting("ppvv", "pppp", "0011", "1234");
+    request_sorting("pgvg", "phph", "0111", "1234");
+    request_sorting("pghh", "phhh", "0100", "1234");
+    request_sorting("ppvg", "ppph", "0011", "1234");
+    request_sorting("pvgv", "pphp", "0111", "1234");
+    request_sorting("ppgv", "pphp", "0011", "3412");
+    request_sorting("pgvv", "phpp", "0111", "1234");
+    request_sorting("ppvh", "ppph", "0010", "1234");
 
     request_sorting("vphh", "pphh", "1000", "1234");
     request_sorting("phpg", "phph", "0001", "1234");
@@ -150,133 +325,41 @@ int sector12(cc_options_t *opts)
     request_sorting("pvpg", "ppph", "0101", "1234");
     perform_sorting();
 
-    tmplt("m3nw", "pphpph", "110001", "123456", IS_PERM_UNIQUE);
+    /*
+     * prepare cluster amplitudes from previous sectors
+     */
+    restrict_valence("t1c", "t1c-v", "01", 0);
+    restrict_valence("t1c", "t1c-g", "10", 0);
+    restrict_valence("t2c", "t2c-v12-g1", "1011", 0);
+    restrict_valence("t2c", "t2c-v1-g1", "0101", 0);
+    restrict_valence("t2c", "t2c-v12", "0011", 0);
 
-    solve_amplitude_equations_1h2p();
+    restrict_valence("s2c", "s2c-v1-g", "1110", 0);
+    restrict_valence("s2c", "s2c-v12", "1011", 0);
+    restrict_valence("s2c", "s2c-g", "1100", 0);
+    restrict_valence("s2c", "s2c-v1", "1010", 0);
 
-    heff12_ccsd();
-    closed("m3nw", "veff12");
+    restrict_valence("h2c", "h2c-g1-v", "1011", 0);
+    restrict_valence("h2c", "h2c-g1", "1010", 0);
+    restrict_valence("h2c", "h2c-v", "0011", 0);
 
-    heff_analysis(1, 2, "veff01", "veff10", "veff11", "veff02", "veff12");
+    restrict_valence("e2c", "e2c-v1", "1011", 0);
+    restrict_valence("e2c", "e2c-v", "1011", 0);
+    restrict_valence("e2c", "e2c-g", "1101", 0);
 
-    return EXIT_SUCCESS;
+    restrict_valence("x2c", "x2c-v1", "1110", 0);
+    restrict_valence("x2c", "x2c-v2", "1101", 0);
 }
 
 
-void solve_amplitude_equations_1h2p()
+void init_amplitudes_1h2p()
 {
-    //linsys_solver();
-    iterative_solver();
-}
-
-
-void calc_1h2p_intermediates()
-{
-    tmplt("A", "pp", "00", "12", IS_PERM_UNIQUE);
-
-    // I1
-    add_eps_to_diagonal("A");
-    update("A", 1.0, "pp");
-
-    // I2
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("pphh", "r1", "2341");
-    reorder("t2c", "r2", "4123");
-    mult("r1", "r2", "r3", 3);
-    update("A", -0.5, "r3");
-    restore_stack_pos(pos);
-}
-
-
-void linsys_solver()
-{
-    // lists of:
-    // active particles
-    int nactp;
-    moindex_t act_particles[CC_MAX_SPINORS];
-    // active holes
-    int nacth;
-    moindex_t act_holes[CC_MAX_SPINORS];
-
-    get_active_holes_particles(&nacth, &nactp, act_holes, act_particles);
-
-    // all particles
-    int particles[CC_MAX_SPINORS];
-    int npart = 0;
-    for (int i = 0; i < get_num_spinors(); i++) {
-        if (is_particle(i)) {
-            particles[npart++] = i;
-        }
-    }
-
-    printf("act holes:\n");
-    for (int i = 0; i < nacth; i++) {
-        printf("%3d", act_holes[i]);
-    }
-    printf("\n");
-    printf("act particles:\n");
-    for (int i = 0; i < nactp; i++) {
-        printf("%3d", act_particles[i]);
-    }
-    printf("\n");
-    printf("particles:\n");
-    for (int i = 0; i < npart; i++) {
-        printf("%3d", particles[i]);
-    }
-    printf("\n");
-
-    calc_1h2p_intermediates();
-
-    prt("A");
-    exit(0);
-
-    for (int h1 = 0; h1 < nacth; h1++) {
-        for (int p1 = 0; p1 < nactp; p1++) {
-            for (int p2 = 0; p2 < nacth; p2++) {
-
-                // linear system: A*t + b = 0
-                double complex *t = z_zeros(1, npart);
-                double complex *b = z_zeros(1, npart);
-                double complex *A = z_zeros(npart, npart);
-
-            }
-        }
-    }
-}
-
-
-void add_eps_to_diagonal(char *name)
-{
-    diagram_t *dg = diagram_stack_find(name);
-    if (dg == NULL) {
-        errquit("add_eps_to_diagonal(): diagram '%s' not found", name);
-    }
-
-    int idx2[2];
-    for (size_t i = 0; i < get_num_spinors(); i++) {
-        double eps = get_eps(i);
-        idx2[0] = i;
-        idx2[1] = i;
-        diagram_set(dg, eps+0.0*I, idx2);
-    }
-}
-
-
-int iterative_solver()
-{
-    double diff2;
-    int diffmax2_idx[CC_DIAGRAM_MAX_RANK];
-    int max_t2_idx[4];
-    double max_t2;
-    int it;
-
-    tmplt("m2nw", "ppph", "1101", "1234", IS_PERM_UNIQUE);
+    tmplt("m2nw", "ppph", "1101", "1234", NOT_PERM_UNIQUE);
     copy("m2nw", "m2c");
-    predict_intruders_for_diagram("m2nw", 10);
 
     if (cc_opts->reuse_amplitudes[1][2]) {
         printf(" Trying to read amplitudes and effective interaction (sector 1h2p) from disk ...\n");
-        // Singles
+        // Doubles
         if (diagram_read("m2c.dg") != NULL) {
             printf(" T{12}_1 amplitudes successfully read from disk\n");
         }
@@ -285,157 +368,64 @@ int iterative_solver()
         }
     }
     printf("\n");
+}
 
-    printf(" Solution of amplitude equations (sector 1h2p)\n");
-    print_asctime();
-    printf(" ---------------------------------------------------------\n");
-    printf(" it.       diffmax(S2)     max(S2)    t,sec       mem,Gb\n");
-    printf(" ---------------------------------------------------------\n");
 
-    diis_queue_t *diis_queue = new_diis_queue(0, 1, 0);
-    int converged = 0;
-    double t1 = abs_time();
-    for (it = 1; it <= cc_opts->maxiter; it++) {
-
-        double it_t1, it_t2;
-        it_t1 = abs_time();
-
-        // direct terms
-        ampl_equations_1h2p_D1();
-        ampl_equations_1h2p_D2a_1();
-        ampl_equations_1h2p_D2a_2();
-        ampl_equations_1h2p_D2b();
-        ampl_equations_1h2p_D2c();
-        ampl_equations_1h2p_D2d();
-        ampl_equations_1h2p_D2e_1();
-        ampl_equations_1h2p_D2e_2();
-        ampl_equations_1h2p_D3a();
-        ampl_equations_1h2p_D3b();
-        ampl_equations_1h2p_D3c();
-        ampl_equations_1h2p_D3d_1();
-        ampl_equations_1h2p_D3d_2();
-        ampl_equations_1h2p_D4a();
-        ampl_equations_1h2p_D4b_1();
-        ampl_equations_1h2p_D4b_2();
-        ampl_equations_1h2p_D5a();
-        ampl_equations_1h2p_D5b_1();
-        ampl_equations_1h2p_D5b_2();
-        ampl_equations_1h2p_D5c_1();
-        ampl_equations_1h2p_D5c_2();
-        ampl_equations_1h2p_D5d_1();
-        ampl_equations_1h2p_D5d_2();
-        ampl_equations_1h2p_D5e_1();
-        ampl_equations_1h2p_D5e_2();
-        ampl_equations_1h2p_D5f();
-        ampl_equations_1h2p_D5g_1();
-        ampl_equations_1h2p_D5g_2();
-        ampl_equations_1h2p_D5h();
-        ampl_equations_1h2p_D6a();
-        ampl_equations_1h2p_D6b();
-        ampl_equations_1h2p_D6c_1();
-        ampl_equations_1h2p_D6c_2();
-        ampl_equations_1h2p_D7a();
-        ampl_equations_1h2p_D7b();
-        ampl_equations_1h2p_D7c_1();
-        ampl_equations_1h2p_D7c_2();
-        ampl_equations_1h2p_D7d();
-        ampl_equations_1h2p_D7e_1();
-        ampl_equations_1h2p_D7e_2();
-        ampl_equations_1h2p_D8a_1();
-        ampl_equations_1h2p_D8a_2();
-        ampl_equations_1h2p_D8b();
-        ampl_equations_1h2p_D9();
-
-        // folded terms
-        ampl_equations_1h2p_folded_F1();
-        ampl_equations_1h2p_folded_F2();
-        ampl_equations_1h2p_folded_F3();
-        ampl_equations_1h2p_folded_F4();
-        ampl_equations_1h2p_folded_F5();
-        ampl_equations_1h2p_folded_F6();
-        ampl_equations_1h2p_folded_F7();
-        ampl_equations_1h2p_folded_F8();
-        ampl_equations_1h2p_folded_F9();
-
-        diveps("m2nw");
-
-        diffmax("m2c", "m2nw", &diff2, diffmax2_idx);
-        findmax("m2nw", &max_t2, max_t2_idx);
-
-        printf(" %3d%18.12f%12.6f", it, diff2, max_t2);
-        if (fabs(diff2) < cc_opts->conv_thresh) {
-            converged = 1;
-            goto end_iter;
-        }
-
-        if (check_divergence("m2nw") == 1) {
-            printf("\n\t\t\tDIVERGED\n");
-            return EXIT_FAILURE;
-        }
-
-        if (cc_opts->diis_enabled) {
-            diis_put(diis_queue, "", "", "m2nw", "m2c", "", "", it);
-            if (it >= 2) {
-                diis_truncate(diis_queue, cc_opts->diis_dim);
-                diis_extrapolate(diis_queue, "", "m2nw", "");
-            }
-        }
-
-        copy("m2nw", "m2c");
-
-        end_iter:
-
-        // print time spent for iteration
-        it_t2 = abs_time();
-        double iter_time = it_t2 - it_t1;
-        printf("%9.1f", iter_time);
-
-        // print memory statistics if the print level is high enough
-        double curr_usage = cc_get_current_memory_usage() / (1024.0 * 1024.0 * 1024.0);
-        double peak_usage = cc_get_peak_memory_usage() / (1024.0 * 1024.0 * 1024.0);
-        printf("%8.2f/%.2f\n", curr_usage, peak_usage);
-
-        if (converged) {
-            break;
-        }
-    }
-    // end of iterations
-
-    double t2 = abs_time();
-
-    printf(" ---------------------------------------------------------\n");
-
-    if (converged == 0) {
-        printf("\tnot converged!\n");
-        return EXIT_FAILURE;
-    }
-    else {
-        printf("\tconverged in %d iterations\n", it);
-    }
-
-    printf(" average time per iteration = %.3f sec\n", (t2 - t1) / it);
-
-    // extract max amplitudes
-    printf(" (absolute values)\n");
-    print_max_ampl("Max S{12}_2 amplitude (s{12}_ijab)", "m2c");
-    printf("\n");
-
-    // norms of cluster operators
-    print_ampl_norm("Norm |S{12}_2|", "m2c");
-    printf("\n");
-
-    delete_diis_queue(diis_queue);
-
-    // flush amplitudes and effective interaction to disk
-    diagram_write(diagram_stack_find("m2c"), "m2c.dg");
-
-    //prt("m2c");
-    exit(0);
+void construct_doubles_1h2p()
+{
+    /*
+     * (V\Omega)_conn
+     */
+    ampl_equations_1h2p_D1();
+    ampl_equations_1h2p_D2a_1();
+    ampl_equations_1h2p_D2a_2();
+    ampl_equations_1h2p_D2b();
+    ampl_equations_1h2p_D2c();
+    ampl_equations_1h2p_D2d();
+    ampl_equations_1h2p_D2e_1();
+    ampl_equations_1h2p_D2e_2();
+    ampl_equations_1h2p_D3a();
+    ampl_equations_1h2p_D3b();
+    ampl_equations_1h2p_D3c();
+    ampl_equations_1h2p_D3d_1();
+    ampl_equations_1h2p_D3d_2();
+    ampl_equations_1h2p_D4a();
+    ampl_equations_1h2p_D4b_1();
+    ampl_equations_1h2p_D4b_2();
+    ampl_equations_1h2p_D5a();
+    ampl_equations_1h2p_D5b_1();
+    ampl_equations_1h2p_D5b_2();
+    ampl_equations_1h2p_D5c_1();
+    ampl_equations_1h2p_D5c_2();
+    ampl_equations_1h2p_D5d_1();
+    ampl_equations_1h2p_D5d_2();
+    ampl_equations_1h2p_D5e_1();
+    ampl_equations_1h2p_D5e_2();
+    ampl_equations_1h2p_D5f();
+    ampl_equations_1h2p_D5g_1();
+    ampl_equations_1h2p_D5g_2();
+    ampl_equations_1h2p_D5h();
+    ampl_equations_1h2p_D6a();
+    ampl_equations_1h2p_D6b();
+    ampl_equations_1h2p_D6c_1();
+    ampl_equations_1h2p_D6c_2();
+    ampl_equations_1h2p_D7a();
+    ampl_equations_1h2p_D7b();
+    ampl_equations_1h2p_D7c_1();
+    ampl_equations_1h2p_D7c_2();
+    ampl_equations_1h2p_D7d();
+    ampl_equations_1h2p_D7e_1();
+    ampl_equations_1h2p_D7e_2();
+    ampl_equations_1h2p_D8a_1();
+    ampl_equations_1h2p_D8a_2();
+    ampl_equations_1h2p_D8b();
+    ampl_equations_1h2p_D9();
 }
 
 void ampl_equations_1h2p_D1()
 {
-    copy("vvpg", "m2nw");
+    tmplt("m2nw", "ppph", "1101", "1234", NOT_PERM_UNIQUE);
+    update("m2nw", 1.0, "vvpg");
 }
 
 void ampl_equations_1h2p_D2a_1()
@@ -548,7 +538,7 @@ void ampl_equations_1h2p_D3c()
     reorder("e2c_2134", "r2", "2341");
     mult("r1", "r2", "r3", 1);
     perm("r3", "(12)");
-    update("m2nw", 0.5, "r3");  // sign is changed
+    update("m2nw", -0.5, "r3");
     restore_stack_pos(pos);
 }
 
@@ -767,11 +757,11 @@ void ampl_equations_1h2p_D5h()
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pvhh", "r1", "2431");
     mult("r1", "t1c", "i1", 2);
-    reorder("e2c", "e2c_2134", "2134");  // the sign will be changed
+    reorder("e2c", "e2c_2134", "2134");
     reorder("e2c_2134", "r2", "2341");
     mult("i1", "r2", "r3", 1);
     perm("r3", "(12)");
-    update("m2nw", 1.0, "r3"); // sign is changed
+    update("m2nw", -1.0, "r3");
     restore_stack_pos(pos);
 }
 
@@ -891,11 +881,11 @@ void ampl_equations_1h2p_D7d()
     mult("v_", "t1c", "r1", 2);
     reorder("r1", "r2", "21");
     mult("s1c", "r2", "r3", 1);
-    reorder("e2c", "e2c_2134", "2134"); // sign will be changed
+    reorder("e2c", "e2c_2134", "2134");
     reorder("e2c_2134", "t2r", "2341");
     mult("r3", "t2r", "r4", 1);
     perm("r4", "(12)");
-    update("m2nw", 1.0, "r4");  // sign is changed
+    update("m2nw", -1.0, "r4");
     restore_stack_pos(pos);
 }
 
@@ -984,6 +974,34 @@ void ampl_equations_1h2p_D9()
     restore_stack_pos(pos);
 }
 
+void construct_folded_1h2p()
+{
+    /*
+     * effective interaction will be used in folded diagrams F9 and F10
+     */
+    if (cc_opts->hughes_kaldor_1h2p == 0) {
+        copy("veff12_const", "veff12");
+        heff12_ccsd_1h2p_dependent();
+    }
+
+    ampl_equations_1h2p_folded_F1();
+    ampl_equations_1h2p_folded_F2();
+    ampl_equations_1h2p_folded_F3();
+    ampl_equations_1h2p_folded_F4();
+    ampl_equations_1h2p_folded_F5();
+    ampl_equations_1h2p_folded_F6();
+    ampl_equations_1h2p_folded_F7();
+    ampl_equations_1h2p_folded_F8();
+
+    /*
+     * folded terms involving the Heff{1h2p} operator
+     */
+    if (cc_opts->hughes_kaldor_1h2p == 0) {
+        ampl_equations_1h2p_folded_F9();
+        ampl_equations_1h2p_folded_F10();
+    }
+}
+
 void ampl_equations_1h2p_folded_F1()
 {
     dg_stack_pos_t pos = get_stack_pos();
@@ -1017,7 +1035,7 @@ void ampl_equations_1h2p_folded_F4()
     dg_stack_pos_t pos = get_stack_pos();
     reorder("e1c", "e1c_21", "21");
     mult("veff02", "e1c_21", "r1", 1);
-    tmplt("r1_ext", "ppph", "1101", "1234", IS_PERM_UNIQUE);
+    tmplt("r1_ext", "ppph", "1101", "1234", NOT_PERM_UNIQUE);
     expand_diagram("r1", "r1_ext");
     update("m2nw", -1.0, "r1_ext");
     restore_stack_pos(pos);
@@ -1076,44 +1094,92 @@ void ampl_equations_1h2p_folded_F8()
 void ampl_equations_1h2p_folded_F9()
 {
     dg_stack_pos_t pos = get_stack_pos();
+    reorder("veff12", "r1", "124653");
+    mult("r1", "e1c", "r2", 2);
+    tmplt("r2_ext", "ppph", "1101", "1234", NOT_PERM_UNIQUE);
+    expand_diagram("r2", "r2_ext");
+    update("m2nw", 1.0, "r2_ext");
+    restore_stack_pos(pos);
+}
 
+void ampl_equations_1h2p_folded_F10()
+{
+    dg_stack_pos_t pos = get_stack_pos();
+    reorder("veff12", "r1", "126345");
+    reorder("m2c", "r2", "3412");
+    mult("r1", "r2", "r3", 3);
+    reorder("r3", "r4", "1243");
+    update("m2nw", 0.5, "r4");
     restore_stack_pos(pos);
 }
 
 
-void heff12_ccsd()
+/**
+ * The part of Heff{1h2p} which is constant in the 1h2p sector
+ * (no diagrams depending on the T{1h2p} amplitudes).
+ * This part is calculated only once at start.
+ * Result is stored in the "veff12_const" diagram.
+ */
+void heff12_ccsd_const()
 {
     timer_new_entry("12-CCSD-Heff", "1h2p -- CCSD part of eff Hamiltonian");
     timer_start("12-CCSD-Heff");
 
-    printf("\n Construction of the CCSD eff Hamiltonian in the 1h2p sector\n");
+    printf("\n Construction of the CCSD eff Hamiltonian in the 1h2p sector (constant part)\n");
 
-    diag_heff_1h2p_i_jk_c_ab__inv_h2_p13(PT_INF);
-    diag_heff_1h2p_i_jk_c_ab__inv_h3_p12(PT_INF);
-    diag_heff_1h2p_i_jk_c_ab__inv_h1_p23(PT_INF);
-    diag_heff_1h2p_i_jk_c_ab__inv_h3_p23(PT_INF);
+    tmplt("veff12_const", "pphpph", "111111", "123456", NOT_PERM_UNIQUE);
 
-    diag_heff_1h2p_ijk_c_ab__inv_h2_p13(PT_INF);
-    diag_heff_1h2p_ijk_c_ab__inv_h3_p12(PT_INF);
-    diag_heff_1h2p_ijk_c_ab__inv_h1_p23(PT_INF);
-    diag_heff_1h2p_ijk_c_ab__inv_h3_p13(PT_INF);
-    diag_heff_1h2p_ijk_c_ab__inv_h2_p12(PT_INF);
-    diag_heff_1h2p_ijk_c_ab__inv_h3_p23(PT_INF);
+    printf(" [1/4] P(i/jk|c/ab)\n");
+    diag_heff_1h2p_i_jk_c_ab__inv_h2_p13_const(PT_INF);
+    diag_heff_1h2p_i_jk_c_ab__inv_h3_p12_const(PT_INF);
+    diag_heff_1h2p_i_jk_c_ab__inv_h1_p23_const(PT_INF);
+    //diag_heff_1h2p_i_jk_c_ab__inv_h3_p23_m2c(PT_INF);
 
-    diag_heff_1h2p_k_ij_a_bc__inv_h1_p23(PT_INF);
-    diag_heff_1h2p_k_ij_a_bc__inv_h3_p12(PT_INF);
-    diag_heff_1h2p_k_ij_a_bc__inv_h2_p13(PT_INF);
-    //diag_heff_1h2p_k_ij_a_bc__inv_h1_p12(int pt_order);   // S2_1h2p is required
+    printf(" [2/4] P(ijk|c/ab)\n");
+    diag_heff_1h2p_ijk_c_ab__inv_h2_p13_const(PT_INF);
+    diag_heff_1h2p_ijk_c_ab__inv_h3_p12_const(PT_INF);
+    diag_heff_1h2p_ijk_c_ab__inv_h1_p23_const(PT_INF);
+    diag_heff_1h2p_ijk_c_ab__inv_h3_p13_const(PT_INF);
+    diag_heff_1h2p_ijk_c_ab__inv_h2_p12_const(PT_INF);
+    diag_heff_1h2p_ijk_c_ab__inv_h3_p23_const(PT_INF);
 
-    diag_heff_1h2p_k_ij_abc__inv_h1_p23(PT_INF);
-    diag_heff_1h2p_k_ij_abc__inv_h2_p13(PT_INF);
-    diag_heff_1h2p_k_ij_abc__inv_h3_p12(PT_INF);
-    //diag_heff_1h2p_k_ij_abc__inv_h1_p12(PT_INF);
-    diag_heff_1h2p_k_ij_abc__inv_h2_p12(PT_INF);
-    diag_heff_1h2p_k_ij_abc__inv_h3_p13(PT_INF);
+    printf(" [3/4] P(k/ij|a/bc)\n");
+    diag_heff_1h2p_k_ij_a_bc__inv_h1_p23_const(PT_INF);
+    diag_heff_1h2p_k_ij_a_bc__inv_h3_p12_const(PT_INF);
+    diag_heff_1h2p_k_ij_a_bc__inv_h2_p13_const(PT_INF);
+    //diag_heff_1h2p_k_ij_a_bc__inv_h1_p12_m2c(PT_INF);   // S2_1h2p is required
+
+    printf(" [4/4] P(k/ij|abc)\n");
+    diag_heff_1h2p_k_ij_abc__inv_h1_p23_const(PT_INF);
+    diag_heff_1h2p_k_ij_abc__inv_h2_p13_const(PT_INF);
+    diag_heff_1h2p_k_ij_abc__inv_h3_p12_const(PT_INF);
+    //diag_heff_1h2p_k_ij_abc__inv_h1_p12_m2c(PT_INF);   // S2_1h2p is required
+    diag_heff_1h2p_k_ij_abc__inv_h2_p12_const(PT_INF);
+    diag_heff_1h2p_k_ij_abc__inv_h3_p13_const(PT_INF);
+
+    printf("\n");
 
     timer_stop("12-CCSD-Heff");
 }
+
+
+/**
+ * The part of Heff{1h2p} which is dependent on the T{1h2p} amplitudes.
+ * Should be recalculated at each iteration.
+ * Result is added to the "veff12" diagram.
+ */
+void heff12_ccsd_1h2p_dependent()
+{
+    timer_new_entry("12-CCSD-Heff", "1h2p -- CCSD part of eff Hamiltonian");
+    timer_start("12-CCSD-Heff");
+
+    diag_heff_1h2p_i_jk_c_ab__inv_h3_p23_m2c(PT_INF);
+    diag_heff_1h2p_k_ij_a_bc__inv_h1_p12_m2c(PT_INF);
+    diag_heff_1h2p_k_ij_abc__inv_h1_p12_m2c(PT_INF);
+
+    timer_stop("12-CCSD-Heff");
+}
+
 
 
 /*
@@ -1121,54 +1187,54 @@ void heff12_ccsd()
  * Diagrams included:
  * (i/jk|c/ab): T1b T3a T3d T4b T5d T7c T8a T8e T10a
  */
-void diag_heff_1h2p_i_jk_c_ab__inv_h2_p13(int pt_order)
+void diag_heff_1h2p_i_jk_c_ab__inv_h2_p13_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hpph", "0100", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "hpph", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1b
-        reorder("hvhp", "r2", "1243");
+        reorder("gvhv", "r2", "1243");
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3a
         reorder("ph", "phr_", "21");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1-g", "s2c_21", "2143");
         reorder("s2c_21", "r1", "1243");
         mult("r1", "phr_", "r2", 1);
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3d
-        reorder("s2c", "s2c_21", "2143");
-        reorder("pphp", "r2", "4312");
+        reorder("s2c-g", "s2c_21", "2143");
+        reorder("pphv", "r2", "4312");
         mult("s2c_21", "r2", "r3", 2);
         update("i1", -0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4b
-        reorder("t1c", "r2", "21");
-        mult("hvhh", "r2", "r3", 1);
+        reorder("t1c-v", "r2", "21");
+        mult("gvhh", "r2", "r3", 1);
         reorder("r3", "r4", "1243");
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
 
         // T7c
-        reorder("pphp", "r1", "4312");
+        reorder("pphv", "r1", "4312");
         mult("s1c", "r1", "r2", 1);
-        mult("t1c", "r2", "r3", 1);
+        mult("t1c-g", "r2", "r3", 1);
         update("i1", -1.0, "r3");
         restore_stack_pos(pos2);
 
         // T8a
         reorder("pphh", "r1", "4231");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1-g", "s2c_21", "2143");
         reorder("s2c_21", "r3", "1243");
         mult("r1", "t1c", "r4", 2);
         mult("r3", "r4", "r5", 1);
@@ -1177,8 +1243,8 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h2_p13(int pt_order)
 
         // T8e
         reorder("pphh", "r1", "3412");
-        reorder("t1c", "r3", "21");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("t1c-v", "r3", "21");
+        reorder("s2c-g", "s2c_21", "2143");
         mult("s2c_21", "r1", "r2", 2);
         mult("r2", "r3", "r4", 1);
         reorder("r4", "r5", "1243");
@@ -1186,10 +1252,10 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h2_p13(int pt_order)
         restore_stack_pos(pos2);
 
         // T10a
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("pphh", "r2", "3412");
         mult("s1c", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "1243");
         update("i1", 1.0, "r6");
@@ -1197,63 +1263,61 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h2_p13(int pt_order)
     }
 
     finish:
-    reorder("e2c", "r1", "3412");
+    reorder("e2c-v1", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
-    diagram_stack_erase("r3");
-
     perm("r4", "(13|46)");
     reorder("r4", "r5", "132465"); // interchange electrons 2 <-> 3
-    update("m3nw", 1.0, "r5");
+    update("veff12_const", 1.0, "r5");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_i_jk_c_ab__inv_h3_p12(int pt_order)
+void diag_heff_1h2p_i_jk_c_ab__inv_h3_p12_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "phhh", "1010", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "phhh", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1b
-        reorder("vhhg", "r2", "1243");
+        reorder("vghg", "r2", "1243");
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3a
         reorder("ph", "phr_", "21");
-        reorder("e2c", "r1", "1243");
+        reorder("e2c-g", "r1", "1243");
         mult("r1", "phr_", "r2", 1);
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3d
         reorder("pphg", "r2", "4312");
-        mult("s2c", "r2", "r3", 2);
+        mult("s2c-g", "r2", "r3", 2);
         update("i1", -0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4b
         reorder("h1c", "r2", "21");
-        mult("vhhh", "r2", "r3", 1);
+        mult("vghh", "r2", "r3", 1);
         reorder("r3", "r4", "1243");
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
 
         // T7c
         reorder("pphg", "r1", "4312");
-        mult("t1c", "r1", "r2", 1);
+        mult("t1c-g", "r1", "r2", 1);
         mult("s1c", "r2", "r3", 1);
         update("i1", -1.0, "r3");
         restore_stack_pos(pos2);
 
         // T8a
         reorder("pphh", "r1", "4231");
-        reorder("e2c", "r3", "1243");
+        reorder("e2c-g", "r3", "1243");
         mult("r1", "t1c", "r4", 2);
         mult("r3", "r4", "r5", 1);
         update("i1", -1.0, "r5");
@@ -1262,7 +1326,7 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h3_p12(int pt_order)
         // T8e
         reorder("pphh", "r1", "3412");
         reorder("h1c", "r3", "21");
-        mult("s2c", "r1", "r2", 2);
+        mult("s2c-g", "r1", "r2", 2);
         mult("r2", "r3", "r4", 1);
         reorder("r4", "r5", "1243");
         update("i1", 0.5, "r5");
@@ -1271,7 +1335,7 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h3_p12(int pt_order)
         // T10a
         reorder("h1c", "r1", "21");
         reorder("pphh", "r2", "3412");
-        mult("t1c", "r2", "r3", 1);
+        mult("t1c-g", "r2", "r3", 1);
         mult("s1c", "r3", "r4", 1);
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "1243");
@@ -1280,54 +1344,52 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h3_p12(int pt_order)
     }
 
     finish:
-    reorder("s2c", "r1", "3412");
+    reorder("s2c-v12", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
-    diagram_stack_erase("r3");
-
     perm("r4", "(12)");
-    update("m3nw", 1.0, "r4");
+    update("veff12_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_i_jk_c_ab__inv_h1_p23(int pt_order)
+void diag_heff_1h2p_i_jk_c_ab__inv_h1_p23_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "ppph", "1100", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "ppph", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1b
-        reorder("vvhp", "r2", "1243");
+        reorder("vvhv", "r2", "1243");
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3a
         reorder("ph", "phr_", "21");
-        reorder("x2c", "r1", "1243");
+        reorder("x2c-v2", "r1", "1243");
         mult("r1", "phr_", "r2", 1);
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3d
-        reorder("pphp", "r2", "4312");
+        reorder("pphv", "r2", "4312");
         mult("x2c", "r2", "r3", 2);
         update("i1", -0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4b
-        reorder("t1c", "r2", "21");
+        reorder("t1c-v", "r2", "21");
         mult("vvhh", "r2", "r3", 1);
         reorder("r3", "r4", "1243");
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
 
         // T7c
-        reorder("pphp", "r1", "4312");
+        reorder("pphv", "r1", "4312");
         mult("s1c", "r1", "r2", 1);
         mult("s1c", "r2", "r3", 1);
         update("i1", -1.0, "r3");
@@ -1335,7 +1397,7 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h1_p23(int pt_order)
 
         // T8a
         reorder("pphh", "r1", "4231");
-        reorder("x2c", "r3", "1243");
+        reorder("x2c-v2", "r3", "1243");
         mult("r1", "t1c", "r4", 2);
         mult("r3", "r4", "r5", 1);
         update("i1", -1.0, "r5");
@@ -1343,7 +1405,7 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h1_p23(int pt_order)
 
         // T8e
         reorder("pphh", "r1", "3412");
-        reorder("t1c", "r3", "21");
+        reorder("t1c-v", "r3", "21");
         mult("x2c", "r1", "r2", 2);
         mult("r2", "r3", "r4", 1);
         reorder("r4", "r5", "1243");
@@ -1351,7 +1413,7 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h1_p23(int pt_order)
         restore_stack_pos(pos2);
 
         // T10a
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("pphh", "r2", "3412");
         mult("s1c", "r2", "r3", 1);
         mult("s1c", "r3", "r4", 1);
@@ -1362,18 +1424,16 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h1_p23(int pt_order)
     }
 
     finish:
-    reorder("h2c", "r1", "3412");
+    reorder("h2c-g1-v", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
-    diagram_stack_erase("r3");
-
     perm("r4", "(56)");
     reorder("r4", "r5", "321654");
-    update("m3nw", 1.0, "r5");
+    update("veff12_const", 1.0, "r5");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_i_jk_c_ab__inv_h3_p23(int pt_order)
+void diag_heff_1h2p_i_jk_c_ab__inv_h3_p23_m2c(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
@@ -1390,11 +1450,12 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h3_p23(int pt_order)
         restore_stack_pos(pos2);
 
         // T3a
-        /*reorder("ph", "phr_", "21");
-        reorder("t2c", "r1", "1243");
+        // m2c-dependent
+        reorder("ph", "phr_", "21");
+        reorder("m2c", "r1", "1243");
         mult("r1", "phr_", "r2", 1);
         update("i1", -1.0, "r2");
-        restore_stack_pos(pos2);*/
+        restore_stack_pos(pos2);
 
         // T3d
         reorder("pphg", "r2", "4312");
@@ -1417,12 +1478,13 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h3_p23(int pt_order)
         restore_stack_pos(pos2);
 
         // T8a
-        /*reorder("pphh", "r1", "4231");
-        reorder("t2c", "r3", "1243");
+        // m2c-dependent
+        reorder("pphh", "r1", "4231");
+        reorder("m2c", "r3", "1243");
         mult("r1", "t1c", "r4", 2);
         mult("r3", "r4", "r5", 1);
         update("i1", -1.0, "r5");
-        restore_stack_pos(pos2);*/
+        restore_stack_pos(pos2);
 
         // T8e
         reorder("pphh", "r1", "3412");
@@ -1445,13 +1507,11 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h3_p23(int pt_order)
     }
 
     finish:
-    reorder("t2c", "r1", "3412");
+    reorder("t2c-v12-g1", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
-    diagram_stack_erase("r3");
-
     reorder("r4", "r5", "231546");
-    update("m3nw", -1.0, "r5");  // the sign is changed from +1 to -1
+    update("veff12", -1.0, "r5");  // the sign is changed from +1 to -1
     restore_stack_pos(pos);
 }
 
@@ -1461,35 +1521,35 @@ void diag_heff_1h2p_i_jk_c_ab__inv_h3_p23(int pt_order)
  * Diagrams included:
  * (ijk|c/ab):  T3c T4c T7b T8b
  */
-void diag_heff_1h2p_ijk_c_ab__inv_h2_p13(int pt_order)
+void diag_heff_1h2p_ijk_c_ab__inv_h2_p13_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hpph", "0100", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "hpph", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3c
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r1", "2413");
-        reorder("hphh", "r2", "3142");
+        reorder("gphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "4123");
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
 
         // T4c
-        reorder("pvhp", "r0", "2431");
-        mult("t1c", "r0", "r1", 1);
+        reorder("pvhv", "r0", "2431");
+        mult("t1c-g", "r0", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
 
         // T7b
-        reorder("t1c", "r1", "21");
-        reorder("hphh", "r2", "1324");
+        reorder("t1c-v", "r1", "21");
+        reorder("gphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
         mult("s1c", "r3", "r4", 1);
         reorder("r4", "r5", "3124");
@@ -1498,37 +1558,37 @@ void diag_heff_1h2p_ijk_c_ab__inv_h2_p13(int pt_order)
 
         // T8b
         reorder("pphh", "r1", "3142");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r2", "2413");
         mult("r2", "r1", "r3", 2);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
     }
 
     finish:
-    reorder("e2c", "r1", "3412");
+    reorder("e2c-v", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
     perm("r4", "(13|46)");
-    reorder("r4", "r5", "132465");
-    update("m3nw", 1.0, "r5");
+    reorder("r4", "r5", "132465"); // interchange electrons: 2 <-> 3
+    update("veff12_const", 1.0, "r5");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_ijk_c_ab__inv_h3_p12(int pt_order)
+void diag_heff_1h2p_ijk_c_ab__inv_h3_p12_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "phhh", "1010", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "phhh", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3c
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r1", "2413");
         reorder("vphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
@@ -1537,7 +1597,7 @@ void diag_heff_1h2p_ijk_c_ab__inv_h3_p12(int pt_order)
         restore_stack_pos(pos2);
 
         // T4c
-        reorder("phhg", "r0", "2431");
+        reorder("pghg", "r0", "2431");
         mult("s1c", "r0", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
@@ -1546,14 +1606,14 @@ void diag_heff_1h2p_ijk_c_ab__inv_h3_p12(int pt_order)
         reorder("h1c", "r1", "21");
         reorder("vphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         reorder("r4", "r5", "3124");
         update("i1", 1.0, "r5");
         restore_stack_pos(pos2);
 
         // T8b
         reorder("pphh", "r1", "3142");
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r2", "2413");
         mult("r2", "r1", "r3", 2);
         mult("s1c", "r3", "r4", 1);
@@ -1562,27 +1622,27 @@ void diag_heff_1h2p_ijk_c_ab__inv_h3_p12(int pt_order)
     }
 
     finish:
-    reorder("s2c", "r1", "3412");
+    reorder("s2c-v12", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
     perm("r4", "(12)");
-    update("m3nw", 1.0, "r4");
+    update("veff12_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_ijk_c_ab__inv_h1_p23(int pt_order)
+void diag_heff_1h2p_ijk_c_ab__inv_h1_p23_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "ppph", "1100", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "ppph", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3c
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r1", "2413");
         reorder("vphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
@@ -1591,13 +1651,13 @@ void diag_heff_1h2p_ijk_c_ab__inv_h1_p23(int pt_order)
         restore_stack_pos(pos2);
 
         // T4c
-        reorder("pvhp", "r0", "2431");
+        reorder("pvhv", "r0", "2431");
         mult("s1c", "r0", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
 
         // T7b
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("vphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
         mult("s1c", "r3", "r4", 1);
@@ -1607,7 +1667,7 @@ void diag_heff_1h2p_ijk_c_ab__inv_h1_p23(int pt_order)
 
         // T8b
         reorder("pphh", "r1", "3142");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r2", "2413");
         mult("r2", "r1", "r3", 2);
         mult("s1c", "r3", "r4", 1);
@@ -1616,21 +1676,21 @@ void diag_heff_1h2p_ijk_c_ab__inv_h1_p23(int pt_order)
     }
 
     finish:
-    reorder("h2c", "r1", "3412");
+    reorder("h2c-g1-v", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
     perm("r4", "(23|56)");
     reorder("r4", "r5", "321654");
-    update("m3nw", 1.0, "r5");
+    update("veff12_const", 1.0, "r5");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_ijk_c_ab__inv_h3_p13(int pt_order)
+void diag_heff_1h2p_ijk_c_ab__inv_h3_p13_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hphh", "0110", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "hphh", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
@@ -1639,20 +1699,20 @@ void diag_heff_1h2p_ijk_c_ab__inv_h3_p13(int pt_order)
         // T3c
         reorder("e2c", "e2c_2134", "2134");
         reorder("e2c_2134", "r1", "2413");
-        reorder("hphh", "r2", "3142");
+        reorder("gphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "4123");
         update("i1", 1.0, "r4"); // change sign: x -1
         restore_stack_pos(pos2);
 
         // T4c
-        mult("t1c", "pvhg", "r1", 1);
+        mult("t1c-g", "pvhg", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
 
         // T7b
         reorder("h1c", "r1", "21");
-        reorder("hphh", "r2", "1324");
+        reorder("gphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
         mult("s1c", "r3", "r4", 1);
         reorder("r4", "r5", "3124");
@@ -1664,34 +1724,34 @@ void diag_heff_1h2p_ijk_c_ab__inv_h3_p13(int pt_order)
         reorder("pphh", "r1", "3142");
         reorder("e2c_2134", "r2", "2413");
         mult("r2", "r1", "r3", 2);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         update("i1", 1.0, "r4"); // change sign: x -1
         restore_stack_pos(pos2);
     }
 
     finish:
-    reorder("s2c", "r1", "3412");
+    reorder("s2c-v12", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
     perm("r4", "(13)");
     reorder("r4", "r5", "132456");
-    update("m3nw", -1.0, "r5"); // change sign: x -1
+    update("veff12_const", 1.0, "r5");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_ijk_c_ab__inv_h2_p12(int pt_order)
+void diag_heff_1h2p_ijk_c_ab__inv_h2_p12_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "phph", "1000", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "phph", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3c
-        reorder("t2c", "r1", "2413");
+        reorder("t2c-v1-g1", "r1", "2413");
         reorder("vphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "4123");
@@ -1699,22 +1759,22 @@ void diag_heff_1h2p_ijk_c_ab__inv_h2_p12(int pt_order)
         restore_stack_pos(pos2);
 
         // T4c
-        mult("s1c", "phhp", "r1", 1);
+        mult("s1c", "pghv", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
 
         // T7b
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("vphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         reorder("r4", "r5", "3124");
         update("i1", 1.0, "r5");
         restore_stack_pos(pos2);
 
         // T8b
         reorder("pphh", "r1", "3142");
-        reorder("t2c", "r2", "2413");
+        reorder("t2c-v1-g1", "r2", "2413");
         mult("r2", "r1", "r3", 2);
         mult("s1c", "r3", "r4", 1);
         update("i1", -1.0, "r4");
@@ -1722,16 +1782,16 @@ void diag_heff_1h2p_ijk_c_ab__inv_h2_p12(int pt_order)
     }
 
     finish:
-    reorder("e2c", "r1", "3412");
+    reorder("e2c-v", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
     perm("r4", "(12|46)");
-    reorder("r4", "r5", "123465");
-    update("m3nw", -1.0, "r5"); // change sign: x -1
+    reorder("r4", "r5", "123465");     // <ijk|abc> -> <ijk|acb>
+    update("veff12_const", -1.0, "r5"); // change sign: x -1
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_ijk_c_ab__inv_h3_p23(int pt_order)
+void diag_heff_1h2p_ijk_c_ab__inv_h3_p23_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
@@ -1776,12 +1836,12 @@ void diag_heff_1h2p_ijk_c_ab__inv_h3_p23(int pt_order)
     }
 
     finish:
-    reorder("t2c", "r1", "3412");
+    reorder("t2c-v12-g1", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
     perm("r4", "(23)");
     reorder("r4", "r5", "231546");
-    update("m3nw", -1.0, "r5"); // change sign: x -1
+    update("veff12_const", -1.0, "r5"); // change sign: x -1
     restore_stack_pos(pos);
 }
 
@@ -1791,37 +1851,38 @@ void diag_heff_1h2p_ijk_c_ab__inv_h3_p23(int pt_order)
  * Diagrams included:
  * (k/ij|a/bc): T1a T3e T4a T5e T7d T8d T10b
  */
-void diag_heff_1h2p_k_ij_a_bc__inv_h1_p23(int pt_order)
+void diag_heff_1h2p_k_ij_a_bc__inv_h1_p23_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "pppp", "1000", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "pppp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1a
-        reorder("pvpp", "r1", "2341");
+        reorder("pvvv", "r1", "2341");
         update("i1", 1.0, "r1");
         restore_stack_pos(pos2);
 
         // T3e
-        reorder("t2c", "r1", "3412");
+        reorder("t2c-v12", "r1", "3412");
         mult("r1", "pvhh", "r2", 2);
         reorder("r2", "r3", "4123");
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4a
-        mult("ppppr", "s1c", "r1", 1);
+        reorder("ppvv", "r0", "3412");
+        mult("r0", "s1c", "r1", 1);
         reorder("r1", "r2", "4123");
         update("i1", 1.0, "r2");
         restore_stack_pos(pos2);
 
         // T7d
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         mult("r1", "pvhh", "r2", 1);
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "4123");
@@ -1829,14 +1890,14 @@ void diag_heff_1h2p_k_ij_a_bc__inv_h1_p23(int pt_order)
         restore_stack_pos(pos2);
 
         // T8d
-        reorder("t2c", "r1", "3412");
+        reorder("t2c-v12", "r1", "3412");
         mult("r1", "pphh", "r2", 2);
         mult("s1c", "r2", "r3", 1);
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T10b
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         mult("r1", "pphh", "r2", 1);
         mult("r1", "r2", "r3", 1);
         mult("s1c", "r3", "r4", 1);
@@ -1845,114 +1906,112 @@ void diag_heff_1h2p_k_ij_a_bc__inv_h1_p23(int pt_order)
     }
 
     finish:
-    reorder("e2c", "e2c_21", "2143");
+    reorder("e2c-g", "e2c_21", "2143");
     mult("e2c_21", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    diagram_stack_erase("r2");
     perm("r3", "(23)");
-    reorder("r3", "r4", "321654");
-    update("m3nw", 1.0, "r4");
+    reorder("r3", "r4", "321654");  // 1 <-> 3
+    update("veff12_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_k_ij_a_bc__inv_h3_p12(int pt_order)
+void diag_heff_1h2p_k_ij_a_bc__inv_h3_p12_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hphp", "0010", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "hphp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1a
-        reorder("phpg", "r1", "2341");
+        reorder("pgvg", "r1", "2341");
         update("i1", 1.0, "r1");
         restore_stack_pos(pos2);
 
         // T3e
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-v", "h2c_21", "2143");
         reorder("h2c_21", "r1", "3412");
-        mult("r1", "phhh", "r2", 2);
+        mult("r1", "pghh", "r2", 2);
         reorder("r2", "r3", "4123");
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4a
-        reorder("pppg", "pppgr", "3412");
-        mult("pppgr", "t1c", "r1", 1);
+        reorder("ppvg", "r0", "3412");
+        mult("r0", "t1c-g", "r1", 1);
         reorder("r1", "r2", "4123");
         update("i1", 1.0, "r2");
         restore_stack_pos(pos2);
 
         // T7d
         reorder("h1c", "r0", "21");
-        reorder("t1c", "r1", "21");
-        mult("r0", "phhh", "r2", 1);
+        reorder("t1c-v", "r1", "21");
+        mult("r0", "pghh", "r2", 1);
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "4123");
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
 
         // T8d
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-v", "h2c_21", "2143");
         reorder("h2c_21", "r1", "3412");
         mult("r1", "pphh", "r2", 2);
-        mult("t1c", "r2", "r3", 1);
+        mult("t1c-g", "r2", "r3", 1);
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T10b
         reorder("h1c", "r0", "21");
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         mult("r0", "pphh", "r2", 1);
         mult("r1", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
     }
 
     finish:
-    mult("x2c", "i1", "r2", 1);
+    mult("x2c-v1", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    diagram_stack_erase("r2");
     perm("r3", "(45)");
-    update("m3nw", 1.0, "r3");
+    update("veff12_const", 1.0, "r3");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_k_ij_a_bc__inv_h2_p13(int pt_order)
+void diag_heff_1h2p_k_ij_a_bc__inv_h2_p13_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "phpp", "1100", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "phpp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1a
-        reorder("pvgp", "r1", "2341");
+        reorder("pvgv", "r1", "2341");
         update("i1", 1.0, "r1");
         restore_stack_pos(pos2);
 
         // T3e
-        reorder("h2c", "r1", "3412");
+        reorder("h2c-v", "r1", "3412");
         mult("r1", "pvhh", "r2", 2);
         reorder("r2", "r3", "4123");
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4a
-        mult("ppgp", "s1c", "r1", 1);
+        mult("ppgv", "s1c", "r1", 1);
         reorder("r1", "r2", "4123");
         update("i1", 1.0, "r2");
         restore_stack_pos(pos2);
 
         // T7d
-        reorder("t1c", "t1c_21", "21");
+        reorder("t1c-v", "t1c_21", "21");
         reorder("h1c", "h1c_21", "21");
         mult("t1c_21", "pvhh", "r2", 1);
         mult("h1c_21", "r2", "r3", 1);
@@ -1961,7 +2020,7 @@ void diag_heff_1h2p_k_ij_a_bc__inv_h2_p13(int pt_order)
         restore_stack_pos(pos2);
 
         // T8d
-        reorder("h2c", "r1", "3412");
+        reorder("h2c-v", "r1", "3412");
         mult("r1", "pphh", "r2", 2);
         mult("s1c", "r2", "r3", 1);
         update("i1", 0.5, "r3");
@@ -1969,7 +2028,7 @@ void diag_heff_1h2p_k_ij_a_bc__inv_h2_p13(int pt_order)
 
         // T10b
         reorder("h1c", "h1c_21", "21");
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         mult("r1", "pphh", "r2", 1);
         mult("h1c_21", "r2", "r3", 1);
         mult("s1c", "r3", "r4", 1);
@@ -1978,77 +2037,77 @@ void diag_heff_1h2p_k_ij_a_bc__inv_h2_p13(int pt_order)
     }
 
     finish:
-    mult("s2c", "i1", "r2", 1);
+    mult("s2c-v1-g", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    diagram_stack_erase("r2");
     perm("r3", "(13|46)");
     reorder("r3", "r4", "132465");
-    update("m3nw", 1.0, "r4");
+    update("veff12_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
 // S_2^{1h2p} is required
-/*void diag_heff_1h2p_k_ij_a_bc__inv_h1_p12(int pt_order)
+void diag_heff_1h2p_k_ij_a_bc__inv_h1_p12_m2c(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hppp", "0000", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "hppp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1a
-        reorder("phpp", "r1", "2341");
+        reorder("pgvv", "r1", "2341");
         update("i1", 1.0, "r1");
         restore_stack_pos(pos2);
 
         // T3e
-        reorder("t2c", "r1", "3412");
-        mult("r1", "phhh", "r2", 2);
+        reorder("t2c-v12", "r1", "3412");
+        mult("r1", "pghh", "r2", 2);
         reorder("r2", "r3", "4123");
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4a
-        mult("ppppr", "t1c", "r1", 1);
+        reorder("ppvv", "r0", "3412");
+        mult("r0", "t1c-g", "r1", 1);
         reorder("r1", "r2", "4123");
         update("i1", 1.0, "r2");
         restore_stack_pos(pos2);
 
         // T7d
-        reorder("t1c", "r1", "21");
-        mult("r1", "phhh", "r2", 1);
+        reorder("t1c-v", "r1", "21");
+        mult("r1", "pghh", "r2", 1);
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "4123");
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
 
         // T8d
-        reorder("t2c", "r1", "3412");
+        reorder("t2c-v12", "r1", "3412");
         mult("r1", "pphh", "r2", 2);
-        mult("t1c", "r2", "r3", 1);
+        mult("t1c-g", "r2", "r3", 1);
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T10b
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         mult("r1", "pphh", "r2", 1);
         mult("r1", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
     }
 
     finish:
-    mult("t2c", "i1", "r2", 1);
+    reorder("m2c", "m2c_21", "2143");
+    mult("m2c_21", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    diagram_stack_erase("r2");
-    perm("r3", "(3/12|4/56)");
-    update("t3nw", 1.0, "r3");
+    reorder("r3", "r4", "123654");
+    update("veff12", -1.0, "r4");
     restore_stack_pos(pos);
-}*/
+}
 
 
 /*
@@ -2056,20 +2115,20 @@ void diag_heff_1h2p_k_ij_a_bc__inv_h2_p13(int pt_order)
  * Diagrams included:
  * (k/ij|abc):  T3b T4d T7a T8c
  */
-void diag_heff_1h2p_k_ij_abc__inv_h1_p23(int pt_order)
+void diag_heff_1h2p_k_ij_abc__inv_h1_p23_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "pppp", "1000", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "pppp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3b
-        reorder("ppph", "r1", "1342");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("ppvh", "r1", "1342");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r2", "2413");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "1324");
@@ -2078,17 +2137,17 @@ void diag_heff_1h2p_k_ij_abc__inv_h1_p23(int pt_order)
         restore_stack_pos(pos2);
 
         // T4d
-        reorder("pvhp", "r0", "2431");
+        reorder("pvhv", "r0", "2431");
         reorder("r0", "r1", "4123");
-        reorder("t1c", "r2", "21");
+        reorder("t1c-v", "r2", "21");
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "2431");
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
 
         // T7a
-        reorder("t1c", "r1", "21");
-        reorder("ppph", "r2", "1342");
+        reorder("t1c-v", "r1", "21");
+        reorder("ppvh", "r2", "1342");
         mult("r2", "s1c", "r3", 1);
         reorder("r3", "r4", "1423");
         mult("r4", "r1", "r5", 1);
@@ -2097,8 +2156,8 @@ void diag_heff_1h2p_k_ij_abc__inv_h1_p23(int pt_order)
         restore_stack_pos(pos2);
 
         // T8c
-        reorder("t1c", "r1", "21");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("t1c-v", "r1", "21");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r2", "2413");
         reorder("pphh", "r3", "1342");
         mult("r3", "r2", "r4", 2);
@@ -2110,21 +2169,21 @@ void diag_heff_1h2p_k_ij_abc__inv_h1_p23(int pt_order)
     }
 
     finish:
-    reorder("e2c", "e2c_21", "2143");
+    reorder("e2c-g", "e2c_21", "2143");
     mult("e2c_21", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
     perm("r3", "(23|56)");
     reorder("r3", "r4", "321654");  // interchange electrons 1 <-> 3
-    update("m3nw", 1.0, "r4");
+    update("veff12_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_k_ij_abc__inv_h2_p13(int pt_order)
+void diag_heff_1h2p_k_ij_abc__inv_h2_p13_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "phpp", "1100", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "phpp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
@@ -2132,7 +2191,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h2_p13(int pt_order)
 
         // T3b
         reorder("ppgh", "r1", "1342");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r2", "2413");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "1324");
@@ -2141,7 +2200,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h2_p13(int pt_order)
         restore_stack_pos(pos2);
 
         // T4d
-        reorder("pvhp", "r0", "2431");
+        reorder("pvhv", "r0", "2431");
         reorder("r0", "r1", "4123");
         reorder("h1c", "r2", "21");
         mult("r1", "r2", "r3", 1);
@@ -2150,7 +2209,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h2_p13(int pt_order)
         restore_stack_pos(pos2);
 
         // T7a
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("ppgh", "r2", "1342");
         mult("r2", "s1c", "r3", 1);
         reorder("r3", "r4", "1423");
@@ -2161,7 +2220,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h2_p13(int pt_order)
 
         // T8c
         reorder("h1c", "r1", "21");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r2", "2413");
         reorder("pphh", "r3", "1342");
         mult("r3", "r2", "r4", 2);
@@ -2173,28 +2232,28 @@ void diag_heff_1h2p_k_ij_abc__inv_h2_p13(int pt_order)
     }
 
     finish:
-    mult("s2c", "i1", "r2", 1);
+    mult("s2c-v1-g", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
     perm("r3", "(13|46)");
     reorder("r3", "r4", "132465"); // interchange electrons 2 <-> 3
-    update("m3nw", 1.0, "r4");
+    update("veff12_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_k_ij_abc__inv_h3_p12(int pt_order)
+void diag_heff_1h2p_k_ij_abc__inv_h3_p12_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hphp", "0010", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "hphp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3b
-        reorder("ppph", "r1", "1342");
-        reorder("h2c", "h2c_21", "2143");
+        reorder("ppvh", "r1", "1342");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r2", "2413");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "1324");
@@ -2203,9 +2262,9 @@ void diag_heff_1h2p_k_ij_abc__inv_h3_p12(int pt_order)
         restore_stack_pos(pos2);
 
         // T4d
-        reorder("phhg", "r0", "2431");
+        reorder("pghg", "r0", "2431");
         reorder("r0", "r1", "4123");
-        reorder("t1c", "r2", "21");
+        reorder("t1c-v", "r2", "21");
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "2431");
         update("i1", -1.0, "r4");
@@ -2213,8 +2272,8 @@ void diag_heff_1h2p_k_ij_abc__inv_h3_p12(int pt_order)
 
         // T7a
         reorder("h1c", "r1", "21");
-        reorder("ppph", "r2", "1342");
-        mult("r2", "t1c", "r3", 1);
+        reorder("ppvh", "r2", "1342");
+        mult("r2", "t1c-g", "r3", 1);
         reorder("r3", "r4", "1423");
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "2341");
@@ -2222,8 +2281,8 @@ void diag_heff_1h2p_k_ij_abc__inv_h3_p12(int pt_order)
         restore_stack_pos(pos2);
 
         // T8c
-        reorder("t1c", "r1", "21");
-        reorder("h2c", "h2c_21", "2143");
+        reorder("t1c-v", "r1", "21");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r2", "2413");
         reorder("pphh", "r3", "1342");
         mult("r3", "r2", "r4", 2);
@@ -2235,15 +2294,15 @@ void diag_heff_1h2p_k_ij_abc__inv_h3_p12(int pt_order)
     }
 
     finish:
-    mult("x2c", "i1", "r2", 1);
+    mult("x2c-v1", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
     perm("r3", "(45)");
-    update("m3nw", 1.0, "r3");
+    update("veff12_const", 1.0, "r3");
     restore_stack_pos(pos);
 }
 
 // S_2^{1h2p} is required
-void diag_heff_1h2p_k_ij_abc__inv_h1_p12(int pt_order)
+void diag_heff_1h2p_k_ij_abc__inv_h1_p12_m2c(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
@@ -2252,7 +2311,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h1_p12(int pt_order)
         return;
     }
 
-    tmplt("i1", "hppp", "0000", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "hppp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
@@ -2263,8 +2322,8 @@ void diag_heff_1h2p_k_ij_abc__inv_h1_p12(int pt_order)
         }
 
         // T3b
-        reorder("ppph", "r1", "1342");
-        reorder("t2c", "r2", "2413");
+        reorder("ppvh", "r1", "1342");
+        reorder("t2c-v1-g1", "r2", "2413");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "1324");
         reorder("r4", "r5", "2341");
@@ -2276,8 +2335,8 @@ void diag_heff_1h2p_k_ij_abc__inv_h1_p12(int pt_order)
         }
 
         // T4d
-        reorder("phhp", "r1", "4123");
-        reorder("t1c", "r2", "21");
+        reorder("pghv", "r1", "4123");
+        reorder("t1c-v", "r2", "21");
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "2431");
         update("i1", -1.0, "r4");
@@ -2288,9 +2347,9 @@ void diag_heff_1h2p_k_ij_abc__inv_h1_p12(int pt_order)
         }
 
         // T7a
-        reorder("t1c", "r1", "21");
-        reorder("ppph", "r2", "1342");
-        mult("r2", "t1c", "r3", 1);
+        reorder("t1c-v", "r1", "21");
+        reorder("ppvh", "r2", "1342");
+        mult("r2", "t1c-g", "r3", 1);
         reorder("r3", "r4", "1423");
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "2341");
@@ -2298,8 +2357,8 @@ void diag_heff_1h2p_k_ij_abc__inv_h1_p12(int pt_order)
         restore_stack_pos(pos2);
 
         // T8c
-        reorder("t1c", "r1", "21");
-        reorder("t2c", "r2", "2413");
+        reorder("t1c-v", "r1", "21");
+        reorder("t2c-v1-g1", "r2", "2413");
         reorder("pphh", "r3", "1342");
         mult("r3", "r2", "r4", 2);
         reorder("r4", "r5", "1342");
@@ -2310,19 +2369,21 @@ void diag_heff_1h2p_k_ij_abc__inv_h1_p12(int pt_order)
     }
 
     finish:
-    mult("t2c", "i1", "r2", 1);
+    reorder("m2c", "m2c_21", "2143");
+    mult("m2c_21", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    perm("r3", "(3/12|456)");
-    update("t3nw", 1.0, "r3");
+    perm("r3", "(56)");
+    reorder("r3", "r4", "123654");
+    update("veff12", -1.0, "r4");
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_k_ij_abc__inv_h2_p12(int pt_order)
+void diag_heff_1h2p_k_ij_abc__inv_h2_p12_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hhpp", "0100", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "hhpp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
@@ -2330,7 +2391,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h2_p12(int pt_order)
 
         // T3b
         reorder("ppgh", "r1", "1342");
-        reorder("t2c", "r2", "2413");
+        reorder("t2c-v1-g1", "r2", "2413");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "1324");
         reorder("r4", "r5", "2341");
@@ -2338,7 +2399,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h2_p12(int pt_order)
         restore_stack_pos(pos2);
 
         // T4d
-        reorder("phhp", "r1", "4123");
+        reorder("pghv", "r1", "4123");
         reorder("h1c", "r2", "21");
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "2431");
@@ -2346,9 +2407,9 @@ void diag_heff_1h2p_k_ij_abc__inv_h2_p12(int pt_order)
         restore_stack_pos(pos2);
 
         // T7a
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("ppgh", "r2", "1342");
-        mult("r2", "t1c", "r3", 1);
+        mult("r2", "t1c-g", "r3", 1);
         reorder("r3", "r4", "1423");
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "2341");
@@ -2357,7 +2418,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h2_p12(int pt_order)
 
         // T8c
         reorder("h1c", "r1", "21");
-        reorder("t2c", "r2", "2413");
+        reorder("t2c-v1-g1", "r2", "2413");
         reorder("pphh", "r3", "1342");
         mult("r3", "r2", "r4", 2);
         reorder("r4", "r5", "1342");
@@ -2368,27 +2429,27 @@ void diag_heff_1h2p_k_ij_abc__inv_h2_p12(int pt_order)
     }
 
     finish:
-    mult("x2c", "i1", "r2", 1);
+    mult("x2c-v1", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
     perm("r3", "(46)");
     reorder("r3", "r4", "123465");
-    update("m3nw", -1.0, "r4"); // change sign
+    update("veff12_const", -1.0, "r4"); // change sign
     restore_stack_pos(pos);
 }
 
-void diag_heff_1h2p_k_ij_abc__inv_h3_p13(int pt_order)
+void diag_heff_1h2p_k_ij_abc__inv_h3_p13_const(int pt_order)
 {
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "pphp", "1010", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "pphp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3b
-        reorder("ppph", "r1", "1342");
+        reorder("ppvh", "r1", "1342");
         reorder("e2c", "e2c_2134", "2134");
         reorder("e2c_2134", "r2", "2413");
         mult("r1", "r2", "r3", 2);
@@ -2399,7 +2460,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h3_p13(int pt_order)
 
         // T4d
         reorder("pvhg", "r1", "4123");
-        reorder("t1c", "r2", "21");
+        reorder("t1c-v", "r2", "21");
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "2431");
         update("i1", -1.0, "r4");
@@ -2407,7 +2468,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h3_p13(int pt_order)
 
         // T7a
         reorder("h1c", "r1", "21");
-        reorder("ppph", "r2", "1342");
+        reorder("ppvh", "r2", "1342");
         mult("r2", "s1c", "r3", 1);
         reorder("r3", "r4", "1423");
         mult("r4", "r1", "r5", 1);
@@ -2416,7 +2477,7 @@ void diag_heff_1h2p_k_ij_abc__inv_h3_p13(int pt_order)
         restore_stack_pos(pos2);
 
         // T8c
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("e2c", "e2c_2134", "2134");
         reorder("e2c_2134", "r2", "2413");
         reorder("pphh", "r3", "1342");
@@ -2429,10 +2490,10 @@ void diag_heff_1h2p_k_ij_abc__inv_h3_p13(int pt_order)
     }
 
     finish:
-    mult("s2c", "i1", "r2", 1);
+    mult("s2c-v1-g", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
     perm("r3", "(13|45)");
     reorder("r3", "r4", "132456");
-    update("m3nw", -1.0, "r4");  // change sign: x -1
+    update("veff12_const", -1.0, "r4");  // change sign: x -1
     restore_stack_pos(pos);
 }

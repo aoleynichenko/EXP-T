@@ -111,7 +111,7 @@ void str_print_slater_det(char *str, int sect_h, int sect_p, slater_det_t *det)
     for (int ih = 0; ih < sect_h; ih++) {
         int idx = det->indices[ih];
         int rep = spinor_info[idx].repno;
-        sprintf(buf, " %4s #%4d (%12.6f)", get_irrep_name(rep), idx + 1, spinor_info[idx].eps);
+        sprintf(buf, " %-6s #%4d (%12.6f)", get_irrep_name(rep), idx + 1, spinor_info[idx].eps);
         strcat(str, buf);
     }
 
@@ -126,7 +126,7 @@ void str_print_slater_det(char *str, int sect_h, int sect_p, slater_det_t *det)
     for (int ip = 0; ip < sect_p; ip++) {
         int idx = det->indices[sect_h + ip];
         int rep = spinor_info[idx].repno;
-        sprintf(buf, " %4s #%4d (%12.6f)", get_irrep_name(rep), idx + 1, spinor_info[idx].eps);
+        sprintf(buf, " %-6s #%4d (%12.6f)", get_irrep_name(rep), idx + 1, spinor_info[idx].eps);
         strcat(str, buf);
     }
 
@@ -163,6 +163,10 @@ void print_slater_det(FILE *f, int sect_h, int sect_p, slater_det_t *det)
 }
 
 
+/**
+ * Evaluates overlap integral between two Slater determinants,
+ * < det_1 | det_2 >
+ */
 double kronecker_delta(int sect_h, int sect_p, slater_det_t *det_1, slater_det_t *det_2)
 {
     for (int i = 0; i < sect_h + sect_p; i++) {

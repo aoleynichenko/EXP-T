@@ -69,7 +69,7 @@ cc_options_t *new_options()
     strcpy(opts->scratch_dir, "scratch");
     opts->clean_scratch = 1;
     opts->print_level = CC_PRINT_MEDIUM;
-    opts->print_det_list = 0;
+    opts->print_model_space = 0;
     opts->print_model_vectors = 0;
     opts->print_eff_config = 0;
     opts->recommended_arith = CC_ARITH_REAL;
@@ -107,6 +107,7 @@ cc_options_t *new_options()
     opts->ground_energy_1h0p = 0.0;
     opts->ground_energy_2h0p = 0.0;
     opts->cc_model = CC_MODEL_CCSD;
+    opts->hughes_kaldor_1h2p = 0;
     opts->sector_h = 0;
     opts->sector_p = 0;
     opts->curr_sector_h = 0;

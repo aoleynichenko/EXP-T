@@ -1,0 +1,10 @@
+maxiter 200
+conv 1e-9
+sector 0h2p
+nactp 8
+disk_usage 0
+
+mstdm
+
+roots_cutoff 6e4 cm
+

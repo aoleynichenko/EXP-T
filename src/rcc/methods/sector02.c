@@ -135,7 +135,6 @@ int sector_0h2p(cc_options_t *opts)
      * analyze its eigenvectors & eigenvalues
      */
     heff_analysis(0, 2, "veff01", "veff02");
-    model_space_properties_and_natural_orbitals(0, 2);
 
     /*
      * Ionization potentials
@@ -145,6 +144,12 @@ int sector_0h2p(cc_options_t *opts)
 
     print_ionization_potential("Ionization potential 0h2p -> 0h1p", ion_pot_1);
     print_ionization_potential("Ionization potential 0h1p -> 0h0p", ion_pot_2);
+
+    /*
+     * calculate quasi-natural orbitals and model-space estimates of properties
+     */
+    calculate_model_space_properties(0, 2);
+    calculate_model_space_natural_spinors(0, 2);
 
     /*
      * perturbative correction to the effective interaction.

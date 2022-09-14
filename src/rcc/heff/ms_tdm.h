@@ -22,16 +22,14 @@
  */
 
 /*
- * Tools for construction of quasi-natural spinors and quasi-natural
- * transition spinors.
+ * Model-space estimation of transition moments.
  *
- * 2021 Alexander Oleynichenko
+ * 2019-2022 Alexander Oleynichenko
  */
 
-#include "slater_rules.h"
+#ifndef C_MS_TDM_H_INCLUDED
+#define C_MS_TDM_H_INCLUDED
 
-void quasi_natural_orbitals_driver(int sect_h, int sect_p, int rep, int state);
+void dipole_length_tdms(int sect_h, int sect_p);
 
-void
-get_eff_configuration(int sect_h, int sect_p, int ms_size, slater_det_t *det_list, double complex *model_vector_coefs,
-                      double *config);
+#endif // CC_MS_TDM_H_INCLUDED

@@ -359,14 +359,14 @@ double cc_energy()
     double complex ecc = 0.0 + 0.0 * I;
     double complex et1 = 0.0 + 0.0 * I;
     double complex et1_2 = 0.0 + 0.0 * I;
-    double complex et2 = 0.25 * scalar_product("N", "N", "v", "t2nw");
+    double complex et2 = 0.25 * scalar_product("N", "N", "v", "t2c");
 
     dg_stack_pos_t pos = get_stack_pos();
     reorder("ph", "phr", "21");
-    et1 = scalar_product("N", "N", "phr", "t1nw");
+    et1 = scalar_product("N", "N", "phr", "t1c");
     reorder("pphh", "r1", "3142");
-    mult("r1", "t1nw", "r2", 2);
-    et1_2 = 0.5 * scalar_product("N", "N", "r2", "t1nw");
+    mult("r1", "t1c", "r2", 2);
+    et1_2 = 0.5 * scalar_product("N", "N", "r2", "t1c");
     restore_stack_pos(pos);
 
     ecc = et1 + et1_2 + et2;

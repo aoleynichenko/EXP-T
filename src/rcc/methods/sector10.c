@@ -223,13 +223,18 @@ int sector_1h0p(cc_options_t *opts)
      * analyze its eigenvectors & eigenvalues
      */
     heff_analysis(1, 0, "veff10");
-    model_space_properties_and_natural_orbitals(1, 0);
 
     /*
      * Ionization potentials
      */
     double ion_pot = cc_opts->ground_energy_1h0p;
     print_ionization_potential("Ionization potential 0h0p -> 1h0p", ion_pot);
+
+    /*
+     * calculate quasi-natural orbitals and model-space estimates of properties
+     */
+    calculate_model_space_properties(1, 0);
+    calculate_model_space_natural_spinors(1, 0);
 
     return EXIT_SUCCESS;
 }

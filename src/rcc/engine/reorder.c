@@ -236,6 +236,7 @@ void restore_block(diagram_t *dg, block_t *b)
 
     if (b->storage_type == CC_DIAGRAM_IN_MEM) {
         printf("restore_block(): already in mem!\n");
+        return;
     }
 
     b->storage_type = CC_DIAGRAM_IN_MEM;

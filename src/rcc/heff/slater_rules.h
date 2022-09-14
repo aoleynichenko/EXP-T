@@ -37,7 +37,7 @@
 
 typedef double complex (*matrix_getter_fun)(void *source, void *indices);
 
-extern double complex (*slater)(slater_det_t *d1, slater_det_t *d2);
+extern double complex (*slater_rule)(slater_det_t *d1, slater_det_t *d2);
 
 void setup_slater(void *source, matrix_getter_fun getter,
                   int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sect_p, int npart);
