@@ -88,22 +88,33 @@ void calculate_model_space_properties(int sect_h, int sect_p)
         cc_opts->n_model_space_props > 0) {
         for (int i = 0; i < cc_opts->n_model_space_props; i++) {
 
-            model_space_property(sect_h, sect_p, sect_h, sect_p, cc_opts->prop_queries + i);
+            cc_ms_prop_query_t *query = cc_opts->prop_queries + i;
+
+            // here we process only queries without specifications of symmetry
+            // and approximation level. Other queries should be processed by the code
+            // for direct property matrix element calculations.
+            if (!(query->approx_numerator == 0 &&
+                query->approx_denominator == 0 &&
+                strcmp(query->irrep_name, "") == 0)) {
+                continue;
+            }
+
+            model_space_property(sect_h, sect_p, sect_h, sect_p, query);
 
             /*
              * special case of the 1h1p sector: transitions from the ground state
              */
             if (sect_h == 1 && sect_p == 1) {
-                model_space_property(0, 0, 1, 1, cc_opts->prop_queries + i);
-                model_space_property(1, 1, 0, 0, cc_opts->prop_queries + i);
+                model_space_property(0, 0, 1, 1, query);
+                model_space_property(1, 1, 0, 0, query);
             }
 
             /*
              * special case of the 1h2p sector: additional transitions 0h1p - 1h2p
              */
             if (sect_h == 1 && sect_p == 2) {
-                model_space_property(0, 1, 1, 2, cc_opts->prop_queries + i);
-                model_space_property(1, 2, 0, 1, cc_opts->prop_queries + i);
+                model_space_property(0, 1, 1, 2, query);
+                model_space_property(1, 2, 0, 1, query);
             }
         }
     }
@@ -169,6 +180,8 @@ void model_space_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ke
     if (prop_query->do_transpose) {
         xtranspose(CC_COMPLEX, nspinors, nspinors, prop_spinor);
     }
+
+    //xprimat(CC_COMPLEX, prop_spinor, get_num_spinors(), get_num_spinors(), "prop_pp");
 
     /*
      * print information about non-zero matrix elements of the operator

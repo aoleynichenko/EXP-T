@@ -247,6 +247,12 @@ cc_options_t *new_options()
      */
     opts->do_flush_amplitudes_txt = 0;
 
+    /*
+     * calculate overlap integrals for target wavefunctions
+     * (in the given sector)
+     */
+    memset(opts->calc_overlap, 0, sizeof(opts->calc_overlap));
+
     return opts;
 }
 
@@ -623,6 +629,22 @@ void print_options(cc_options_t *opts)
         printf("expectation value\n");
     }
 
+    // overlap integrals in non-trivial sectors
+    printf(" %-15s  %-40s  ", "overlap", "calculate overlap int-s for target wfns");
+    int n_overlap_sectors = 0;
+    for (int h = 0; h < MAX_SECTOR_RANK; h++) {
+        for (int p = 0; p < MAX_SECTOR_RANK; p++) {
+            if (opts->calc_overlap[h][p] != 0) {
+                n_overlap_sectors += 1;
+                printf("%dh%dp ", h, p);
+            }
+        }
+    }
+    if (n_overlap_sectors == 0) {
+        printf("disabled");
+    }
+    printf("\n");
+
     // perform hermitization or not?
     printf(" %-15s  %-40s  %s\n", "nohermit", "hermitization of effective Hamiltonians",
            opts->do_hermit ? "enabled" : "disabled");
@@ -658,17 +680,26 @@ void print_options(cc_options_t *opts)
     }
 
     if (opts->n_model_space_props > 0) {
-        printf(" %-15s  %-40s  %s", "prop", "model-space estimates of properties", "enabled,");
+        printf(" %-15s  %-40s  %s", "prop", "model-space estimates of properties", "enabled:");
         for (int i = 0; i < opts->n_model_space_props; i++) {
-            if (opts->prop_queries[i].source == CC_PROP_FROM_MDPROP) {
-                printf(" %s (md)", opts->prop_queries[i].prop_name);
+            cc_ms_prop_query_t *query = opts->prop_queries + i;
+
+            if (query->source == CC_PROP_FROM_MDPROP) {
+                printf(" %s (md)", query->prop_name);
             }
             else {
-                printf(" %s %s (txt)", opts->prop_queries[i].file_real, opts->prop_queries[i].file_imag);
+                printf(" %s %s (txt)", query->file_real, query->file_imag);
             }
-            if (opts->prop_queries[i].do_transpose) {
+            if (query->do_transpose) {
                 printf("^T");
             }
+            if (!(strcmp(query->irrep_name, "") == 0)) {
+                printf(" %s", query->irrep_name);
+            }
+            if (query->approx_numerator > 0 || query->approx_denominator > 0) {
+                printf(" %d/%d", query->approx_numerator, query->approx_denominator);
+            }
+            printf(";");
         }
         printf("\n");
     }
@@ -719,7 +750,7 @@ void print_options(cc_options_t *opts)
     }
 
     // (simple) intermediate hamiltonian ("IH-1") parameters
-    printf(" %-15s  %-40s  ", "intham1", "simple intermediate Hamiltonian");
+    printf(" %-15s  %-40s  ", "ih_imms", "simple intermediate Hamiltonian");
     if (opts->do_intham_imms) {
         printf("enabled in sectors: ");
         for (int h = 0; h < MAX_SECTOR_RANK; h++) {

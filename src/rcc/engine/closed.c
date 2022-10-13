@@ -74,7 +74,7 @@ void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *
     diagram_get_quasiparticles(src, qparts);
     diagram_get_order(src, order);
 
-    tmplt(tgt_name, qparts, new_valence, order, NOT_PERM_UNIQUE);
+    tmplt_sym(tgt_name, qparts, new_valence, order, NOT_PERM_UNIQUE, src->symmetry);
     tgt = diagram_stack_find(tgt_name);
 
     // code is adapted from closed.c

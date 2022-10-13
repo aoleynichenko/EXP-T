@@ -962,7 +962,11 @@ void construct_disconnected_rank2_rank2(char *src1_name, char *src2_name, char *
     dst_valence[2] = src_diagram_1->valence[1] + '0';
     dst_valence[3] = src_diagram_2->valence[1] + '0';
 
-    tmplt(dst_name, dst_qparts, dst_valence, "1234", NOT_PERM_UNIQUE);
+    int symmetry_1 = src_diagram_1->symmetry;
+    int symmetry_2 = src_diagram_2->symmetry;
+    int prod_symmetry = mulrep2_abelian(symmetry_1, symmetry_2);
+
+    tmplt_sym(dst_name, dst_qparts, dst_valence, "1234", NOT_PERM_UNIQUE, prod_symmetry);
     diagram_t *dst_diagram = diagram_stack_find(dst_name);
 
     /*

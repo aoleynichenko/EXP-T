@@ -21,10 +21,7 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/*******************************************************************************
- * sort.c
- * ======
- *
+/**
  * Sorting of integrals (creating basic diagrams from the raw integral arrays).
  *
  * Algorithm in brief:
@@ -41,7 +38,7 @@
  * (6) Construct 1-particle diagrams (requests are again in the queue)
  *
  * 2018-2021 Alexander Oleynichenko
- ******************************************************************************/
+ */
 
 #include "sort.h"
 
@@ -61,6 +58,8 @@
 #include "spinors.h"
 #include "timer.h"
 #include "utils.h"
+#include "symmetry.h"
+
 
 // TODO: separate file with sorting stats ?
 
@@ -106,7 +105,7 @@ void sorting_print_configuration()
  *            (NO ACTUAL REORDERING IS PERFORMED)
  *            allowed orders are only 12, 21, 1234, 3412
  */
-void request_sorting(char *name, char *qparts, char *valence, char *order)
+void request_sorting_sym(char *name, char *qparts, char *valence, char *order, int operator_symmetry)
 {
     char file_name[CC_MAX_FILE_NAME_LENGTH];
     int rank;
@@ -154,11 +153,11 @@ void request_sorting(char *name, char *qparts, char *valence, char *order)
     // create the diagram template:
     // 1. one-particle diagram
     if (rank == 2) {
-        tmplt(name, qparts, valence, "12", NOT_PERM_UNIQUE);
+        tmplt_sym(name, qparts, valence, "12", NOT_PERM_UNIQUE, operator_symmetry);
     }
         // 2. two-particle diagram
     else if (rank == 4) {
-        tmplt(name, qparts, valence, "1234", IS_PERM_UNIQUE); // здесь нужно писать 'order'
+        tmplt_sym(name, qparts, valence, "1234", IS_PERM_UNIQUE, operator_symmetry); // здесь нужно писать 'order'
     }
     else {
         errquit("in request sorting(): only diagrams with rank = 2 or 4 are allowed: %s[%s/%s/%s]\n",
@@ -166,6 +165,12 @@ void request_sorting(char *name, char *qparts, char *valence, char *order)
     }
 
     append_sorting_request(sorting_requests, &n_requests, name, qparts, valence, order);
+}
+
+
+void request_sorting(char *name, char *qparts, char *valence, char *order)
+{
+    request_sorting_sym(name, qparts, valence, order, get_totally_symmetric_irrep());
 }
 
 

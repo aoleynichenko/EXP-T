@@ -21,30 +21,9 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/*
- * Sorting of integrals (creating basic diagrams from the raw integral arrays).
- *
- * 2018-2021 Alexander Oleynichenko
- */
+#ifndef CC_WFN_NORM_H_INCLUDED
+#define CC_WFN_NORM_H_INCLUDED
 
-#ifndef CC_SORT_H_INCLUDED
-#define CC_SORT_H_INCLUDED
+void calculate_wavefunction_norms_and_overlaps(int sect_h, int sect_p);
 
-#include <complex.h>
-#include <stdint.h>
-
-#include "datamodel.h"
-
-#define CC_SORTING_IO_BUF_SIZE 16384
-
-// leave a request for sorting of diagram named 'name' with given 'qparts',
-// 'valence', 'order' characteristic
-void request_sorting(char *name, char *qparts, char *valence, char *order);
-void request_sorting_sym(char *name, char *qparts, char *valence, char *order, int operator_symmetry);
-
-// performs sorting for all the requests leaved
-void perform_sorting();
-
-void sort_prop(int nspinors, double complex *oper_ints);
-
-#endif /* CC_SORT_H_INCLUDED */
+#endif // CC_WFN_NORM_H_INCLUDED

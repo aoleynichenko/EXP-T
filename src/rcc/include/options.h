@@ -178,6 +178,10 @@ typedef struct {
     char file_real[CC_MAX_FILE_NAME_LENGTH];
     char file_imag[CC_MAX_FILE_NAME_LENGTH];
     int  do_transpose;     // optional transposition
+    int  scheme;
+    char irrep_name[64];
+    int  approx_numerator;
+    int  approx_denominator;
 } cc_ms_prop_query_t;
 
 // data compression algorithm
@@ -478,6 +482,12 @@ struct cc_options {
      * into formatted txt files or not
      */
     int do_flush_amplitudes_txt;
+
+    /*
+     * calculate overlap integrals for target wavefunctions
+     * (in the given sector)
+     */
+    int calc_overlap[MAX_SECTOR_RANK][MAX_SECTOR_RANK];
 };
 
 typedef struct cc_options cc_options_t;

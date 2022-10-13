@@ -21,15 +21,13 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/*******************************************************************************
- * readinp.c
- *
- * Reads CC input file.
+/**
+ * Reads EXP-T input file.
  * Lexical analysis is performed with the automatically generated code
  * (by lex, see expt.l)
  *
- * 2018-2021 Alexander Oleynichenko
- ******************************************************************************/
+ * 2018-2022 Alexander Oleynichenko
+ */
 
 #include <ctype.h>
 #include <errno.h>
@@ -46,7 +44,7 @@
 #include "options.h"
 #include "spinors.h"
 #include "memory.h"
-
+#include "cc_properies.h"
 
 #define MAX_LINE_LEN 1024
 #define MAXIMUM2(x, y) (((x) > (y)) ? (x) : (y))
@@ -131,6 +129,8 @@ void directive_txtprop(cc_options_t *opts);
 void directive_analyt_prop(cc_options_t *opts);
 
 void directive_density(cc_options_t *opts);
+
+void directive_overlap(cc_options_t *opts);
 
 void directive_interface(cc_options_t *opts);
 
@@ -221,8 +221,8 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_DEGEN_THRESH:
                 directive_degen_thresh(opts);
                 break;
-            case KEYWORD_NOHERMIT:
-                opts->do_hermit = 0;
+            case KEYWORD_HERMIT:
+                opts->do_hermit = 1;
                 break;
             case KEYWORD_MSTDM:
                 opts->calc_model_space_tdms = 1;
@@ -317,6 +317,9 @@ int readinp(char *file_name, cc_options_t *opts)
                 break;
             case KEYWORD_DENSITY:
                 directive_density(opts);
+                break;
+            case KEYWORD_OVERLAP:
+                directive_overlap(opts);
                 break;
             case KEYWORD_INTERFACE:
                 directive_interface(opts);
@@ -1632,20 +1635,89 @@ void directive_mdprop(cc_options_t *opts)
     cc_ms_prop_query_t *q = &opts->prop_queries[opts->n_model_space_props];
     strcpy(q->prop_name, yytext + 1);
     q->do_transpose = 0;
+    q->scheme = 0;
     q->source = CC_PROP_FROM_MDPROP;
+    strcpy(q->irrep_name, "");
+    q->approx_denominator = CC_PROPERTIES_APPROX_MODEL_SPACE;
+    q->approx_numerator = CC_PROPERTIES_APPROX_MODEL_SPACE;
 
-    // optional "transpose" keyword
-    token_type = next_token();
-    if (token_type == TT_WORD) {
-        if (strcmp(yytext, "transpose") == 0) {
-            q->do_transpose = 1;
+    while (1) {
+        token_type = next_token();
+
+        if (token_type == TT_WORD) {
+
+            // optional keywords
+            if (strcmp(yytext, "transpose") == 0) {
+                q->do_transpose = 1;
+            }
+            else if (strcmp(yytext, "sym") == 0) {
+                token_type = next_token();
+                if (!(token_type == TT_WORD || token_type == TT_INTEGER)) {
+                    yyerror("expected irrep name");
+                }
+                strcpy(q->irrep_name, yytext);
+            }
+            else if (strcmp(yytext, "scheme") == 0) {
+                token_type = next_token();
+                if (token_type != TT_INTEGER) {
+                    yyerror("integer expected");
+                }
+                int scheme = atoi(yytext);
+                if (!(scheme == 0 || scheme == 1 || scheme == 2)) {
+                    yyerror("unknown scheme");
+                }
+                q->scheme = scheme;
+            }
+            else if (strcmp(yytext, "approx") == 0) {
+                /*
+                 * get order of numerator
+                 */
+                token_type = next_token();
+                if (token_type != TT_INTEGER) {
+                    yyerror("integer expected (order of numerator)");
+                }
+                int numer_order = atoi(yytext);
+                if (!(numer_order == 0 || numer_order == 1 || numer_order == 2)) {
+                    yyerror("allowed orders of numerator: 0, 1, 2");
+                }
+                if (numer_order == 0) {
+                    numer_order = CC_PROPERTIES_APPROX_MODEL_SPACE;
+                }
+                if (numer_order == 1) {
+                    numer_order = CC_PROPERTIES_APPROX_LINEAR;
+                }
+                if (numer_order == 2) {
+                    numer_order = CC_PROPERTIES_APPROX_QUADRATIC;
+                }
+                q->approx_numerator = numer_order;
+
+                /*
+                 * get order of denominator
+                 */
+                token_type = next_token();
+                if (token_type != TT_INTEGER) {
+                    yyerror("integer expected (order of denominator)");
+                }
+                int denom_order = atoi(yytext);
+                if (!(denom_order == 0 || denom_order == 2)) {
+                    yyerror("allowed orders of denominator: 0, 2");
+                }
+                if (denom_order == 0) {
+                    denom_order = CC_PROPERTIES_APPROX_MODEL_SPACE;
+                }
+                if (denom_order == 2) {
+                    denom_order = CC_PROPERTIES_APPROX_QUADRATIC;
+                }
+                q->approx_denominator = denom_order;
+            }
+            else {
+                yyerror(msg_trans);
+            }
         }
         else {
-            yyerror(msg_trans);
+            put_back(token_type);
+            break;
         }
-    }
-    else {
-        put_back(token_type);
     }
 
     opts->n_model_space_props++;
@@ -1667,6 +1739,11 @@ void directive_txtprop(cc_options_t *opts)
     cc_ms_prop_query_t *q = &opts->prop_queries[opts->n_model_space_props];
     q->source = CC_PROP_FROM_TXTPROP;
     q->do_transpose = 0;
+    q->scheme = 0;
+    strcpy(q->irrep_name, "");
+    q->approx_denominator = CC_PROPERTIES_APPROX_MODEL_SPACE;
+    q->approx_numerator = CC_PROPERTIES_APPROX_MODEL_SPACE;
+
 
     // path to file with real part
     token_type = next_token();
@@ -1682,19 +1759,86 @@ void directive_txtprop(cc_options_t *opts)
     }
     strcpy(q->file_imag, yytext);
 
-    // optional "transpose" keyword
-    token_type = next_token();
-    if (token_type == TT_WORD) {
-        if (strcmp(yytext, "transpose") == 0) {
-            q->do_transpose = 1;
+
+    while (1) {
+        token_type = next_token();
+
+        if (token_type == TT_WORD) {
+
+            // optional keywords
+            if (strcmp(yytext, "transpose") == 0) {
+                q->do_transpose = 1;
+            }
+            else if (strcmp(yytext, "sym") == 0) {
+                token_type = next_token();
+                if (!(token_type == TT_WORD || token_type == TT_INTEGER)) {
+                    yyerror("expected irrep name");
+                }
+                strcpy(q->irrep_name, yytext);
+            }
+            else if (strcmp(yytext, "scheme") == 0) {
+                token_type = next_token();
+                if (token_type != TT_INTEGER) {
+                    yyerror("integer expected");
+                }
+                int scheme = atoi(yytext);
+                if (!(scheme == 0 || scheme == 1 || scheme == 2)) {
+                    yyerror("unknown scheme");
+                }
+                q->scheme = scheme;
+            }
+            else if (strcmp(yytext, "approx") == 0) {
+                /*
+                 * get order of numerator
+                 */
+                token_type = next_token();
+                if (token_type != TT_INTEGER) {
+                    yyerror("integer expected (order of numerator)");
+                }
+                int numer_order = atoi(yytext);
+                if (!(numer_order == 0 || numer_order == 1 || numer_order == 2)) {
+                    yyerror("allowed orders of numerator: 0, 1, 2");
+                }
+                if (numer_order == 0) {
+                    numer_order = CC_PROPERTIES_APPROX_MODEL_SPACE;
+                }
+                if (numer_order == 1) {
+                    numer_order = CC_PROPERTIES_APPROX_LINEAR;
+                }
+                if (numer_order == 2) {
+                    numer_order = CC_PROPERTIES_APPROX_QUADRATIC;
+                }
+                q->approx_numerator = numer_order;
+
+                /*
+                 * get order of denominator
+                 */
+                token_type = next_token();
+                if (token_type != TT_INTEGER) {
+                    yyerror("integer expected (order of denominator)");
+                }
+                int denom_order = atoi(yytext);
+                if (!(denom_order == 0 || denom_order == 2)) {
+                    yyerror("allowed orders of denominator: 0, 2");
+                }
+                if (denom_order == 0) {
+                    denom_order = CC_PROPERTIES_APPROX_MODEL_SPACE;
+                }
+                if (denom_order == 2) {
+                    denom_order = CC_PROPERTIES_APPROX_QUADRATIC;
+                }
+                q->approx_denominator = denom_order;
+            }
+            else {
+                yyerror(msg_trans);
+            }
         }
         else {
-            yyerror(msg_trans);
+            put_back(token_type);
+            break;
         }
     }
-    else {
-        put_back(token_type);
-    }
+
 
     opts->n_model_space_props++;
 }
@@ -1765,6 +1909,56 @@ void directive_density(cc_options_t *opts)
         // default: lambda equations
         opts->calc_density_0h0p = CC_DENSITY_MATRIX_LAMBDA;
         put_back(token_type);
+    }
+}
+
+
+/**
+ * Syntax:
+ * overlap <sector-label>
+ *
+ * Example:
+ * overlap 0h1p 0h2p
+ */
+void directive_overlap(cc_options_t *opts)
+{
+    static char *msg_param = "wrong parameter of the 'overlap' directive";
+    static char *msg_wrong_sector = "cannot calculate overlap in this sector (not implemented)";
+
+    int n_sectors = 0;
+    int token_type = next_token();
+
+    while (token_type != END_OF_LINE && token_type != END_OF_FILE) {
+        if (token_type != TT_SECTOR) {
+            yyerror(msg_param);
+        }
+
+        int sect_h = 0, sect_p = 0;
+        str_tolower(yytext);
+        parse_sector_label(yytext, &sect_h, &sect_p);
+
+        // check if the code for overlap integrals is implemented for the required FS sector
+        if (sect_h == 0 && sect_p == 0) {
+            yyerror("use the 'density' keyword to calculate overlap in the 0h0p sector");
+        }
+        if ((sect_h == 1 && sect_p == 0) ||
+            (sect_h == 0 && sect_p == 1) ||
+            (sect_h == 0 && sect_p == 2)) {
+            // OK
+        }
+        else {
+            yyerror(msg_wrong_sector);
+        }
+
+        n_sectors++;
+        opts->calc_overlap[sect_h][sect_p] = 1;
+
+        token_type = next_token();
+    }
+    put_back(token_type);
+
+    if (n_sectors == 0) {
+        yyerror("at least one sector is required");
     }
 }
 

@@ -12,7 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from minitest import Test, Filter, execute, DIRAC_PATH
 
 dirac_inp = 'TRA.inp'
-dirac_mol = "C+.mol"
+dirac_mol = "C.mol"
 execute(DIRAC_PATH + " --nobackup --noarch --inp=" + dirac_inp + " --mol=" + dirac_mol + " --get=\"MRCONEE MDCINT MDPROP\"")
 
 t1_e1 = Filter("@    1", -0.6962981331, 1e-7)

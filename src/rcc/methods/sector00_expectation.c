@@ -113,51 +113,9 @@ void sector_0h0p_construct_density_matrix_block_pp_T1x_T2x_T1_T2();
 
 void sector_0h0p_construct_density_matrix_block_pp_T2x_T2x_T2_T2();
 
-double complex sector_0h0p_prop_linear();
-
 double complex norm_0h0p_T1x_T1();
 
 double complex norm_0h0p_T2x_T2();
-
-double complex property_0h0p_D1();
-
-double complex property_0h0p_D2();
-
-double complex property_0h0p_D3();
-
-double complex property_0h0p_D4();
-
-double complex property_0h0p_D5();
-
-double complex property_0h0p_D6();
-
-double complex property_0h0p_D7();
-
-double complex property_0h0p_D8();
-
-double complex property_0h0p_D9();
-
-double complex property_0h0p_D10();
-
-double complex property_0h0p_D11();
-
-double complex property_0h0p_D12();
-
-double complex property_0h0p_D13();
-
-double complex property_0h0p_D14();
-
-double complex property_0h0p_D15();
-
-double complex property_0h0p_D16();
-
-double complex property_0h0p_D17();
-
-double complex property_0h0p_D18();
-
-double complex property_0h0p_D19();
-
-double complex property_0h0p_D20();
 
 void save_density_matrix(char *path, int nspinors, double complex *dm);
 
@@ -256,6 +214,9 @@ void sector_0h0p_analytic_density_matrix_expectation(int pt_order)
     printf(" overlap integral <psi|psi> = %20.12f %20.12f\n", creal(norm2), cimag(norm2));
     printf(" norm                       = %20.12f\n", norm);
     printf("\n");
+
+    //void sector00_calc_wf_norm();
+    //sector00_calc_wf_norm();
 
     sector_0h0p_calculate_natural_spinors();
 
@@ -587,8 +548,6 @@ void conjugate_t2()
 
     diagram_t *diag_t2c = diagram_stack_find("t2c");
     diagram_t *diag_t2conj = diagram_stack_find("t2c+");
-
-
 
     int rank = 4;
 
@@ -1161,297 +1120,6 @@ void sector_0h0p_construct_density_matrix_block_pp_T2x_T2x_T2_T2()
 }
 
 
-double complex sector_0h0p_norm(int approximation)
-{
-    if (approximation == CC_PROPERTIES_APPROX_MODEL_SPACE) {
-        return 1.0 + 0.0 * I;
-    }
-
-    return 1.0 + norm_0h0p_T1x_T1() + norm_0h0p_T2x_T2();
-}
-
-
-double complex sector_0h0p_prop(int approximation)
-{
-    double complex prop_value = 0.0;
-
-    if (approximation >= CC_PROPERTIES_APPROX_LINEAR) {
-        prop_value += sector_0h0p_prop_linear();
-    }
-
-    return prop_value;
-}
-
-
-double complex sector_0h0p_prop_linear()
-{
-    double complex d1 = property_0h0p_D1();
-    double complex d2 = property_0h0p_D2();
-
-    return d1 + d2;
-}
-
-
-double complex property_0h0p_D1()
-{
-    double complex d1 = scalar_product("C", "N", "op_hp", "t1c");
-
-    return d1;
-}
-
-
-double complex property_0h0p_D2()
-{
-    double complex d2 = scalar_product("C", "N", "t1c", "op_hp");
-
-    return d2;
-}
-
-
-double complex property_0h0p_D3()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("op_pp", "r1", "21");
-    mult("t1c", "r1", "r2", 1);
-    double complex d3 = +1.0 * scalar_product("C", "N", "t1c", "r2");
-    restore_stack_pos(pos);
-
-    return d3;
-}
-
-
-double complex property_0h0p_D4()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t1c", "r1", "21");
-    mult("op_hh", "r1", "r2", 1);
-    double complex d4 = -1.0 * scalar_product("C", "N", "t1c", "r2");
-    restore_stack_pos(pos);
-
-    return d4;
-}
-
-
-double complex property_0h0p_D5()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("op_pp", "r1", "21");
-    mult("t2c", "r1", "r2", 1);
-    double complex d5 = +0.5 * scalar_product("C", "N", "t2c", "r2");
-    restore_stack_pos(pos);
-
-    return d5;
-}
-
-
-double complex property_0h0p_D6()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t2c", "r1", "3412");
-    mult("r1", "op_hh", "r2", 1);
-    reorder("r2", "r3", "3412");
-    double complex d6 = -0.5 * scalar_product("C", "N", "t2c", "r3");
-    restore_stack_pos(pos);
-
-    return d6;
-}
-
-
-double complex property_0h0p_D7()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t2c", "r1", "1324");
-    reorder("op_ph", "r2", "21");
-    mult("r1", "r2", "r3", 2);
-    double complex d7 = scalar_product("C", "N", "t1c", "r3");
-    restore_stack_pos(pos);
-
-    return d7;
-}
-
-
-double complex property_0h0p_D8()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t2c+", "r1", "4231");
-    mult("r1", "t1c", "r2", 2);
-    double complex d8 = scalar_product("N", "N", "op_hp", "r2");
-    restore_stack_pos(pos);
-
-    return d8;
-}
-
-
-double complex property_0h0p_D9()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t1c", "r1", "21");
-    reorder("t2c+", "r2", "3124");
-    mult("r1", "op_hh", "r3", 1);
-    mult("r2", "r3", "r4", 2);
-    double complex d9 = -1.0 * scalar_product("N", "N", "t1c", "r4");
-    restore_stack_pos(pos);
-
-    return d9;
-}
-
-
-double complex property_0h0p_D10()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t2c+", "r1", "3124");
-    reorder("op_pp", "r2", "21");
-    mult("r2", "t1c", "r3", 1);
-    mult("r1", "r3", "r4", 2);
-    double complex d10 = 1.0 * scalar_product("N", "N", "t1c", "r4");
-    restore_stack_pos(pos);
-
-    return d10;
-}
-
-
-double complex property_0h0p_D11()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("op_hh", "r1", "21");
-    reorder("t2c", "r2", "1324");
-    mult("r1", "t1c+", "r3", 1);
-    mult("r2", "r3", "r4", 2);
-    double complex d11 = -1.0 * scalar_product("C", "N", "t1c", "r4");
-    restore_stack_pos(pos);
-
-    return d11;
-}
-
-
-double complex property_0h0p_D12()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t1c+", "r1", "21");
-    reorder("t2c", "r2", "1324");
-    mult("r1", "op_pp", "r3", 1);
-    mult("r2", "r3", "r4", 2);
-    double complex d12 = +1.0 * scalar_product("C", "N", "t1c", "r4");
-    restore_stack_pos(pos);
-
-    return d12;
-}
-
-
-double complex property_0h0p_D13()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t1c", "r0", "21");
-    reorder("t1c+", "r1", "21");
-    mult("t1c", "r1", "r2", 1);
-    mult("r2", "r0", "r3", 1);
-    double complex d13 = -1.0 * scalar_product("C", "N", "op_hp", "r3");
-    restore_stack_pos(pos);
-
-    return d13;
-}
-
-
-double complex property_0h0p_D14()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t1c+", "r1", "21");
-    reorder("op_hp", "r2", "21");
-    mult("t1c", "r1", "r3", 1);
-    mult("r3", "r2", "r4", 1);
-    double complex d14 = -1.0 * scalar_product("C", "N", "t1c", "r4");
-    restore_stack_pos(pos);
-
-    return d14;
-}
-
-
-double complex property_0h0p_D15()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t1c", "r0", "21");
-    reorder("t2c+", "r1", "2413");
-    mult("r1", "r0", "r2", 2);
-    reorder("r2", "r3", "21");
-    reorder("t2c", "r4", "2413");
-    mult("r4", "r3", "r5", 2);
-    double complex d15 = 1.0 * scalar_product("C", "N", "op_hp", "r5");
-    restore_stack_pos(pos);
-
-    return d15;
-}
-
-
-double complex property_0h0p_D16()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("op_hp", "r0", "21");
-    reorder("t2c+", "r1", "2413");
-    mult("r1", "r0", "r2", 2);
-    reorder("r2", "r3", "21");
-    reorder("t2c", "r4", "2413");
-    mult("r4", "r3", "r5", 2);
-    double complex d16 = 1.0 * scalar_product("C", "N", "t1c", "r5");
-    restore_stack_pos(pos);
-
-    return d16;
-}
-
-
-double complex property_0h0p_D17()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t1c", "r1", "21");
-    reorder("t2c+", "r2", "3412");
-    mult("t2c", "r2", "r3", 3);
-    mult("r3", "r1", "r4", 1);
-    double complex d17 = -0.5 * scalar_product("C", "N", "op_hp", "r4");
-    restore_stack_pos(pos);
-
-    return d17;
-}
-
-
-double complex property_0h0p_D18()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t2c", "r1", "3412");
-    mult("r1", "t2c+", "r2", 3);
-    mult("t1c", "r2", "r3", 1);
-    double complex d18 = -0.5 * scalar_product("C", "N", "op_hp", "r3");
-    restore_stack_pos(pos);
-
-    return d18;
-}
-
-
-double complex property_0h0p_D19()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("op_hp", "r1", "21");
-    reorder("t2c+", "r2", "3412");
-    mult("t2c", "r2", "r3", 3);
-    mult("r3", "r1", "r4", 1);
-    double complex d19 = -0.5 * scalar_product("C", "N", "t1c", "r4");
-    restore_stack_pos(pos);
-
-    return d19;
-}
-
-
-double complex property_0h0p_D20()
-{
-    dg_stack_pos_t pos = get_stack_pos();
-    reorder("t2c", "r1", "3412");
-    mult("r1", "t2c+", "r2", 3);
-    mult("op_hp", "r2", "r3", 1);
-    double complex d20 = -0.5 * scalar_product("C", "N", "t1c", "r3");
-    restore_stack_pos(pos);
-
-    return d20;
-}
-
-
 void guess_operator_symmetry(int nspinors, double complex *prop_matrix)
 {
     int nsym = get_num_irreps();
@@ -1480,13 +1148,14 @@ void guess_operator_symmetry(int nspinors, double complex *prop_matrix)
     for (int irrep_i = 0; irrep_i < nsym; irrep_i++) {
         for (int irrep_j = 0; irrep_j < nsym; irrep_j++) {
             if (nonzero_blocks[irrep_i * nsym + irrep_j]) {
-                printf(" %s - %s\n", get_irrep_name(irrep_i), get_irrep_name(irrep_j));
+                printf(" %s - %s   =>  ", get_irrep_name(irrep_i), get_irrep_name(irrep_j));
 
-                /*for (int op_rep = 0; op_rep < nsym; op_rep++) {
+                for (int op_rep = 0; op_rep < nsym; op_rep++) {
                     if (irrep_i == mulrep2_abelian(op_rep, irrep_j)) {
                         printf("%s ", get_irrep_name(op_rep));
                     }
-                }*/
+                }
+                printf("\n");
             }
         }
     }

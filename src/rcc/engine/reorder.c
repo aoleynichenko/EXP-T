@@ -150,7 +150,7 @@ diagram_t *diagram_reorder(diagram_t *dg, int *perm, int perm_unique)
     t3space[rank] = '\0';
     order[rank] = '\0';
 
-    tgt = diagram_new("rdr " /*dg->name*/, qparts, valence, t3space, order, perm_unique);
+    tgt = diagram_new("rdr " /*dg->name*/, qparts, valence, t3space, order, perm_unique, dg->symmetry);
 
     // name of the new diagram consist of the old one + "_copy_" + clone's ID
     sprintf(tgt->name, "%s_rdr_%ld", dg->name, tgt->dg_id);

@@ -41,7 +41,10 @@
 #include "options.h"
 #include "../heff/slater_rules.h"
 #include "../heff/ms_prop.h"
+#include "../heff/direct_prop.h"
 #include "../heff/ms_nat_spinors.h"
+#include "../heff/cc_wfn_overlap.h"
+
 
 void heff_analysis(int sect_h, int sect_p, ...);
 

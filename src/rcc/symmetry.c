@@ -274,6 +274,69 @@ int (*dpd_contains_totsym_rank[CC_MAX_NUM_IRREPS])(int *gamma) = {
 };
 
 
+static int dpd_op_sym_rank2(int *gamma, int op_sym)
+{
+    int g1 = gamma[0];
+    int g2 = gamma[1];
+
+    int op_g2 = dir_prod_table_abelian[op_sym][g2];
+
+    return g1 == op_g2;
+}
+
+
+static int dpd_op_sym_rank4(int *gamma, int op_sym)
+{
+    int g1 = gamma[0];
+    int g2 = gamma[1];
+    int rep_bra = dir_prod_table_abelian[g1][g2];
+
+    int g3 = gamma[2];
+    int g4 = gamma[3];
+    int rep_ket = dir_prod_table_abelian[g3][g4];
+
+    int op_ket = dir_prod_table_abelian[op_sym][rep_ket];
+
+    return rep_bra == op_ket;
+}
+
+
+static int dpd_op_sym_rank6(int *gamma, int op_sym)
+{
+    int g1 = gamma[0];
+    int g2 = gamma[1];
+    int g3 = gamma[2];
+    int g4 = gamma[3];
+    int g5 = gamma[4];
+    int g6 = gamma[5];
+
+    // irrep bra
+    int g1_g2 = dir_prod_table_abelian[g1][g2];
+    int rep_bra = dir_prod_table_abelian[g1_g2][g3];
+
+    // irrep ket
+    int g4_g5 = dir_prod_table_abelian[g4][g5];
+    int rep_ket = dir_prod_table_abelian[g4_g5][g6];
+
+    int op_ket = dir_prod_table_abelian[op_sym][rep_ket];
+
+    return rep_bra == op_ket;
+}
+
+
+// fast DPD is implemented only for models up to CCSDT (max rank == 6)
+static int dpd_op_sym_rank_other(int *gamma, int op_sym)
+{
+    int rank = 8;
+    assert(rank <= 6);
+}
+
+
+int (*dpd_contains_totsym_rank_op_sym[CC_MAX_NUM_IRREPS])(int *gamma, int op_sym) = {
+        dpd_op_sym_rank2, dpd_op_sym_rank4, dpd_op_sym_rank6, dpd_op_sym_rank_other
+};
+
+
 void print_symmetry_info()
 {
     int i, j, k;

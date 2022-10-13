@@ -81,6 +81,8 @@ int mulrep2_abelian(int irep1, int irep2);
 // totally symmetry irrep
 extern int (*dpd_contains_totsym_rank[CC_MAX_NUM_IRREPS])(int *gamma);
 
+extern int (*dpd_contains_totsym_rank_op_sym[CC_MAX_NUM_IRREPS])(int *gamma, int op_sym);
+
 void set_point_group_name(char *name);
 
 char *get_point_group_name();

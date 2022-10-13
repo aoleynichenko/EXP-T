@@ -148,8 +148,10 @@ int sector_0h2p(cc_options_t *opts)
     /*
      * calculate quasi-natural orbitals and model-space estimates of properties
      */
-    calculate_model_space_properties(0, 2);
+    calculate_wavefunction_norms_and_overlaps(0, 2);
     calculate_model_space_natural_spinors(0, 2);
+    calculate_model_space_properties(0, 2);
+    calculate_properties_direct(0, 2);
 
     /*
      * perturbative correction to the effective interaction.

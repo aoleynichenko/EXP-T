@@ -635,6 +635,7 @@ void check_irrep_names()
             errquit("Error in the input file: wrong irrep name '%s'", query->rep2_name);
         }
     }
+
     // (2) active space specification
     for (size_t i = 0; i < CC_MAX_NUM_IRREPS; i++) {
         cc_active_spec_t *sp = cc_opts->active_specs + i;
@@ -645,6 +646,7 @@ void check_irrep_names()
             }
         }
     }
+
     // (3) number of roots to be analyzed
     cc_space_t *nroots_specs = &cc_opts->nroots_specs;
     for (size_t i = 0; i < CC_MAX_NUM_IRREPS; i++) {
@@ -652,6 +654,17 @@ void check_irrep_names()
         if (*(rep_name)) {
             if (get_rep_number(rep_name) == -1) {
                 errquit("Error in the input file: wrong irrep name in the nroots specification: '%s'",
+                        rep_name);
+            }
+        }
+    }
+
+    // (4) symmetries of property operators
+    for (int i = 0; i < cc_opts->n_model_space_props; i++) {
+        char *rep_name = cc_opts->prop_queries->irrep_name;
+        if (strcmp(rep_name, "") != 0) {
+            if (get_rep_number(rep_name) == -1) {
+                errquit("Error in the input file: wrong irrep name in the mdprop specification: '%s'",
                         rep_name);
             }
         }

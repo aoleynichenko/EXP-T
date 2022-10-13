@@ -283,6 +283,9 @@ void fill_block_one_elec(block_t *block, double complex *ints_matrix, int ignore
         for (int i2 = 0; i2 < dims_2; i2++) {
             int idx_1 = block_indices_1[i1];
             int idx_2 = block_indices_2[i2];
+
+            //printf("%d %d => %.8f %.8f\n", idx_1, idx_2, creal(ints_matrix[idx_1 * nspinors + idx_2]), cimag(ints_matrix[idx_1 * nspinors + idx_2]));
+
             if ((idx_1 == idx_2) && ignore_diagonal) {
                 if (arith == CC_ARITH_COMPLEX) {
                     block->buf[index] = 0.0 + 0.0 * I;

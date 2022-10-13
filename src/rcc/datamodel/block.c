@@ -932,6 +932,9 @@ void symblock_write(int fd, block_t *block)
     io_write_compressed(fd, &block->id, sizeof(block->id));
     io_write_compressed(fd, &block->rank, sizeof(block->rank));
 
+    // arithmetic: real or complex
+    io_write_compressed(fd, &arith, sizeof(arith));
+
     // information about uniqueness
     io_write_compressed(fd, &block->is_unique, sizeof(block->is_unique));
     io_write_compressed(fd, &block->sign, sizeof(block->sign));
@@ -977,7 +980,6 @@ void symblock_write(int fd, block_t *block)
  */
 block_t *symblock_read(int fd)
 {
-    int i;
     int n;
     block_t *block;
     static int64_t raw_buf[LEN_RAW_BUF];
@@ -986,6 +988,18 @@ block_t *symblock_read(int fd)
 
     io_read_compressed(fd, &block->id, sizeof(block->id));
     io_read_compressed(fd, &block->rank, sizeof(block->rank));
+
+    // arithmetic: real or complex
+    int block_arith;
+    int expand_complex_to_real = 0;
+    io_read_compressed(fd, &block_arith, sizeof(block_arith));
+
+    if (arith == CC_ARITH_REAL && block_arith == CC_ARITH_COMPLEX) {
+        errquit("symblock_read(): cannot read complex numbers, arithmetic is real");
+    }
+    else if (arith == CC_ARITH_COMPLEX && block_arith == CC_ARITH_REAL) {
+        expand_complex_to_real = 1;
+    }
 
     // information about uniqueness
     io_read_compressed(fd, &block->is_unique, sizeof(block->is_unique));
@@ -1005,7 +1019,7 @@ block_t *symblock_read(int fd)
 
     // indices
     block->indices = (int **) cc_malloc(sizeof(int *) * block->rank);
-    for (i = 0; i < block->rank; i++) {
+    for (size_t i = 0; i < block->rank; i++) {
         io_read_compressed(fd, &n, 1 * sizeof(int));
         block->indices[i] = (int *) cc_malloc(sizeof(int) * (n + 1));
         block->indices[i][0] = n;
@@ -1017,7 +1031,21 @@ block_t *symblock_read(int fd)
     io_read_compressed(fd, &block->storage_type, sizeof(block->storage_type));
     if (block->storage_type == CC_DIAGRAM_IN_MEM) {
         block->buf = (double complex *) cc_malloc(SIZEOF_WORKING_TYPE * block->size);
-        io_read_compressed(fd, block->buf, SIZEOF_WORKING_TYPE * block->size);
+
+        if (expand_complex_to_real) {
+            size_t n_int = block->size;
+            double *real_buf = (double *) cc_memdup(block->buf, sizeof(double) * n_int);
+            io_read_compressed(fd, real_buf, sizeof(double) * n_int);
+            for (size_t i = 0; i < n_int; i++) {
+                block->buf[i] = real_buf[i] + 0.0*I;
+            }
+            cc_free(real_buf);
+        }
+        else {
+            io_read_compressed(fd, block->buf, SIZEOF_WORKING_TYPE * block->size);
+        }
+
+
         block_unload(block);
     }
     else if (block->storage_type == CC_DIAGRAM_DUMMY) {

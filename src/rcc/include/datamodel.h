@@ -150,6 +150,9 @@ struct diagram {
     // tensor rank: 2, 4, 6 ...
     int rank;
 
+    // symmetry of the operator represented by the diagram
+    int symmetry;
+
     // list of quasiparticles (in natural form)
     // for each spinor
     // of size [rank] (and all the subsequent arrays too)
@@ -176,7 +179,7 @@ typedef struct diagram diagram_t;
 
 // creates new object of diagram -- "constructor", but don't binds it to the
 // singly-linked list "dg_stack"
-diagram_t *diagram_new(char *name, char *qparts, char *valence, char *t3space, char *order, int perm_unique);
+diagram_t *diagram_new(char *name, char *qparts, char *valence, char *t3space, char *order, int perm_unique, int irrep);
 
 // deallocates all memory associated with this object
 void diagram_delete(diagram_t *dg);

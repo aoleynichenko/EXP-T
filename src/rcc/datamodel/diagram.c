@@ -85,7 +85,7 @@ void diagram_bind_blocks(diagram_t *dg, size_t n_blocks, block_t **block_list);
  * @note len(qparts) == len(valence) == len(order) == rank of the diagram
  * @note new diagram is not binded to the singly-linked list "dg_stack"
  */
-diagram_t *diagram_new(char *name, char *qparts, char *valence, char *t3space, char *order, int perm_unique)
+diagram_t *diagram_new(char *name, char *qparts, char *valence, char *t3space, char *order, int perm_unique, int irrep)
 {
     int qparts_arr[CC_DIAGRAM_MAX_RANK];
     int valence_arr[CC_DIAGRAM_MAX_RANK];
@@ -115,6 +115,7 @@ diagram_t *diagram_new(char *name, char *qparts, char *valence, char *t3space, c
     strncpy(dg->name, name, CC_DIAGRAM_MAX_NAME);
     dg->name[CC_DIAGRAM_MAX_NAME - 1] = '\0';
     dg->rank = rank;
+    dg->symmetry = irrep;
     dg->only_unique = only_unique;
     intcpy(dg->qparts, qparts_arr, rank);
     intcpy(dg->valence, valence_arr, rank);
@@ -132,6 +133,8 @@ diagram_t *diagram_new(char *name, char *qparts, char *valence, char *t3space, c
     max_sbs = (int) pow(n_spinor_blocks, rank);
     block_list = (block_t **) cc_malloc(sizeof(block_t *) * max_sbs);
 
+    int is_fully_sym = (irrep == get_totally_symmetric_irrep()) ? 1 : 0;
+
     // dynamically-nested loop over tensor's dimensions
     for (i = 0; i < rank; i++) {
         ijkl[i] = 0;
@@ -145,9 +148,17 @@ diagram_t *diagram_new(char *name, char *qparts, char *valence, char *t3space, c
             sym[i] = spinor_blocks[iblock].repno;
         }
 
-        // check if this block is symmetry-allowed
-        if (!dpd_contains_totsym_rank[rank / 2 - 1](sym)) {
-            goto next_symblock;
+        if (is_fully_sym) {
+            // check if this block is symmetry-allowed
+            if (!dpd_contains_totsym_rank[rank / 2 - 1](sym)) {
+                goto next_symblock;
+            }
+        }
+        else {
+            // check if this block is symmetry-allowed
+            if (!dpd_contains_totsym_rank_op_sym[rank / 2 - 1](sym, irrep)) {
+                goto next_symblock;
+            }
         }
 
         int is_zero = is_symblock_zero(rank, ijkl, dg->qparts, dg->valence, dg->t3space);
@@ -379,7 +390,7 @@ diagram_t *diagram_copy(diagram_t *dg)
     diagram_get_t3space(dg, t3space);
     diagram_get_order(dg, order);
 
-    clone = diagram_new(dg->name, qparts, valence, t3space, order, dg->only_unique);
+    clone = diagram_new(dg->name, qparts, valence, t3space, order, dg->only_unique, dg->symmetry);
 
     // name of the new diagram consist of the old one + "_copy_" + clone's ID
     sprintf(clone->name, "%s_copy_%ld", dg->name, clone->dg_id);
@@ -537,6 +548,7 @@ void diagram_print(diagram_t *dg)
     printf("  id   = %ld\n", dg->dg_id);
     //printf("  next = %p\n", dg->next);
     printf("  rank = %d\n", dg->rank);
+    printf("  symmetry = %d (%s)\n", dg->symmetry, get_irrep_name(dg->symmetry));
     printf("  quasiparticles: ");
     for (i = 0; i < dg->rank; i++) {
         printf("%c", dg->qparts[i]);
@@ -592,7 +604,8 @@ void diagram_summary(diagram_t *diag)
         }
     }
 
-    printf(" diagram %s: %s %s %s %s %d/%d\n", diag->name, str_qparts, str_valence, str_t3space, str_order, n_unique, diag->n_blocks);
+    printf(" diagram %s: irrep=%d(%s) %s %s %s %s %d/%d\n", diag->name, diag->symmetry,
+           get_irrep_name(diag->symmetry), str_qparts, str_valence, str_t3space, str_order, n_unique, diag->n_blocks);
 }
 
 
@@ -653,6 +666,9 @@ void diagram_write(diagram_t *dg, char *file_name)
 
     // diagram's rank
     io_write_compressed(f, &dg->rank, sizeof(dg->rank));
+
+    // symmetry of the operator represented by the diagram
+    io_write_compressed(f, &dg->symmetry, sizeof(dg->symmetry));
 
     // about uniqueness
     io_write_compressed(f, &dg->only_unique, sizeof(dg->only_unique));
@@ -722,6 +738,9 @@ diagram_t *diagram_read(char *file_name)
 
     // diagram's rank
     io_read_compressed(f, &dg->rank, sizeof(dg->rank));
+
+    // symmetry of the operator represented by the diagram
+    io_read_compressed(f, &dg->symmetry, sizeof(dg->symmetry));
 
     // about uniqueness
     io_read_compressed(f, &dg->only_unique, sizeof(dg->only_unique));

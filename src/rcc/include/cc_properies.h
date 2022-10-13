@@ -36,18 +36,5 @@ enum {
     CC_PROPERTIES_APPROX_QUARTIC
 };
 
-void sector_0h0p_calculate_properties();
-
-double complex sector_0h0p_norm(int approximation);
-
-void sector_0h1p_norm(char *result_name, int approximation);
-
-void sector_0h2p_norm(char *result_name, int approximation);
-
-double complex sector_0h0p_prop(int approximation);
-
-void sector_0h1p_prop(char *result_name, int approximation);
-
-void sector_0h2p_prop(char *result_name, int approximation);
 
 #endif /* CC_PROPERIES_H_INCLUDED */

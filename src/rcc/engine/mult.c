@@ -39,6 +39,7 @@
 #include "error.h"
 #include "linalg.h"
 #include "options.h"
+#include "symmetry.h"
 #include "timer.h"
 #include "utils.h"
 
@@ -545,8 +546,13 @@ static diagram_t *mult_product_template(diagram_t *dg1, diagram_t *dg2, int ncon
     t3space[rk3] = '\0';
     order[rk3] = '\0';
 
+    // symmetry of the product operator
+    int irrep_1 = dg1->symmetry;
+    int irrep_2 = dg2->symmetry;
+    int irrep_prod = mulrep2_abelian(irrep_1, irrep_2);
+
     // construct empty diagram with proper structure
-    return diagram_new("mult-intermediate", qparts, valence, t3space, order, perm_unique);
+    return diagram_new("mult-intermediate", qparts, valence, t3space, order, perm_unique, irrep_prod);
 }
 
 

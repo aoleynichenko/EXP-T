@@ -44,7 +44,6 @@
 #include "symmetry.h"
 #include "utils.h"
 
-extern int calc_veff12;
 
 /**
  * Finds solution of coupled cluster equations by the Jacobi procedure

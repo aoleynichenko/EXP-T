@@ -1,0 +1,12 @@
+maxiter 200
+conv 1e-9
+sector 0h2p
+nactp 8
+disk_usage 0
+
+mdprop "XDIPLEN" sym 1u+ approx 2 2 scheme 1
+mdprop "ZDIPLEN" sym 0u approx 2 2 scheme 1
+
+roots_cutoff 6e4 cm
+arith complex
+

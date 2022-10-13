@@ -58,6 +58,7 @@ int rank(char *name);
 
 // creates empty diagram and adds it to the diagram stack
 void tmplt(char *name, char *qparts, char *valence, char *order, int perm_unique);
+void tmplt_sym(char *name, char *qparts, char *valence, char *order, int perm_unique, int irrep);
 
 // sets all matrix elements in the diagram to zero
 void clear(char *name);

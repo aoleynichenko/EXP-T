@@ -22,9 +22,9 @@
  */
 
 /*
- * Basic operations with diagrams
+ * Basic operations with diagrams.
  *
- * 2019-2021 Alexander Oleynichenko
+ * 2019-2023 Alexander Oleynichenko
  */
 
 #include <assert.h>
@@ -37,6 +37,7 @@
 #include "error.h"
 #include "options.h"
 #include "spinors.h"
+#include "symmetry.h"
 #include "timer.h"
 
 
@@ -50,7 +51,7 @@
  *   valence  which indices are valence (1/0) ('10', '0000', '1100', etc)
  *   order    initial order of tensor dimensions ('1234', '1243', etc)
  */
-void tmplt(char *name, char *qparts, char *valence, char *order, int perm_unique)
+void tmplt_sym(char *name, char *qparts, char *valence, char *order, int perm_unique, int irrep)
 {
     diagram_t *dg;
 
@@ -74,15 +75,21 @@ void tmplt(char *name, char *qparts, char *valence, char *order, int perm_unique
     t3space[rank] = '\0';
 
     if (dg != NULL) {
-        dg = diagram_new(name, qparts, valence, t3space, order, perm_unique);
+        dg = diagram_new(name, qparts, valence, t3space, order, perm_unique, irrep);
         diagram_stack_replace(name, dg);
     }
     else {
-        dg = diagram_new(name, qparts, valence, t3space, order, perm_unique);
+        dg = diagram_new(name, qparts, valence, t3space, order, perm_unique, irrep);
         diagram_stack_push(dg);
     }
 
     timer_stop("tmplt");
+}
+
+
+void tmplt(char *name, char *qparts, char *valence, char *order, int perm_unique)
+{
+    tmplt_sym(name, qparts, valence, order, perm_unique, get_totally_symmetric_irrep());
 }
 
 

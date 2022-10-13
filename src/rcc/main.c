@@ -44,7 +44,6 @@
 #include "interfaces.h"
 #include "methods.h"
 #include "options.h"
-#include "sort.h"
 #include "spinors.h"
 #include "symmetry.h"
 #include "timer.h"

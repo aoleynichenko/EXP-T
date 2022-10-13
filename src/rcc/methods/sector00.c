@@ -177,7 +177,7 @@ int sector_0h0p(cc_options_t *opts)
         sector_0h0p_analytic_density_matrix_lambda();
     }
     else if (cc_opts->calc_density_0h0p == CC_DENSITY_MATRIX_EXPECTATION) {
-        sector_0h0p_analytic_density_matrix_expectation(PT_4);
+        sector_0h0p_analytic_density_matrix_expectation(PT_2);
     }
 
     sector_0h0p_calculate_properties();

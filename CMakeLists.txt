@@ -174,6 +174,8 @@ add_executable(expt.x
         src/rcc/heff/eff_config.c
         src/rcc/heff/model_vectors.c
         src/rcc/heff/eigenvalues.c
+        src/rcc/heff/cc_wfn_overlap.c
+        src/rcc/heff/direct_prop.c
         src/rcc/heff/ms_tdm.c
         src/rcc/heff/ms_prop.c        # model-space estimations of properties
         src/rcc/heff/ms_nat_spinors.c # quasi-natural [transition] spinors
@@ -205,8 +207,6 @@ add_executable(expt.x
         src/rcc/methods/sector00_t3_correction.c      # (T) perturbative corrections for the 0h0p sector
 
         src/rcc/methods/sector00_prop.c
-        src/rcc/methods/sector01_prop.c
-        src/rcc/methods/sector02_prop.c
 
         src/rcc/methods/sector00_lambda.c
         src/rcc/methods/sector00_lambda_dm.c
@@ -375,6 +375,7 @@ add_test(NAME ff_tdm_0h1p           COMMAND python test.py WORKING_DIRECTORY ../
 add_test(NAME ms_tdm_1h1p           COMMAND python test.py WORKING_DIRECTORY ../test/ms_tdm_1h1p         )
 add_test(NAME ff_tdm_1h1p           COMMAND python test.py WORKING_DIRECTORY ../test/ff_tdm_1h1p         )
 add_test(NAME ms_tdm_0h2p           COMMAND python test.py WORKING_DIRECTORY ../test/ms_tdm_0h2p         )
+add_test(NAME direct_tdm_0h2p       COMMAND python test.py WORKING_DIRECTORY ../test/direct_tdm_0h2p     )
 
 # utilities
 add_test(NAME vibrot_levels         COMMAND python test.py WORKING_DIRECTORY ../test/vibrot_levels       )
