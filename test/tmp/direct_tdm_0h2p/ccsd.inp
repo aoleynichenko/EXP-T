@@ -5,7 +5,7 @@ sector 0h2p
 nactp 8
 disk_usage 0
 
-reuse 2-integrals amplitudes
+#reuse 2-integrals amplitudes
 mdprop "XDIPLEN" sym 1u+ approx 2 2 scheme 1
 mdprop "ZDIPLEN" sym 0u approx 2 2 scheme 1
 

@@ -311,6 +311,7 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
     /*
      * loop over pairs of irreducible representations
      */
+
     for (int irep_bra = 0; irep_bra < nrep_bra; irep_bra++) {
         for (int irep_ket = 0; irep_ket < nrep_ket; irep_ket++) {
             struct mv_block *block_bra = mv_blocks_bra + irep_bra;
@@ -339,7 +340,7 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
 
             msprop_transform_slater_to_model(
                     block_bra->nroots, block_bra->nroots, block_bra->ms_size, block_bra->ms_size,
-                    (scheme == 0) ? block_bra->vr : block_bra->vl, block_bra->vr, overlap_bra_slater, overlap_bra
+                    block_bra->vr, block_bra->vr, overlap_bra_slater, overlap_bra
             );
 
             /*
@@ -353,7 +354,7 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
 
             msprop_transform_slater_to_model(
                     block_ket->nroots, block_ket->nroots, block_ket->ms_size, block_ket->ms_size,
-                    (scheme == 0) ? block_ket->vr : block_ket->vl, block_ket->vr, overlap_ket_slater, overlap_ket
+                    block_ket->vr, block_ket->vr, overlap_ket_slater, overlap_ket
             );
 
             /*
@@ -405,6 +406,11 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
 
                         double complex prop_ij = 0.0 + 0.0 * I;
 
+                        double complex overlap_ii = overlap_bra[i * block_bra->nroots + i];
+                        double complex overlap_jj = overlap_ket[j * block_ket->nroots + j];
+                        double norm_i = sqrt(creal(overlap_ii));
+                        double norm_j = sqrt(creal(overlap_jj));
+
                         for (int m = 0; m < block_bra->nroots; m++) {
                             double complex overlap_inv_im = overlap_bra_inv[i * block_bra->nroots + m];
                             double complex prop_tmp_ij = prop_tmp[m * block_ket->nroots + j];
@@ -412,7 +418,7 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
                             prop_ij += overlap_inv_im * prop_tmp_ij;
                         }
 
-                        prop[i * block_ket->nroots + j] = prop_ij;
+                        prop[i * block_ket->nroots + j] = prop_ij * norm_i / norm_j;
                     }
                 }
 
@@ -443,6 +449,10 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
             cc_free(prop);
         }
     }
+
+    /*
+     * TODO: hermitization (?)
+     */
 
     cleanup:
     cc_free(prop_spinor);

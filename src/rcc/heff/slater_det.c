@@ -111,7 +111,14 @@ void str_print_slater_det(char *str, int sect_h, int sect_p, slater_det_t *det)
     for (int ih = 0; ih < sect_h; ih++) {
         int idx = det->indices[ih];
         int rep = spinor_info[idx].repno;
-        sprintf(buf, " %-6s #%4d (%12.6f)", get_irrep_name(rep), idx + 1, spinor_info[idx].eps);
+
+        if (cc_opts->spinor_labels[idx] != NULL) {
+            sprintf(buf, " %-6s #%4d %-14s", get_irrep_name(rep), idx + 1, cc_opts->spinor_labels[idx]);
+        }
+        else {
+            sprintf(buf, " %-6s #%4d (%12.6f)", get_irrep_name(rep), idx + 1, spinor_info[idx].eps);
+        }
+
         strcat(str, buf);
     }
 
@@ -126,7 +133,14 @@ void str_print_slater_det(char *str, int sect_h, int sect_p, slater_det_t *det)
     for (int ip = 0; ip < sect_p; ip++) {
         int idx = det->indices[sect_h + ip];
         int rep = spinor_info[idx].repno;
-        sprintf(buf, " %-6s #%4d (%12.6f)", get_irrep_name(rep), idx + 1, spinor_info[idx].eps);
+
+        if (cc_opts->spinor_labels[idx] != NULL) {
+            sprintf(buf, " %-6s #%4d %-14s", get_irrep_name(rep), idx + 1, cc_opts->spinor_labels[idx]);
+        }
+        else {
+            sprintf(buf, " %-6s #%4d (%12.6f)", get_irrep_name(rep), idx + 1, spinor_info[idx].eps);
+        }
+
         strcat(str, buf);
     }
 

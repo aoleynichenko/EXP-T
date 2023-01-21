@@ -94,6 +94,8 @@ void directive_damping(cc_options_t *opts);
 
 void directive_diis(cc_options_t *opts);
 
+void directive_crop(cc_options_t *opts);
+
 void directive_shifttype(cc_options_t *opts);
 
 void directive_shift(cc_options_t *opts);
@@ -250,6 +252,9 @@ int readinp(char *file_name, cc_options_t *opts)
                 break;
             case KEYWORD_DIIS:
                 directive_diis(opts);
+                break;
+            case KEYWORD_CROP:
+                directive_crop(opts);
                 break;
             case KEYWORD_SHIFTTYPE:
                 directive_shifttype(opts);
@@ -1074,7 +1079,7 @@ void directive_damping(cc_options_t *opts)
 
 /**
  * Syntax:
- * diis [ off || <integer> ]
+ * diis [ off || <integer> || triples ]
  */
 void directive_diis(cc_options_t *opts)
 {
@@ -1086,6 +1091,7 @@ void directive_diis(cc_options_t *opts)
     int token_type = next_token();
     if (token_type == END_OF_LINE) {
         opts->diis_enabled = 1;
+        opts->crop_enabled = 0;
         put_back(token_type);
         return;
     }
@@ -1097,6 +1103,7 @@ void directive_diis(cc_options_t *opts)
         else if (strcmp(yytext, "triples") == 0) {
             opts->diis_enabled = 1;
             opts->diis_triples = 1;
+            opts->crop_enabled = 0;
         }
         else {
             yyerror(msg);
@@ -1108,7 +1115,56 @@ void directive_diis(cc_options_t *opts)
             yyerror(msg2);
         }
         opts->diis_enabled = 1;
+        opts->crop_enabled = 0;
         opts->diis_dim = dim;
+        return;
+    }
+    else {
+        yyerror(msg);
+    }
+}
+
+
+/**
+ * Syntax:
+ * crop [ off || <integer> ]
+ */
+void directive_crop(cc_options_t *opts)
+{
+    static char *msg = "wrong specification of CROP!\n"
+                       "Possible arguments: no arguments, 'off' or integer value";
+    static char *msg2 = "wrong specification of CROP!\n"
+                        "dimension of the CROP subspace must be >= 2";
+
+    int token_type = next_token();
+    if (token_type == END_OF_LINE) {
+        opts->crop_enabled = 1;
+        opts->diis_enabled = 0;
+        put_back(token_type);
+        return;
+    }
+    else if (token_type == TT_WORD) {
+        str_tolower(yytext);
+        if (strcmp(yytext, "off") == 0) {
+            opts->crop_enabled = 0;
+        }
+        else if (strcmp(yytext, "triples") == 0) {
+            opts->crop_enabled = 1;
+            opts->diis_enabled = 0;
+            opts->crop_triples = 1;
+        }
+        else {
+            yyerror(msg);
+        }
+    }
+    else if (token_type == TT_INTEGER) {
+        int dim = atoi(yytext);
+        if (dim < 2) {
+            yyerror(msg2);
+        }
+        opts->crop_enabled = 1;
+        opts->diis_enabled = 0;
+        opts->crop_dim = dim;
         return;
     }
     else {

@@ -59,6 +59,7 @@ conv            { inc_col(); return KEYWORD_CONV;         }
 div_thresh      { inc_col(); return KEYWORD_DIV_THRESH;   }
 damping         { inc_col(); return KEYWORD_DAMPING;      }
 diis            { inc_col(); return KEYWORD_DIIS;         }
+crop            { inc_col(); return KEYWORD_CROP;         }
 shifttype       { inc_col(); return KEYWORD_SHIFTTYPE;    }
 shift           { inc_col(); return KEYWORD_SHIFT;        }
 reuse           { inc_col(); return KEYWORD_REUSE;        }

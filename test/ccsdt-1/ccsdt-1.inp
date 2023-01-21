@@ -12,5 +12,8 @@ disk_usage 0
 #nthreads 2
 
 compress_triples 1e-8 float
-
+#diis triples
+#diis 3
+crop triples
+crop 3
 

@@ -194,6 +194,7 @@ add_executable(expt.x
         src/rcc/methods/sector20.c    # DIP-FSCC, sector 2h0p
         src/rcc/methods/ccutils.c     # utility functions for FSCC models
         src/rcc/methods/diis.c
+        src/rcc/methods/crop.c
 
         src/rcc/methods/sector00_ccsdt.c
         src/rcc/methods/sector01_ccsdt.c
@@ -339,6 +340,22 @@ target_link_libraries(expt2pam.x      -lm ${BLAS_LIBRARIES})
 target_link_libraries(expt_transform_natorb.x -lm)
 target_link_libraries(expt_read_dfcoef.x -lm)
 target_link_libraries(expt_read_mdprop.x -lm)
+
+
+########################################################################################################################
+#
+# copy useful python scripts to build/
+#
+########################################################################################################################
+
+
+add_custom_command(
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/expt_spectrum.py"
+        #COMMAND bash -n "${CMAKE_CURRENT_SOURCE_DIR}/scripts/expt_spectrum.py"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/scripts/expt_spectrum.py" "${CMAKE_CURRENT_BINARY_DIR}/expt_spectrum.py"
+        COMMAND chmod +x "${CMAKE_CURRENT_BINARY_DIR}/expt_spectrum.py"
+)
+add_custom_target(expt_spectrum.py ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/expt_spectrum.py)
 
 
 ########################################################################################################################

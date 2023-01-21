@@ -162,6 +162,11 @@ cc_options_t *new_options()
     opts->diis_dim = 10;       // dimension of the DIIS subspace
     opts->diis_triples = 0;   // do DIIS for triples amplitudes or not
 
+    // CROP -- convergence acceleration
+    opts->crop_enabled = 0;
+    opts->crop_dim = 10;       // dimension of the CROP subspace
+    opts->crop_triples = 0;   // do CROP for triples amplitudes or not
+
     // how many roots should be processed
     opts->nroots_specified = 0;     // all roots by default
     // number of lowest roots in each symmetry
@@ -574,6 +579,17 @@ void print_options(cc_options_t *opts)
     else {
         printf(" %-15s  %-40s  %s\n", "diis", "DIIS technique for convergence", "disabled");
     }
+
+    if (opts->crop_enabled) {
+        printf(" %-15s  %-40s  %s\n", "crop", "CROP technique for convergence", "enabled");
+        printf(" %-15s  %-40s  %d\n", "crop <n>", "CROP subspace dimension", opts->crop_dim);
+        printf(" %-15s  %-40s  %s\n", "crop triples", "CROP for triples amplitudes",
+               opts->crop_triples ? "enabled" : "disabled");
+    }
+    else {
+        printf(" %-15s  %-40s  %s\n", "diis", "DIIS technique for convergence", "disabled");
+    }
+
     for (int h = 0; h < MAX_SECTOR_RANK; h++) {
         for (int p = 0; p < MAX_SECTOR_RANK; p++) {
             if (opts->damping[h][p].enabled) {

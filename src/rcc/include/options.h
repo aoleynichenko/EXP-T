@@ -387,6 +387,13 @@ struct cc_options {
     int diis_triples;   // do DIIS for triples amplitudes or not
 
     /*
+     * CROP -- convergence acceleration
+     */
+    int crop_enabled;
+    int crop_dim;       // dimension of the CROP subspace
+    int crop_triples;   // do CROP for triples amplitudes or not
+
+    /*
      * damping
      */
     cc_damping_params_t damping[MAX_SECTOR_RANK][MAX_SECTOR_RANK];

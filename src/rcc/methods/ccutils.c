@@ -36,6 +36,7 @@
 #include <stdlib.h>
 
 #include "codata.h"
+#include "crop.h"
 #include "diis.h"
 #include "engine.h"
 #include "datamodel.h"
@@ -75,9 +76,16 @@ int solve_amplitude_equations(
     int do_triples = (triples != NULL) ? 1 : 0;
 
     /*
-     * setup DIIS
+     * setup DIIS/CROP
      */
-    diis_queue_t *diis_queue = new_diis_queue(do_singles, do_doubles, do_triples && cc_opts->diis_triples);
+    crop_queue_t *crop_queue = NULL;
+    diis_queue_t *diis_queue = NULL;
+    if (cc_opts->diis_enabled) {
+        diis_queue = new_diis_queue(do_singles, do_doubles, do_triples && cc_opts->diis_triples);
+    }
+    else if (cc_opts->crop_enabled) {
+        crop_queue = new_crop_queue(do_singles, do_doubles, do_triples && cc_opts->crop_triples);
+    }
 
     /*
      * beautiful header before iterations
@@ -254,13 +262,20 @@ int solve_amplitude_equations(
         }
 
         /*
-         * DIIS extrapolation step
+         * DIIS/CROP extrapolation step
          */
         if (cc_opts->diis_enabled) {
             diis_put(diis_queue, singles_buf, singles, doubles_buf, doubles, triples_buf, triples, iter);
             if (iter >= 2) {
                 diis_truncate(diis_queue, cc_opts->diis_dim);
                 diis_extrapolate(diis_queue, singles_buf, doubles_buf, triples_buf);
+            }
+        }
+        else if (cc_opts->crop_enabled) {
+            crop_put(crop_queue, singles_buf, singles, doubles_buf, doubles, triples_buf, triples, iter);
+            if (iter >= 2) {
+                crop_truncate(crop_queue, cc_opts->crop_dim);
+                crop_extrapolate(crop_queue, singles_buf, doubles_buf, triples_buf);
             }
         }
 
@@ -313,9 +328,14 @@ int solve_amplitude_equations(
     }
 
     /*
-     * finalize DIIS
+     * finalize DIIS/CROP
      */
-    delete_diis_queue(diis_queue);
+    if (diis_queue) {
+        delete_diis_queue(diis_queue);
+    }
+    if (crop_queue) {
+        delete_crop_queue(crop_queue);
+    }
 
     /*
      * print footer

@@ -458,6 +458,7 @@ void print_header_banner()
     printf("Authors:\n");
     printf("  Alexander Oleynichenko [alexvoleynichenko@gmail.com]\n");
     printf("  Andrei Zaitsevskii\n");
+    printf("  Artem Rumyantsev\n");
     printf("  Ephraim Eliav\n");
 #if defined __ICC
     printf("Compiler: Intel C Compiler %d (%s)\n", __ICC, __VERSION__);
