@@ -1691,7 +1691,7 @@ void directive_mdprop(cc_options_t *opts)
     cc_ms_prop_query_t *q = &opts->prop_queries[opts->n_model_space_props];
     strcpy(q->prop_name, yytext + 1);
     q->do_transpose = 0;
-    q->scheme = 0;
+    q->scheme = CC_DIRECT_PROP_SCHEME_HERMITIAN;
     q->source = CC_PROP_FROM_MDPROP;
     strcpy(q->irrep_name, "");
     q->approx_denominator = CC_PROPERTIES_APPROX_MODEL_SPACE;
@@ -1715,14 +1715,19 @@ void directive_mdprop(cc_options_t *opts)
             }
             else if (strcmp(yytext, "scheme") == 0) {
                 token_type = next_token();
-                if (token_type != TT_INTEGER) {
-                    yyerror("integer expected");
+
+                if (token_type == TT_WORD && strcmp(yytext, "hermitian") == 0) {
+                    q->scheme = CC_DIRECT_PROP_SCHEME_HERMITIAN;
                 }
-                int scheme = atoi(yytext);
-                if (!(scheme == 0 || scheme == 1 || scheme == 2)) {
-                    yyerror("unknown scheme");
+                else if (token_type == TT_WORD && strcmp(yytext, "non-hermitian") == 0) {
+                    q->scheme = CC_DIRECT_PROP_SCHEME_NON_HERMITIAN;
                 }
-                q->scheme = scheme;
+                else if (token_type == TT_WORD && strcmp(yytext, "connected") == 0) {
+                    q->scheme = CC_DIRECT_PROP_SCHEME_CONNECTED;
+                }
+                else {
+                    yyerror("expected keyword: 'hermitian', 'non-hermitian' or 'connected'");
+                }
             }
             else if (strcmp(yytext, "approx") == 0) {
                 /*
@@ -1795,7 +1800,7 @@ void directive_txtprop(cc_options_t *opts)
     cc_ms_prop_query_t *q = &opts->prop_queries[opts->n_model_space_props];
     q->source = CC_PROP_FROM_TXTPROP;
     q->do_transpose = 0;
-    q->scheme = 0;
+    q->scheme = CC_DIRECT_PROP_SCHEME_HERMITIAN;
     strcpy(q->irrep_name, "");
     q->approx_denominator = CC_PROPERTIES_APPROX_MODEL_SPACE;
     q->approx_numerator = CC_PROPERTIES_APPROX_MODEL_SPACE;
@@ -1834,14 +1839,16 @@ void directive_txtprop(cc_options_t *opts)
             }
             else if (strcmp(yytext, "scheme") == 0) {
                 token_type = next_token();
-                if (token_type != TT_INTEGER) {
-                    yyerror("integer expected");
+
+                if (token_type == TT_WORD && strcmp(yytext, "hermitian") == 0) {
+                    q->scheme = CC_DIRECT_PROP_SCHEME_HERMITIAN;
                 }
-                int scheme = atoi(yytext);
-                if (!(scheme == 0 || scheme == 1 || scheme == 2)) {
-                    yyerror("unknown scheme");
+                else if (token_type == TT_WORD && strcmp(yytext, "non-hermitian") == 0) {
+                    q->scheme = CC_DIRECT_PROP_SCHEME_NON_HERMITIAN;
                 }
-                q->scheme = scheme;
+                else {
+                    yyerror("expected keyword: 'hermitian' or 'non-hermitian'");
+                }
             }
             else if (strcmp(yytext, "approx") == 0) {
                 /*
@@ -1999,6 +2006,7 @@ void directive_overlap(cc_options_t *opts)
         }
         if ((sect_h == 1 && sect_p == 0) ||
             (sect_h == 0 && sect_p == 1) ||
+            (sect_h == 1 && sect_p == 1) ||
             (sect_h == 0 && sect_p == 2)) {
             // OK
         }

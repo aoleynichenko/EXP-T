@@ -33,6 +33,10 @@
 #include "comdef.h"
 #include "../heff/slater_det.h"
 
+#define IH_IMMS_SUBSPACES_DEF_ENERGY 0
+#define IH_IMMS_SUBSPACES_DEF_NTOTAL 1
+#define IH_IMMS_SUBSPACES_DEF_IRREPS 2
+
 #define IH_IMMS_MAX_SPINOR_SUBSPACES 50
 #define IH_IMMS_MAX_MAIN_SUBSPACES   50
 
@@ -43,8 +47,16 @@ typedef struct {
     int npower;
     int shift_type;
     double scale_shift;
+    /*
+     * spaces of spinors used to construct main/intermediate determinants
+     */
     int n_spinor_subspaces;
+    int subspaces_definition;
     double subspace_energy_ranges[IH_IMMS_MAX_SPINOR_SUBSPACES][2];
+    int subspace_total_nspinors[IH_IMMS_MAX_SPINOR_SUBSPACES];
+    /*
+     * definition of subspaces of "main" determinants
+     */
     int n_main_subspaces;
     int main_occ[IH_IMMS_MAX_MAIN_SUBSPACES][IH_IMMS_MAX_SPINOR_SUBSPACES];
 } ih_imms_options_t;

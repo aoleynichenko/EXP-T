@@ -83,27 +83,32 @@ void construct_cc_wfn_overlap_matrix(int sect_h, int sect_p, int dim, slater_det
                                      double complex *overlap_slater, double scalar_term,
                                      int n_diagrams, char **list_diagrams);
 
-void direct_property_0h1p(char *result_name, int operator_symmetry, int approximation, int disconn_enabled);
+void direct_property_0h1p(char *result_name, int operator_symmetry, int approximation, int disconnected);
 
-void direct_property_1h0p(char *result_name, int operator_symmetry, int approximation);
+void direct_property_1h0p(char *result_name, int operator_symmetry, int approximation, int disconnected);
 
-void direct_property_0h2p(char *result_name, int operator_symmetry, int approximation, int disconn_enabled);
+void direct_property_0h2p(char *result_name, int operator_symmetry, int approximation, int disconnected);
+
+void direct_property_0h0p_1h1p(char *result_name, int operator_symmetry, int approximation, int disconnected);
+
+void direct_property_1h1p_0h0p(char *result_name, int operator_symmetry, int approximation, int disconnected);
+
+void direct_property_1h1p(char *result_name, int operator_symmetry, int approximation, int disconnected);
 
 double complex direct_property_0h0p(int approximation);
 
-void construct_direct_property_matrix(
-        int sect_h, int sect_p,
-        int bra_dim, slater_det_t *bra_dets,
-        int ket_dim, slater_det_t *ket_dets,
-        int is_diagonal_block, double complex *overlap_slater, double scalar_term,
-        int n_diagrams, char **diagram_list
-);
+void construct_direct_property_matrix(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sect_p, int bra_dim,
+                                      slater_det_t *bra_dets, int ket_dim, slater_det_t *ket_dets,
+                                      int is_diagonal_block, double complex *overlap_slater, double scalar_term,
+                                      int n_diagrams, char **diagram_list);
 
 double complex sector_0h0p_overlap(int approximation);
 
 void sector_1h0p_overlap(char *result_name, int approximation);
 
 void sector_0h1p_overlap(char *result_name, int approximation);
+
+void sector_1h1p_overlap(char *result_name, int approximation);
 
 void sector_0h2p_overlap(char *result_name, int approximation);
 
@@ -118,7 +123,19 @@ void conjugate_cluster_amplitudes_1h0p();
 
 void conjugate_cluster_amplitudes_0h1p();
 
+void conjugate_cluster_amplitudes_1h1p();
+
 void conjugate_cluster_amplitudes_0h2p();
+
+void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *new_valence, int extract_valence);
+
+void construct_effective_property_matrix_irrep_pair(
+        int bra_sect_h, int bra_sect_p, struct mv_block *block_bra,
+        int ket_sect_h, int ket_sect_p, struct mv_block *block_ket,
+        double overlap_scalar_part, int n_overlap_diagrams, char **list_overlap_diagrams,
+        double prop_scalar_part, int n_prop_diagrams, char **list_prop_diagrams,
+        int scheme, int is_diagonal_block
+);
 
 
 /**
@@ -161,7 +178,8 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
 
     if ((sect_h == 1 && sect_p == 0) ||
         (sect_h == 0 && sect_p == 1) ||
-        (sect_h == 0 && sect_p == 2)) {
+        (sect_h == 0 && sect_p == 2) ||
+        (sect_h == 1 && sect_p == 1)) {
         // OK
     }
     else {
@@ -182,6 +200,9 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
     }
     if (sect_h >= 1) {
         conjugate_cluster_amplitudes_1h0p();
+    }
+    if (sect_h >= 1 && sect_p >= 1) {
+        conjugate_cluster_amplitudes_1h1p();
     }
     if (sect_p >= 2) {
         conjugate_cluster_amplitudes_0h2p();
@@ -247,25 +268,39 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
      * construct effective property operators:
      * <0| {e^T^\dagger} O {e^T} |0>:
      */
+    int calc_disconn = prop_query->scheme == CC_DIRECT_PROP_SCHEME_CONNECTED ? 0 : 1;
     int n_prop_diagrams = 0;
     char *prop_diagrams[10];
-    int disconn = (prop_query->scheme == 2) ? 0 : 1;
-    printf(" disconnected: %s\n", disconn ? "yes" : "no");
 
     double complex prop_0h0p = direct_property_0h0p(prop_query->approx_numerator);
     if (sect_h >= 1) {
         printf(" construction of the one-body contribution (1h0p) ...\n");
-        direct_property_1h0p("prop_1h0p", prop_sym, prop_query->approx_numerator);
+        direct_property_1h0p("prop_1h0p", prop_sym, prop_query->approx_numerator, calc_disconn);
         prop_diagrams[n_prop_diagrams++] = cc_strdup("prop_1h0p");
     }
     if (sect_p >= 1) {
         printf(" construction of the one-body contribution (0h1p) ...\n");
-        direct_property_0h1p("prop_0h1p", prop_sym, prop_query->approx_numerator, disconn);
+        direct_property_0h1p("prop_0h1p", prop_sym, prop_query->approx_numerator, calc_disconn);
         prop_diagrams[n_prop_diagrams++] = cc_strdup("prop_0h1p");
+    }
+    if (sect_h >= 1 && sect_p >= 1) {
+
+        printf(" construction of the one-body contribution (0h0p -> 1h1p) ...\n");
+        direct_property_0h0p_1h1p("prop_0h0p_1h1p", prop_sym, prop_query->approx_numerator, calc_disconn);
+        prop_diagrams[n_prop_diagrams++] = cc_strdup("prop_0h0p_1h1p");
+
+        printf(" construction of the one-body contribution (1h1p -> 0h0p) ...\n");
+        direct_property_1h1p_0h0p("prop_1h1p_0h0p", prop_sym, prop_query->approx_numerator, calc_disconn);
+        prop_diagrams[n_prop_diagrams++] = cc_strdup("prop_1h1p_0h0p");
+
+        printf(" construction of the two-body contribution (1h1p) ...\n");
+        direct_property_1h1p("prop_1h1p", prop_sym, prop_query->approx_numerator, calc_disconn);
+        prop_diagrams[n_prop_diagrams++] = cc_strdup("prop_1h1p");
+
     }
     if (sect_p >= 2) {
         printf(" construction of the two-body contribution (0h2p) ...\n");
-        direct_property_0h2p("prop_0h2p", prop_sym, prop_query->approx_numerator, disconn);
+        direct_property_0h2p("prop_0h2p", prop_sym, prop_query->approx_numerator, calc_disconn);
         prop_diagrams[n_prop_diagrams++] = cc_strdup("prop_0h2p");
     }
 
@@ -294,6 +329,11 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
         sector_0h1p_overlap("overlap_0h1p", prop_query->approx_denominator);
         overlap_diagrams[n_overlap_diagrams++] = cc_strdup("overlap_0h1p");
     }
+    if (sect_h >= 1 && sect_p >= 1) {
+        printf(" construction of the overlap diagram (1h1p) ...\n");
+        sector_1h1p_overlap("overlap_1h1p", prop_query->approx_denominator);
+        overlap_diagrams[n_overlap_diagrams++] = cc_strdup("overlap_1h1p");
+    }
     if (sect_p >= 2) {
         printf(" construction of the overlap diagram (0h2p) ...\n");
         sector_0h2p_overlap("overlap_0h2p", prop_query->approx_denominator);
@@ -309,150 +349,77 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
     printf("\n\n");
 
     /*
-     * loop over pairs of irreducible representations
+     * special case: 0h0p -> 1h1p transitions
      */
+    if (sect_h == 1 && sect_p == 1) {
 
-    for (int irep_bra = 0; irep_bra < nrep_bra; irep_bra++) {
+        mv_block_t vac_block;
+
+        vac_block.eigval = z_zeros(1, 1);
+        vac_block.energy_cm = d_zeros(1, 1);
+        vac_block.nroots = 1;
+        vac_block.ms_size = 1;
+
+        int vac_irrep = get_vacuum_irrep();
+        char *vac_irrep_name = get_irrep_name(vac_irrep);
+        strcpy(vac_block.rep_name, vac_irrep_name);
+
+        vac_block.dets = (slater_det_t *) cc_calloc(1, sizeof(slater_det_t));
+        vac_block.dets[0].sym = vac_irrep;
+
+        vac_block.vl = z_zeros(1, 1);
+        vac_block.vr = z_zeros(1, 1);
+        vac_block.vl[0] = 1.0 + 0.0 * I;
+        vac_block.vr[0] = 1.0 + 0.0 * I;
+
+        printf("\n 0h0p -> 1h1p transitions\n\n");
+
         for (int irep_ket = 0; irep_ket < nrep_ket; irep_ket++) {
-            struct mv_block *block_bra = mv_blocks_bra + irep_bra;
             struct mv_block *block_ket = mv_blocks_ket + irep_ket;
 
-            printf(" < %-4s | prop | %-4s >", block_bra->rep_name, block_ket->rep_name);
-
-            double complex *overlap_bra_slater = x_zeros(CC_COMPLEX, block_bra->ms_size, block_bra->ms_size);
-            double complex *overlap_ket_slater = x_zeros(CC_COMPLEX, block_ket->ms_size, block_ket->ms_size);
-            double complex *overlap_bra = x_zeros(CC_COMPLEX, block_bra->nroots, block_bra->nroots);
-            double complex *overlap_ket = x_zeros(CC_COMPLEX, block_ket->nroots, block_ket->nroots);
-
-            double complex *prop_slater = x_zeros(CC_COMPLEX, block_bra->ms_size, block_ket->ms_size);
-            double complex *prop = x_zeros(CC_COMPLEX, block_bra->nroots, block_ket->nroots);
-
-            int scheme = prop_query->scheme;
-
-            /*
-             * construct overlap integrals: bra vectors
-             */
-            construct_cc_wfn_overlap_matrix(
-                    sect_h, sect_p, block_bra->ms_size, block_bra->dets,
-                    overlap_bra_slater, overlap_scalar_part,
-                    n_overlap_diagrams, overlap_diagrams
+            construct_effective_property_matrix_irrep_pair(
+                    0, 0, &vac_block,
+                    1, 1, block_ket,
+                    overlap_scalar_part, n_overlap_diagrams, overlap_diagrams,
+                    prop_0h0p, n_prop_diagrams, prop_diagrams,
+                    prop_query->scheme, 0
             );
+        }
 
-            msprop_transform_slater_to_model(
-                    block_bra->nroots, block_bra->nroots, block_bra->ms_size, block_bra->ms_size,
-                    block_bra->vr, block_bra->vr, overlap_bra_slater, overlap_bra
+        printf("\n 1h1p -> 0h0p transitions\n\n");
+
+        for (int irep_bra = 0; irep_bra < nrep_ket; irep_bra++) {
+            struct mv_block *block_bra = mv_blocks_bra + irep_bra;
+
+            construct_effective_property_matrix_irrep_pair(
+                    1, 1, block_bra,
+                    0, 0, &vac_block,
+                    overlap_scalar_part, n_overlap_diagrams, overlap_diagrams,
+                    prop_0h0p, n_prop_diagrams, prop_diagrams,
+                    prop_query->scheme, 0
             );
-
-            /*
-             * construct overlap integrals: ket vectors
-             */
-            construct_cc_wfn_overlap_matrix(
-                    sect_h, sect_p, block_ket->ms_size, block_ket->dets,
-                    overlap_ket_slater, overlap_scalar_part,
-                    n_overlap_diagrams, overlap_diagrams
-            );
-
-            msprop_transform_slater_to_model(
-                    block_ket->nroots, block_ket->nroots, block_ket->ms_size, block_ket->ms_size,
-                    block_ket->vr, block_ket->vr, overlap_ket_slater, overlap_ket
-            );
-
-            /*
-             * construct property matrix in the basis of Slater determinants
-             */
-            construct_direct_property_matrix(
-                    sect_h, sect_p,
-                    block_bra->ms_size, block_bra->dets,
-                    block_ket->ms_size, block_ket->dets,
-                    irep_bra == irep_ket, prop_slater,
-                    prop_0h0p, n_prop_diagrams, prop_diagrams
-            );
-
-            /*
-             * construct property matrix in the basis of model vectors
-             */
-            msprop_transform_slater_to_model(
-                    block_bra->nroots, block_ket->nroots, block_bra->ms_size, block_ket->ms_size,
-                    (scheme == 0) ? block_bra->vr : block_bra->vl, block_ket->vr, prop_slater, prop
-            );
-
-            if (scheme == 0) {
-                /*
-                 * divide by norms of wavefunctions
-                 */
-                for (int i = 0; i < block_bra->nroots; i++) {
-                    for (int j = 0; j < block_ket->nroots; j++) {
-
-                        double complex overlap_ii = overlap_bra[i * block_bra->nroots + i];
-                        double complex overlap_jj = overlap_ket[j * block_ket->nroots + j];
-
-                        double norm_i = sqrt(creal(overlap_ii));
-                        double norm_j = sqrt(creal(overlap_jj));
-
-                        prop[i * block_ket->nroots + j] /= (norm_i * norm_j);
-                    }
-                }
-            }
-            else if (scheme == 1) {
-
-                double complex *overlap_bra_inv = x_zeros(CC_COMPLEX, block_bra->nroots, block_bra->nroots);
-                double complex *prop_tmp = x_zeros(CC_COMPLEX, block_bra->nroots, block_ket->nroots);
-
-                memcpy(prop_tmp, prop, sizeof(double complex) * block_bra->nroots * block_ket->nroots);
-                inverse_matrix(block_bra->nroots, overlap_bra, overlap_bra_inv);
-
-                for (int i = 0; i < block_bra->nroots; i++) {
-                    for (int j = 0; j < block_ket->nroots; j++) {
-
-                        double complex prop_ij = 0.0 + 0.0 * I;
-
-                        double complex overlap_ii = overlap_bra[i * block_bra->nroots + i];
-                        double complex overlap_jj = overlap_ket[j * block_ket->nroots + j];
-                        double norm_i = sqrt(creal(overlap_ii));
-                        double norm_j = sqrt(creal(overlap_jj));
-
-                        for (int m = 0; m < block_bra->nroots; m++) {
-                            double complex overlap_inv_im = overlap_bra_inv[i * block_bra->nroots + m];
-                            double complex prop_tmp_ij = prop_tmp[m * block_ket->nroots + j];
-
-                            prop_ij += overlap_inv_im * prop_tmp_ij;
-                        }
-
-                        prop[i * block_ket->nroots + j] = prop_ij * norm_i / norm_j;
-                    }
-                }
-
-                cc_free(overlap_bra_inv);
-                cc_free(prop_tmp);
-            }
-            else {
-                // scheme == 2
-                // (disconnected terms are excluded, no denominators)
-            }
-
-            /*
-             * print smart table of matrix elements
-             */
-            print_property_matrix(
-                    block_bra->nroots, block_ket->nroots, block_bra->energy_cm, block_ket->energy_cm,
-                    block_bra->rep_name, block_ket->rep_name, prop
-            );
-
-            /*
-             * cleanup
-             */
-            cc_free(overlap_bra_slater);
-            cc_free(overlap_bra);
-            cc_free(overlap_ket_slater);
-            cc_free(overlap_ket);
-            cc_free(prop_slater);
-            cc_free(prop);
         }
     }
+    else {
+        /*
+         * loop over pairs of irreducible representations
+         * (except for 1h1p)
+         */
+        for (int irep_bra = 0; irep_bra < nrep_bra; irep_bra++) {
+            for (int irep_ket = 0; irep_ket < nrep_ket; irep_ket++) {
+                struct mv_block *block_bra = mv_blocks_bra + irep_bra;
+                struct mv_block *block_ket = mv_blocks_ket + irep_ket;
 
-    /*
-     * TODO: hermitization (?)
-     */
+                construct_effective_property_matrix_irrep_pair(
+                        sect_h, sect_p, block_bra,
+                        sect_h, sect_p, block_ket,
+                        overlap_scalar_part, n_overlap_diagrams, overlap_diagrams,
+                        prop_0h0p, n_prop_diagrams, prop_diagrams,
+                        prop_query->scheme, irep_bra == irep_ket
+                );
+            }
+        }
+    }
 
     cleanup:
     cc_free(prop_spinor);
@@ -468,6 +435,157 @@ void direct_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sec
     for (int i = 0; i < n_prop_diagrams; i++) {
         cc_free(prop_diagrams[i]);
     }
+}
+
+
+void construct_effective_property_matrix_irrep_pair(
+        int bra_sect_h, int bra_sect_p, struct mv_block *block_bra,
+        int ket_sect_h, int ket_sect_p, struct mv_block *block_ket,
+        double overlap_scalar_part, int n_overlap_diagrams, char **list_overlap_diagrams,
+        double prop_scalar_part, int n_prop_diagrams, char **list_prop_diagrams,
+        int scheme, int is_diagonal_block
+)
+{
+    printf(" < %-4s | prop | %-4s >", block_bra->rep_name, block_ket->rep_name);
+
+    double complex *overlap_bra_slater = x_zeros(CC_COMPLEX, block_bra->ms_size, block_bra->ms_size);
+    double complex *overlap_ket_slater = x_zeros(CC_COMPLEX, block_ket->ms_size, block_ket->ms_size);
+    double complex *overlap_bra = x_zeros(CC_COMPLEX, block_bra->nroots, block_bra->nroots);
+    double complex *overlap_ket = x_zeros(CC_COMPLEX, block_ket->nroots, block_ket->nroots);
+
+    double complex *prop_slater = x_zeros(CC_COMPLEX, block_bra->ms_size, block_ket->ms_size);
+    double complex *prop = x_zeros(CC_COMPLEX, block_bra->nroots, block_ket->nroots);
+
+    /*
+     * construct overlap integrals: bra vectors
+     */
+    construct_cc_wfn_overlap_matrix(
+            bra_sect_h, bra_sect_p, block_bra->ms_size, block_bra->dets,
+            overlap_bra_slater, overlap_scalar_part,
+            n_overlap_diagrams, list_overlap_diagrams
+    );
+
+    msprop_transform_slater_to_model(
+            block_bra->nroots, block_bra->nroots, block_bra->ms_size, block_bra->ms_size,
+            block_bra->vr, block_bra->vr, overlap_bra_slater, overlap_bra
+    );
+
+    /*
+     * construct overlap integrals: ket vectors
+     */
+    construct_cc_wfn_overlap_matrix(
+            ket_sect_h, ket_sect_p, block_ket->ms_size, block_ket->dets,
+            overlap_ket_slater, overlap_scalar_part,
+            n_overlap_diagrams, list_overlap_diagrams
+    );
+
+    msprop_transform_slater_to_model(
+            block_ket->nroots, block_ket->nroots, block_ket->ms_size, block_ket->ms_size,
+            block_ket->vr, block_ket->vr, overlap_ket_slater, overlap_ket
+    );
+
+    /*
+     * construct property matrix in the basis of Slater determinants
+     */
+    construct_direct_property_matrix(
+            bra_sect_h, bra_sect_p, ket_sect_h, ket_sect_p,
+            block_bra->ms_size, block_bra->dets,
+            block_ket->ms_size, block_ket->dets,
+            is_diagonal_block, prop_slater,
+            prop_scalar_part, n_prop_diagrams, list_prop_diagrams
+    );
+
+    /*
+     * construct property matrix in the basis of model vectors
+     */
+    msprop_transform_slater_to_model(
+            block_bra->nroots, block_ket->nroots, block_bra->ms_size, block_ket->ms_size,
+            (scheme == CC_DIRECT_PROP_SCHEME_HERMITIAN) ? block_bra->vr : block_bra->vl, block_ket->vr,
+            prop_slater, prop
+    );
+
+    if (scheme == CC_DIRECT_PROP_SCHEME_HERMITIAN) {
+        /*
+         * divide by norms of wavefunctions
+         */
+        for (int i = 0; i < block_bra->nroots; i++) {
+            for (int j = 0; j < block_ket->nroots; j++) {
+
+                double complex overlap_ii = overlap_bra[i * block_bra->nroots + i];
+                double complex overlap_jj = overlap_ket[j * block_ket->nroots + j];
+
+                double norm_i = sqrt(creal(overlap_ii));
+                double norm_j = sqrt(creal(overlap_jj));
+
+                prop[i * block_ket->nroots + j] /= (norm_i * norm_j);
+            }
+        }
+    }
+    else if (scheme == CC_DIRECT_PROP_SCHEME_NON_HERMITIAN) {
+
+        double complex *overlap_bra_inv = x_zeros(CC_COMPLEX, block_bra->nroots, block_bra->nroots);
+        double complex *prop_tmp = x_zeros(CC_COMPLEX, block_bra->nroots, block_ket->nroots);
+
+        memcpy(prop_tmp, prop, sizeof(double complex) * block_bra->nroots * block_ket->nroots);
+        inverse_matrix(block_bra->nroots, overlap_bra, overlap_bra_inv);
+
+        for (int i = 0; i < block_bra->nroots; i++) {
+            for (int j = 0; j < block_ket->nroots; j++) {
+
+                double complex prop_ij = 0.0 + 0.0 * I;
+
+                double complex overlap_ii = overlap_bra[i * block_bra->nroots + i];
+                double complex overlap_jj = overlap_ket[j * block_ket->nroots + j];
+                double norm_i = sqrt(creal(overlap_ii));
+                double norm_j = sqrt(creal(overlap_jj));
+
+                for (int m = 0; m < block_bra->nroots; m++) {
+                    double complex overlap_inv_im = overlap_bra_inv[i * block_bra->nroots + m];
+                    double complex prop_tmp_ij = prop_tmp[m * block_ket->nroots + j];
+
+                    prop_ij += overlap_inv_im * prop_tmp_ij;
+                }
+
+                prop[i * block_ket->nroots + j] = prop_ij * norm_i / norm_j;
+            }
+        }
+
+        cc_free(overlap_bra_inv);
+        cc_free(prop_tmp);
+    }
+    else if (scheme == CC_DIRECT_PROP_SCHEME_CONNECTED) {
+
+        for (int i = 0; i < block_bra->nroots; i++) {
+            for (int j = 0; j < block_ket->nroots; j++) {
+
+                double complex overlap_ii = overlap_bra[i * block_bra->nroots + i];
+                double complex overlap_jj = overlap_ket[j * block_ket->nroots + j];
+
+                double norm_i = sqrt(creal(overlap_ii));
+                double norm_j = sqrt(creal(overlap_jj));
+
+                prop[i * block_ket->nroots + j] = prop[i * block_ket->nroots + j] * norm_i / norm_j;
+            }
+        }
+    }
+
+    /*
+     * print smart table of matrix elements
+     */
+    print_property_matrix(
+            block_bra->nroots, block_ket->nroots, block_bra->energy_cm, block_ket->energy_cm,
+            block_bra->rep_name, block_ket->rep_name, prop
+    );
+
+    /*
+     * cleanup
+     */
+    cc_free(overlap_bra_slater);
+    cc_free(overlap_bra);
+    cc_free(overlap_ket_slater);
+    cc_free(overlap_ket);
+    cc_free(prop_slater);
+    cc_free(prop);
 }
 
 
@@ -494,15 +612,15 @@ void print_direct_property_settings(cc_ms_prop_query_t *prop_query,
         printf("%s (irrep %d)\n", prop_query->irrep_name, get_rep_number(prop_query->irrep_name));
     }
 
-    printf(" ** Scheme: %d ", prop_query->scheme);
-    if (prop_query->scheme == 0) {
-        printf("(hermitian, divide by norms)");
+    printf(" ** Scheme: ");
+    if (prop_query->scheme == CC_DIRECT_PROP_SCHEME_HERMITIAN) {
+        printf("hermitian");
     }
-    else if (prop_query->scheme == 1) {
-        printf("(multiplication by inverse matrix)");
+    else if (prop_query->scheme == CC_DIRECT_PROP_SCHEME_NON_HERMITIAN) {
+        printf("non-hermitian");
     }
-    else if (prop_query->scheme == 2) {
-        printf("(no division, no disconnected terms)");
+    else if (prop_query->scheme == CC_DIRECT_PROP_SCHEME_CONNECTED) {
+        printf("connected");
     }
     printf("\n");
 
@@ -573,13 +691,21 @@ void conjugate_cluster_amplitudes_0h2p()
 }
 
 
+void conjugate_cluster_amplitudes_1h1p()
+{
+    diagram_conjugate("e1c", "e1c+");
+    diagram_conjugate("e2c", "e2c+");
+    if (triples_enabled()) {
+        diagram_conjugate("e3c", "e3c+");
+    }
+}
+
+
 void construct_direct_property_matrix(
-        int sect_h, int sect_p,
-        int bra_dim, slater_det_t *bra_dets,
-        int ket_dim, slater_det_t *ket_dets,
-        int is_diagonal_block, double complex *overlap_slater, double scalar_term,
-        int n_diagrams, char **diagram_list
-)
+        int bra_sect_h, int bra_sect_p, int ket_sect_h, int ket_sect_p,
+        int bra_dim, slater_det_t *bra_dets, int ket_dim, slater_det_t *ket_dets,
+        int is_diagonal_block, double complex *overlap_slater,
+        double scalar_term, int n_diagrams, char **diagram_list)
 {
     memset(overlap_slater, 0, sizeof(double complex) * bra_dim * ket_dim);
 
@@ -589,19 +715,68 @@ void construct_direct_property_matrix(
         }
     }
 
+    //printf("%d%d -> %d%d\n", bra_sect_h, bra_sect_p, ket_sect_h, ket_sect_p);
+
     for (int k = 0; k < n_diagrams; k++) {
         char *dg_name = diagram_list[k];
+        //printf("dg_name = %s\n", dg_name);
+        if (strcmp(dg_name, "prop_0h0p_1h1p") == 0) {
+            //prt(dg_name);
+        }
+
+        int npart = rank(dg_name) / 2;
+        if (2 * npart > bra_sect_h + bra_sect_p + ket_sect_h + ket_sect_p) {
+            continue;
+        }
+
         diagram_t *dg_norm = diagram_stack_find(dg_name);
-        setup_slater(dg_norm, (matrix_getter_fun) diagram_get, sect_h, sect_p, sect_h, sect_p, rank(dg_name) / 2);
+        setup_slater(dg_norm, (matrix_getter_fun) diagram_get,
+                     bra_sect_h, bra_sect_p, ket_sect_h, ket_sect_p, npart);
+        //printf("end setup slater\n");
+
+        //printf("slater_rule = %p\n", slater_rule);
 
         for (int i = 0; i < bra_dim; i++) {
             for (int j = 0; j < ket_dim; j++) {
                 slater_det_t *bra = bra_dets + i;
                 slater_det_t *ket = ket_dets + j;
+                //printf("i=%d j=%d begin\n", i, j);
+                //print_slater_det(stdout, bra_sect_h, bra_sect_p, bra);
+                //print_slater_det(stdout, ket_sect_h, ket_sect_p, ket);
+
+                if (strcmp(dg_name, "prop_0h0p_1h1p") == 0) {
+                    //print_slater_det(stdout, bra_sect_h, bra_sect_p, bra);
+                    //print_slater_det(stdout, ket_sect_h, ket_sect_p, ket);
+                    //printf("%.10f  %.10f\n", creal(slater_rule(bra, ket)), cimag(slater_rule(bra, ket)));
+                }
+
                 overlap_slater[i * ket_dim + j] += slater_rule(bra, ket);
+                //printf("i=%d j=%d end\n", i, j);
             }
         }
     }
+
+    for (int i = 0; i < bra_dim; i++) {
+        for (int j = 0; j < ket_dim; j++) {
+            slater_det_t *bra = bra_dets + i;
+            slater_det_t *ket = ket_dets + j;
+            double complex prop_ij = overlap_slater[i * ket_dim + j];
+            //printf("[%d,%d] = %.6f %.6f\n", i, j, creal(prop_ij), cimag(prop_ij));
+        }
+    }
+}
+
+
+void print_time_mem_usage(char *diagram_name, double t_start)
+{
+    const double b2mb = 1.0 / (1024.0 * 1024.0);
+    const double b2gb = 1.0 / (1024.0 * 1024.0 * 1024.0);
+
+    size_t max_allocated = cc_get_peak_memory_usage();
+    double time_elapsed = abs_time() - t_start;
+
+    printf(" %-8s%14.3f%14.2f%14.2f\n", diagram_name, time_elapsed,
+           b2mb * (double) max_allocated, b2gb * (double) max_allocated);
 }
 
 
@@ -679,345 +854,409 @@ double complex direct_property_0h0p(int approximation)
 }
 
 
-void direct_property_0h1p(char *result_name, int operator_symmetry, int approximation, int disconn_enabled)
+void direct_property_0h1p(char *result_name, int operator_symmetry, int approximation, int disconnected)
 {
     tmplt_sym(result_name, "pp", "11", "12", NOT_PERM_UNIQUE, operator_symmetry);
 
+    restrict_valence("t1c", "t1c_v2", "01", 0);
+    restrict_valence("t1c+", "t1c+_v1", "01", 0);
+    restrict_valence("t1c", "t1c_v", "01", 0);
+    restrict_valence("t1c+", "t1c+_v", "10", 0);
+
+    restrict_valence("t2c", "t2c_v12", "0011", 0);
+    restrict_valence("t2c+", "t2c+_v12", "1100", 0);
+    restrict_valence("t2c", "t2c_v1", "0010", 0);
+    restrict_valence("t2c+", "t2c+_v1", "1000", 0);
+    restrict_valence("t2c", "t2c_v2", "0001", 0);
+    restrict_valence("t2c+", "t2c+_v2", "0100", 0);
+
+    restrict_valence("s2c", "s2c_v12", "1011", 0);
+    restrict_valence("s2c+", "s2c+_v12", "1110", 0);
+    restrict_valence("s2c", "s2c_v1", "1010", 0);
+    restrict_valence("s2c+", "s2c+_v1", "1010", 0);
+    restrict_valence("s2c", "s2c_v2", "1001", 0);
+    restrict_valence("s2c+", "s2c+_v2", "0110", 0);
+
+    restrict_valence("prop_ph", "prop_vh", "10", 0);
+    restrict_valence("prop_hp", "prop_hv", "01", 0);
+
+    restrict_valence("prop_pp", "prop_pv", "01", 0);
+    restrict_valence("prop_pp", "prop_vp", "10", 0);
+    restrict_valence("prop_pp", "prop_vv", "11", 0);
+
     dg_stack_pos_t pos = get_stack_pos();
 
+    printf(" diagram     time (sec)  max mem (mb)  max mem (gb)\n");
+
     // O1
-    copy("prop_pp", "r1");
-    closed("r1", "r2");
-    update(result_name, 1.0, "r2");
+    double t_start_O1 = abs_time();
+    update(result_name, 1.0, "prop_vv");
     restore_stack_pos(pos);
+    print_time_mem_usage("O1", t_start_O1);
 
     if (approximation <= CC_PROPERTIES_APPROX_MODEL_SPACE) {
         return;
     }
 
     // L1a
-    reorder("t1c", "r1", "21");
-    mult("prop_ph", "r1", "r2", 1);
-    closed("r2", "r3");
-    update(result_name, -1.0, "r3");
+    double t_start_L1a = abs_time();
+    reorder("t1c_v", "r1", "21");
+    mult("prop_vh", "r1", "r2", 1);
+    update(result_name, -1.0, "r2");
     restore_stack_pos(pos);
+    print_time_mem_usage("L1a", t_start_L1a);
 
     // L1b
-    reorder("prop_hp", "r1", "21");
-    mult("t1c+", "r1", "r2", 1);
-    closed("r2", "r3");
-    update(result_name, -1.0, "r3");
+    double t_start_L1b = abs_time();
+    reorder("prop_hv", "r1", "21");
+    mult("t1c+_v", "r1", "r2", 1);
+    update(result_name, -1.0, "r2");
     restore_stack_pos(pos);
+    print_time_mem_usage("L1b", t_start_L1b);
 
     // L2a
-    reorder("prop_pp", "r1", "21");
+    double t_start_L2a = abs_time();
+    reorder("prop_pv", "r1", "21");
     mult("s1c", "r1", "r2", 1);
-    closed("r2", "r3");
-    update(result_name, 1.0, "r3");
+    update(result_name, 1.0, "r2");
     restore_stack_pos(pos);
+    print_time_mem_usage("L2a", t_start_L2a);
 
     // L2b
+    double t_start_L2b = abs_time();
     reorder("s1c+", "r1", "21");
-    mult("prop_pp", "r1", "r2", 1);
-    closed("r2", "r3");
-    update(result_name, 1.0, "r3");
+    mult("prop_vp", "r1", "r2", 1);
+    update(result_name, 1.0, "r2");
     restore_stack_pos(pos);
+    print_time_mem_usage("L2b", t_start_L2b);
 
     // L3a
-    reorder("s2c", "r1", "1342");
+    double t_start_L3a = abs_time();
+    reorder("s2c_v1", "r1", "1342");
     mult("r1", "prop_ph", "r2", 2);
-    closed("r2", "r3");
-    update(result_name, 1.0, "r3");
+    update(result_name, 1.0, "r2");
     restore_stack_pos(pos);
+    print_time_mem_usage("L3a", t_start_L3a);
 
     // L3b
-    reorder("s2c+", "r1", "1342");
+    double t_start_L3b = abs_time();
+    reorder("s2c+_v1", "r1", "1342");
     mult("r1", "prop_hp", "r2", 2);
-    closed("r2", "r3");
-    update(result_name, 1.0, "r3");
+    update(result_name, 1.0, "r2");
     restore_stack_pos(pos);
+    print_time_mem_usage("L3b", t_start_L3b);
 
     if (approximation <= CC_PROPERTIES_APPROX_LINEAR) {
         return;
     }
 
     // Q1a
-    reorder("t1c", "r1", "21");
+    double t_start_Q1a = abs_time();
+    reorder("t1c_v", "r1", "21");
     mult("r1", "prop_hh", "r2", 1);
-    mult("t1c+", "r2", "r3", 1);
-    closed("r3", "r4");
-    update(result_name, 1.0, "r4");
+    mult("t1c+_v", "r2", "r3", 1);
+    update(result_name, 1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q1a", t_start_Q1a);
 
     // Q1b
-    reorder("prop_pp", "r1", "21");
+    double t_start_Q1b = abs_time();
+    reorder("prop_pv", "r1", "21");
     mult("r1", "t1c", "r2", 1);
-    mult("t1c+", "r2", "r3", 1);
-    closed("r3", "r4");
-    update(result_name, -1.0, "r4");
+    mult("t1c+_v", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q1b", t_start_Q1b);
 
     // Q1c
-    reorder("t1c", "r1", "21");
+    double t_start_Q1c = abs_time();
+    reorder("t1c_v", "r1", "21");
     mult("r1", "t1c+", "r2", 1);
-    mult("prop_pp", "r2", "r3", 1);
-    closed("r3", "r4");
-    update(result_name, -1.0, "r4");
+    mult("prop_vp", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q1c", t_start_Q1c);
 
     // Q1d - disconnected term
-    if (disconn_enabled) {
+    if (disconnected) {
+        double t_start_Q1d = abs_time();
         double t1_t1 = scalar_product("C", "N", "t1c", "t1c");
-        copy("prop_pp", "r0");
-        closed("r0", "r1");
-        update(result_name, t1_t1, "r1");
+        update(result_name, t1_t1, "prop_vv");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q1d", t_start_Q1d);
     }
 
     // Q2a
-    reorder("t2c", "r1", "3142");
+    double t_start_Q2a = abs_time();
+    reorder("t2c_v1", "r1", "3142");
     mult("r1", "prop_ph", "r2", 2);
-    mult("t1c+", "r2", "r3", 1);
-    closed("r3", "r4");
-    update(result_name, -1.0, "r4");
+    mult("t1c+_v", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q2a", t_start_Q2a);
 
     // Q2b
-    reorder("t2c+", "r1", "1342");
-    reorder("t1c", "r2", "21");
+    double t_start_Q2b = abs_time();
+    reorder("t2c+_v1", "r1", "1342");
+    reorder("t1c_v", "r2", "21");
     mult("r1", "prop_hp", "r3", 2);
     mult("r3", "r2", "r4", 1);
-    closed("r4", "r5");
-    update(result_name, -1.0, "r5");
-    restore_stack_pos(pos);
-
-    // Q2c
-    reorder("t2c", "r1", "3142");
-    mult("r1", "t1c+", "r2", 2);
-    mult("prop_ph", "r2", "r3", 1);
-    closed("r3", "r4");
     update(result_name, -1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q2b", t_start_Q2b);
+
+    // Q2c
+    double t_start_Q2c = abs_time();
+    reorder("t2c_v1", "r1", "3142");
+    mult("r1", "t1c+", "r2", 2);
+    mult("prop_vh", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q2c", t_start_Q2c);
 
     // Q2d
-    reorder("prop_hp", "r1", "21");
-    reorder("t2c+", "r2", "1342");
+    double t_start_Q2d = abs_time();
+    reorder("prop_hv", "r1", "21");
+    reorder("t2c+_v1", "r2", "1342");
     mult("r2", "t1c", "r3", 2);
     mult("r3", "r1", "r4", 1);
-    closed("r4", "r5");
-    update(result_name, -1.0, "r5");
+    update(result_name, -1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q2d", t_start_Q2d);
 
     // Q3a - disconnected term
-    if (disconn_enabled) {
+    if (disconnected) {
+        double t_start_Q3a = abs_time();
         double t2_t2 = 0.25 * scalar_product("C", "N", "t2c", "t2c");
-        copy("prop_pp", "r0");
-        closed("r0", "r1");
-        update(result_name, t2_t2, "r1");
+        update(result_name, t2_t2, "prop_vv");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q3a", t_start_Q3a);
     }
 
     // Q3b
+    double t_start_Q3b = abs_time();
     reorder("t2c+", "r1", "3412");
-    reorder("t2c", "r2", "4123");
-    mult("prop_pp", "r1", "r3", 1);
+    reorder("t2c_v2", "r2", "4123");
+    mult("prop_vp", "r1", "r3", 1);
     mult("r3", "r2", "r4", 3);
-    closed("r4", "r5");
-    update(result_name, -0.5, "r5");
+    update(result_name, -0.5, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q3b", t_start_Q3b);
 
     // Q3c
-    reorder("prop_pp", "r1", "21");
-    reorder("t2c+", "r2", "2341");
+    double t_start_Q3c = abs_time();
+    reorder("prop_pv", "r1", "21");
+    reorder("t2c+_v2", "r2", "2341");
     mult("r1", "t2c", "r3", 1);
     mult("r2", "r3", "r4", 3);
-    closed("r4", "r5");
-    update(result_name, -0.5, "r5");
+    update(result_name, -0.5, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q3c", t_start_Q3c);
 
     // Q3d
-    reorder("t2c", "r1", "3412");
+    double t_start_Q3d = abs_time();
+    reorder("t2c_v1", "r1", "3412");
     mult("r1", "prop_hh", "r2", 1);
-    mult("t2c+", "r2", "r3", 3);
-    closed("r3", "r4");
-    update(result_name, 1.0, "r4");
+    mult("t2c+_v1", "r2", "r3", 3);
+    update(result_name, 1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q3d", t_start_Q3d);
 
     // Q3e
+    double t_start_Q3e = abs_time();
     reorder("prop_pp", "r1", "21");
-    mult("t2c", "r1", "r2", 1);
+    mult("t2c_v1", "r1", "r2", 1);
     reorder("r2", "r3", "3412");
-    mult("t2c+", "r3", "r4", 3);
-    closed("r4", "r5");
-    update(result_name, -0.5, "r5");
+    mult("t2c+_v1", "r3", "r4", 3);
+    update(result_name, -0.5, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q3e", t_start_Q3e);
 
     // Q4a
-    reorder("t1c", "r1", "21");
+    double t_start_Q4a = abs_time();
+    reorder("t1c_v", "r1", "21");
     mult("r1", "prop_ph", "r2", 1);
     mult("s1c", "r2", "r3", 1);
-    closed("r3", "r4");
-    update(result_name, -1.0, "r4");
+    update(result_name, -1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q4a", t_start_Q4a);
 
     // Q4b
+    double t_start_Q4b = abs_time();
     reorder("s1c+", "r1", "21");
     mult("r1", "prop_hp", "r2", 1);
-    mult("t1c+", "r2", "r3", 1);
-    closed("r3", "r4");
-    update(result_name, -1.0, "r4");
+    mult("t1c+_v", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q4b", t_start_Q4b);
 
     // Q4c
+    double t_start_Q4c = abs_time();
     reorder("s1c+", "r1", "21");
     mult("r1", "t1c", "r2", 1);
-    mult("prop_ph", "r2", "r3", 1);
-    closed("r3", "r4");
-    update(result_name, -1.0, "r4");
+    mult("prop_vh", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q4c", t_start_Q4c);
 
     // Q4d
-    reorder("prop_hp", "r1", "21");
+    double t_start_Q4d = abs_time();
+    reorder("prop_hv", "r1", "21");
     mult("r1", "t1c+", "r2", 1);
     mult("s1c", "r2", "r3", 1);
-    closed("r3", "r4");
-    update(result_name, -1.0, "r4");
+    update(result_name, -1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q4d", t_start_Q4d);
 
     // Q5a
+    double t_start_Q5a = abs_time();
     reorder("prop_hh", "r1", "21");
-    reorder("s2c", "r2", "1324");
+    reorder("s2c_v1", "r2", "1324");
     mult("r1", "t1c+", "r3", 1);
     mult("r2", "r3", "r4", 2);
-    closed("r4", "r5");
-    update(result_name, -1.0, "r5");
+    update(result_name, -1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q5a", t_start_Q5a);
 
     // Q5b
+    double t_start_Q5b = abs_time();
     reorder("t1c", "r1", "21");
-    reorder("s2c+", "r2", "1342");
+    reorder("s2c+_v1", "r2", "1342");
     mult("prop_hh", "r1", "r3", 1);
     mult("r2", "r3", "r4", 2);
-    closed("r4", "r5");
-    update(result_name, -1.0, "r5");
+    update(result_name, -1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q5b", t_start_Q5b);
 
     // Q5c
+    double t_start_Q5c = abs_time();
     reorder("t1c+", "r1", "21");
-    reorder("s2c", "r2", "1324");
+    reorder("s2c_v1", "r2", "1324");
     mult("r1", "prop_pp", "r3", 1);
     mult("r2", "r3", "r4", 2);
-    closed("r4", "r5");
-    update(result_name, 1.0, "r5");
+    update(result_name, 1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q5c", t_start_Q5c);
 
     // Q5d
-    reorder("s2c+", "r1", "1324");
+    double t_start_Q5d = abs_time();
+    reorder("s2c+_v1", "r1", "1324");
     reorder("prop_pp", "r2", "21");
     mult("r2", "t1c", "r3", 1);
     mult("r1", "r3", "r4", 2);
-    closed("r4", "r5");
-    update(result_name, 1.0, "r5");
+    update(result_name, 1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q5d", t_start_Q5d);
 
     // Q6a
+    double t_start_Q6a = abs_time();
     reorder("s2c", "s2c_21", "2143");
     reorder("s2c_21", "r1", "2341");
     reorder("t2c+", "r2", "4123");
-    reorder("prop_hp", "r3", "21");
+    reorder("prop_hv", "r3", "21");
     mult("r1", "r2", "r4", 3);
     mult("r4", "r3", "r5", 1);
-    closed("r5", "r6");
-    update(result_name, -0.5, "r6");
+    update(result_name, -0.5, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q6a", t_start_Q6a);
 
     // Q6b
+    double t_start_Q6b = abs_time();
     reorder("t2c", "r1", "2341");
     reorder("s2c+", "s2c+_21", "2143");
     reorder("s2c+_21", "r2", "4123");
     mult("r2", "r1", "r3", 3);
-    mult("prop_ph", "r3", "r4", 1);
-    closed("r4", "r5");
-    update(result_name, -0.5, "r5");
+    mult("prop_vh", "r3", "r4", 1);
+    update(result_name, -0.5, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q6b", t_start_Q6b);
 
     // Q6c
-    reorder("s2c", "r1", "1324");
+    double t_start_Q6c = abs_time();
+    reorder("s2c_v1", "r1", "1324");
     reorder("t2c+", "r2", "3142");
     mult("r2", "prop_hp", "r3", 2);
     mult("r1", "r3", "r4", 2);
-    closed("r4", "r5");
-    update(result_name, 1.0, "r5");
+    update(result_name, 1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q6c", t_start_Q6c);
 
     // Q6d
-    reorder("s2c+", "r1", "1324");
+    double t_start_Q6d = abs_time();
+    reorder("s2c+_v1", "r1", "1324");
     reorder("t2c", "r2", "3142");
     mult("r2", "prop_ph", "r3", 2);
     mult("r1", "r3", "r4", 2);
-    closed("r4", "r5");
-    update(result_name, 1.0, "r5");
+    update(result_name, 1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q6d", t_start_Q6d);
 
     // Q7
+    double t_start_Q7 = abs_time();
     reorder("s1c+", "r1", "21");
     mult("r1", "prop_pp", "r2", 1);
     mult("s1c", "r2", "r3", 1);
-    closed("r3", "r4");
-    update(result_name, 1.0, "r4");
+    update(result_name, 1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q7", t_start_Q7);
 
     // Q8a
+    double t_start_Q8a = abs_time();
     reorder("s2c", "r1", "1342");
     reorder("s1c+", "r2", "21");
     mult("r1", "prop_ph", "r3", 2);
     mult("r3", "r2", "r4", 1);
-    closed("r4", "r5");
-    update(result_name, 1.0, "r5");
+    update(result_name, 1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q8a", t_start_Q8a);
 
     // Q8b
+    double t_start_Q8b = abs_time();
     reorder("s2c+", "r1", "3142");
     mult("r1", "prop_hp", "r2", 2);
     mult("s1c", "r2", "r3", 1);
-    closed("r3", "r4");
-    update(result_name, 1.0, "r4");
+    update(result_name, 1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q8b", t_start_Q8b);
 
     // Q8c
+    double t_start_Q8c = abs_time();
     reorder("s2c", "r1", "1342");
-    reorder("prop_pp", "r2", "21");
+    reorder("prop_pv", "r2", "21");
     mult("r1", "t1c+", "r3", 2);
     mult("r3", "r2", "r4", 1);
-    closed("r4", "r5");
-    update(result_name, 1.0, "r5");
-    restore_stack_pos(pos);
-
-    // Q8d
-    reorder("s2c+", "r1", "3142");
-    mult("r1", "t1c", "r2", 2);
-    mult("prop_pp", "r2", "r3", 1);
-    closed("r3", "r4");
     update(result_name, 1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q8c", t_start_Q8c);
+
+    // Q8d
+    double t_start_Q8d = abs_time();
+    reorder("s2c+", "r1", "3142");
+    mult("r1", "t1c", "r2", 2);
+    mult("prop_vp", "r2", "r3", 1);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q8d", t_start_Q8d);
 
     // Q9a
+    double t_start_Q9a = abs_time();
     reorder("s2c+", "r1", "3412");
     reorder("prop_pp", "r2", "21");
     mult("s2c", "r2", "r3", 1);
     mult("r3", "r1", "r4", 3);
-    closed("r4", "r5");
-    update(result_name, 1.0, "r5");
+    update(result_name, 1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q9a", t_start_Q9a);
 
     // Q9b
+    double t_start_Q9b = abs_time();
     reorder("s2c+", "r1", "3124");
     reorder("s2c", "r2", "1342");
     mult("r2", "prop_hh", "r3", 1);
     mult("r3", "r1", "r4", 3);
-    closed("r4", "r5");
-    update(result_name, -0.5, "r5");
+    update(result_name, -0.5, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q9b", t_start_Q9b);
 
     if (triples_enabled()) {
 
@@ -1091,7 +1330,7 @@ void direct_property_0h1p(char *result_name, int operator_symmetry, int approxim
         restore_stack_pos(pos);
 
         // Q11e - disconnected term
-        if (disconn_enabled) {
+        if (disconnected) {
             double t3_t3 = (1.0 / 36.0) * scalar_product("C", "N", "t3c", "t3c");
             copy("prop_pp", "r0");
             closed("r0", "r1");
@@ -1244,7 +1483,7 @@ void direct_property_0h1p(char *result_name, int operator_symmetry, int approxim
 }
 
 
-void direct_property_1h0p(char *result_name, int operator_symmetry, int approximation)
+void direct_property_1h0p(char *result_name, int operator_symmetry, int approximation, int disconnected)
 {
     tmplt_sym(result_name, "hh", "11", "12", NOT_PERM_UNIQUE, operator_symmetry);
 
@@ -1331,11 +1570,13 @@ void direct_property_1h0p(char *result_name, int operator_symmetry, int approxim
     restore_stack_pos(pos);
 
     // Q1d - disconnected term
-    double t1_t1 = scalar_product("C", "N", "t1c", "t1c");
-    copy("prop_hh", "r0");
-    closed("r0", "r1");
-    update(result_name, t1_t1, "r1");
-    restore_stack_pos(pos);
+    if (disconnected) {
+        double t1_t1 = scalar_product("C", "N", "t1c", "t1c");
+        copy("prop_hh", "r0");
+        closed("r0", "r1");
+        update(result_name, t1_t1, "r1");
+        restore_stack_pos(pos);
+    }
 
     // Q2a
     reorder("t2c", "r1", "1342");
@@ -1372,11 +1613,13 @@ void direct_property_1h0p(char *result_name, int operator_symmetry, int approxim
     restore_stack_pos(pos);
 
     // Q3a - disconnected term
-    double t2_t2 = 0.25 * scalar_product("C", "N", "t2c", "t2c");
-    copy("prop_hh", "r0");
-    closed("r0", "r1");
-    update(result_name, t2_t2, "r1");
-    restore_stack_pos(pos);
+    if (disconnected) {
+        double t2_t2 = 0.25 * scalar_product("C", "N", "t2c", "t2c");
+        copy("prop_hh", "r0");
+        closed("r0", "r1");
+        update(result_name, t2_t2, "r1");
+        restore_stack_pos(pos);
+    }
 
     // Q3b
     reorder("prop_hh", "r1", "21");
@@ -1582,9 +1825,39 @@ void direct_property_1h0p(char *result_name, int operator_symmetry, int approxim
 }
 
 
-void direct_property_0h2p(char *result_name, int operator_symmetry, int approximation, int disconn_enabled)
+void direct_property_0h2p(char *result_name, int operator_symmetry, int approximation, int disconnected)
 {
     tmplt_sym(result_name, "pppp", "1111", "1234", NOT_PERM_UNIQUE, operator_symmetry);
+
+    restrict_valence("t1c", "t1c_v2", "01", 0);
+    restrict_valence("t1c+", "t1c+_v1", "01", 0);
+    restrict_valence("t1c", "t1c_v", "01", 0);
+    restrict_valence("t1c+", "t1c+_v", "10", 0);
+
+    restrict_valence("t2c", "t2c_v12", "0011", 0);
+    restrict_valence("t2c+", "t2c+_v12", "1100", 0);
+    restrict_valence("t2c", "t2c_v1", "0010", 0);
+    restrict_valence("t2c+", "t2c+_v1", "1000", 0);
+    restrict_valence("t2c", "t2c_v2", "0001", 0);
+    restrict_valence("t2c+", "t2c+_v2", "0100", 0);
+
+    restrict_valence("s2c", "s2c_v12", "1011", 0);
+    restrict_valence("s2c+", "s2c+_v12", "1110", 0);
+    restrict_valence("s2c", "s2c_v1", "1010", 0);
+    restrict_valence("s2c+", "s2c+_v1", "1010", 0);
+    restrict_valence("s2c", "s2c_v2", "1001", 0);
+    restrict_valence("s2c+", "s2c+_v2", "0110", 0);
+
+    restrict_valence("x2c", "x2c_v1", "1110", 0);
+    restrict_valence("x2c+", "x2c+_v1", "1011", 0);
+
+    restrict_valence("prop_ph", "prop_vh", "10", 0);
+    restrict_valence("prop_hp", "prop_hv", "01", 0);
+
+    restrict_valence("prop_pp", "prop_pv", "01", 0);
+    restrict_valence("prop_pp", "prop_vp", "10", 0);
+    restrict_valence("prop_pp", "prop_vv", "11", 0);
+
 
     dg_stack_pos_t pos = get_stack_pos();
 
@@ -1592,39 +1865,45 @@ void direct_property_0h2p(char *result_name, int operator_symmetry, int approxim
         return;
     }
 
-    // L1a
-    reorder("s2c", "r1", "1342");
-    mult("r1", "prop_ph", "r2", 1);
-    reorder("r2", "r3", "1423");
-    closed("r3", "r4");
-    perm("r4", "(12)");
-    update(result_name, -1.0, "r4");
-    restore_stack_pos(pos);
+    printf(" diagram     time (sec)  max mem (mb)  max mem (gb)\n");
 
-    // L1b
-    reorder("prop_hp", "r1", "21");
-    mult("s2c+", "r1", "r2", 1);
-    closed("r2", "r3");
-    perm("r3", "(34)");
+    // L1a
+    double t_start_L1a = abs_time();
+    reorder("s2c_v12", "r1", "1342");
+    mult("r1", "prop_vh", "r2", 1);
+    reorder("r2", "r3", "1423");
+    perm("r3", "(12)");
     update(result_name, -1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("L1a", t_start_L1a);
+
+    // L1b
+    double t_start_L1b = abs_time();
+    reorder("prop_hv", "r1", "21");
+    mult("s2c+_v12", "r1", "r2", 1);
+    perm("r2", "(34)");
+    update(result_name, -1.0, "r2");
+    restore_stack_pos(pos);
+    print_time_mem_usage("L1b", t_start_L1b);
 
     // L2a
-    reorder("prop_pp", "r1", "21");
-    mult("x2c", "r1", "r2", 1);
-    closed("r2", "r3");
-    perm("r3", "(34)");
-    update(result_name, +1.0, "r3");
+    double t_start_L2a = abs_time();
+    reorder("prop_pv", "r1", "21");
+    mult("x2c_v1", "r1", "r2", 1);
+    perm("r2", "(34)");
+    update(result_name, +1.0, "r2");
     restore_stack_pos(pos);
+    print_time_mem_usage("L2a", t_start_L2a);
 
     // L2b
-    reorder("x2c+", "r1", "3412");
-    mult("r1", "prop_pp", "r2", 1);
+    double t_start_L2b = abs_time();
+    reorder("x2c+_v1", "r1", "3412");
+    mult("r1", "prop_vp", "r2", 1);
     reorder("r2", "r3", "3412");
-    closed("r3", "r4");
-    perm("r4", "(12)");
-    update(result_name, +1.0, "r4");
+    perm("r3", "(12)");
+    update(result_name, +1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("L2b", t_start_L2b);
 
     if (triples_enabled()) {
 
@@ -1648,452 +1927,489 @@ void direct_property_0h2p(char *result_name, int operator_symmetry, int approxim
     }
 
     // Q1 - disconnected term
-    if (disconn_enabled) {
-        copy("prop_pp", "r0");
-        closed("r0", "r1");
+    if (disconnected) {
+        double t_start_Q1 = abs_time();
         reorder("t1c", "r2", "21");
         mult("t1c+", "r2", "r3", 1);
         closed("r3", "r4");
-        construct_disconnected_rank2_rank2("r4", "r1", "r5");
+        construct_disconnected_rank2_rank2("r4", "prop_vv", "r5");
         perm("r5", "(12|34)");
         update(result_name, -1.0, "r5");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q1", t_start_Q1);
     }
 
     // Q2a
-    reorder("t2c", "r1", "3412");
-    mult("prop_ph", "r1", "r2", 1);
-    mult("t1c+", "r2", "r3", 1);
-    closed("r3", "r4");
-    perm("r4", "(12)");
-    update(result_name, 1.0, "r4");
+    double t_start_Q2a = abs_time();
+    reorder("t2c_v12", "r1", "3412");
+    mult("prop_vh", "r1", "r2", 1);
+    mult("t1c+_v", "r2", "r3", 1);
+    perm("r3", "(12)");
+    update(result_name, 1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q2a", t_start_Q2a);
 
     // Q2b
-    reorder("t1c", "r1", "21");
-    reorder("prop_hp", "r2", "21");
-    mult("r2", "t2c+", "r3", 1);
+    double t_start_Q2b = abs_time();
+    reorder("t1c_v", "r1", "21");
+    reorder("prop_hv", "r2", "21");
+    mult("r2", "t2c+_v12", "r3", 1);
     mult("r1", "r3", "r4", 1);
     reorder("r4", "r5", "3412");
-    closed("r5", "r6");
-    perm("r6", "(34)");
-    update(result_name, 1.0, "r6");
+    perm("r5", "(34)");
+    update(result_name, 1.0, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q2b", t_start_Q2b);
 
     // Q3a - disconnected term
-    if (disconn_enabled) {
-        reorder("t2c", "r1", "3412");
-        mult("t2c+", "r1", "r2", 3);
-        closed("r2", "r3");
-        copy("prop_pp", "r0");
-        closed("r0", "r4");
-        construct_disconnected_rank2_rank2("r3", "r4", "r5");
-        perm("r5", "(12|34)");
-        update(result_name, -0.5, "r5");
+    if (disconnected) {
+        double t_start_Q3a = abs_time();
+        reorder("t2c_v1", "r1", "3412");
+        mult("t2c+_v1", "r1", "r2", 3);
+        construct_disconnected_rank2_rank2("r2", "prop_vv", "r3");
+        perm("r3", "(12|34)");
+        update(result_name, -0.5, "r3");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q3a", t_start_Q3a);
     }
 
     // Q3b
-    reorder("t2c", "r1", "3412");
-    mult("r1", "t2c+", "r2", 2);
-    mult("r2", "prop_pp", "r3", 1);
+    double t_start_Q3b = abs_time();
+    reorder("t2c_v12", "r1", "3412");
+    mult("r1", "t2c+_v1", "r2", 2);
+    mult("r2", "prop_vp", "r3", 1);
     reorder("r3", "r4", "3412");
-    closed("r4", "r5");
-    perm("r5", "(12)");
-    update(result_name, 0.5, "r5");
+    perm("r4", "(12)");
+    update(result_name, 0.5, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q3b", t_start_Q3b);
 
     // Q3c
-    reorder("prop_pp", "r1", "21");
-    mult("t2c", "r1", "r2", 1);
+    double t_start_Q3c = abs_time();
+    reorder("prop_pv", "r1", "21");
+    mult("t2c_v1", "r1", "r2", 1);
     reorder("r2", "r3", "3412");
-    mult("t2c+", "r3", "r4", 2);
-    closed("r4", "r5");
-    perm("r5", "(34)");
-    update(result_name, 0.5, "r5");
+    mult("t2c+_v12", "r3", "r4", 2);
+    perm("r4", "(34)");
+    update(result_name, 0.5, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q3c", t_start_Q3c);
 
     // Q3d
-    reorder("t2c", "r1", "3412");
+    double t_start_Q3d = abs_time();
+    reorder("t2c_v12", "r1", "3412");
     mult("r1", "prop_hh", "r2", 1);
-    mult("t2c+", "r2", "r3", 2);
-    closed("r3", "r4");
-    update(result_name, -1.0, "r4");
+    mult("t2c+_v12", "r2", "r3", 2);
+    update(result_name, -1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q3d", t_start_Q3d);
 
     // Q4a - disconnected term
-    if (disconn_enabled) {
-        reorder("s2c", "r1", "1342");
+    if (disconnected) {
+        double t_start_Q4a = abs_time();
+        reorder("s2c_v1", "r1", "1342");
         mult("r1", "t1c+", "r2", 2);
         closed("r2", "r3");
-        copy("prop_pp", "r0");
-        closed("r0", "r4");
-        construct_disconnected_rank2_rank2("r3", "r4", "r5");
+        construct_disconnected_rank2_rank2("r3", "prop_vv", "r5");
         perm("r5", "(12|34)");
         update(result_name, +1.0, "r5");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q4a", t_start_Q4a);
     }
 
     // Q4b - disconnected term
-    if (disconn_enabled) {
-        reorder("s2c+", "r1", "1342");
+    if (disconnected) {
+        double t_start_Q4b = abs_time();
+        reorder("s2c+_v1", "r1", "1342");
         mult("r1", "t1c", "r2", 2);
         closed("r2", "r3");
-        copy("prop_pp", "r0");
-        closed("r0", "r4");
-        construct_disconnected_rank2_rank2("r3", "r4", "r5");
+        construct_disconnected_rank2_rank2("r3", "prop_vv", "r5");
         perm("r5", "(12|34)");
         update(result_name, +1.0, "r5");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q4b", t_start_Q4b);
     }
 
     // Q4c
+    double t_start_Q4c = abs_time();
     reorder("t1c+", "r1", "21");
-    reorder("s2c", "r2", "3412");
-    mult("prop_pp", "r1", "r3", 1);
+    reorder("s2c_v12", "r2", "3412");
+    mult("prop_vp", "r1", "r3", 1);
     mult("r2", "r3", "r4", 1);
     reorder("r4", "r5", "3412");
     closed("r5", "r6");
     perm("r6", "(12)");
     update(result_name, -1.0, "r6");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q4c", t_start_Q4c);
 
     // Q4d
-    reorder("prop_pp", "r1", "21");
+    double t_start_Q4d = abs_time();
+    reorder("prop_pv", "r1", "21");
     mult("r1", "t1c", "r2", 1);
-    mult("s2c+", "r2", "r3", 1);
+    mult("s2c+_v12", "r2", "r3", 1);
     closed("r3", "r4");
     perm("r4", "(34)");
     update(result_name, -1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q4d", t_start_Q4d);
 
     // Q4e
-    reorder("s2c", "r1", "1423");
-    reorder("prop_pp", "r2", "21");
+    double t_start_Q4e = abs_time();
+    reorder("s2c_v2", "r1", "1423");
+    reorder("prop_pv", "r2", "21");
     mult("r2", "r1", "r3", 1);
-    mult("r3", "t1c+", "r4", 1);
+    mult("r3", "t1c+_v", "r4", 1);
     reorder("r4", "r5", "2413");
-    closed("r5", "r6");
-    perm("r6", "(12|34)");
-    update(result_name, -1.0, "r6");
-    restore_stack_pos(pos);
-
-    // Q4f
-    reorder("s2c+", "r1", "2341");
-    reorder("t1c", "r2", "21");
-    mult("prop_pp", "r1", "r3", 1);
-    mult("r3", "r2", "r4", 1);
-    closed("r4", "r5");
     perm("r5", "(12|34)");
     update(result_name, -1.0, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q4e", t_start_Q4e);
 
-    // Q4g
-    reorder("s2c", "r1", "3412");
-    reorder("prop_hh", "r2", "21");
-    mult("t1c+", "r2", "r3", 1);
-    mult("r1", "r3", "r4", 1);
-    reorder("r4", "r5", "3412");
-    closed("r5", "r6");
-    perm("r6", "(12)");
-    update(result_name, 1.0, "r6");
-    restore_stack_pos(pos);
-
-    // Q4h
-    reorder("t1c", "r1", "21");
-    mult("r1", "prop_hh", "r2", 1);
-    mult("s2c+", "r2", "r3", 1);
-    closed("r3", "r4");
-    perm("r4", "(34)");
-    update(result_name, 1.0, "r4");
-    restore_stack_pos(pos);
-
-    // Q5a
-    reorder("t2c", "r1", "3142");
-    mult("r1", "prop_ph", "r2", 2);
-    mult("s2c+", "r2", "r3", 1);
-    closed("r3", "r4");
-    perm("r4", "(34)");
+    // Q4f
+    double t_start_Q4f = abs_time();
+    reorder("s2c+_v2", "r1", "2341");
+    reorder("t1c_v", "r2", "21");
+    mult("prop_vp", "r1", "r3", 1);
+    mult("r3", "r2", "r4", 1);
+    perm("r4", "(12|34)");
     update(result_name, -1.0, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q4f", t_start_Q4f);
+
+    // Q4g
+    double t_start_Q4g = abs_time();
+    reorder("s2c_v12", "r1", "3412");
+    reorder("prop_hh", "r2", "21");
+    mult("t1c+_v", "r2", "r3", 1);
+    mult("r1", "r3", "r4", 1);
+    reorder("r4", "r5", "3412");
+    perm("r5", "(12)");
+    update(result_name, 1.0, "r5");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q4g", t_start_Q4g);
+
+    // Q4h
+    double t_start_Q4h = abs_time();
+    reorder("t1c_v", "r1", "21");
+    mult("r1", "prop_hh", "r2", 1);
+    mult("s2c+_v12", "r2", "r3", 1);
+    perm("r3", "(34)");
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q4h", t_start_Q4h);
+
+    // Q5a
+    double t_start_Q5a = abs_time();
+    reorder("t2c_v1", "r1", "3142");
+    mult("r1", "prop_ph", "r2", 2);
+    mult("s2c+_v12", "r2", "r3", 1);
+    perm("r3", "(34)");
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q5a", t_start_Q5a);
 
     // Q5b
-    reorder("s2c", "r1", "3412");
-    reorder("t2c+", "r2", "1342");
+    double t_start_Q5b = abs_time();
+    reorder("s2c_v12", "r1", "3412");
+    reorder("t2c+_v1", "r2", "1342");
     mult("r2", "prop_hp", "r3", 2);
     mult("r1", "r3", "r4", 1);
     reorder("r4", "r5", "3412");
-    closed("r5", "r6");
-    perm("r6", "(12)");
-    update(result_name, -1.0, "r6");
-    restore_stack_pos(pos);
-
-    // Q5c
-    reorder("s2c+", "r1", "1342");
-    reorder("t2c", "r2", "4213");
-    mult("r1", "r2", "r3", 2);
-    mult("r3", "prop_ph", "r4", 1);
-    reorder("r4", "r5", "1423");
-    closed("r5", "r6");
-    perm("r6", "(12|34)");
-    update(result_name, -1.0, "r6");
-    restore_stack_pos(pos);
-
-    // Q5d
-    reorder("prop_hp", "r1", "21");
-    reorder("t2c+", "r2", "2314");
-    reorder("s2c", "r3", "1324");
-    mult("r1", "r2", "r4", 1);
-    mult("r3", "r4", "r5", 2);
-    reorder("r5", "r6", "1423");
-    closed("r6", "r7");
-    perm("r7", "(12|34)");
-    update(result_name, -1.0, "r7");
-    restore_stack_pos(pos);
-
-    // Q6a
-    reorder("t1c", "r1", "21");
-    mult("r1", "prop_ph", "r2", 1);
-    mult("x2c", "r2", "r3", 1);
-    closed("r3", "r4");
-    perm("r4", "(34)");
-    update(result_name, -1.0, "r4");
-    restore_stack_pos(pos);
-
-    // Q6b
-    reorder("x2c+", "r1", "3412");
-    mult("r1", "prop_hp", "r2", 1);
-    mult("r2", "t1c+", "r3", 1);
-    reorder("r3", "r4", "3412");
-    closed("r4", "r5");
     perm("r5", "(12)");
     update(result_name, -1.0, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q5b", t_start_Q5b);
 
-    // Q6c
-    reorder("prop_hp", "r1", "21");
-    mult("r1", "t1c+", "r2", 1);
-    mult("x2c", "r2", "r3", 1);
-    closed("r3", "r4");
-    perm("r4", "(34)");
-    update(result_name, -1.0, "r4");
-    restore_stack_pos(pos);
-
-    // Q6d
-    reorder("x2c+", "r1", "3412");
-    reorder("t1c", "r2", "21");
-    mult("prop_ph", "r2", "r3", 1);
-    mult("r1", "r3", "r4", 1);
-    reorder("r4", "r5", "3412");
-    closed("r5", "r6");
-    perm("r6", "(12)");
-    update(result_name, -1.0, "r6");
-    restore_stack_pos(pos);
-
-    // Q7 - disconnected term
-    if (disconn_enabled) {
-        reorder("s1c+", "r1", "21");
-        mult("s1c", "r1", "r2", 1);
-        closed("r2", "r3");
-        copy("prop_pp", "r0");
-        closed("r0", "r4");
-        construct_disconnected_rank2_rank2("r3", "r4", "r5");
-        perm("r5", "(12|34)");
-        update(result_name, 1.0, "r5");
-        restore_stack_pos(pos);
-    }
-
-    // Q8a
-    reorder("prop_ph", "r1", "21");
-    reorder("s2c", "r2", "3412");
-    mult("s1c", "r1", "r3", 1);
-    mult("r2", "r3", "r4", 1);
-    reorder("r4", "r5", "3412");
-    closed("r5", "r6");
-    perm("r6", "(12)");
-    update(result_name, -1.0, "r6");
-    restore_stack_pos(pos);
-
-    // Q8b
-    reorder("s1c+", "r1", "21");
-    mult("r1", "prop_hp", "r2", 1);
-    mult("s2c+", "r2", "r3", 1);
-    closed("r3", "r4");
-    perm("r4", "(34)");
-    update(result_name, -1.0, "r4");
-    restore_stack_pos(pos);
-
-    // Q8c
-    reorder("s1c+", "r1", "21");
-    reorder("s2c", "r2", "4123");
-    mult("r1", "r2", "r3", 1);
-    mult("r3", "prop_ph", "r4", 1);
-    reorder("r4", "r5", "3412");
-    closed("r5", "r6");
-    perm("r6", "(12|34)");
-    update(result_name, -1.0, "r6");
-    restore_stack_pos(pos);
-
-    // Q8d
-    reorder("s2c+", "r1", "2341");
-    reorder("prop_hp", "r2", "21");
-    mult("s1c", "r1", "r3", 1);
-    mult("r3", "r2", "r4", 1);
-    closed("r4", "r5");
+    // Q5c
+    double t_start_Q5c = abs_time();
+    reorder("s2c+_v1", "r1", "1342");
+    reorder("t2c_v2", "r2", "4213");
+    mult("r1", "r2", "r3", 2);
+    mult("r3", "prop_vh", "r4", 1);
+    reorder("r4", "r5", "1423");
     perm("r5", "(12|34)");
     update(result_name, -1.0, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q5c", t_start_Q5c);
+
+    // Q5d
+    double t_start_Q5d = abs_time();
+    reorder("prop_hv", "r1", "21");
+    reorder("t2c+_v2", "r2", "2314");
+    reorder("s2c_v1", "r3", "1324");
+    mult("r1", "r2", "r4", 1);
+    mult("r3", "r4", "r5", 2);
+    reorder("r5", "r6", "1423");
+    perm("r6", "(12|34)");
+    update(result_name, -1.0, "r6");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q5d", t_start_Q5d);
+
+    // Q6a
+    double t_start_Q6a = abs_time();
+    reorder("t1c_v", "r1", "21");
+    mult("r1", "prop_ph", "r2", 1);
+    mult("x2c_v1", "r2", "r3", 1);
+    perm("r3", "(34)");
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q6a", t_start_Q6a);
+
+    // Q6b
+    double t_start_Q6b = abs_time();
+    reorder("x2c+_v1", "r1", "3412");
+    mult("r1", "prop_hp", "r2", 1);
+    mult("r2", "t1c+_v", "r3", 1);
+    reorder("r3", "r4", "3412");
+    perm("r4", "(12)");
+    update(result_name, -1.0, "r4");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q6b", t_start_Q6b);
+
+    // Q6c
+    double t_start_Q6c = abs_time();
+    reorder("prop_hv", "r1", "21");
+    mult("r1", "t1c+", "r2", 1);
+    mult("x2c_v1", "r2", "r3", 1);
+    perm("r3", "(34)");
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q6c", t_start_Q6c);
+
+    // Q6d
+    double t_start_Q6d = abs_time();
+    reorder("x2c+_v1", "r1", "3412");
+    reorder("t1c", "r2", "21");
+    mult("prop_vh", "r2", "r3", 1);
+    mult("r1", "r3", "r4", 1);
+    reorder("r4", "r5", "3412");
+    perm("r5", "(12)");
+    update(result_name, -1.0, "r5");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q6d", t_start_Q6d);
+
+    // Q7 - disconnected term
+    if (disconnected) {
+        double t_start_Q7 = abs_time();
+        reorder("s1c+", "r1", "21");
+        mult("s1c", "r1", "r2", 1);
+        closed("r2", "r3");
+        construct_disconnected_rank2_rank2("r3", "prop_vv", "r5");
+        perm("r5", "(12|34)");
+        update(result_name, 1.0, "r5");
+        restore_stack_pos(pos);
+        print_time_mem_usage("Q7", t_start_Q7);
+    }
+
+    // Q8a
+    double t_start_Q8a = abs_time();
+    reorder("prop_ph", "r1", "21");
+    reorder("s2c_v12", "r2", "3412");
+    mult("s1c", "r1", "r3", 1);
+    mult("r2", "r3", "r4", 1);
+    reorder("r4", "r5", "3412");
+    perm("r5", "(12)");
+    update(result_name, -1.0, "r5");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q8a", t_start_Q8a);
+
+    // Q8b
+    double t_start_Q8b = abs_time();
+    reorder("s1c+", "r1", "21");
+    mult("r1", "prop_hp", "r2", 1);
+    mult("s2c+_v12", "r2", "r3", 1);
+    perm("r3", "(34)");
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q8b", t_start_Q8b);
+
+    // Q8c
+    double t_start_Q8c = abs_time();
+    reorder("s1c+", "r1", "21");
+    reorder("s2c_v2", "r2", "4123");
+    mult("r1", "r2", "r3", 1);
+    mult("r3", "prop_vh", "r4", 1);
+    reorder("r4", "r5", "3412");
+    perm("r5", "(12|34)");
+    update(result_name, -1.0, "r5");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q8c", t_start_Q8c);
+
+    // Q8d
+    double t_start_Q8d = abs_time();
+    reorder("s2c+_v2", "r1", "2341");
+    reorder("prop_hv", "r2", "21");
+    mult("s1c", "r1", "r3", 1);
+    mult("r3", "r2", "r4", 1);
+    perm("r4", "(12|34)");
+    update(result_name, -1.0, "r4");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q8d", t_start_Q8d);
 
     // Q9a - disconnected term
-    if (disconn_enabled) {
+    if (disconnected) {
+        double t_start_Q9a = abs_time();
         reorder("s2c+", "r1", "3412");
         mult("s2c", "r1", "r2", 3);
         closed("r2", "r3");
-        copy("prop_pp", "r0");
-        closed("r0", "r4");
-        construct_disconnected_rank2_rank2("r3", "r4", "r5");
+        construct_disconnected_rank2_rank2("r3", "prop_vv", "r5");
         perm("r5", "(12|34)");
         update(result_name, +0.5, "r5");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q9a", t_start_Q9a);
     }
 
     // Q9b
-    reorder("s2c+", "r1", "1342");
+    double t_start_Q9b = abs_time();
+    reorder("s2c+_v1", "r1", "1342");
     reorder("s2c", "s2c_21", "2143");
     reorder("s2c_21", "r2", "2134");
-    reorder("prop_pp", "r3", "21");
+    reorder("prop_pv", "r3", "21");
     mult("r3", "r2", "r4", 1);
     mult("r1", "r4", "r5", 2);
     reorder("r5", "r6", "1423");
-    closed("r6", "r7");
-    perm("r7", "(12|34)");
-    update(result_name, 1.0, "r7");
-    restore_stack_pos(pos);
-
-    // Q9c
-    reorder("s2c", "r1", "1324");
-    reorder("s2c+", "s2c+_21", "2143");
-    reorder("s2c+_21", "r2", "4312");
-    mult("prop_pp", "r2", "r3", 1);
-    mult("r1", "r3", "r4", 2);
-    reorder("r4", "r5", "1324");
-    closed("r5", "r6");
     perm("r6", "(12|34)");
     update(result_name, 1.0, "r6");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q9b", t_start_Q9b);
+
+    // Q9c
+    double t_start_Q9c = abs_time();
+    reorder("s2c_v1", "r1", "1324");
+    reorder("s2c+", "s2c+_21", "2143");
+    reorder("s2c+_21", "r2", "4312");
+    mult("prop_vp", "r2", "r3", 1);
+    mult("r1", "r3", "r4", 2);
+    reorder("r4", "r5", "1324");
+    perm("r5", "(12|34)");
+    update(result_name, 1.0, "r5");
+    restore_stack_pos(pos);
+    print_time_mem_usage("Q9c", t_start_Q9c);
 
     // Q9d
-    reorder("s2c", "r1", "1342");
-    reorder("s2c+", "s2c+_21", "2143");
+    double t_start_Q9d = abs_time();
+    reorder("s2c_v1", "r1", "1342");
+    reorder("s2c+_v1", "s2c+_21", "2143");
     reorder("s2c+_21", "r2", "2413");
     mult("r1", "prop_hh", "r3", 1);
     mult("r3", "r2", "r4", 2);
     reorder("r4", "r5", "1324");
-    closed("r5", "r6");
-    perm("r6", "(12|34)");
-    update(result_name, -1.0, "r6");
+    perm("r5", "(12|34)");
+    update(result_name, -1.0, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q9d", t_start_Q9d);
 
     // Q9e
-    reorder("s2c+", "s2c+_21", "2143");
+    double t_start_Q9e = abs_time();
+    reorder("s2c+_v1", "s2c+_21", "2143");
     reorder("s2c+_21", "r1", "2431");
-    reorder("s2c", "r2", "1324");
+    reorder("s2c_v1", "r2", "1324");
     mult("r1", "prop_pp", "r3", 1);
     mult("r2", "r3", "r4", 2);
     reorder("r4", "r5", "1324");
-    closed("r5", "r6");
-    perm("r6", "(12|34)");
-    update(result_name, 1.0, "r6");
+    perm("r5", "(12|34)");
+    update(result_name, 1.0, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q9e", t_start_Q9e);
 
     // Q10a
-    reorder("prop_pp", "r1", "21");
+    double t_start_Q10a = abs_time();
+    reorder("prop_pv", "r1", "21");
     reorder("s1c+", "r2", "21");
     mult("r1", "x2c", "r3", 1);
     mult("r2", "r3", "r4", 1);
     reorder("r4", "r5", "3412");
-    closed("r5", "r6");
-    perm("r6", "(34)");
-    update(result_name, 1.0, "r6");
+    perm("r5", "(34)");
+    update(result_name, 1.0, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q10a", t_start_Q10a);
 
     // Q10b
+    double t_start_Q10b = abs_time();
     reorder("x2c+", "r1", "3412");
-    mult("prop_pp", "r1", "r2", 1);
+    mult("prop_vp", "r1", "r2", 1);
     mult("s1c", "r2", "r3", 1);
-    closed("r3", "r4");
-    perm("r4", "(12)");
-    update(result_name, 1.0, "r4");
+    perm("r3", "(12)");
+    update(result_name, 1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q10b", t_start_Q10b);
 
     // Q10c
+    double t_start_Q10c = abs_time();
     reorder("s1c+", "r1", "21");
     mult("r1", "prop_pp", "r2", 1);
-    mult("x2c", "r2", "r3", 1);
-    closed("r3", "r4");
-    perm("r4", "(34)");
-    update(result_name, 1.0, "r4");
+    mult("x2c_v1", "r2", "r3", 1);
+    perm("r3", "(34)");
+    update(result_name, 1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q10c", t_start_Q10c);
 
     // Q10d
-    reorder("x2c+", "r1", "3412");
+    double t_start_Q10d = abs_time();
+    reorder("x2c+_v1", "r1", "3412");
     reorder("prop_pp", "r2", "21");
     mult("s1c", "r2", "r3", 1);
     mult("r1", "r3", "r4", 1);
     reorder("r4", "r5", "3412");
-    closed("r5", "r6");
-    perm("r6", "(12)");
-    update(result_name, 1.0, "r6");
+    perm("r5", "(12)");
+    update(result_name, 1.0, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q10d", t_start_Q10d);
 
     // Q11a
-    reorder("x2c+", "r1", "3412");
+    double t_start_Q11a = abs_time();
+    reorder("x2c+_v1", "r1", "3412");
     reorder("s2c", "r2", "1342");
     mult("r2", "prop_ph", "r3", 2);
     mult("r1", "r3", "r4", 1);
     reorder("r4", "r5", "3412");
-    closed("r5", "r6");
-    perm("r6", "(12)");
-    update(result_name, 1.0, "r6");
+    perm("r5", "(12)");
+    update(result_name, 1.0, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q11a", t_start_Q11a);
 
     // Q11b
+    double t_start_Q11b = abs_time();
     reorder("s2c+", "r1", "3142");
     mult("r1", "prop_hp", "r2", 2);
-    mult("x2c", "r2", "r3", 1);
-    closed("r3", "r4");
-    perm("r4", "(34)");
-    update(result_name, 1.0, "r4");
+    mult("x2c_v1", "r2", "r3", 1);
+    perm("r3", "(34)");
+    update(result_name, 1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q11b", t_start_Q11b);
 
     // Q11c
+    double t_start_Q11c = abs_time();
     reorder("x2c+", "r1", "3412");
     mult("s2c", "r1", "r2", 2);
     reorder("r2", "r3", "3412");
-    mult("r3", "prop_ph", "r4", 1);
+    mult("r3", "prop_vh", "r4", 1);
     reorder("r4", "r5", "3412");
-    closed("r5", "r6");
-    perm("r6", "(12)");
-    update(result_name, -0.5, "r6");
+    perm("r5", "(12)");
+    update(result_name, -0.5, "r5");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q11c", t_start_Q11c);
 
     // Q11d
-    reorder("prop_hp", "r1", "21");
+    double t_start_Q11d = abs_time();
+    reorder("prop_hv", "r1", "21");
     mult("s2c+", "r1", "r2", 1);
     reorder("r2", "r3", "3412");
     mult("x2c", "r3", "r4", 2);
-    closed("r4", "r5");
-    perm("r5", "(34)");
-    update(result_name, -0.5, "r5");
+    perm("r4", "(34)");
+    update(result_name, -0.5, "r4");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q11d", t_start_Q11d);
 
     // Q12
+    double t_start_Q12 = abs_time();
     reorder("x2c+", "r1", "3412");
     mult("r1", "prop_pp", "r2", 1);
     mult("x2c", "r2", "r3", 2);
-    closed("r3", "r4");
-    update(result_name, 1.0, "r4");
+    update(result_name, 1.0, "r3");
     restore_stack_pos(pos);
+    print_time_mem_usage("Q12", t_start_Q12);
 
     if (triples_enabled()) {
 
@@ -2175,7 +2491,7 @@ void direct_property_0h2p(char *result_name, int operator_symmetry, int approxim
         restore_stack_pos(pos);
 
         // Q14e - disconnected term
-        if (disconn_enabled) {
+        if (disconnected) {
             reorder("t3c", "r1", "456123");
             mult("t3c+", "r1", "r2", 5);
             closed("r2", "r3");
@@ -2295,7 +2611,7 @@ void direct_property_0h2p(char *result_name, int operator_symmetry, int approxim
         restore_stack_pos(pos);
 
         // Q16g - disconnected term
-        if (disconn_enabled) {
+        if (disconnected) {
             reorder("s3c", "r1", "145623");
             mult("r1", "t2c+", "r2", 4);
             closed("r2", "r3");
@@ -2308,7 +2624,7 @@ void direct_property_0h2p(char *result_name, int operator_symmetry, int approxim
         }
 
         // Q16h - disconnected term
-        if (disconn_enabled) {
+        if (disconnected) {
             reorder("s3c+", "r1", "145623");
             mult("r1", "t2c", "r2", 4);
             closed("r2", "r3");
@@ -2456,7 +2772,7 @@ void direct_property_0h2p(char *result_name, int operator_symmetry, int approxim
         restore_stack_pos(pos);
 
         // Q19e - disconnected term
-        if (disconn_enabled) {
+        if (disconnected) {
             reorder("s3c+", "r1", "456123");
             mult("s3c", "r1", "r2", 5);
             closed("r2", "r3");
@@ -2702,6 +3018,744 @@ void direct_property_0h2p(char *result_name, int operator_symmetry, int approxim
         closed("r4", "r5");
         update(result_name, -1.0 / 6.0, "r5");
         restore_stack_pos(pos);
+    }
+
+    if (approximation <= CC_PROPERTIES_APPROX_QUADRATIC) {
+        return;
+    }
+}
+
+
+void direct_property_0h0p_1h1p(char *result_name, int operator_symmetry, int approximation, int disconnected)
+{
+    tmplt_sym(result_name, "ph", "11", "12", NOT_PERM_UNIQUE, operator_symmetry);
+
+    restrict_valence("t1c+", "t1c+_v", "10", 0);
+    restrict_valence("t1c+", "t1c+_g", "01", 0);
+    restrict_valence("t1c+", "t1c+_vg", "11", 0);
+    restrict_valence("t1c", "t1c_gv", "11", 0);
+
+    restrict_valence("t2c+", "t2c+_vg", "1010", 0);
+    restrict_valence("t2c+", "t2c+_g", "0010", 0);
+    restrict_valence("t2c+", "t2c+_v", "1000", 0);
+
+    restrict_valence("prop_ph", "prop_vg", "11", 0);
+    restrict_valence("prop_ph", "prop_pg", "01", 0);
+    restrict_valence("prop_ph", "prop_vh", "10", 0);
+    restrict_valence("prop_hh", "prop_hg", "01", 0);
+    restrict_valence("prop_pp", "prop_vp", "10", 0);
+
+    dg_stack_pos_t pos = get_stack_pos();
+
+    // O1
+    update(result_name, 1.0, "prop_vg");
+    restore_stack_pos(pos);
+
+    if (approximation <= CC_PROPERTIES_APPROX_MODEL_SPACE) {
+        return;
+    }
+
+    // L1a
+    reorder("prop_pg", "r1", "21");
+    mult("s1c", "r1", "r2", 1);
+    update(result_name, 1.0, "r2");
+    restore_stack_pos(pos);
+
+    // L1b
+    reorder("h1c", "r1", "21");
+    mult("prop_vh", "r1", "r2", 1);
+    update(result_name, -1.0, "r2");
+    restore_stack_pos(pos);
+
+    // L2a
+    reorder("prop_hg", "r1", "21");
+    mult("t1c+_v", "r1", "r2", 1);
+    update(result_name, -1.0, "r2");
+    restore_stack_pos(pos);
+
+    // L2b
+    reorder("t1c+_g", "r1", "21");
+    mult("prop_vp", "r1", "r2", 1);
+    update(result_name, 1.0, "r2");
+    restore_stack_pos(pos);
+
+    // L3a
+    reorder("t2c+_vg", "r1", "1342");
+    mult("r1", "prop_hp", "r2", 2);
+    update(result_name, 1.0, "r2");
+    restore_stack_pos(pos);
+
+    // L3b
+    reorder("e2c", "r1", "1432");
+    mult("r1", "prop_ph", "r2", 2);
+    update(result_name, -1.0, "r2");
+    restore_stack_pos(pos);
+
+    if (approximation <= CC_PROPERTIES_APPROX_LINEAR) {
+        return;
+    }
+
+    // Q1a - disconnected term
+    if (disconnected) {
+        double factor_Q1a = scalar_product("C", "N", "t1c", "prop_hp");
+        update(result_name, factor_Q1a, "t1c+_vg");
+    }
+
+    // Q1b
+    reorder("t1c+_g", "r1", "21");
+    mult("r1", "prop_hp", "r2", 1);
+    mult("t1c+_v", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q2a - disconnected term
+    if (disconnected) {
+        double factor_Q2a = scalar_product("C", "N", "prop_hp", "t1c");
+        update(result_name, factor_Q2a, "e1c");
+    }
+
+    // Q2b
+    reorder("h1c", "r1", "21");
+    mult("r1", "prop_ph", "r2", 1);
+    mult("s1c", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3a - disconnected term
+    if (disconnected) {
+        double t1_t1 = scalar_product("C", "N", "t1c", "t1c");
+        update(result_name, t1_t1, "prop_vg");
+    }
+
+    // Q3b - disconnected term
+    if (disconnected) {
+        double factor_Q3b = scalar_product("C", "N", "prop_hp", "t1c");
+        update(result_name, factor_Q3b, "t1c+_vg");
+    }
+
+    // Q3c - disconnected term
+    if (disconnected) {
+        double factor_Q3c = scalar_product("C", "N", "t1c", "prop_hp");
+        update(result_name, factor_Q3c, "e1c");
+    }
+
+    // Q3d
+    reorder("prop_pg", "r1", "21");
+    mult("r1", "t1c", "r2", 1);
+    mult("t1c+_v", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3e
+    reorder("t1c+_g", "r1", "21");
+    mult("r1", "t1c", "r2", 1);
+    mult("prop_vh", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3f
+    reorder("prop_hg", "r1", "21");
+    mult("r1", "t1c+", "r2", 1);
+    mult("s1c", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3g
+    reorder("h1c", "r1", "21");
+    mult("r1", "t1c+", "r2", 1);
+    mult("prop_vp", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3h
+    reorder("t1c+_g", "r1", "21");
+    mult("r1", "prop_pp", "r2", 1);
+    mult("s1c", "r2", "r3", 1);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3i
+    reorder("h1c", "r1", "21");
+    mult("r1", "prop_hh", "r2", 1);
+    mult("t1c+_v", "r2", "r3", 1);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q4a
+    reorder("s2c", "r1", "1342");
+    reorder("prop_pg", "r2", "21");
+    mult("r1", "t1c+", "r3", 2);
+    mult("r3", "r2", "r4", 1);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q4b
+    reorder("h2c", "r1", "3142");
+    mult("r1", "t1c+", "r2", 2);
+    mult("prop_vh", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q4c
+    reorder("s2c", "r1", "1342");
+    reorder("t1c+_g", "r2", "21");
+    mult("r1", "prop_ph", "r3", 2);
+    mult("r3", "r2", "r4", 1);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q4d
+    reorder("h2c", "r1", "3142");
+    mult("r1", "prop_ph", "r2", 2);
+    mult("t1c+_v", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q4e
+    reorder("e2c", "r1", "1432");
+    mult("r1", "prop_hh", "r2", 1);
+    mult("r2", "t1c+", "r3", 2);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q4f
+    reorder("e2c", "r1", "1432");
+    mult("r1", "t1c+", "r2", 1);
+    mult("r2", "prop_pp", "r3", 2);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q5a
+    reorder("t2c+_g", "r1", "3142");
+    mult("r1", "t1c", "r2", 2);
+    mult("prop_vp", "r2", "r3", 1);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q5b
+    reorder("prop_hg", "r1", "21");
+    reorder("t2c+_v", "r2", "1342");
+    mult("r2", "t1c", "r3", 2);
+    mult("r3", "r1", "r4", 1);
+    update(result_name, -1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q5c
+    reorder("t2c+_g", "r1", "3142");
+    mult("r1", "prop_hp", "r2", 2);
+    mult("s1c", "r2", "r3", 1);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q5d
+    reorder("t2c+_v", "r1", "1342");
+    reorder("h1c", "r2", "21");
+    mult("r1", "prop_hp", "r3", 2);
+    mult("r3", "r2", "r4", 1);
+    update(result_name, -1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q5e
+    reorder("t1c", "r1", "21");
+    reorder("t2c+_vg", "r2", "1342");
+    mult("prop_hh", "r1", "r3", 1);
+    mult("r2", "r3", "r4", 2);
+    update(result_name, -1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q5f
+    reorder("t2c+_vg", "r1", "1324");
+    reorder("prop_pp", "r2", "21");
+    mult("r2", "t1c", "r3", 1);
+    mult("r1", "r3", "r4", 2);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q6a - disconnected term
+    if (disconnected) {
+        double t2_t2 = 0.25 * scalar_product("C", "N", "t2c", "t2c");
+        update(result_name, t2_t2, "prop_vg");
+        restore_stack_pos(pos);
+    }
+
+    // Q6b
+    reorder("t2c+_vg", "r1", "1324");
+    reorder("t2c", "r2", "3142");
+    mult("r2", "prop_ph", "r3", 2);
+    mult("r1", "r3", "r4", 2);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q6c
+    reorder("t2c", "r1", "2341");
+    reorder("t2c+_g", "r0", "2143");
+    reorder("r0", "r2", "4123");
+    mult("r2", "r1", "r3", 3);
+    mult("prop_vh", "r3", "r4", 1);
+    update(result_name, -0.5, "r4");
+    restore_stack_pos(pos);
+
+    // Q6d
+    reorder("prop_pg", "r0", "21");
+    reorder("t2c", "r1", "4123");
+    mult("r0", "r1", "r2", 1);
+    mult("t2c+_v", "r2", "r3", 3);
+    update(result_name, -0.5, "r3");
+    restore_stack_pos(pos);
+
+    // Q6e
+    reorder("s2c", "s2c_21", "2143");
+    reorder("s2c_21", "r1", "2341");
+    reorder("t2c+", "r2", "4123");
+    reorder("prop_hg", "r3", "21");
+    mult("r1", "r2", "r4", 3);
+    mult("r4", "r3", "r5", 1);
+    update(result_name, -0.5, "r5");
+    restore_stack_pos(pos);
+
+    // Q6f
+    reorder("h2c", "r1", "3412");
+    mult("r1", "t2c+", "r2", 3);
+    mult("prop_vp", "r2", "r3", 1);
+    update(result_name, -0.5, "r3");
+    restore_stack_pos(pos);
+
+    // Q6g
+    reorder("t2c+_g", "r1", "3124");
+    reorder("s2c", "r2", "1342");
+    mult("r2", "prop_hh", "r3", 1);
+    mult("r3", "r1", "r4", 3);
+    update(result_name, -0.5, "r4");
+    restore_stack_pos(pos);
+
+    // Q6h
+    reorder("h2c", "r1", "3412");
+    mult("r1", "prop_hh", "r2", 1);
+    mult("t2c+_v", "r2", "r3", 3);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q6i
+    reorder("t2c+_g", "r1", "3412");
+    reorder("prop_pp", "r2", "21");
+    mult("s2c", "r2", "r3", 1);
+    mult("r3", "r1", "r4", 3);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q6k
+    reorder("prop_pp", "r1", "21");
+    mult("h2c", "r1", "r2", 1);
+    reorder("r2", "r3", "3412");
+    mult("t2c+_v", "r3", "r4", 3);
+    update(result_name, -0.5, "r4");
+    restore_stack_pos(pos);
+
+    // Q6l
+    reorder("e2c", "r1", "1423");
+    reorder("t2c+", "r2", "3142");
+    mult("r2", "prop_hp", "r3", 2);
+    mult("r1", "r3", "r4", 2);
+    update(result_name, -0.5, "r4");
+    restore_stack_pos(pos);
+
+    if (triples_enabled()) {
+
+    }
+
+    if (approximation <= CC_PROPERTIES_APPROX_QUADRATIC) {
+        return;
+    }
+}
+
+
+void direct_property_1h1p_0h0p(char *result_name, int operator_symmetry, int approximation, int disconnected)
+{
+    tmplt_sym(result_name, "hp", "11", "12", NOT_PERM_UNIQUE, operator_symmetry);
+
+    restrict_valence("t1c", "t1c_v", "01", 0);
+    restrict_valence("t1c", "t1c_g", "10", 0);
+    restrict_valence("t1c", "t1c_gv", "11", 0);
+
+    restrict_valence("t2c", "t2c_gv", "1010", 0);
+    restrict_valence("t2c", "t2c_g", "1000", 0);
+    restrict_valence("t2c", "t2c_v", "0010", 0);
+
+    restrict_valence("prop_hh", "prop_gh", "10", 0);
+    restrict_valence("prop_hp", "prop_gv", "11", 0);
+    restrict_valence("prop_hp", "prop_gp", "10", 0);
+
+    dg_stack_pos_t pos = get_stack_pos();
+
+    // O1
+    update(result_name, 1.0, "prop_gv");
+    restore_stack_pos(pos);
+
+    if (approximation <= CC_PROPERTIES_APPROX_MODEL_SPACE) {
+        return;
+    }
+
+    // L1a
+    reorder("t1c_v", "r1", "21");
+    mult("prop_gh", "r1", "r2", 1);
+    update(result_name, -1.0, "r2");
+    restore_stack_pos(pos);
+
+    // L1b
+    reorder("prop_pv", "r1", "21");
+    mult("t1c_g", "r1", "r2", 1);
+    update(result_name, 1.0, "r2");
+    restore_stack_pos(pos);
+
+    // L2a
+    reorder("prop_hv", "r1", "21");
+    mult("h1c+", "r1", "r2", 1);
+    update(result_name, -1.0, "r2");
+    restore_stack_pos(pos);
+
+    // L2b
+    reorder("s1c+", "r1", "21");
+    mult("prop_gp", "r1", "r2", 1);
+    update(result_name, 1.0, "r2");
+    restore_stack_pos(pos);
+
+    // L3a
+    reorder("t2c_gv", "r1", "1342");
+    mult("r1", "prop_ph", "r2", 2);
+    update(result_name, 1.0, "r2");
+    restore_stack_pos(pos);
+
+    // L3b
+    reorder("e2c+", "r1", "2341");
+    mult("r1", "prop_hp", "r2", 2);
+    update(result_name, -1.0, "r2");
+    restore_stack_pos(pos);
+
+    if (approximation <= CC_PROPERTIES_APPROX_LINEAR) {
+        return;
+    }
+
+    // Q1a - disconnected term
+    if (disconnected) {
+        double factor_Q1a = scalar_product("C", "N", "prop_hp", "t1c");
+        update(result_name, factor_Q1a, "t1c_gv");
+    }
+
+    // Q1b
+    reorder("t1c_v", "r1", "21");
+    mult("r1", "prop_ph", "r2", 1);
+    mult("t1c_g", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q2a - disconnected term
+    if (disconnected) {
+        double factor_Q2a = scalar_product("C", "N", "t1c", "prop_hp");
+        update(result_name, factor_Q2a, "e1c+");
+    }
+
+    // Q2b
+    reorder("s1c+", "r1", "21");
+    mult("r1", "prop_hp", "r2", 1);
+    mult("h1c+", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3a - disconnected term
+    if (disconnected) {
+        double t1_t1_Q3a = scalar_product("C", "N", "t1c", "t1c");
+        update(result_name, t1_t1_Q3a, "prop_gv");
+        restore_stack_pos(pos);
+    }
+
+    // Q3b - disconnected term
+    if (disconnected) {
+        double factor_Q3b = scalar_product("C", "N", "t1c", "prop_hp");
+        update(result_name, factor_Q3b, "t1c_gv");
+    }
+
+    // Q3c - disconnected term
+    if (disconnected) {
+        double factor_Q3c = scalar_product("C", "N", "prop_hp", "t1c");
+        update(result_name, factor_Q3c, "e1c+");
+    }
+
+    // Q3d
+    reorder("t1c_v", "r1", "21");
+    mult("r1", "t1c+", "r2", 1);
+    mult("prop_gp", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3e
+    reorder("prop_hv", "r1", "21");
+    mult("r1", "t1c+", "r2", 1);
+    mult("t1c_g", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3f
+    reorder("s1c+", "r1", "21");
+    mult("r1", "t1c", "r2", 1);
+    mult("prop_gh", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3g
+    reorder("prop_pv", "r1", "21");
+    mult("r1", "t1c", "r2", 1);
+    mult("h1c+", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3h
+    reorder("s1c+", "r1", "21");
+    mult("r1", "prop_pp", "r2", 1);
+    mult("t1c_g", "r2", "r3", 1);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q3i
+    reorder("t1c_v", "r1", "21");
+    mult("r1", "prop_hh", "r2", 1);
+    mult("h1c+", "r2", "r3", 1);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q4a
+    reorder("s2c+", "r1", "3142");
+    mult("r1", "t1c", "r2", 2);
+    mult("prop_gp", "r2", "r3", 1);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q4b
+    reorder("prop_hv", "r1", "21");
+    reorder("h2c+", "r2", "1342");
+    mult("r2", "t1c", "r3", 2);
+    mult("r3", "r1", "r4", 1);
+    update(result_name, -1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q4c
+    reorder("s2c+", "r1", "3142");
+    mult("r1", "prop_hp", "r2", 2);
+    mult("t1c_g", "r2", "r3", 1);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q4d
+    reorder("h2c+", "r1", "1342");
+    reorder("t1c_v", "r2", "21");
+    mult("r1", "prop_hp", "r3", 2);
+    mult("r3", "r2", "r4", 1);
+    update(result_name, -1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q4e
+    reorder("t1c", "r1", "21");
+    reorder("e2c+", "r2", "2341");
+    mult("prop_hh", "r1", "r3", 1);
+    mult("r2", "r3", "r4", 2);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q4f
+    reorder("e2c+", "r1", "2341");
+    mult("r1", "prop_pp", "r2", 1);
+    mult("r2", "t1c", "r3", 2);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q5a
+    reorder("t2c_g", "r1", "1342");
+    reorder("prop_pv", "r2", "21");
+    mult("r1", "t1c+", "r3", 2);
+    mult("r3", "r2", "r4", 1);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q5b
+    reorder("t2c_v", "r1", "3142");
+    mult("r1", "t1c+", "r2", 2);
+    mult("prop_gh", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q5c
+    reorder("t2c_g", "r1", "1342");
+    reorder("s1c+", "r2", "21");
+    mult("r1", "prop_ph", "r3", 2);
+    mult("r3", "r2", "r4", 1);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q5d
+    reorder("t2c_v", "r1", "3142");
+    mult("r1", "prop_ph", "r2", 2);
+    mult("h1c+", "r2", "r3", 1);
+    update(result_name, -1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q5e
+    reorder("prop_hh", "r1", "21");
+    reorder("t2c_gv", "r2", "1324");
+    mult("r1", "t1c+", "r3", 1);
+    mult("r2", "r3", "r4", 2);
+    update(result_name, -1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q5f
+    reorder("t1c+", "r1", "21");
+    reorder("t2c_gv", "r2", "1324");
+    mult("r1", "prop_pp", "r3", 1);
+    mult("r2", "r3", "r4", 2);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q6a - disconnected term
+    if (disconnected) {
+        double t2_t2 = 0.25 * scalar_product("C", "N", "t2c", "t2c");
+        update(result_name, t2_t2, "prop_gv");
+        restore_stack_pos(pos);
+    }
+
+    // Q6b
+    reorder("t2c_gv", "r1", "1324");
+    reorder("t2c+", "r2", "3142");
+    mult("r2", "prop_hp", "r3", 2);
+    mult("r1", "r3", "r4", 2);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q6c
+    reorder("t2c", "r1", "2341");
+    reorder("s2c+", "s2c+_21", "2143");
+    reorder("s2c+_21", "r2", "4123");
+    mult("r2", "r1", "r3", 3);
+    mult("prop_gh", "r3", "r4", 1);
+    update(result_name, -0.5, "r4");
+    restore_stack_pos(pos);
+
+    // Q6d
+    reorder("t2c", "r1", "3412");
+    reorder("prop_pv", "r2", "21");
+    mult("h2c+", "r1", "r3", 3);
+    mult("r3", "r2", "r4", 1);
+    update(result_name, -0.5, "r4");
+    restore_stack_pos(pos);
+
+    // Q6e
+    reorder("t2c_g", "t2c_21", "2143");
+    reorder("t2c_21", "r1", "2341");
+    reorder("t2c+", "r2", "4123");
+    reorder("prop_hv", "r3", "21");
+    mult("r1", "r2", "r4", 3);
+    mult("r4", "r3", "r5", 1);
+    update(result_name, -0.5, "r5");
+    restore_stack_pos(pos);
+
+    // Q6f
+    reorder("t2c_v", "r1", "3412");
+    mult("r1", "t2c+", "r2", 3);
+    mult("prop_gp", "r2", "r3", 1);
+    update(result_name, -0.5, "r3");
+    restore_stack_pos(pos);
+
+    // Q6g
+    reorder("s2c+", "r1", "3124");
+    reorder("t2c_g", "r2", "1342");
+    mult("r2", "prop_hh", "r3", 1);
+    mult("r3", "r1", "r4", 3);
+    update(result_name, -0.5, "r4");
+    restore_stack_pos(pos);
+
+    // Q6h
+    reorder("t2c_v", "r1", "3412");
+    mult("r1", "prop_hh", "r2", 1);
+    mult("h2c+", "r2", "r3", 3);
+    update(result_name, 1.0, "r3");
+    restore_stack_pos(pos);
+
+    // Q6i
+    reorder("s2c+", "r1", "3412");
+    reorder("prop_pp", "r2", "21");
+    mult("t2c_g", "r2", "r3", 1);
+    mult("r3", "r1", "r4", 3);
+    update(result_name, 1.0, "r4");
+    restore_stack_pos(pos);
+
+    // Q6k
+    reorder("prop_pp", "r1", "21");
+    mult("t2c_v", "r1", "r2", 1);
+    reorder("r2", "r3", "3412");
+    mult("h2c+", "r3", "r4", 3);
+    update(result_name, -0.5, "r4");
+    restore_stack_pos(pos);
+
+    // Q6l
+    reorder("t2c", "r1", "1342");
+    reorder("e2c+", "r2", "2341");
+    mult("r1", "prop_ph", "r3", 2);
+    mult("r2", "r3", "r4", 2);
+    update(result_name, -1.0, "r4");
+    restore_stack_pos(pos);
+
+    if (triples_enabled()) {
+
+    }
+
+    if (approximation <= CC_PROPERTIES_APPROX_QUADRATIC) {
+        return;
+    }
+}
+
+
+void direct_property_1h1p(char *result_name, int operator_symmetry, int approximation, int disconnected)
+{
+    tmplt_sym(result_name, "phph", "1111", "1234", NOT_PERM_UNIQUE, operator_symmetry);
+
+    /*restrict_valence("t1c", "t1c_v2", "01", 0);
+    restrict_valence("t1c+", "t1c+_v1", "01", 0);
+    restrict_valence("t1c", "t1c_v", "01", 0);
+    restrict_valence("t1c+", "t1c+_v", "10", 0);
+
+    restrict_valence("t2c", "t2c_v12", "0011", 0);
+    restrict_valence("t2c+", "t2c+_v12", "1100", 0);
+    restrict_valence("t2c", "t2c_v1", "0010", 0);
+    restrict_valence("t2c+", "t2c+_v1", "1000", 0);
+    restrict_valence("t2c", "t2c_v2", "0001", 0);
+    restrict_valence("t2c+", "t2c+_v2", "0100", 0);
+
+    restrict_valence("s2c", "s2c_v12", "1011", 0);
+    restrict_valence("s2c+", "s2c+_v12", "1110", 0);
+    restrict_valence("s2c", "s2c_v1", "1010", 0);
+    restrict_valence("s2c+", "s2c+_v1", "1010", 0);
+    restrict_valence("s2c", "s2c_v2", "1001", 0);
+    restrict_valence("s2c+", "s2c+_v2", "0110", 0);
+
+    restrict_valence("prop_ph", "prop_vh", "10", 0);
+    restrict_valence("prop_hp", "prop_hv", "01", 0);
+
+    restrict_valence("prop_pp", "prop_pv", "01", 0);
+    restrict_valence("prop_pp", "prop_vp", "10", 0);
+    restrict_valence("prop_pp", "prop_vv", "11", 0);*/
+
+    dg_stack_pos_t pos = get_stack_pos();
+
+
+    if (approximation <= CC_PROPERTIES_APPROX_MODEL_SPACE) {
+        return;
+    }
+
+
+    if (approximation <= CC_PROPERTIES_APPROX_LINEAR) {
+        return;
+    }
+
+
+    if (triples_enabled()) {
+
     }
 
     if (approximation <= CC_PROPERTIES_APPROX_QUADRATIC) {

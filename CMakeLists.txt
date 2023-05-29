@@ -120,7 +120,7 @@ set(CMAKE_Fortran_FLAGS       "${CMAKE_Fortran_FLAGS}       ${f90options}")
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
     set(COMPILER_OPTION " -DCOMPILER_GNU ")
-    set(c99options " -O3 -march=native -std=c99 ")
+    set(c99options "-g -O3 -march=native -std=c99 ")
 endif ()
 if (CMAKE_C_COMPILER_ID MATCHES "Intel")
     set(COMPILER_OPTION " -DCOMPILER_INTEL ")
@@ -298,6 +298,7 @@ add_executable(expt2pam.x
         src/expt2pam/lex.yy.c
         src/expt2pam/molecule.c
         src/expt2pam/geodesic.c
+        src/expt2pam/zmatrix.c
         src/expt2pam/main.c
         )
 
@@ -333,9 +334,9 @@ add_executable(expt_read_mdprop.x
 ########################################################################################################################
 
 
-target_link_libraries(expt.x          -lm ${BLAS_LIBRARIES} ${OpenMP_C_LIBRARIES} ${OpenMP_C_FLAGS})
+target_link_libraries(expt.x          -lm ${BLAS_LIBRARIES} ${OpenMP_C_LIBRARIES} ${OpenMP_C_FLAGS} -llapacke)
 target_link_libraries(heffman.x       -lm ${BLAS_LIBRARIES})
-target_link_libraries(expt_diatomic.x -lm ${BLAS_LIBRARIES})
+target_link_libraries(expt_diatomic.x -lm ${BLAS_LIBRARIES} -llapacke)
 target_link_libraries(expt2pam.x      -lm ${BLAS_LIBRARIES})
 target_link_libraries(expt_transform_natorb.x -lm)
 target_link_libraries(expt_read_dfcoef.x -lm)
@@ -366,6 +367,7 @@ add_custom_target(expt_spectrum.py ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/expt_
 
 
 include(CTest)
+
 
 # ccsd
 add_test(NAME ccsd_highspin         COMMAND python test.py WORKING_DIRECTORY ../test/ccsd_highspin       )

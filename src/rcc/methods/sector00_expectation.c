@@ -1123,17 +1123,64 @@ void sector_0h0p_construct_density_matrix_block_pp_T2x_T2x_T2_T2()
 void guess_operator_symmetry(int nspinors, double complex *prop_matrix)
 {
     int nsym = get_num_irreps();
+    double const ZERO_THRESH = 1e-10;
 
     int *nonzero_blocks = cc_malloc(sizeof(int) * nsym * nsym);
     memset(nonzero_blocks, 0, sizeof(int) * nsym * nsym);
 
-/*
- * detect pairs of irreps for which matrix elements are non-zero
- */
+    int non_zero_real_part = 0;
+    int non_zero_imag_part = 0;
+    int symmetric_real_part = 0;
+    int antisymmetric_real_part = 0;
+    int symmetric_imag_part = 0;
+    int antisymmetric_imag_part = 0;
+
+    /*
+     * detect pairs of irreps for which matrix elements are non-zero;
+     * check for symmetry / antisymmetry of real and imag parts of the matrix
+     */
     for (int i = 0; i < nspinors; i++) {
         for (int j = 0; j < nspinors; j++) {
+
             double complex prop_ij = prop_matrix[i * nspinors + j];
-            if (cabs(prop_ij) > 1e-10) {
+            double prop_ij_re = creal(prop_ij);
+            double prop_ij_im = cimag(prop_ij);
+
+            double complex prop_ji = prop_matrix[j * nspinors + i];
+            double prop_ji_re = creal(prop_ji);
+            double prop_ji_im = cimag(prop_ji);
+
+            /*
+             * zero / non-zero
+             */
+            if (fabs(prop_ij_re) > ZERO_THRESH) {
+                non_zero_real_part = 1;
+            }
+            if (fabs(prop_ij_im) > ZERO_THRESH) {
+                non_zero_imag_part = 1;
+            }
+
+            /*
+             * symmetric / antisymmetric
+             */
+            if (fabs(prop_ij_re) > ZERO_THRESH && fabs(prop_ij_re - prop_ji_re) < ZERO_THRESH) {
+                symmetric_real_part = 1;
+            }
+            if (fabs(prop_ij_im) > ZERO_THRESH && fabs(prop_ij_im - prop_ji_im) < ZERO_THRESH) {
+                symmetric_imag_part = 1;
+            }
+
+            if (fabs(prop_ij_re) > ZERO_THRESH && fabs(prop_ij_re + prop_ji_re) < ZERO_THRESH) {
+                antisymmetric_real_part = 1;
+            }
+            if (fabs(prop_ij_im) > ZERO_THRESH && fabs(prop_ij_im + prop_ji_im) < ZERO_THRESH) {
+                antisymmetric_imag_part = 1;
+            }
+
+            /*
+             * zero / nonzero block
+             */
+            if (cabs(prop_ij) > ZERO_THRESH) {
                 int irrep_i = get_spinor_irrep(i);
                 int irrep_j = get_spinor_irrep(j);
                 nonzero_blocks[irrep_i * nsym + irrep_j] = 1;
@@ -1141,9 +1188,14 @@ void guess_operator_symmetry(int nspinors, double complex *prop_matrix)
         }
     }
 
-/*
- * try to guess irrep of the operator
- */
+    printf(" real part: %s%s%s\n", non_zero_real_part ? "non-zero" : "zero",
+           symmetric_real_part ? " symmetric" : "", antisymmetric_real_part ? " antisymmetric" : "");
+    printf(" imag part: %s%s%s\n", non_zero_imag_part ? "non-zero" : "zero",
+           symmetric_imag_part ? " symmetric" : "", antisymmetric_imag_part ? " antisymmetric" : "");
+
+    /*
+     * try to guess irrep of the operator
+     */
     printf(" list of non-zero symmetry blocks:\n");
     for (int irrep_i = 0; irrep_i < nsym; irrep_i++) {
         for (int irrep_j = 0; irrep_j < nsym; irrep_j++) {

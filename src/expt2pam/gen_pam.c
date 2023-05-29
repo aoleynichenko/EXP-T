@@ -23,6 +23,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -69,7 +70,8 @@ void gen_pam(FILE *out, molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t *ecp_li
     // number of atom types
     // 'A' label for angstroms if needed
     int n_atom_types = molecule_n_atom_types(mol);
-    fprintf(out, "C  %2d", n_atom_types);
+    int n_point_charge_types = molecule_n_point_charge_types(mol);
+    fprintf(out, "C  %2d", n_atom_types + n_point_charge_types);
 
     // symmetry data
     if (mol->sym_group.group == SYMMETRY_C1) {
@@ -224,6 +226,54 @@ void gen_pam(FILE *out, molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t *ecp_li
             }
         }
     }
+
+    // generate blocks of point charges
+    if (mol->n_point_charges > 0) {
+
+        double point_charge_types[1000];
+        int n_point_charges_each_type[1000];
+        int n_point_charge_types = 0;
+
+        memset(point_charge_types, 0, sizeof(point_charge_types));
+        memset(n_point_charges_each_type, 0, sizeof(n_point_charges_each_type));
+
+        for (int i = 0; i < mol->n_point_charges; i++) {
+            double q = mol->point_charges[i];
+
+            int charge_found = 0;
+            for (int j = 0; j < n_point_charge_types; j++) {
+                if (fabs(point_charge_types[j] - q) < 1e-6) {
+                    charge_found = 1;
+                    n_point_charges_each_type[j]++;
+                    break;
+                }
+            }
+
+            // new type of point charge
+            if (!charge_found) {
+                point_charge_types[n_point_charge_types] = q;
+                n_point_charges_each_type[n_point_charge_types] = 1;
+                n_point_charge_types++;
+            }
+        }
+
+        for (int qtype = 0; qtype < n_point_charge_types; qtype++) {
+
+            double q = point_charge_types[qtype];
+
+            fprintf(out, "%10.6f%5d\n", q, n_point_charges_each_type[qtype]);
+
+            for (int i = 0; i < mol->n_point_charges; i++) {
+                if (fabs(mol->point_charges[i] - q) < 1e-6) {
+                    fprintf(out, "%s%16.10f%16.10f%16.10f\n", "Gh", mol->qx[i], mol->qy[i], mol->qz[i]);
+                }
+            }
+
+            fprintf(out, "LARGE 0\n");
+        }
+
+    }
+
 
     // generate charged cage (geodesic polyhedron) if needed
     if (mol->cage.n_points > 0) {

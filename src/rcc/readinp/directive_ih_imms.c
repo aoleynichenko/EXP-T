@@ -100,6 +100,7 @@ void directive_ih_incomplete_main_model_spaces(cc_options_t *opts)
     // defaults
     opts->intham_imms_opts.shift_type = CC_SHIFT_REALIMAG;
     opts->intham_imms_opts.npower = 5;
+    opts->intham_imms_opts.subspaces_definition = IH_IMMS_SUBSPACES_DEF_ENERGY;
 
     // end of line after the opening keyword is required
     token_type = next_token();
@@ -338,9 +339,18 @@ void directive_ih_imms_subspace(ih_imms_options_t *ih1_opts)
         }
         double emax = atof(yytext);
 
+        ih1_opts->subspaces_definition = IH_IMMS_SUBSPACES_DEF_ENERGY;
         int idx = ih1_opts->n_spinor_subspaces;
         ih1_opts->subspace_energy_ranges[idx][0] = emin;
         ih1_opts->subspace_energy_ranges[idx][1] = emax;
+        ih1_opts->n_spinor_subspaces++;
+    }
+    else if (token_type == TT_INTEGER) {
+        printf("number of spinors in the subspace = %s\n", yytext);
+
+        ih1_opts->subspaces_definition = IH_IMMS_SUBSPACES_DEF_NTOTAL;
+        int idx = ih1_opts->n_spinor_subspaces;
+        ih1_opts->subspace_total_nspinors[idx] = atoi(yytext);
         ih1_opts->n_spinor_subspaces++;
     }
     else {

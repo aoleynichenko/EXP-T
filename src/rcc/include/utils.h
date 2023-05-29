@@ -55,6 +55,8 @@ int sgn(double x);
 
 int is_whitespace_string(const char *s);
 
+int cmpfunc_double(const void *a, const void *b);
+
 int intcmp(size_t n, int *a, int *b);
 
 int max(int a, int b);

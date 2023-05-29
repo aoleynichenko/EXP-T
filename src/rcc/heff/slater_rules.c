@@ -44,28 +44,41 @@ double complex slater_01_1_01(slater_det_t *bra, slater_det_t *ket);
 double complex slater_10_1_10(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_02_1_02(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_02_2_02(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_20_1_20(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_20_2_20(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_00_1_11(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_11_1_00(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_11_1_11(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_11_2_11(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_03_1_03(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_03_2_03(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_03_3_03(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_30_1_30(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_30_2_30(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_30_3_30(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_12_1_12(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_12_2_12(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_12_3_12(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_01_1_12(slater_det_t *bra, slater_det_t *ket);
+
 double complex slater_12_1_01(slater_det_t *bra, slater_det_t *ket);
 
 
@@ -96,28 +109,36 @@ void setup_slater(void *source, double complex (*getter)(void *source, void *ind
      * 0h1p - 0h1p
      */
     if (bra_sect_h == 0 && bra_sect_p == 1 && ket_sect_h == 0 && ket_sect_p == 1) {
-        slater_rule = slater_01_1_01;
+        if (npart == 1) {
+            slater_rule = slater_01_1_01;
+        }
     }
 
     /*
      * 1h0p - 1h0p
      */
     if (bra_sect_h == 1 && bra_sect_p == 0 && ket_sect_h == 1 && ket_sect_p == 0) {
-        slater_rule = slater_10_1_10;
+        if (npart == 1) {
+            slater_rule = slater_10_1_10;
+        }
     }
 
     /*
      * 0h0p - 1h1p
      */
     if (bra_sect_h == 0 && bra_sect_p == 0 && ket_sect_h == 1 && ket_sect_p == 1) {
-        slater_rule = slater_00_1_11;
+        if (npart == 1) {
+            slater_rule = slater_00_1_11;
+        }
     }
 
     /*
      * 1h1p - 0h0p
      */
     if (bra_sect_h == 1 && bra_sect_p == 1 && ket_sect_h == 0 && ket_sect_p == 0) {
-        slater_rule = slater_11_1_00;
+        if (npart == 1) {
+            slater_rule = slater_11_1_00;
+        }
     }
 
     /*
@@ -219,9 +240,10 @@ void setup_slater(void *source, double complex (*getter)(void *source, void *ind
         }
     }
 
-    if (slater_rule == NULL){
-        printf("Cannot evaluate matrix element between Slater determinants of type |%dh%dp> and |%dh%dp>\n",
-               bra_sect_h, bra_sect_p, ket_sect_h, ket_sect_p);
+    if (slater_rule == NULL) {
+        printf("Cannot evaluate matrix element of a %d-particle operator "
+               "between Slater determinants of type |%dh%dp> and |%dh%dp>\n",
+               npart, bra_sect_h, bra_sect_p, ket_sect_h, ket_sect_p);
         printf("see %s for details, line %d\n", __FILE__, __LINE__);
         exit(0);
     }
@@ -265,8 +287,8 @@ double complex slater_10_1_10(slater_det_t *d1, slater_det_t *d2)
 double complex slater_00_1_11(slater_det_t *d1, slater_det_t *d2)
 {
     int idx[2];
-    idx[0] = d2->indices[0];
-    idx[1] = d2->indices[1];
+    idx[0] = d2->indices[1];
+    idx[1] = d2->indices[0];
 
     return get_element(source_matrix, idx);
 }
@@ -1153,7 +1175,7 @@ double complex slater_12_3_12(slater_det_t *bra, slater_det_t *ket)
 
     // - 1.0 heff3 [ a b j c d i ]
     // prefactor = 1/6 is accounted for
-    return - get_element(source_matrix, idx6);
+    return -get_element(source_matrix, idx6);
 }
 
 

@@ -265,7 +265,7 @@
 *>                             ( 0  0 ) n2
 *>                               n1 n2
 *>
-*>  is the construct_projector on the invariant subspace associated with T11.
+*>  is the projector on the invariant subspace associated with T11.
 *>  R is the solution of the Sylvester equation:
 *>
 *>                        T11*R - R*T22 = T12.

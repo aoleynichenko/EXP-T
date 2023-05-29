@@ -1,0 +1,31 @@
+!
+**GENERAL
+.PCMOUT
+**DIRAC
+.TITLE
+FS-MRCC calculation: Hg2+ -> Hg+ -> Hg
+.WAVE F
+.4INDEX
+.PROPERTIES
+**HAMILTONIAN
+.ECP
+**WAVE FUNCTIONS
+.SCF
+*SCF
+.CLOSED SHELL
+ 14 6
+**MOLTRA
+.SCHEME
+ 4
+.PRPTRA
+.ACTIVE
+energy -10 10 0
+energy -10 10 0
+**PROPERTIES
+.DIPOLE
+**RELCC
+.FOCKSP
+.PRINT
+1
+*END OF DIRAC                                                                                       
+

@@ -36,6 +36,7 @@
 #include "intham_imms.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "comdef.h"
@@ -62,6 +63,50 @@ double intham_imms_get_model_det_shift(int sect_h, int sect_p, slater_det_t *det
 
 
 /**
+ * This function is used to calculate energy ranges for the IH-IMMS spinor subspaces.
+ * It is activated if only the TOTAL number of spinors in each subspace is given by the user.
+ *
+ * @param emin_values
+ * @param emax_values
+ */
+void intham_get_emin_emax(double *emin_values, double *emax_values)
+{
+    /*
+     * 1. get energies of ACTIVE spinors
+     * 2. and sort these energies
+     */
+    double *spinor_energies = (double *) calloc(get_num_spinors(), sizeof(double));
+    int count = 0;
+
+    for (int i = 0; i < get_num_spinors(); i++) {
+        if (is_active(i)) {
+            spinor_energies[count++] = get_eps(i);
+        }
+    }
+
+    qsort(spinor_energies, count, sizeof(double), cmpfunc_double);
+
+    /*
+     * for each subspace of active spinors: get lower and upper bound
+     */
+    ih_imms_options_t *ih_opts = &cc_opts->intham_imms_opts;
+    count = 0;
+    for (int isub = 0; isub < ih_opts->n_spinor_subspaces; isub++) {
+
+        int nspinors = ih_opts->subspace_total_nspinors[isub];
+        double emin = spinor_energies[count] - 1e-8;
+        double emax = spinor_energies[count + nspinors - 1] + 1e-8;
+        count += nspinors;
+
+        emin_values[isub] = emin;
+        emax_values[isub] = emax;
+    }
+
+    free(spinor_energies);
+}
+
+
+/**
  * calculates shifts which will be used in the simplest IH-like technique
  */
 void intham_imms_setup(int sect_h, int sect_p)
@@ -72,6 +117,24 @@ void intham_imms_setup(int sect_h, int sect_p)
 
     ih_imms_options_t *ih_opts = &cc_opts->intham_imms_opts;
 
+    /*
+     * special case: subspaces are defined by the total number of spinors in each subspace
+     */
+    if (ih_opts->subspaces_definition == IH_IMMS_SUBSPACES_DEF_NTOTAL) {
+        double emin_values[IH_IMMS_MAX_SPINOR_SUBSPACES];
+        double emax_values[IH_IMMS_MAX_SPINOR_SUBSPACES];
+
+        intham_get_emin_emax(emin_values, emax_values);
+
+        for (int isub = 0; isub < ih_opts->n_spinor_subspaces; isub++) {
+            ih_opts->subspace_energy_ranges[isub][0] = emin_values[isub];
+            ih_opts->subspace_energy_ranges[isub][1] = emax_values[isub];
+        }
+    }
+
+    /*
+     * 'spinor_subspaces' is a global variable
+     */
     memset(spinor_subspaces, 0, sizeof(spinor_subspaces));
 
     for (int i = 0; i < get_num_spinors(); i++) {
@@ -171,6 +234,7 @@ void intham_imms_print_options(ih_imms_options_t *ih_opts)
         printf("%16.8f", ih_opts->subspace_energy_ranges[ispace][1]);
     }
     printf("\n");
+
     for (int imain = 0; imain < ih_opts->n_main_subspaces; imain++) {
         int npart = 0;
         for (int ispace = 0; ispace < ih_opts->n_spinor_subspaces; ispace++) {

@@ -259,6 +259,20 @@ int cmpfunc_int(const void *a, const void *b)
 }
 
 
+int cmpfunc_double(const void *a, const void *b)
+{
+    if (*(double *) a > *(double *) b) {
+        return 1;
+    }
+    else if (*(double *) a < *(double *) b) {
+        return -1;
+    }
+    else {
+        return 0;
+    }
+}
+
+
 double sum_doubles(size_t n, double *v)
 {
     double sum = 0.0;
@@ -352,6 +366,6 @@ void print_asctime()
 void array_get_real_part(size_t n, double complex *array_complex, double *array_real)
 {
     for (size_t i = 0; i < n; i++) {
-        array_complex[i] = creal(array_real[i]);
+        array_real[i] = creal(array_complex[i]);
     }
 }

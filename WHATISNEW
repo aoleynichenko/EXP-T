@@ -1,0 +1,62 @@
+ 1.8.0 (29.05.2023)
+ ==================
+ * CCSDT for the 2h0p sector
+ * CCSD for the 1h2p sector
+ * direct method of transition moment calculations for the 0h1p, 1h0p, 0h2p, 1h1p sectors
+ * analytic density matrices and properties for the 0h0p sector (CCSD, CCSD(T))
+ * CROP algorithm by A. Rumyantsev
+ * intermediate Hamiltonian for incomplete main model spaces (IH-IMMS)
+
+ 1.5.6 (26.08.2021)
+ ==================
+ * CCSDT-n and CCSDT for the 1h1p sector
+
+ 1.5.3 (04.02.2021)
+ ==================
+ * quasi-natural spinors and transition spinors
+ * model-space estimations of properties
+ * new version of HEFFMAN (by A. V. Zaitsevskii)
+ * 0h0p -> 1h1p transition moments
+
+ 1.4.4 (16.05.2020)
+ ==================
+ * CCSDT-n and CCSDT for the 1h0p sector
+ * finite-field perturbation with integrals directly from MDPROP
+ * basic implementation of the permutational symmetry
+ * DIIS for triples
+ * expt2pam utility
+ * new version of HEFFMAN (by A. V. Zaitsevskii)
+
+ 1.4.3 (12.04.2020)
+ ==================
+ * CCSDT-1,2,3 and CCSDT for 0h0p, 0h1p, 0h2p, 0h3p sectors
+ * DIIS extrapolation for convergence
+ * new in CMakeLists.txt: ask user to choose LAPACK implementation
+ * new tests for triples
+ * interface to D. Maison's Gaunt integrals
+ * real arithmetic for real groups
+ * active spaces definition for each irrep
+ * new parser
+
+ 1.4.0 (30.12.2019)
+ ==================
+ * mixed-sector CCSD (just an experimental code!)
+ * experimental interface to R. Berger's group Kramers-unrestricted integrals
+ * calculation of approximate natural spinors and natural transition spinors (excluding 1h1p sector)
+ * hermitization of everything
+ * mknatorb utility program (transforms natural spinors to AO basis)
+ * OpenBLAS library was updated to 0.3.7
+ * new in CMakeLists.txt: OpenBLAS is more preferrable than MKL
+ * new version of the HEFFMAN code by A. V. Zaitsevskii
+ * new tests for the (1h1p) sector
+ * bug fix (and new bugs...)
+
+ 1.3.8 (xx.xx.2019)
+ ==================
+ * (1h1p) sector (CCSD model only) -- experimental code
+ * Shifts in the (1h1p) sector
+ * CCSDT-1 in the 1h0p sector
+ * Occupation numbers for individual spinors and irreps
+ * High-spin CCSD(0h0p) is now tested
+
+

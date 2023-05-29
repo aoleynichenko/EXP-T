@@ -1,0 +1,7 @@
+title "Rb atom -- relativistic EA-CCSD calculation"
+maxiter 50
+conv 1e-9
+sector 0h1p
+nactp 8
+disk_usage 0
+

@@ -158,7 +158,7 @@ def print_electronic_states_list(elec_states, upper_thresh=1e10):
     """
     prints a list of electronic states, irrep by irrep
     :param elec_states: object of class ElectronicStatesList
-    :param upper_thresh: upper energy limit for the electronic states printed (in cm^-1)
+    :param upper_thresh: upper energy limit for the electronic states printed
     """
     emin = elec_states.min_energy()
 
@@ -182,7 +182,8 @@ def print_transition_moments_table(
         irreps_to=None,
         states_to=None,
         energy_thresh=1e10,
-        hermitization=False
+        hermitization=False,
+        units='cm'
 ):
     """
     prints a table containing transition dipole moments
@@ -193,6 +194,7 @@ def print_transition_moments_table(
     :param states_to: sequential numbers of final electronic states
     :param energy_thresh: upper energy limit for electronic states considered (in cm^-1)
     :param hermitization: force hermiticity of the d_if/d_fi moments or not
+    :param units: 'cm' for cm^-1, 'ev' for electron-volts
     """
     print('\ntable of transition moments:\n')
     print('initial irreps: ', 'all' if irreps_from is None else irreps_from)
@@ -221,10 +223,14 @@ def print_transition_moments_table(
                     energy_1 = bra_state.abs_energy
                     energy_2 = ket_state.abs_energy
                     delta_e = energy_2 - energy_1
-                    energy_1_cm = AU_TO_CM * (energy_1 - emin)
-                    energy_2_cm = AU_TO_CM * (energy_2 - emin)
+                    if units == 'cm':
+                        energy_1 = AU_TO_CM * (energy_1 - emin)
+                        energy_2 = AU_TO_CM * (energy_2 - emin)
+                    else:
+                        energy_1 = AU_TO_EV * (energy_1 - emin)
+                        energy_2 = AU_TO_EV * (energy_2 - emin)
 
-                    if energy_1_cm > energy_thresh or energy_2_cm > energy_thresh:
+                    if energy_1 > energy_thresh or energy_2 > energy_thresh:
                         continue
 
                     # i -> f
@@ -245,17 +251,28 @@ def print_transition_moments_table(
                     if not header_printed:
                         header_printed = True
                         print('\ntransitions ', irrep_1, ' -> ', irrep_2, '\n')
-                        print('               e_i,cm^-1   e_f,cm^-1          re(dx)      im(dx)'
-                              '        re(dy)      im(dy)        re(dz)      im(dz)        |d|,a.u.    osc.str.')
+                        if units == 'cm':
+                            print('               e_i,cm^-1   e_f,cm^-1          re(dx)      im(dx)'
+                                  '        re(dy)      im(dy)        re(dz)      im(dz)        |d|,a.u.    osc.str.')
+                        else:
+                            print('                  e_i,ev      e_f,ev          re(dx)      im(dx)'
+                                  '        re(dy)      im(dy)        re(dz)      im(dz)        |d|,a.u.    osc.str.')
 
-                    print('%4d -> %4d%12.2f%12.2f    %12.6f%12.6f  %12.6f%12.6f  %12.6f%12.6f    %12.6f%12.6f' %
-                          (i + 1, j + 1, energy_1_cm, energy_2_cm, dm_if[0].real, dm_if[0].imag,
-                           dm_if[1].real, dm_if[1].imag, dm_if[2].real, dm_if[2].imag, dabs_if, osc_str_if))
+                    if units == 'cm':
+                        format_string = '%4d -> %4d%12.4f%12.4f    %12.6f%12.6f  %12.6f%12.6f  %12.6f%12.6f    ' \
+                                        '%12.6f%12.6f '
+                    else:
+                        format_string = '%4d -> %4d%12.4f%12.4f    %12.6f%12.6f  %12.6f%12.6f  %12.6f%12.6f    ' \
+                                        '%12.6f%12.6f '
+
+                    print(format_string % (i + 1, j + 1, energy_1, energy_2, dm_if[0].real, dm_if[0].imag,
+                                           dm_if[1].real, dm_if[1].imag, dm_if[2].real, dm_if[2].imag, dabs_if,
+                                           osc_str_if))
 
                     if hermitization:
-                        print('%4d -> %4d%12.2f%12.2f    %12.6f%12.6f  %12.6f%12.6f  %12.6f%12.6f    %12.6f%12.6f' %
-                              (j + 1, i + 1, energy_2_cm, energy_1_cm, dm_fi[0].real, dm_fi[0].imag,
-                               dm_fi[1].real, dm_fi[1].imag, dm_fi[2].real, dm_fi[2].imag, dabs_fi, osc_str_fi))
+                        print(format_string % (j + 1, i + 1, energy_2, energy_1, dm_fi[0].real, dm_fi[0].imag,
+                                               dm_fi[1].real, dm_fi[1].imag, dm_fi[2].real, dm_fi[2].imag, dabs_fi,
+                                               osc_str_fi))
 
                         dabs_if_herm = math.sqrt(dabs_if * dabs_fi)
                         osc_str_if_herm = 2.0 / 3.0 * delta_e * dabs_if * dabs_fi
@@ -336,13 +353,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
         prog='expt_spectrum.py',
-        description='parses exp-t output files and collects information'
+        description='parses exp-t output files and collects information '
                     'about electronic transitions and their dipole moments',
         epilog='please report bugs to <exp-t-program@googlegroups.com>.')
 
     parser.add_argument('filename')  # positional argument
-    parser.add_argument('-u', dest='upper', action='store', nargs=1, required=False, type=float, default=1e9,
-                        help='upper energy limit for the electronic states considered (cm^-1)')
+    parser.add_argument('-u', dest='upper', action='store', nargs=1, required=False, type=float,
+                        help='upper energy limit for the electronic states considered (cm^-1 or ev)')
     parser.add_argument('-irep', dest='initial_irrep', action='store', nargs=1, required=False,
                         help='irrep of initial electronic states')
     parser.add_argument('-frep', dest='final_irrep', action='store', nargs=1, required=False,
@@ -355,19 +372,24 @@ if __name__ == '__main__':
                         help='force hermiticity of transition moments')
     parser.add_argument('-s', dest='print_spectrum', action='store_true', required=False,
                         help='print detailed information on electronic spectrum')
+    parser.add_argument('-ev', dest='units_ev', action='store_true', required=False,
+                        help='use electron-volts units for energy')
 
     args = parser.parse_args()
+    energy_units = 'ev' if args.units_ev else 'cm'
+    args.upper = float(args.upper[0]) if args.upper else 1e9
 
     print('a oleynichenko, 2023')
     print()
     print('filename            ', args.filename)
-    print('upper limit [cm^-1] ', args.upper)
+    print('upper limit [%2s]    ' % energy_units, args.upper)
     print('initial irreps      ', args.initial_irrep)
     print('final irreps        ', args.final_irrep)
     print('initial elec state  ', args.initial_state)
     print('final elec state    ', args.final_state)
     print('force hermiticity   ', args.do_hermit)
     print('print elec spectrum ', args.print_spectrum)
+    print('energy units        ', energy_units)
 
     irreps_from = args.initial_irrep
     states_from = None
@@ -395,4 +417,5 @@ if __name__ == '__main__':
 
     # print table of transition moments
     print_transition_moments_table(tdms, irreps_from, states_from, irreps_to, states_to,
-                                   energy_thresh=args.upper, hermitization=args.do_hermit)
+                                   energy_thresh=args.upper, hermitization=args.do_hermit,
+                                   units=energy_units)

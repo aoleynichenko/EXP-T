@@ -22,6 +22,7 @@
  */
 
 #include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -45,6 +46,8 @@ molecule_t *molecule_new()
     mol->cage.total_charge = 0.0;
     mol->cage.n_points = 0;
     mol->cage.points = NULL;
+
+    mol->n_point_charges;
 
     return mol;
 }
@@ -73,6 +76,22 @@ void molecule_add_atom(molecule_t *mol, int nuc_charge, double x, double y, doub
     mol->y[n_at] = y;
     mol->z[n_at] = z;
     mol->n_atoms++;
+}
+
+
+/**
+ * adds one point charge to the 'molecule_t' object
+ */
+void molecule_add_point_charge(molecule_t *mol, double point_charge, double x, double y, double z)
+{
+    int n_q = mol->n_point_charges;
+
+    mol->point_charges[n_q] = point_charge;
+    mol->qx[n_q] = x;
+    mol->qy[n_q] = y;
+    mol->qz[n_q] = z;
+
+    mol->n_point_charges++;
 }
 
 
@@ -106,6 +125,38 @@ int molecule_n_atom_types(molecule_t *mol)
 
 
 /**
+ * number of types of point charges
+ */
+int molecule_n_point_charge_types(molecule_t *mol)
+{
+    double point_charge_types[1000];
+    int n_point_charge_types = 0;
+
+    memset(point_charge_types, 0, sizeof(point_charge_types));
+
+    for (int i = 0; i < mol->n_point_charges; i++) {
+        double q = mol->point_charges[i];
+
+        int charge_found = 0;
+        for (int j = 0; j < n_point_charge_types; j++) {
+            if (fabs(point_charge_types[j] - q) < 1e-6) {
+                charge_found = 1;
+                break;
+            }
+        }
+
+        // new type of point charge
+        if (!charge_found) {
+            point_charge_types[n_point_charge_types] = q;
+            n_point_charge_types++;
+        }
+    }
+
+    return n_point_charge_types;
+}
+
+
+/**
  * counts number of atoms of the element given
  */
 int molecule_n_atoms_of(molecule_t *mol, int element)
@@ -128,6 +179,9 @@ void molecule_print(molecule_t *mol)
     printf("---------\n");
     for (int i = 0; i < mol->n_atoms; i++) {
         printf("  %3d%12.8f%12.8f%12.8f\n", mol->charges[i], mol->x[i], mol->y[i], mol->z[i]);
+    }
+    for (int i = 0; i < mol->n_point_charges; i++) {
+        printf("  q=%12.8f   %12.8f%12.8f%12.8f\n", mol->point_charges[i], mol->qx[i], mol->qy[i], mol->qz[i]);
     }
     printf("Symmetry: %d\n (orientation %d %d %d)\n", mol->sym_group.group,
            mol->sym_group.xyz[0], mol->sym_group.xyz[1], mol->sym_group.xyz[2]);

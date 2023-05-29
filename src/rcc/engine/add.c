@@ -111,6 +111,11 @@ void update(char *dg1_name, double factor, char *dg2_name)
         errquit("update(): diagram '%s' not found", dg2_name);
     }
 
+    // diagrams cannot be added if they represent operators belonging to different irreps
+    if (dg1->symmetry != dg2->symmetry) {
+        return;
+    }
+
     // ranks must coincide
     if (dg1->rank != dg2->rank) {
         errquit("update(): ranks must coincide (%s:%d != %s:%d)", dg1_name, dg1->rank, dg2_name, dg2->rank);

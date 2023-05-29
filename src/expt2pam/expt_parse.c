@@ -119,6 +119,7 @@
 #include "error.h"
 #include "expt_lexer.h"
 #include "molecule.h"
+#include "zmatrix.h"
 
 #define MAX_LINE_LEN   1024
 #define MAX_FILE_NAME  1024
@@ -386,12 +387,34 @@ void directive_geometry(molecule_t *mol)
                 r[i] = atof(yytext);
             }
 
+            // optional keyword: 'charge'
+            token_type = next_token();
+            int do_add_atom = 1;
+            if (token_type == TT_WORD && strcmp(yytext, "charge") == 0) {
+                token_type = next_token();
+                if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
+                    yyerror("float number (charge) is expected");
+                }
+                double q = atof(yytext);
+                if (nuc_charge == 0) {
+                    do_add_atom = 0;
+                }
+
+                molecule_add_point_charge(mol, q, factor * r[0], factor * r[1], factor * r[2]);
+            }
+            else {
+                put_back(token_type);
+            }
+
+            // check for the end of line
             token_type = next_token();
             if (token_type != END_OF_LINE) {
                 yyerror(err_no_newline);
             }
 
-            molecule_add_atom(mol, nuc_charge, factor * r[0], factor * r[1], factor * r[2]);
+            if (do_add_atom) {
+                molecule_add_atom(mol, nuc_charge, factor * r[0], factor * r[1], factor * r[2]);
+            }
         }
         else if (token_type == END_OF_LINE) {
             /* empty line, nothing to do */
@@ -587,162 +610,114 @@ void directive_zmatrix(molecule_t *mol)
 
     int atomlist[MAX_N_ATOMS];
     int rconnect[MAX_N_ATOMS];
-    char rlist[MAX_N_ATOMS][MAX_TAG_LEN];
     int aconnect[MAX_N_ATOMS];
-    char alist[MAX_N_ATOMS][MAX_TAG_LEN];
     int dconnect[MAX_N_ATOMS];
-    char dlist[MAX_N_ATOMS][MAX_TAG_LEN];
+    double rlist[MAX_N_ATOMS];
+    double alist[MAX_N_ATOMS];
+    double dlist[MAX_N_ATOMS];
 
-    var_list_t *list_atom_tags;
-    var_list_t *list_param_tags;
-    int nuc_charge;
-    int type;
-    int err_code;
-    int token_type;
-    int n_atoms = 0;
+    memset(atomlist, 0, sizeof(atomlist));
+    memset(rconnect, 0, sizeof(rconnect));
+    memset(aconnect, 0, sizeof(aconnect));
+    memset(dconnect, 0, sizeof(dconnect));
+    memset(rlist, 0, sizeof(rlist));
+    memset(alist, 0, sizeof(alist));
+    memset(dlist, 0, sizeof(dlist));
 
-    list_atom_tags = var_list_new();
-    list_param_tags = var_list_new();
-
-    token_type = next_token();
-    if (token_type != END_OF_LINE) {
+    if(!match(END_OF_LINE)) {
         yyerror(err_no_newline);
     }
 
-    // 1. first line of z-matrix: <atom1>
-    token_type = next_token();
-    while (token_type == END_OF_LINE) {
+    int count_atoms = 0;
+
+    int token_type = next_token();
+    while (token_type != KEYWORD_END) {
+
+        if (token_type == TT_WORD) {
+
+            // read element symbol -> nuclear charge
+            int nuc_charge = get_element_nuc_charge(yytext);
+            if (nuc_charge == -1) {
+                yyerror(err_no_elem);
+            }
+            atomlist[count_atoms] = nuc_charge;
+
+            for (int icoord = 0; icoord < 3; icoord++) {
+                int atom_number = 0;
+                double coord_value = 0.0;
+
+                if (icoord > count_atoms - 1) {
+                    break;
+                }
+
+                token_type = next_token();
+                if (token_type == TT_INTEGER) {
+                    atom_number = atoi(yytext);
+                }
+                else {
+                    yyerror("integer positive number is expected");
+                }
+
+                token_type = next_token();
+                if (token_type == TT_INTEGER || token_type == TT_FLOAT) {
+                    coord_value = atof(yytext);
+                }
+                else {
+                    yyerror("integer positive number is expected");
+                }
+
+                if (icoord == 0) {
+                    rconnect[count_atoms] = atom_number;
+                    rlist[count_atoms] = coord_value;
+                }
+                else if (icoord == 1) {
+                    aconnect[count_atoms] = atom_number;
+                    alist[count_atoms] = coord_value;
+                }
+                else {
+                    dconnect[count_atoms] = atom_number;
+                    dlist[count_atoms] = coord_value;
+                }
+            }
+
+            //printf("%4d  %4d%14.8f  %4d%14.8f  %4d%14.8f\n", nuc_charge, rconnect[count_atoms], rlist[count_atoms],
+            //       aconnect[count_atoms], alist[count_atoms], dconnect[count_atoms], dlist[count_atoms]);
+
+            if(!match(END_OF_LINE)) {
+                yyerror(err_no_newline);
+            }
+
+            count_atoms += 1;
+        }
+        else if (token_type == END_OF_LINE) {
+            // nothing to do; skip empty line
+        }
+        else if (token_type == END_OF_FILE) {
+            yyerror(err_end_of_file);
+        }
+
         token_type = next_token();
     }
-    if (token_type == END_OF_FILE) {
-        yyerror(err_end_of_file);
-    }
-    nuc_charge = tag_to_element_nuc_charge(yytext);
-    if (nuc_charge == -1) {
-        yyerror(err_no_elem);
-    }
-    // require end of line
-    token_type = next_token();
-    if (token_type != END_OF_LINE) {
-        yyerror(err_no_newline);
-    }
-    // save tag to the vocabulary, add first atom to the molecule
-    var_list_set(list_atom_tags, yytext, TYPE_INT, nuc_charge);
-    atomlist[0] = nuc_charge;
 
-    // 2. second line of z-matrix: <atom2> <atom1> <r>
-    // <atom2> tag
-    token_type = next_token();
-    while (token_type == END_OF_LINE) {
-        token_type = next_token();
-    }
-    if (token_type == END_OF_FILE) {
-        yyerror(err_end_of_file);
-    }
-    nuc_charge = tag_to_element_nuc_charge(yytext);
-    if (nuc_charge == -1) {
-        yyerror(err_no_elem);
-    }
-    var_list_set(list_atom_tags, yytext, TYPE_INT, nuc_charge);
-    atomlist[1] = nuc_charge;
-    // <atom1> tag
-    token_type = next_token();
-    if (token_type == END_OF_LINE || token_type == END_OF_FILE) {
-        yyerror(err_wrong_end);
-    }
-    nuc_charge = arr_to_pos_integer(yytext);
-    if (nuc_charge < 0) {
-        double nuc_charge_double;
-        err_code = var_list_get(list_atom_tags, yytext, &type, &nuc_charge_double);
-        if (err_code == 0) {
-            yyerror(err_no_elem_tag);
+    /*
+     * check numbers of atoms
+     */
+    for (int iatom = 0; iatom < count_atoms; iatom++) {
+        if (iatom >= 1 && (rconnect[iatom] <= 0 || rconnect[iatom] > iatom)) {
+            errquit("in zmatrix: wrong connectivity (atom number must be in range [1,%d])", iatom);
         }
-        nuc_charge = (int) nuc_charge_double;
-    }
-    rconnect[1] = nuc_charge;
-    // <r>
-    token_type = next_token();
-    if (token_type == END_OF_LINE || token_type == END_OF_FILE) {
-        yyerror(err_wrong_end);
-    }
-    strcpy(rlist[1], yytext);
-    // require end of line
-    token_type = next_token();
-    if (token_type != END_OF_LINE) {
-        yyerror(err_no_newline);
-    }
-
-
-    // 3. third line of z-matrix: <atom3> <atom1> <r> <atom2> <angle>
-    // <atom3> tag
-    token_type = next_token();
-    while (token_type == END_OF_LINE) {
-        token_type = next_token();
-    }
-    if (token_type == END_OF_FILE) {
-        yyerror(err_end_of_file);
-    }
-    nuc_charge = tag_to_element_nuc_charge(yytext);
-    if (nuc_charge == -1) {
-        yyerror(err_no_elem);
-    }
-    var_list_set(list_atom_tags, yytext, TYPE_INT, nuc_charge);
-    atomlist[2] = nuc_charge;
-    // <atom1> tag
-    token_type = next_token();
-    if (token_type == END_OF_LINE || token_type == END_OF_FILE) {
-        yyerror(err_wrong_end);
-    }
-    nuc_charge = arr_to_pos_integer(yytext);
-    if (nuc_charge < 0) {
-        double nuc_charge_double;
-        err_code = var_list_get(list_atom_tags, yytext, &type, &nuc_charge_double);
-        if (err_code == 0) {
-            yyerror(err_no_elem_tag);
+        if (iatom >= 2 && (aconnect[iatom] <= 0 || aconnect[iatom] > iatom)) {
+            errquit("in zmatrix: wrong connectivity (atom number must be in range [1,%d])", iatom);
         }
-        nuc_charge = (int) nuc_charge_double;
-    }
-    rconnect[2] = nuc_charge;
-    // <r>
-    token_type = next_token();
-    if (token_type == END_OF_LINE || token_type == END_OF_FILE) {
-        yyerror(err_wrong_end);
-    }
-    strcpy(rlist[2], yytext);
-    // <atom2> tag
-    token_type = next_token();
-    if (token_type == END_OF_LINE || token_type == END_OF_FILE) {
-        yyerror(err_wrong_end);
-    }
-    nuc_charge = arr_to_pos_integer(yytext);
-    if (nuc_charge < 0) {
-        double nuc_charge_double;
-        err_code = var_list_get(list_atom_tags, yytext, &type, &nuc_charge_double);
-        if (err_code == 0) {
-            yyerror(err_no_elem_tag);
+        if (iatom >= 3 && (dconnect[iatom] <= 0 || dconnect[iatom] > iatom)) {
+            errquit("in zmatrix: wrong connectivity (atom number must be in range [1,%d])", iatom);
         }
-        nuc_charge = (int) nuc_charge_double;
-    }
-    aconnect[2] = nuc_charge;
-    // <angle>
-    token_type = next_token();
-    if (token_type == END_OF_LINE || token_type == END_OF_FILE) {
-        yyerror(err_wrong_end);
-    }
-    strcpy(alist[2], yytext);
-    // require end of line
-    token_type = next_token();
-    if (token_type != END_OF_LINE) {
-        yyerror(err_no_newline);
     }
 
-
-    // print z-matrix
-    printf("%2d\n", atomlist[0]);
-    printf("%2d %2d %-8s\n", atomlist[1], rconnect[1], rlist[1]);
-    printf("%2d %2d %-8s %2d %8s\n", atomlist[2], rconnect[2], rlist[2], aconnect[2], alist[2]);
-
-    exit(0);
+    /*
+     * transform coordinates: zmatrix -> cartesian
+     */
+    convert_zmatrix_to_xyz(count_atoms, atomlist, rconnect, rlist, aconnect, alist, dconnect, dlist, mol);
 }
 
 

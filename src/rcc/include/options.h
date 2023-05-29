@@ -151,6 +151,12 @@ enum {
     CC_DENSITY_MATRIX_EXPECTATION
 };
 
+enum {
+    CC_DIRECT_PROP_SCHEME_HERMITIAN = 0,
+    CC_DIRECT_PROP_SCHEME_NON_HERMITIAN,
+    CC_DIRECT_PROP_SCHEME_CONNECTED
+};
+
 // for definition of subspaces (of orbitals or electronic states)
 typedef struct {
     int deftype;

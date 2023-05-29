@@ -78,6 +78,14 @@ void print_model_vectors_stdout(int sector_h, int sector_p, slater_det_t **det_l
         size_t nroots_irrep = nroots[irrep];
         slater_det_t *det_basis = det_list[irrep];
 
+        /*
+         * print energy for the vacuum state in the special case of the 1h1p sector
+         */
+        if (sector_h == 1 && sector_p == 1 && irrep == get_vacuum_irrep()) {
+            printf("\n Irrep %d (%4s) State %d Energy %23.15f Eigenvalue %14.8f%14.4E\n vacuum state\n",
+                    irrep - first_irrep + 1, get_irrep_name(irrep), 0, cc_opts->eref, 0.0, 0.0);
+        }
+
         if (dim == 0 || nroots_irrep == 0) {
             continue;
         }

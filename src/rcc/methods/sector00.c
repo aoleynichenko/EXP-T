@@ -217,8 +217,10 @@ void sort_integrals_0h0p()
     }
 
     // for lambda equations
-    request_sorting("hpph", "hpph", "0000", "1234");
-    request_sorting("pppp", "pppp", "0000", "1234");
+    if (cc_opts->calc_density_0h0p == CC_DENSITY_MATRIX_LAMBDA) {
+        request_sorting("hpph", "hpph", "0000", "1234");
+        request_sorting("pppp", "pppp", "0000", "1234");
+    }
 
     perform_sorting();
 
@@ -530,7 +532,7 @@ void construct_doubles_0h0p()
     update("t2nw", 0.5, "r2");
     restore_stack_pos(pos);
 
-    // D2d
+    // D2d !
     reorder("t2c", "r1", "3412");
     mult("hhhh", "r1", "r2", 2);
     update("t2nw", 0.5, "r2");
@@ -544,7 +546,7 @@ void construct_doubles_0h0p()
     update("t2nw", 1.0, "r4");
     restore_stack_pos(pos);
 
-    // D3a
+    // D3a !
     reorder("t2c", "t2cr_", "3412");
     reorder("pphh", "v1", "3412");
     mult("t2c", "v1", "r1", 2);

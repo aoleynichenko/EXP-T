@@ -66,15 +66,24 @@ typedef struct {
     double x[MAX_N_ATOMS];
     double y[MAX_N_ATOMS];
     double z[MAX_N_ATOMS];
+
     symgrp_t sym_group;
     charged_cage_t cage;
+
+    int n_point_charges;
+    double point_charges[MAX_N_ATOMS];
+    double qx[MAX_N_ATOMS];
+    double qy[MAX_N_ATOMS];
+    double qz[MAX_N_ATOMS];
 } molecule_t;
 
 molecule_t *molecule_new();
 void molecule_delete(molecule_t *mol);
 void molecule_add_atom(molecule_t *mol, int nuc_charge, double x, double y, double z);
+void molecule_add_point_charge(molecule_t *mol, double point_charge, double x, double y, double z);
 void molecule_print(molecule_t *mol);
 int molecule_n_atom_types(molecule_t *mol);
+int molecule_n_point_charge_types(molecule_t *mol);
 int molecule_n_atoms_of(molecule_t *mol, int element);
 
 #endif /* MOLECULE_H_INCLUDED */

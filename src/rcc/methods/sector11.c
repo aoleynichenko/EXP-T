@@ -278,8 +278,10 @@ int sector_1h1p(cc_options_t *opts)
     /*
      * calculate quasi-natural orbitals and model-space estimates of properties
      */
-    calculate_model_space_properties(1, 1);
+    calculate_wavefunction_norms_and_overlaps(1, 1);
     calculate_model_space_natural_spinors(1, 1);
+    calculate_model_space_properties(1, 1);
+    calculate_properties_direct(1, 1);
 
     return EXIT_SUCCESS;
 }

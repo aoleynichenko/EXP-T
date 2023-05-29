@@ -19,7 +19,8 @@ FS-MRCC calculation: Hg2+ -> Hg+ -> Hg
  4
 .PRPTRA
 .ACTIVE
-all
+energy -10 10 0
+energy -10 10 0
 **PROPERTIES
 .DIPOLE
 **RELCC

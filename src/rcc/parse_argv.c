@@ -51,8 +51,8 @@ void display_help();
  * Parses command-line arguments:
  * -s, --scratch=PATH         Path to scratch directory (default: ./scratch)
  * -n, --no-clean             Do not clean scratch directory on exit
- * -?, --help                 Give this help list and exit
- *     --usage                Give a short usage message and exit
+ * -?, --help                 Print this help list and exit
+ *     --usage                Print a short usage message and exit
  * -V, --version              Print program version and exit
  * Usage: expt.x [-n?V] [-s PATH] [--no-clean-scratch] [--scratch-dir=PATH]
  *               [--help] [--usage] [--version] <input-file>
@@ -191,8 +191,8 @@ void display_help()
     printf("  -n, --no-clean             Do not clean scratch directory on exit\n");
     printf("                             (use this option to preserve cluster amplitudes etc)\n");
     printf("  -s, --scratch=PATH         Path to scratch directory (default: ./scratch)\n");
-    printf("  -?, --help                 Give this help list and exit\n");
-    printf("      --usage                Give a short usage message and exit\n");
+    printf("  -?, --help                 Print this help list and exit\n");
+    printf("      --usage                Print a short usage message and exit\n");
     printf("  -V, --version              Print program version and exit\n");
     printf("\n");
     printf("Mandatory or optional arguments to long options are also mandatory or optional\n");
