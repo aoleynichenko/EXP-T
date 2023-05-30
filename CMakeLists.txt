@@ -334,9 +334,9 @@ add_executable(expt_read_mdprop.x
 ########################################################################################################################
 
 
-target_link_libraries(expt.x          -lm ${BLAS_LIBRARIES} ${OpenMP_C_LIBRARIES} ${OpenMP_C_FLAGS} -llapacke)
+target_link_libraries(expt.x          -lm ${BLAS_LIBRARIES} ${OpenMP_C_LIBRARIES} ${OpenMP_C_FLAGS})
 target_link_libraries(heffman.x       -lm ${BLAS_LIBRARIES})
-target_link_libraries(expt_diatomic.x -lm ${BLAS_LIBRARIES} -llapacke)
+target_link_libraries(expt_diatomic.x -lm ${BLAS_LIBRARIES})
 target_link_libraries(expt2pam.x      -lm ${BLAS_LIBRARIES})
 target_link_libraries(expt_transform_natorb.x -lm)
 target_link_libraries(expt_read_dfcoef.x -lm)

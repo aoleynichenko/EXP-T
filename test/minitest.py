@@ -59,11 +59,8 @@ class Filter:
         # check for coincidence.
         # values which should be skipped are denoted with the None
         for i,e in enumerate(self.eps):
-            print(self.ans[i], '  ', nums[i], '  diff = ', abs(nums[i]-self.ans[i]))
             if (self.ans[i] is not None) and abs(nums[i]-self.ans[i]) >= e:
-                print('False')
                 return False
-        print('True')
         return True
 
 
