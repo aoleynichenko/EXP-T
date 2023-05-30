@@ -270,6 +270,13 @@ void init_amplitudes_0h3p()
         else {
             printf(" T{0h3p}_3 amplitudes will be calculated\n");
         }
+        if (diagram_read("veff03.dg") != NULL) {
+            printf(" Heff{0h3p} diagram successfully read from disk\n");
+            calc_veff = 0;
+        }
+        else {
+            printf(" Heff{0h3p} diagram will be calculated\n");
+        }
     }
 
     if (calc_t3) {

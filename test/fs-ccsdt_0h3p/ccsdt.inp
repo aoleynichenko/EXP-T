@@ -14,7 +14,7 @@ x2cmmf
 memory 4 gb
 maxiter 300
 diis triples
-conv 1e-7
+conv 1e-8
 disk_usage 0
 
 

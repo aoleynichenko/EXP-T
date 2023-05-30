@@ -361,10 +361,16 @@ void init_amplitudes_1h2p()
         printf(" Trying to read amplitudes and effective interaction (sector 1h2p) from disk ...\n");
         // Doubles
         if (diagram_read("m2c.dg") != NULL) {
-            printf(" T{12}_1 amplitudes successfully read from disk\n");
+            printf(" T{1h2p}_1 amplitudes successfully read from disk\n");
         }
         else {
-            printf(" T{12}_1 amplitudes will be calculated\n");
+            printf(" T{1h2p}_1 amplitudes will be calculated\n");
+        }
+        if (diagram_read("veff12.dg") != NULL) {
+            printf(" Heff{1h2p} diagram successfully read from disk\n");
+        }
+        else {
+            printf(" Heff{1h2p} diagram will be calculated\n");
         }
     }
     printf("\n");

@@ -212,6 +212,13 @@ void init_amplitudes_0h2p()
         else {
             printf(" T{0h2p}_2 amplitudes will be calculated\n");
         }
+        if (diagram_read("veff02.dg") != NULL) {
+            printf(" Heff{0h2p} diagram successfully read from disk\n");
+            calc_veff = 0;
+        }
+        else {
+            printf(" Heff{0h2p} diagram will be calculated\n");
+        }
         if (triples) {
             if (diagram_read("x3c.dg") != NULL) {
                 printf(" T{0h2p}_3 amplitudes successfully read from disk\n");

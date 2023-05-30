@@ -307,11 +307,11 @@ void init_amplitudes_1h0p()
         }
         // Effective interaction
         if (diagram_read("veff10.dg") != NULL) {
-            printf(" Heff{10} diagram successfully read from disk\n");
+            printf(" Heff{1h0p} diagram successfully read from disk\n");
             calc_veff = 0;
         }
         else {
-            printf(" Heff{10} diagram will be calculated\n");
+            printf(" Heff{1h0p} diagram will be calculated\n");
         }
         // maybe Triples
         if (triples) {
