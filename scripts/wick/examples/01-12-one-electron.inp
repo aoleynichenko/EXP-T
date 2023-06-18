@@ -1,0 +1,17 @@
+#
+# Matrix elements between determinants from two different
+# Fock space sectors, 0h1p and 1h2p
+#
+
+holes i j k
+particles a b c d e f
+any p q r s t u
+
+operator bra 1.0 { a }
+operator ket 1.0 { b+ c+ i }
+operator heff1 1.0 { p+ q }
+operator heff2 0.5 { p+ q+ s r }
+operator heff3 1.0 { p+ q+ r+ u t s }
+
+? bra heff1 ket
+

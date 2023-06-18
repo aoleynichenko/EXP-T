@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,8 +24,6 @@
 /*
  * Operations with formatted files containing effective Hamiltonians.
  * The format of formatted HEFFF files was primarily introduced by A. Zaitsevskii.
- *
- * 2019-2022 Alexander Oleynichenko
  */
 
 #include "formatted_heff.h"

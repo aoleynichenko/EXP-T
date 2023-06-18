@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -32,8 +32,6 @@
  * e1nw  next (new) approximation to T^{1h1p}_1 amplitudes
  * e2nw  next (new) approximation to T^{1h1p}_2 amplitudes
  * e3nw  next (new) approximation to T^{1h1p}_3 amplitudes
- *
- * 2021-2022 Alexander Oleynichenko
  */
 
 #include "methods.h"

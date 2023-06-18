@@ -1,0 +1,61 @@
+wick v1.1
+by a. oleynichenko
+run date:  15/09/2022 08:30:46
+
+echo of input file:
+----------------------------------------------------------
+#
+# Heff operator matrix elements for the Fock-space sector 1h0p
+#
+
+holes i j k
+particles a b c d
+any p q r s t u
+
+operator bra 1.0 { i+ }
+operator ket 1.0 { j }
+operator heff1 1.0 { p+ q }
+operator heff2 1.0 { p+ q+ s r }
+operator heff3 1.0 { p+ q+ r+ u t s }
+
+? bra heff1 ket
+
+----------------------------------------------------------
+
+hole indices are:  ['k', 'i', 'j']
+particle indices are:  ['c', 'b', 'a', 'd']
+any indices are:  ['t', 's', 'r', 'u', 'p', 'q']
+
+
+
+----------------------------------------------------------
+Begin task:  ['bra', 'heff1', 'ket']
+----------------------------------------------------------
+
+Matrix element expression: <0|{i+ }1.0 heff1 {p+ q }{j }|0>
+Elementary operators string:  [i+, p+, q, j]
+
+
+Possible non-zero contractions:
+-------------------------------
+
+( 0)   i+ p+ q  j  
+       1  2  1  2   
+
+-------------------------------
+Total number of possible contractions:  1 
+
+
+Expression for matrix element:
+------------------------------
+-1.0 heff1 [ p q ] d_iq d_jp => -1.0 heff1 [ j i ]
+------------------------------
+
+Optimization of analytic expression
+-----------------------------------
+Terms:
+(0) - 1.0 heff1 [ j i ]
+
+Terms unique wrt permutations of electrons:
+(0) - 1.0 heff1 [ j i ]
+

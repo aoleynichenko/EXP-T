@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -25,8 +25,6 @@
  * Reads EXP-T input file.
  * Lexical analysis is performed with the automatically generated code
  * (by lex, see expt.l)
- *
- * 2018-2022 Alexander Oleynichenko
  */
 
 #include <ctype.h>
@@ -121,6 +119,8 @@ void directive_tilesize(cc_options_t *opts);
 void directive_disk_usage(cc_options_t *opts);
 
 void directive_nthreads(cc_options_t *opts);
+
+void directive_openmp_algorithm(cc_options_t *opts);
 
 void directive_arith(cc_options_t *opts);
 
@@ -308,6 +308,9 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_NTHREADS:
                 directive_nthreads(opts);
                 break;
+            case KEYWORD_OPENMP_ALGORITHM:
+                directive_openmp_algorithm(opts);
+                break;
             case KEYWORD_ARITH:
                 directive_arith(opts);
                 break;
@@ -338,8 +341,11 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_FLUSH_AMPLITUDES_TXT:
                 opts->do_flush_amplitudes_txt = 1;
                 break;
-            case KEYWORD_HUGHES_KALDOR:
+            case KEYWORD_HUGHES_KALDOR_1H2P:
                 opts->hughes_kaldor_1h2p = 1;
+                break;
+            case KEYWORD_HUGHES_KALDOR_2H1P:
+                opts->hughes_kaldor_2h1p = 1;
                 break;
             case KEYWORD_SPINOR_LABELS:
                 directive_spinor_labels(opts);
@@ -1643,6 +1649,33 @@ void directive_nthreads(cc_options_t *opts)
     }
     opts->nthreads = atoi(yytext);
 }
+
+
+
+/**
+ * Syntax:
+ * openmp_algorithm ( internal || external )
+ */
+void directive_openmp_algorithm(cc_options_t *opts)
+{
+    static char *msg = "wrong specification of parallelization algorithm!\n"
+                       "Possible values: internal, external";
+
+    if (!match(TT_WORD)) {
+        yyerror(msg);
+    }
+    str_tolower(yytext);
+    if (strcmp(yytext, "internal") == 0) {
+        opts->openmp_algorithm = CC_OPENMP_ALGORITHM_INTERNAL;
+    }
+    else if (strcmp(yytext, "external") == 0) {
+        opts->openmp_algorithm = CC_OPENMP_ALGORITHM_EXTERNAL;
+    }
+    else {
+        yyerror(msg);
+    }
+}
+
 
 
 /**

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -23,8 +23,6 @@
 
 /*
  * Subroutines for addition of Goldstone diagrams
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #include <stdio.h>
@@ -181,19 +179,19 @@ void update(char *dg1_name, double factor, char *dg2_name)
         }
 
             // enable internal threading
-#if defined BLAS_MKL
+/*#if defined BLAS_MKL
         mkl_set_num_threads_local(cc_opts->nthreads);
 #elif defined BLAS_OPENBLAS
         openblas_set_num_threads(cc_opts->nthreads);
-#endif
+#endif*/
 
         xaxpy(WORKING_TYPE, size, factor, buf2, buf1);
 
-#if defined BLAS_MKL
+/*#if defined BLAS_MKL
         mkl_set_num_threads_local(1);
 #elif defined BLAS_OPENBLAS
         openblas_set_num_threads(1);
-#endif
+#endif*/
 
         block_unload(block2);
         block_store(block1);
@@ -205,3 +203,4 @@ void update(char *dg1_name, double factor, char *dg2_name)
 
     timer_stop("add-2");
 }
+

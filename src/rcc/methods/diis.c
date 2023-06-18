@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -21,15 +21,13 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/**
+/*
  * Direct Inversion in the Iterative Subspace for Coupled Cluster.
  * See also:
  * - G. E. Scuseria, T. J. Lee, H. F. Schaefer III.
  *   Chem. Phys. Lett. 130. 236-239 (1986)
  * But the actually implemented algorithm is taken from:
  * https://github.com/psi4/psi4numpy/tree/master/Coupled-Cluster/Spin_Orbitals/CCSD
- *
- * 2020-2021 Alexander Oleynichenko
  */
 
 #include "diis.h"

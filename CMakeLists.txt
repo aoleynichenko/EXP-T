@@ -1,6 +1,6 @@
 #
 #  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
-#  Copyright (C) 2018-2022 The EXP-T developers.
+#  Copyright (C) 2018-2023 The EXP-T developers.
 #
 #  This file is part of EXP-T.
 #
@@ -23,7 +23,7 @@
 
 
 # CMake makefile for the EXPT project
-# 2018-2022 A. Oleynichenko
+# 2018-2023 A. Oleynichenko
 
 
 # minimum version is determined by the restrictions inside internal OpenBLAS
@@ -65,22 +65,66 @@ endif()
 #
 ########################################################################################################################
 
-# try to detect MKL
-#set(BLA_VENDOR Intel10_64lp)
-#find_package(BLAS)
-#if(BLAS_FOUND)
-#    message("-- MKL environment detected")
-#    add_definitions(-DRETURN_BY_STACK)
-#    set(BLAS_OPTIONS " -DBLAS_MKL")
-#else()
-#    unset(BLA_VENDOR)
-#    find_package(BLAS)
-#endif()
+#
+# the special case of Intel MKL libraries
+#
+foreach (blas_vendor
+        Intel
+        Intel10_32
+        Intel10_64lp
+        Intel10_64lp_seq
+        Intel10_64ilp
+        Intel10_64ilp_seq
+        Intel10_64_dyn
+        )
+    message(STATUS "Try BLAS vendor: ${blas_vendor}")
+
+    # try to detect MKL
+    set(BLA_VENDOR ${blas_vendor})
+    find_package(BLAS)
+    if(BLAS_FOUND)
+        message("-- MKL environment detected")
+        add_definitions(-DRETURN_BY_STACK)
+        set(MKL_FOUND TRUE)
+        break()
+    else()
+        unset(BLA_VENDOR)
+    endif()
+endforeach()
+
+#
+# the special case of the OpenBLAS library
+#
+set(BLA_VENDOR OpenBLAS)
+find_package(BLAS)
+if(BLAS_FOUND)
+    message("-- OpenBLAS environment detected")
+    add_definitions(-DRETURN_BY_STACK)
+    set(OPENBLAS_FOUND TRUE)
+else()
+    unset(BLA_VENDOR)
+endif()
+
+
+#
+# try to find ANY blas
+#
+unset(BLA_VENDOR)
+set(BLAS_LINKER_FLAGS "")
+set(BLAS_LIBRARIES "")
+set(BLAS_OPTIONS "")
+set(BLAS_FOUND FALSE)
 
 find_package(BLAS)
 if (BLAS_FOUND)
-    message(STATUS "BLAS_LINKER_FLAGS = " ${BLAS_LINKER_FLAGS})
-    message(STATUS "BLAS_LIBRARIES = " ${BLAS_LIBRARIES})
+    # MKL-specific options
+    if (MKL_FOUND)
+        set(BLAS_OPTIONS " -DBLAS_MKL ")
+        set(BLAS_LINKER_FLAGS " -mkl=parallel ")
+    # OpenBLAS-specific options
+    elseif (OPENBLAS_FOUND)
+        set(BLAS_OPTIONS " -DBLAS_OPENBLAS ")
+    endif()
 else()
     message(STATUS "Internal version of BLAS will be used")
     add_subdirectory(openblas)
@@ -88,10 +132,10 @@ else()
     include_directories(openblas)   # for cblas.h
     set(BLAS_LIBRARIES openblas)
     set(BLAS_OPTIONS " -DBLAS_OPENBLAS")
-    message(STATUS "BLAS_LINKER_FLAGS = " ${BLAS_LINKER_FLAGS})
-    message(STATUS "BLAS_LIBRARIES = " ${BLAS_LIBRARIES})
 endif()
 
+message(STATUS "BLAS_LINKER_FLAGS = " ${BLAS_LINKER_FLAGS})
+message(STATUS "BLAS_LIBRARIES = " ${BLAS_LIBRARIES})
 message(STATUS "BLAS_OPTIONS = " ${BLAS_OPTIONS})
 
 ########################################################################################################################
@@ -120,7 +164,7 @@ set(CMAKE_Fortran_FLAGS       "${CMAKE_Fortran_FLAGS}       ${f90options}")
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
     set(COMPILER_OPTION " -DCOMPILER_GNU ")
-    set(c99options "-g -O3 -march=native -std=c99 ")
+    set(c99options " -O3 -march=native -std=c99 ")
 endif ()
 if (CMAKE_C_COMPILER_ID MATCHES "Intel")
     set(COMPILER_OPTION " -DCOMPILER_INTEL ")
@@ -204,7 +248,10 @@ add_executable(expt.x
         src/rcc/methods/sector20_ccsdt.c
         src/rcc/methods/sector03_ccsdt.c
         src/rcc/methods/sector30_ccsdt.c
-        src/rcc/methods/sector12_devel.c
+        src/rcc/methods/sector12_ccsd.c
+        src/rcc/methods/sector12_ccsdt.c
+        src/rcc/methods/sector21_ccsd.c
+        src/rcc/methods/sector21_ccsdt.c
         src/rcc/methods/sector00_t3_correction.c      # (T) perturbative corrections for the 0h0p sector
 
         src/rcc/methods/sector00_prop.c
@@ -398,4 +445,41 @@ add_test(NAME direct_tdm_0h2p       COMMAND python test.py WORKING_DIRECTORY ../
 
 # utilities
 add_test(NAME vibrot_levels         COMMAND python test.py WORKING_DIRECTORY ../test/vibrot_levels       )
+
+# parallelization
+add_test(NAME openmp_ccsd_t         COMMAND python test.py WORKING_DIRECTORY ../test/openmp_ccsd_t       )
+add_test(NAME openmp_fs-ccsd        COMMAND python test.py WORKING_DIRECTORY ../test/openmp_fs-ccsd      )
+
+foreach (t
+	ccsd_highspin        
+	fs-ccsd_2h0p         
+	fs-ccsd_0h3p         
+	fs-ccsd_1h1p         
+	fs-ccsd_0h2p         
+	fs-ccsd_0h2p_ih-imms 
+	fs-ccsd_1h1p_ih-imms 
+	fs-ccsd_1h2p         
+	ccsd_t               
+	ccsdt-1              
+	ccsdt-3              
+	fs-ccsdt_0h3p        
+	fs-ccsdt_2h0p        
+	fs-ccsdt_1h1p        
+	ccsd_lambda          
+	ccsd_t_lambda        
+	ff_tdm_0h1p          
+	ms_tdm_1h1p          
+	ff_tdm_1h1p          
+	ms_tdm_0h2p          
+	direct_tdm_0h2p      
+	vibrot_levels        
+	openmp_fs-ccsd
+	openmp_ccsd_t
+	)
+    set_property(TEST ${t} PROPERTY ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}:$ENV{PATH}")
+endforeach ()
+
+
+
+
 

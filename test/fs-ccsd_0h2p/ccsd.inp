@@ -4,6 +4,8 @@
 # (3) Basis set: cc-pVDZ (it is just a test!)
 # (4) DC - relativistic, 4-comp
 
+nthreads 1
+
 title "Test LiNa/cc-pVDZ/Dirac-Coulomb/sector 0h2p"
 maxiter 500
 conv 1e-7

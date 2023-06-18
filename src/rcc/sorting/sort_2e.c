@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -285,7 +285,50 @@ size_t read_twoel_block_unformatted(char *vint_file_name, double complex ****vin
         else {
             io_read_compressed(fd, buf_integrals, nint * sizeof(double));
         }
+        
+        if (arith == CC_ARITH_REAL) {
+            int32_t iint;
+            #pragma omp parallel for private(iint) shared(nint,arith,dfactor1,dfactor2,buf_indices,buf_integrals,spinor_index_global2local,vint_array) default(none) schedule(static)
+            for (iint = 0; iint < nint; iint++) {
+                // absolute spinor indices
+                int i = buf_indices[iint * 4] - 1; // -1 since numeration from 0 in C and from 1 in F90
+                int j = buf_indices[iint * 4 + 1] - 1;
+                int k = buf_indices[iint * 4 + 2] - 1;
+                int l = buf_indices[iint * 4 + 3] - 1;
+                i = spinor_index_global2local[i];
+                j = spinor_index_global2local[j];
+                k = spinor_index_global2local[k];
+                l = spinor_index_global2local[l];
+    
+                // here "local" spinor indices are used
+                // (inside the spinor block under consideration)
+                double v_ijkl = ((double *) buf_integrals)[iint];
+                vint_array[i][j][k][l] = dfactor1 * vint_array[i][j][k][l] + dfactor2 * v_ijkl + 0.0 * I; 
+            }
+        }
+        else { // CC_ARITH_COMPLEX
+            int32_t iint;
+            #pragma omp parallel for private(iint) shared(nint,arith,factor1,factor2,buf_indices,buf_integrals,spinor_index_global2local,vint_array) default(none) schedule(static)
+            for (iint = 0; iint < nint; iint++) {
+                // absolute spinor indices
+                int i = buf_indices[iint * 4] - 1; // -1 since numeration from 0 in C and from 1 in F90
+                int j = buf_indices[iint * 4 + 1] - 1;
+                int k = buf_indices[iint * 4 + 2] - 1;
+                int l = buf_indices[iint * 4 + 3] - 1;
+                i = spinor_index_global2local[i];
+                j = spinor_index_global2local[j];
+                k = spinor_index_global2local[k];
+                l = spinor_index_global2local[l];
 
+                // here "local" spinor indices are used
+                // (inside the spinor block under consideration)
+                double complex v_ijkl = buf_integrals[iint];
+                vint_array[i][j][k][l] = factor1 * vint_array[i][j][k][l] + factor2 * v_ijkl;
+            }
+        }
+
+
+        /*
         //#pragma omp parallel for shared(nint,arith,factor1,factor2,dfactor1,dfactor2,buf_indices,buf_integrals,spinor_index_global2local,vint_array) default(none) schedule(static)
         for (int32_t iint = 0; iint < nint; iint++) {
             // absolute spinor indices
@@ -308,7 +351,7 @@ size_t read_twoel_block_unformatted(char *vint_file_name, double complex ****vin
                 double v_ijkl = ((double *) buf_integrals)[iint];
                 vint_array[i][j][k][l] = dfactor1 * vint_array[i][j][k][l] + dfactor2 * v_ijkl + 0.0 * I;
             }
-        }
+        }*/
 
         n_integrals_read += nint;
         if (arith == CC_ARITH_REAL) {

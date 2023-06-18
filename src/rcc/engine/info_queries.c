@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -25,8 +25,6 @@
  * Info queries to diagrams: rank, size, valence, quasiparticles etc.
  * It is a part of the user-friendly interface to diagrams which does not
  * require to know anything about the data model employed.
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #include "engine.h"

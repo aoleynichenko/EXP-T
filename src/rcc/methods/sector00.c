@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -37,8 +37,6 @@
  *   Many-Body Methods in Chemistry and Physics. MBPT and Coupled-Cluster Theory.
  *   Cambridge University Press, 2010
  * (the numbering of diagrams is also adopted from this book)
- *
- * 2018-2022 Alexander Oleynichenko
  */
 
 #include "methods.h"
@@ -727,6 +725,7 @@ void construct_doubles_0h0p()
     reorder("r6", "r7", "1243");
     perm("r7", "(12|34)");
     update("t2nw", -1.0, "r7");
+    restore_stack_pos(pos);
 
     // D7d
     reorder("pphh", "v_", "2431");

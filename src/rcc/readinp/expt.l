@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -74,6 +74,7 @@ compress        { inc_col(); return KEYWORD_COMPRESS;     }
 compress_triples { inc_col(); return KEYWORD_COMPRESS_TRIPLES; }
 nthreads        { inc_col(); return KEYWORD_NTHREADS;     }
 openmp          { inc_col(); return KEYWORD_OPENMP;       }
+openmp_algorithm { inc_col(); return KEYWORD_OPENMP_ALGORITHM; }
 cuda            { inc_col(); return KEYWORD_CUDA;         }
 arith           { inc_col(); return KEYWORD_ARITH;        }
 mdprop          { inc_col(); return KEYWORD_MDPROP;       }
@@ -93,7 +94,8 @@ flush_amplitudes_txt { inc_col(); return KEYWORD_FLUSH_AMPLITUDES_TXT; }
 analyt_prop     { inc_col(); return KEYWORD_ANALYT_PROP;  }
 density         { inc_col(); return KEYWORD_DENSITY;      }
 overlap         { inc_col(); return KEYWORD_OVERLAP;      }
-hughes_kaldor_1h2p { inc_col(); return KEYWORD_HUGHES_KALDOR; }
+hughes_kaldor_1h2p { inc_col(); return KEYWORD_HUGHES_KALDOR_1H2P; }
+hughes_kaldor_2h1p { inc_col(); return KEYWORD_HUGHES_KALDOR_2H1P; }
 !=              { inc_col(); return TT_NEQ;               }
 =               { inc_col(); return TT_EQ;                }
 \".*\"          { inc_col(); return TT_QUOTE;             }

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,8 +24,6 @@
 /*
  * Model vectors are stored on disk in binary files MVCOEF**.
  * This file provides interface for operating with the MVCOEF file format.
- *
- * 2020-2022 Alexander Oleynichenko
  */
 
 #include "mvcoef.h"

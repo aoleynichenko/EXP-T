@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,8 +26,6 @@
  * (2) analysis of its eigenvalues and eigenvectors (model vectors);
  * (3) write matrix and vectors to disk.
  * NOTE: ALL THIS CODE IS DESIGNED FOR ABELIAN GROUPS ONLY!
- *
- * 2019-2022 Alexander Oleynichenko
  */
 
 #include "heff.h"

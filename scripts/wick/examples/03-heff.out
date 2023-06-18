@@ -1,0 +1,605 @@
+wick v1.1
+by a. oleynichenko
+run date:  15/09/2022 08:30:12
+
+echo of input file:
+----------------------------------------------------------
+#
+# Heff operator matrix elements for the Fock-space sector 0h3p
+#
+
+holes i j k
+particles a b c d e f
+any p q r s t u
+
+operator bra 1.0 { c b a }
+operator ket 1.0 { d+ e+ f+ }
+operator heff1 1.0 { p+ q }
+operator heff2 0.5 { p+ q+ s r }
+operator heff3 1.0 { p+ q+ r+ u t s }
+
+? bra heff1 ket
+? bra heff2 ket
+? bra heff3 ket
+
+----------------------------------------------------------
+
+hole indices are:  ['j', 'k', 'i']
+particle indices are:  ['d', 'f', 'c', 'a', 'e', 'b']
+any indices are:  ['u', 'q', 't', 'p', 's', 'r']
+
+
+
+----------------------------------------------------------
+Begin task:  ['bra', 'heff1', 'ket']
+----------------------------------------------------------
+
+Matrix element expression: <0|{c b a }1.0 heff1 {p+ q }{d+ e+ f+ }|0>
+Elementary operators string:  [c, b, a, p+, q, d+, e+, f+]
+
+
+Possible non-zero contractions:
+-------------------------------
+
+( 0)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  1  4  2  3  4   
+
+( 1)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  1  4  2  4  3   
+
+( 2)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  1  4  3  2  4   
+
+( 3)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  1  4  4  2  3   
+
+( 4)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  1  4  3  4  2   
+
+( 5)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  1  4  4  3  2   
+
+( 6)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  2  4  1  3  4   
+
+( 7)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  2  4  1  4  3   
+
+( 8)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  3  4  1  2  4   
+
+( 9)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  3  4  1  4  2   
+
+(10)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  2  4  3  1  4   
+
+(11)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  2  4  4  1  3   
+
+(12)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  3  4  2  1  4   
+
+(13)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  3  4  4  1  2   
+
+(14)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  2  4  3  4  1   
+
+(15)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  2  4  4  3  1   
+
+(16)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  3  4  2  4  1   
+
+(17)   c  b  a  p+ q  d+ e+ f+ 
+       1  2  3  3  4  4  2  1   
+
+-------------------------------
+Total number of possible contractions:  18 
+
+
+Expression for matrix element:
+------------------------------
+-1.0 heff1 [ p q ] d_cp d_bd d_ae d_fq => -1.0 heff1 [ c f ] d_bd d_ae
++1.0 heff1 [ p q ] d_cp d_bd d_af d_eq => +1.0 heff1 [ c e ] d_bd d_af
++1.0 heff1 [ p q ] d_cp d_be d_ad d_fq => +1.0 heff1 [ c f ] d_be d_ad
+-1.0 heff1 [ p q ] d_cp d_be d_af d_dq => -1.0 heff1 [ c d ] d_be d_af
+-1.0 heff1 [ p q ] d_cp d_bf d_ad d_eq => -1.0 heff1 [ c e ] d_bf d_ad
++1.0 heff1 [ p q ] d_cp d_bf d_ae d_dq => +1.0 heff1 [ c d ] d_bf d_ae
++1.0 heff1 [ p q ] d_cd d_bp d_ae d_fq => +1.0 heff1 [ b f ] d_cd d_ae
+-1.0 heff1 [ p q ] d_cd d_bp d_af d_eq => -1.0 heff1 [ b e ] d_cd d_af
+-1.0 heff1 [ p q ] d_cd d_be d_ap d_fq => -1.0 heff1 [ a f ] d_cd d_be
++1.0 heff1 [ p q ] d_cd d_bf d_ap d_eq => +1.0 heff1 [ a e ] d_cd d_bf
+-1.0 heff1 [ p q ] d_ce d_bp d_ad d_fq => -1.0 heff1 [ b f ] d_ce d_ad
++1.0 heff1 [ p q ] d_ce d_bp d_af d_dq => +1.0 heff1 [ b d ] d_ce d_af
++1.0 heff1 [ p q ] d_ce d_bd d_ap d_fq => +1.0 heff1 [ a f ] d_ce d_bd
+-1.0 heff1 [ p q ] d_ce d_bf d_ap d_dq => -1.0 heff1 [ a d ] d_ce d_bf
++1.0 heff1 [ p q ] d_cf d_bp d_ad d_eq => +1.0 heff1 [ b e ] d_cf d_ad
+-1.0 heff1 [ p q ] d_cf d_bp d_ae d_dq => -1.0 heff1 [ b d ] d_cf d_ae
+-1.0 heff1 [ p q ] d_cf d_bd d_ap d_eq => -1.0 heff1 [ a e ] d_cf d_bd
++1.0 heff1 [ p q ] d_cf d_be d_ap d_dq => +1.0 heff1 [ a d ] d_cf d_be
+------------------------------
+
+Optimization of analytic expression
+-----------------------------------
+Terms:
+(0) - 1.0 heff1 [ c f ] d_bd d_ae
+(1) + 1.0 heff1 [ c e ] d_bd d_af
+(2) + 1.0 heff1 [ c f ] d_be d_ad
+(3) - 1.0 heff1 [ c d ] d_be d_af
+(4) - 1.0 heff1 [ c e ] d_bf d_ad
+(5) + 1.0 heff1 [ c d ] d_bf d_ae
+(6) + 1.0 heff1 [ b f ] d_cd d_ae
+(7) - 1.0 heff1 [ b e ] d_cd d_af
+(8) - 1.0 heff1 [ a f ] d_cd d_be
+(9) + 1.0 heff1 [ a e ] d_cd d_bf
+(10) - 1.0 heff1 [ b f ] d_ce d_ad
+(11) + 1.0 heff1 [ b d ] d_ce d_af
+(12) + 1.0 heff1 [ a f ] d_ce d_bd
+(13) - 1.0 heff1 [ a d ] d_ce d_bf
+(14) + 1.0 heff1 [ b e ] d_cf d_ad
+(15) - 1.0 heff1 [ b d ] d_cf d_ae
+(16) - 1.0 heff1 [ a e ] d_cf d_bd
+(17) + 1.0 heff1 [ a d ] d_cf d_be
+
+Terms unique wrt permutations of electrons:
+(0) - 1.0 heff1 [ c f ] d_bd d_ae
+(1) + 1.0 heff1 [ c e ] d_bd d_af
+(2) + 1.0 heff1 [ c f ] d_be d_ad
+(3) - 1.0 heff1 [ c d ] d_be d_af
+(4) - 1.0 heff1 [ c e ] d_bf d_ad
+(5) + 1.0 heff1 [ c d ] d_bf d_ae
+(6) + 1.0 heff1 [ b f ] d_cd d_ae
+(7) - 1.0 heff1 [ b e ] d_cd d_af
+(8) - 1.0 heff1 [ a f ] d_cd d_be
+(9) + 1.0 heff1 [ a e ] d_cd d_bf
+(10) - 1.0 heff1 [ b f ] d_ce d_ad
+(11) + 1.0 heff1 [ b d ] d_ce d_af
+(12) + 1.0 heff1 [ a f ] d_ce d_bd
+(13) - 1.0 heff1 [ a d ] d_ce d_bf
+(14) + 1.0 heff1 [ b e ] d_cf d_ad
+(15) - 1.0 heff1 [ b d ] d_cf d_ae
+(16) - 1.0 heff1 [ a e ] d_cf d_bd
+(17) + 1.0 heff1 [ a d ] d_cf d_be
+
+
+
+
+----------------------------------------------------------
+Begin task:  ['bra', 'heff2', 'ket']
+----------------------------------------------------------
+
+Matrix element expression: <0|{c b a }0.5 heff2 {p+ q+ s r }{d+ e+ f+ }|0>
+Elementary operators string:  [c, b, a, p+, q+, s, r, d+, e+, f+]
+
+
+Possible non-zero contractions:
+-------------------------------
+
+( 0)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  2  4  5  3  4  5   
+
+( 1)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  2  4  5  3  5  4   
+
+( 2)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  2  4  5  4  3  5   
+
+( 3)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  2  4  5  5  3  4   
+
+( 4)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  2  4  5  4  5  3   
+
+( 5)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  2  4  5  5  4  3   
+
+( 6)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  3  4  5  2  4  5   
+
+( 7)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  3  4  5  2  5  4   
+
+( 8)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  3  4  5  4  2  5   
+
+( 9)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  3  4  5  5  2  4   
+
+(10)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  3  4  5  4  5  2   
+
+(11)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  1  3  4  5  5  4  2   
+
+(12)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  1  4  5  3  4  5   
+
+(13)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  1  4  5  3  5  4   
+
+(14)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  1  4  5  4  3  5   
+
+(15)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  1  4  5  5  3  4   
+
+(16)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  1  4  5  4  5  3   
+
+(17)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  1  4  5  5  4  3   
+
+(18)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  1  4  5  2  4  5   
+
+(19)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  1  4  5  2  5  4   
+
+(20)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  1  4  5  4  2  5   
+
+(21)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  1  4  5  5  2  4   
+
+(22)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  1  4  5  4  5  2   
+
+(23)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  1  4  5  5  4  2   
+
+(24)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  3  4  5  1  4  5   
+
+(25)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  3  4  5  1  5  4   
+
+(26)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  2  4  5  1  4  5   
+
+(27)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  2  4  5  1  5  4   
+
+(28)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  3  4  5  4  1  5   
+
+(29)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  3  4  5  5  1  4   
+
+(30)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  2  4  5  4  1  5   
+
+(31)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  2  4  5  5  1  4   
+
+(32)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  3  4  5  4  5  1   
+
+(33)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  2  3  4  5  5  4  1   
+
+(34)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  2  4  5  4  5  1   
+
+(35)   c  b  a  p+ q+ s  r  d+ e+ f+ 
+       1  2  3  3  2  4  5  5  4  1   
+
+-------------------------------
+Total number of possible contractions:  36 
+
+
+Expression for matrix element:
+------------------------------
++0.5 heff2 [ p q r s ] d_cp d_bq d_ad d_es d_fr => +0.5 heff2 [ c b f e ] d_ad
+-0.5 heff2 [ p q r s ] d_cp d_bq d_ad d_fs d_er => -0.5 heff2 [ c b e f ] d_ad
+-0.5 heff2 [ p q r s ] d_cp d_bq d_ae d_ds d_fr => -0.5 heff2 [ c b f d ] d_ae
++0.5 heff2 [ p q r s ] d_cp d_bq d_ae d_fs d_dr => +0.5 heff2 [ c b d f ] d_ae
++0.5 heff2 [ p q r s ] d_cp d_bq d_af d_ds d_er => +0.5 heff2 [ c b e d ] d_af
+-0.5 heff2 [ p q r s ] d_cp d_bq d_af d_es d_dr => -0.5 heff2 [ c b d e ] d_af
+-0.5 heff2 [ p q r s ] d_cp d_bd d_aq d_es d_fr => -0.5 heff2 [ c a f e ] d_bd
++0.5 heff2 [ p q r s ] d_cp d_bd d_aq d_fs d_er => +0.5 heff2 [ c a e f ] d_bd
++0.5 heff2 [ p q r s ] d_cp d_be d_aq d_ds d_fr => +0.5 heff2 [ c a f d ] d_be
+-0.5 heff2 [ p q r s ] d_cp d_be d_aq d_fs d_dr => -0.5 heff2 [ c a d f ] d_be
+-0.5 heff2 [ p q r s ] d_cp d_bf d_aq d_ds d_er => -0.5 heff2 [ c a e d ] d_bf
++0.5 heff2 [ p q r s ] d_cp d_bf d_aq d_es d_dr => +0.5 heff2 [ c a d e ] d_bf
+-0.5 heff2 [ p q r s ] d_cq d_bp d_ad d_es d_fr => -0.5 heff2 [ b c f e ] d_ad
++0.5 heff2 [ p q r s ] d_cq d_bp d_ad d_fs d_er => +0.5 heff2 [ b c e f ] d_ad
++0.5 heff2 [ p q r s ] d_cq d_bp d_ae d_ds d_fr => +0.5 heff2 [ b c f d ] d_ae
+-0.5 heff2 [ p q r s ] d_cq d_bp d_ae d_fs d_dr => -0.5 heff2 [ b c d f ] d_ae
+-0.5 heff2 [ p q r s ] d_cq d_bp d_af d_ds d_er => -0.5 heff2 [ b c e d ] d_af
++0.5 heff2 [ p q r s ] d_cq d_bp d_af d_es d_dr => +0.5 heff2 [ b c d e ] d_af
++0.5 heff2 [ p q r s ] d_cq d_bd d_ap d_es d_fr => +0.5 heff2 [ a c f e ] d_bd
+-0.5 heff2 [ p q r s ] d_cq d_bd d_ap d_fs d_er => -0.5 heff2 [ a c e f ] d_bd
+-0.5 heff2 [ p q r s ] d_cq d_be d_ap d_ds d_fr => -0.5 heff2 [ a c f d ] d_be
++0.5 heff2 [ p q r s ] d_cq d_be d_ap d_fs d_dr => +0.5 heff2 [ a c d f ] d_be
++0.5 heff2 [ p q r s ] d_cq d_bf d_ap d_ds d_er => +0.5 heff2 [ a c e d ] d_bf
+-0.5 heff2 [ p q r s ] d_cq d_bf d_ap d_es d_dr => -0.5 heff2 [ a c d e ] d_bf
++0.5 heff2 [ p q r s ] d_cd d_bp d_aq d_es d_fr => +0.5 heff2 [ b a f e ] d_cd
+-0.5 heff2 [ p q r s ] d_cd d_bp d_aq d_fs d_er => -0.5 heff2 [ b a e f ] d_cd
+-0.5 heff2 [ p q r s ] d_cd d_bq d_ap d_es d_fr => -0.5 heff2 [ a b f e ] d_cd
++0.5 heff2 [ p q r s ] d_cd d_bq d_ap d_fs d_er => +0.5 heff2 [ a b e f ] d_cd
+-0.5 heff2 [ p q r s ] d_ce d_bp d_aq d_ds d_fr => -0.5 heff2 [ b a f d ] d_ce
++0.5 heff2 [ p q r s ] d_ce d_bp d_aq d_fs d_dr => +0.5 heff2 [ b a d f ] d_ce
++0.5 heff2 [ p q r s ] d_ce d_bq d_ap d_ds d_fr => +0.5 heff2 [ a b f d ] d_ce
+-0.5 heff2 [ p q r s ] d_ce d_bq d_ap d_fs d_dr => -0.5 heff2 [ a b d f ] d_ce
++0.5 heff2 [ p q r s ] d_cf d_bp d_aq d_ds d_er => +0.5 heff2 [ b a e d ] d_cf
+-0.5 heff2 [ p q r s ] d_cf d_bp d_aq d_es d_dr => -0.5 heff2 [ b a d e ] d_cf
+-0.5 heff2 [ p q r s ] d_cf d_bq d_ap d_ds d_er => -0.5 heff2 [ a b e d ] d_cf
++0.5 heff2 [ p q r s ] d_cf d_bq d_ap d_es d_dr => +0.5 heff2 [ a b d e ] d_cf
+------------------------------
+
+Optimization of analytic expression
+-----------------------------------
+Terms:
+(0) + 0.5 heff2 [ c b f e ] d_ad
+(1) - 0.5 heff2 [ c b e f ] d_ad
+(2) - 0.5 heff2 [ c b f d ] d_ae
+(3) + 0.5 heff2 [ c b d f ] d_ae
+(4) + 0.5 heff2 [ c b e d ] d_af
+(5) - 0.5 heff2 [ c b d e ] d_af
+(6) - 0.5 heff2 [ c a f e ] d_bd
+(7) + 0.5 heff2 [ c a e f ] d_bd
+(8) + 0.5 heff2 [ c a f d ] d_be
+(9) - 0.5 heff2 [ c a d f ] d_be
+(10) - 0.5 heff2 [ c a e d ] d_bf
+(11) + 0.5 heff2 [ c a d e ] d_bf
+(12) - 0.5 heff2 [ b c f e ] d_ad
+(13) + 0.5 heff2 [ b c e f ] d_ad
+(14) + 0.5 heff2 [ b c f d ] d_ae
+(15) - 0.5 heff2 [ b c d f ] d_ae
+(16) - 0.5 heff2 [ b c e d ] d_af
+(17) + 0.5 heff2 [ b c d e ] d_af
+(18) + 0.5 heff2 [ a c f e ] d_bd
+(19) - 0.5 heff2 [ a c e f ] d_bd
+(20) - 0.5 heff2 [ a c f d ] d_be
+(21) + 0.5 heff2 [ a c d f ] d_be
+(22) + 0.5 heff2 [ a c e d ] d_bf
+(23) - 0.5 heff2 [ a c d e ] d_bf
+(24) + 0.5 heff2 [ b a f e ] d_cd
+(25) - 0.5 heff2 [ b a e f ] d_cd
+(26) - 0.5 heff2 [ a b f e ] d_cd
+(27) + 0.5 heff2 [ a b e f ] d_cd
+(28) - 0.5 heff2 [ b a f d ] d_ce
+(29) + 0.5 heff2 [ b a d f ] d_ce
+(30) + 0.5 heff2 [ a b f d ] d_ce
+(31) - 0.5 heff2 [ a b d f ] d_ce
+(32) + 0.5 heff2 [ b a e d ] d_cf
+(33) - 0.5 heff2 [ b a d e ] d_cf
+(34) - 0.5 heff2 [ a b e d ] d_cf
+(35) + 0.5 heff2 [ a b d e ] d_cf
+
+Terms unique wrt permutations of electrons:
+(0) + 1.0 heff2 [ c b f e ] d_ad
+(1) - 1.0 heff2 [ c b e f ] d_ad
+(2) - 1.0 heff2 [ c b f d ] d_ae
+(3) + 1.0 heff2 [ c b d f ] d_ae
+(4) + 1.0 heff2 [ c b e d ] d_af
+(5) - 1.0 heff2 [ c b d e ] d_af
+(6) - 1.0 heff2 [ c a f e ] d_bd
+(7) + 1.0 heff2 [ c a e f ] d_bd
+(8) + 1.0 heff2 [ c a f d ] d_be
+(9) - 1.0 heff2 [ c a d f ] d_be
+(10) - 1.0 heff2 [ c a e d ] d_bf
+(11) + 1.0 heff2 [ c a d e ] d_bf
+(12) + 1.0 heff2 [ b a f e ] d_cd
+(13) - 1.0 heff2 [ b a e f ] d_cd
+(14) - 1.0 heff2 [ b a f d ] d_ce
+(15) + 1.0 heff2 [ b a d f ] d_ce
+(16) + 1.0 heff2 [ b a e d ] d_cf
+(17) - 1.0 heff2 [ b a d e ] d_cf
+
+
+
+
+----------------------------------------------------------
+Begin task:  ['bra', 'heff3', 'ket']
+----------------------------------------------------------
+
+Matrix element expression: <0|{c b a }1.0 heff3 {p+ q+ r+ u t s }{d+ e+ f+ }|0>
+Elementary operators string:  [c, b, a, p+, q+, r+, u, t, s, d+, e+, f+]
+
+
+Possible non-zero contractions:
+-------------------------------
+
+( 0)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  2  3  4  5  6  4  5  6   
+
+( 1)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  2  3  4  5  6  4  6  5   
+
+( 2)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  2  3  4  5  6  5  4  6   
+
+( 3)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  2  3  4  5  6  6  4  5   
+
+( 4)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  2  3  4  5  6  5  6  4   
+
+( 5)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  2  3  4  5  6  6  5  4   
+
+( 6)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  3  2  4  5  6  4  5  6   
+
+( 7)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  3  2  4  5  6  4  6  5   
+
+( 8)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  3  2  4  5  6  5  4  6   
+
+( 9)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  3  2  4  5  6  6  4  5   
+
+(10)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  3  2  4  5  6  5  6  4   
+
+(11)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  1  3  2  4  5  6  6  5  4   
+
+(12)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  1  3  4  5  6  4  5  6   
+
+(13)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  1  3  4  5  6  4  6  5   
+
+(14)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  1  3  4  5  6  5  4  6   
+
+(15)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  1  3  4  5  6  6  4  5   
+
+(16)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  1  3  4  5  6  5  6  4   
+
+(17)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  1  3  4  5  6  6  5  4   
+
+(18)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  1  2  4  5  6  4  5  6   
+
+(19)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  1  2  4  5  6  4  6  5   
+
+(20)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  1  2  4  5  6  5  4  6   
+
+(21)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  1  2  4  5  6  6  4  5   
+
+(22)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  1  2  4  5  6  5  6  4   
+
+(23)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  1  2  4  5  6  6  5  4   
+
+(24)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  3  1  4  5  6  4  5  6   
+
+(25)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  3  1  4  5  6  4  6  5   
+
+(26)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  3  1  4  5  6  5  4  6   
+
+(27)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  3  1  4  5  6  6  4  5   
+
+(28)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  3  1  4  5  6  5  6  4   
+
+(29)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  2  3  1  4  5  6  6  5  4   
+
+(30)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  2  1  4  5  6  4  5  6   
+
+(31)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  2  1  4  5  6  4  6  5   
+
+(32)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  2  1  4  5  6  5  4  6   
+
+(33)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  2  1  4  5  6  6  4  5   
+
+(34)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  2  1  4  5  6  5  6  4   
+
+(35)   c  b  a  p+ q+ r+ u  t  s  d+ e+ f+ 
+       1  2  3  3  2  1  4  5  6  6  5  4   
+
+-------------------------------
+Total number of possible contractions:  36 
+
+
+Expression for matrix element:
+------------------------------
++1.0 heff3 [ p q r s t u ] d_cp d_bq d_ar d_du d_et d_fs => +1.0 heff3 [ c b a f e d ]
+-1.0 heff3 [ p q r s t u ] d_cp d_bq d_ar d_du d_ft d_es => -1.0 heff3 [ c b a e f d ]
+-1.0 heff3 [ p q r s t u ] d_cp d_bq d_ar d_eu d_dt d_fs => -1.0 heff3 [ c b a f d e ]
++1.0 heff3 [ p q r s t u ] d_cp d_bq d_ar d_eu d_ft d_ds => +1.0 heff3 [ c b a d f e ]
++1.0 heff3 [ p q r s t u ] d_cp d_bq d_ar d_fu d_dt d_es => +1.0 heff3 [ c b a e d f ]
+-1.0 heff3 [ p q r s t u ] d_cp d_bq d_ar d_fu d_et d_ds => -1.0 heff3 [ c b a d e f ]
+-1.0 heff3 [ p q r s t u ] d_cp d_br d_aq d_du d_et d_fs => -1.0 heff3 [ c a b f e d ]
++1.0 heff3 [ p q r s t u ] d_cp d_br d_aq d_du d_ft d_es => +1.0 heff3 [ c a b e f d ]
++1.0 heff3 [ p q r s t u ] d_cp d_br d_aq d_eu d_dt d_fs => +1.0 heff3 [ c a b f d e ]
+-1.0 heff3 [ p q r s t u ] d_cp d_br d_aq d_eu d_ft d_ds => -1.0 heff3 [ c a b d f e ]
+-1.0 heff3 [ p q r s t u ] d_cp d_br d_aq d_fu d_dt d_es => -1.0 heff3 [ c a b e d f ]
++1.0 heff3 [ p q r s t u ] d_cp d_br d_aq d_fu d_et d_ds => +1.0 heff3 [ c a b d e f ]
+-1.0 heff3 [ p q r s t u ] d_cq d_bp d_ar d_du d_et d_fs => -1.0 heff3 [ b c a f e d ]
++1.0 heff3 [ p q r s t u ] d_cq d_bp d_ar d_du d_ft d_es => +1.0 heff3 [ b c a e f d ]
++1.0 heff3 [ p q r s t u ] d_cq d_bp d_ar d_eu d_dt d_fs => +1.0 heff3 [ b c a f d e ]
+-1.0 heff3 [ p q r s t u ] d_cq d_bp d_ar d_eu d_ft d_ds => -1.0 heff3 [ b c a d f e ]
+-1.0 heff3 [ p q r s t u ] d_cq d_bp d_ar d_fu d_dt d_es => -1.0 heff3 [ b c a e d f ]
++1.0 heff3 [ p q r s t u ] d_cq d_bp d_ar d_fu d_et d_ds => +1.0 heff3 [ b c a d e f ]
++1.0 heff3 [ p q r s t u ] d_cq d_br d_ap d_du d_et d_fs => +1.0 heff3 [ a c b f e d ]
+-1.0 heff3 [ p q r s t u ] d_cq d_br d_ap d_du d_ft d_es => -1.0 heff3 [ a c b e f d ]
+-1.0 heff3 [ p q r s t u ] d_cq d_br d_ap d_eu d_dt d_fs => -1.0 heff3 [ a c b f d e ]
++1.0 heff3 [ p q r s t u ] d_cq d_br d_ap d_eu d_ft d_ds => +1.0 heff3 [ a c b d f e ]
++1.0 heff3 [ p q r s t u ] d_cq d_br d_ap d_fu d_dt d_es => +1.0 heff3 [ a c b e d f ]
+-1.0 heff3 [ p q r s t u ] d_cq d_br d_ap d_fu d_et d_ds => -1.0 heff3 [ a c b d e f ]
++1.0 heff3 [ p q r s t u ] d_cr d_bp d_aq d_du d_et d_fs => +1.0 heff3 [ b a c f e d ]
+-1.0 heff3 [ p q r s t u ] d_cr d_bp d_aq d_du d_ft d_es => -1.0 heff3 [ b a c e f d ]
+-1.0 heff3 [ p q r s t u ] d_cr d_bp d_aq d_eu d_dt d_fs => -1.0 heff3 [ b a c f d e ]
++1.0 heff3 [ p q r s t u ] d_cr d_bp d_aq d_eu d_ft d_ds => +1.0 heff3 [ b a c d f e ]
++1.0 heff3 [ p q r s t u ] d_cr d_bp d_aq d_fu d_dt d_es => +1.0 heff3 [ b a c e d f ]
+-1.0 heff3 [ p q r s t u ] d_cr d_bp d_aq d_fu d_et d_ds => -1.0 heff3 [ b a c d e f ]
+-1.0 heff3 [ p q r s t u ] d_cr d_bq d_ap d_du d_et d_fs => -1.0 heff3 [ a b c f e d ]
++1.0 heff3 [ p q r s t u ] d_cr d_bq d_ap d_du d_ft d_es => +1.0 heff3 [ a b c e f d ]
++1.0 heff3 [ p q r s t u ] d_cr d_bq d_ap d_eu d_dt d_fs => +1.0 heff3 [ a b c f d e ]
+-1.0 heff3 [ p q r s t u ] d_cr d_bq d_ap d_eu d_ft d_ds => -1.0 heff3 [ a b c d f e ]
+-1.0 heff3 [ p q r s t u ] d_cr d_bq d_ap d_fu d_dt d_es => -1.0 heff3 [ a b c e d f ]
++1.0 heff3 [ p q r s t u ] d_cr d_bq d_ap d_fu d_et d_ds => +1.0 heff3 [ a b c d e f ]
+------------------------------
+
+Optimization of analytic expression
+-----------------------------------
+Terms:
+(0) + 1.0 heff3 [ c b a f e d ]
+(1) - 1.0 heff3 [ c b a e f d ]
+(2) - 1.0 heff3 [ c b a f d e ]
+(3) + 1.0 heff3 [ c b a d f e ]
+(4) + 1.0 heff3 [ c b a e d f ]
+(5) - 1.0 heff3 [ c b a d e f ]
+(6) - 1.0 heff3 [ c a b f e d ]
+(7) + 1.0 heff3 [ c a b e f d ]
+(8) + 1.0 heff3 [ c a b f d e ]
+(9) - 1.0 heff3 [ c a b d f e ]
+(10) - 1.0 heff3 [ c a b e d f ]
+(11) + 1.0 heff3 [ c a b d e f ]
+(12) - 1.0 heff3 [ b c a f e d ]
+(13) + 1.0 heff3 [ b c a e f d ]
+(14) + 1.0 heff3 [ b c a f d e ]
+(15) - 1.0 heff3 [ b c a d f e ]
+(16) - 1.0 heff3 [ b c a e d f ]
+(17) + 1.0 heff3 [ b c a d e f ]
+(18) + 1.0 heff3 [ a c b f e d ]
+(19) - 1.0 heff3 [ a c b e f d ]
+(20) - 1.0 heff3 [ a c b f d e ]
+(21) + 1.0 heff3 [ a c b d f e ]
+(22) + 1.0 heff3 [ a c b e d f ]
+(23) - 1.0 heff3 [ a c b d e f ]
+(24) + 1.0 heff3 [ b a c f e d ]
+(25) - 1.0 heff3 [ b a c e f d ]
+(26) - 1.0 heff3 [ b a c f d e ]
+(27) + 1.0 heff3 [ b a c d f e ]
+(28) + 1.0 heff3 [ b a c e d f ]
+(29) - 1.0 heff3 [ b a c d e f ]
+(30) - 1.0 heff3 [ a b c f e d ]
+(31) + 1.0 heff3 [ a b c e f d ]
+(32) + 1.0 heff3 [ a b c f d e ]
+(33) - 1.0 heff3 [ a b c d f e ]
+(34) - 1.0 heff3 [ a b c e d f ]
+(35) + 1.0 heff3 [ a b c d e f ]
+
+Terms unique wrt permutations of electrons:
+(0) + 6.0 heff3 [ c b a f e d ]
+(1) - 6.0 heff3 [ c b a e f d ]
+(2) - 6.0 heff3 [ c b a f d e ]
+(3) + 6.0 heff3 [ c b a d f e ]
+(4) + 6.0 heff3 [ c b a e d f ]
+(5) - 6.0 heff3 [ c b a d e f ]
+

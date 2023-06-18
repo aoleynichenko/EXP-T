@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -103,6 +103,16 @@ double get_lowest_eigenvalue(const size_t *block_dims, double complex **eigvalue
         }
     }
 
+    /*
+     * special case of the 2h1p sector:
+     * ground state can belong to the 1h0p sector
+     */
+    if (cc_opts->sector_h == 2 && cc_opts->sector_p == 1) {
+        if (cc_opts->ground_energy_1h0p < min_eig_value) {
+            min_eig_value = cc_opts->ground_energy_1h0p;
+        }
+    }
+
     return min_eig_value;
 }
 
@@ -188,6 +198,9 @@ void print_eigenvalues_table(int sect_h, int sect_p, size_t *block_dims, slater_
     }
     if (sect_h == 1 && sect_p == 2) {
         e0 = cc_opts->ground_energy_0h1p + 0.0 * I;
+    }
+    if (sect_h == 2 && sect_p == 1) {
+        e0 = cc_opts->ground_energy_1h0p + 0.0 * I;
     }
 
     int intham = 0;

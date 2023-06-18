@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -33,8 +33,6 @@
  * Relativistic Coupled Cluster Method: Transitions between Different
  * Fock Space Sectors.
  * Symmetry 2020, 12(11), 1845; https://doi.org/10.3390/sym12111845
- *
- * 2020 Alexander Oleynichenko
  */
 
 #include "renorm_omega.h"

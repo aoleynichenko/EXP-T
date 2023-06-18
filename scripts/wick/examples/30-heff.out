@@ -1,0 +1,605 @@
+wick v1.1
+by a. oleynichenko
+run date:  15/09/2022 08:36:00
+
+echo of input file:
+----------------------------------------------------------
+#
+# Heff operator matrix elements for the Fock-space sector 3h0p
+#
+
+holes i j k l m n
+particles a b c d
+any p q r s t u
+
+operator bra 1.0 { k+ j+ i+ }
+operator ket 1.0 { l m n }
+operator heff1 1.0 { p+ q }
+operator heff2 0.5 { p+ q+ s r }
+operator heff3 1.0 { p+ q+ r+ u t s }
+
+? bra heff1 ket
+? bra heff2 ket
+? bra heff3 ket
+
+----------------------------------------------------------
+
+hole indices are:  ['i', 'k', 'l', 'n', 'm', 'j']
+particle indices are:  ['c', 'a', 'b', 'd']
+any indices are:  ['r', 'q', 'u', 's', 'p', 't']
+
+
+
+----------------------------------------------------------
+Begin task:  ['bra', 'heff1', 'ket']
+----------------------------------------------------------
+
+Matrix element expression: <0|{k+ j+ i+ }1.0 heff1 {p+ q }{l m n }|0>
+Elementary operators string:  [k+, j+, i+, p+, q, l, m, n]
+
+
+Possible non-zero contractions:
+-------------------------------
+
+( 0)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  1  2  3  4   
+
+( 1)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  1  2  4  3   
+
+( 2)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  1  3  2  4   
+
+( 3)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  1  4  2  3   
+
+( 4)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  1  3  4  2   
+
+( 5)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  1  4  3  2   
+
+( 6)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  2  1  3  4   
+
+( 7)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  2  1  4  3   
+
+( 8)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  3  1  2  4   
+
+( 9)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  3  1  4  2   
+
+(10)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  2  3  1  4   
+
+(11)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  2  4  1  3   
+
+(12)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  3  2  1  4   
+
+(13)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  3  4  1  2   
+
+(14)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  2  3  4  1   
+
+(15)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  2  4  3  1   
+
+(16)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  3  2  4  1   
+
+(17)   k+ j+ i+ p+ q  l  m  n  
+       1  2  3  4  3  4  2  1   
+
+-------------------------------
+Total number of possible contractions:  18 
+
+
+Expression for matrix element:
+------------------------------
++1.0 heff1 [ p q ] d_kq d_jl d_im d_np => +1.0 heff1 [ n k ] d_jl d_im
+-1.0 heff1 [ p q ] d_kq d_jl d_in d_mp => -1.0 heff1 [ m k ] d_jl d_in
+-1.0 heff1 [ p q ] d_kq d_jm d_il d_np => -1.0 heff1 [ n k ] d_jm d_il
++1.0 heff1 [ p q ] d_kq d_jm d_in d_lp => +1.0 heff1 [ l k ] d_jm d_in
++1.0 heff1 [ p q ] d_kq d_jn d_il d_mp => +1.0 heff1 [ m k ] d_jn d_il
+-1.0 heff1 [ p q ] d_kq d_jn d_im d_lp => -1.0 heff1 [ l k ] d_jn d_im
+-1.0 heff1 [ p q ] d_kl d_jq d_im d_np => -1.0 heff1 [ n j ] d_kl d_im
++1.0 heff1 [ p q ] d_kl d_jq d_in d_mp => +1.0 heff1 [ m j ] d_kl d_in
++1.0 heff1 [ p q ] d_kl d_jm d_iq d_np => +1.0 heff1 [ n i ] d_kl d_jm
+-1.0 heff1 [ p q ] d_kl d_jn d_iq d_mp => -1.0 heff1 [ m i ] d_kl d_jn
++1.0 heff1 [ p q ] d_km d_jq d_il d_np => +1.0 heff1 [ n j ] d_km d_il
+-1.0 heff1 [ p q ] d_km d_jq d_in d_lp => -1.0 heff1 [ l j ] d_km d_in
+-1.0 heff1 [ p q ] d_km d_jl d_iq d_np => -1.0 heff1 [ n i ] d_km d_jl
++1.0 heff1 [ p q ] d_km d_jn d_iq d_lp => +1.0 heff1 [ l i ] d_km d_jn
+-1.0 heff1 [ p q ] d_kn d_jq d_il d_mp => -1.0 heff1 [ m j ] d_kn d_il
++1.0 heff1 [ p q ] d_kn d_jq d_im d_lp => +1.0 heff1 [ l j ] d_kn d_im
++1.0 heff1 [ p q ] d_kn d_jl d_iq d_mp => +1.0 heff1 [ m i ] d_kn d_jl
+-1.0 heff1 [ p q ] d_kn d_jm d_iq d_lp => -1.0 heff1 [ l i ] d_kn d_jm
+------------------------------
+
+Optimization of analytic expression
+-----------------------------------
+Terms:
+(0) + 1.0 heff1 [ n k ] d_jl d_im
+(1) - 1.0 heff1 [ m k ] d_jl d_in
+(2) - 1.0 heff1 [ n k ] d_jm d_il
+(3) + 1.0 heff1 [ l k ] d_jm d_in
+(4) + 1.0 heff1 [ m k ] d_jn d_il
+(5) - 1.0 heff1 [ l k ] d_jn d_im
+(6) - 1.0 heff1 [ n j ] d_kl d_im
+(7) + 1.0 heff1 [ m j ] d_kl d_in
+(8) + 1.0 heff1 [ n i ] d_kl d_jm
+(9) - 1.0 heff1 [ m i ] d_kl d_jn
+(10) + 1.0 heff1 [ n j ] d_km d_il
+(11) - 1.0 heff1 [ l j ] d_km d_in
+(12) - 1.0 heff1 [ n i ] d_km d_jl
+(13) + 1.0 heff1 [ l i ] d_km d_jn
+(14) - 1.0 heff1 [ m j ] d_kn d_il
+(15) + 1.0 heff1 [ l j ] d_kn d_im
+(16) + 1.0 heff1 [ m i ] d_kn d_jl
+(17) - 1.0 heff1 [ l i ] d_kn d_jm
+
+Terms unique wrt permutations of electrons:
+(0) + 1.0 heff1 [ n k ] d_jl d_im
+(1) - 1.0 heff1 [ m k ] d_jl d_in
+(2) - 1.0 heff1 [ n k ] d_jm d_il
+(3) + 1.0 heff1 [ l k ] d_jm d_in
+(4) + 1.0 heff1 [ m k ] d_jn d_il
+(5) - 1.0 heff1 [ l k ] d_jn d_im
+(6) - 1.0 heff1 [ n j ] d_kl d_im
+(7) + 1.0 heff1 [ m j ] d_kl d_in
+(8) + 1.0 heff1 [ n i ] d_kl d_jm
+(9) - 1.0 heff1 [ m i ] d_kl d_jn
+(10) + 1.0 heff1 [ n j ] d_km d_il
+(11) - 1.0 heff1 [ l j ] d_km d_in
+(12) - 1.0 heff1 [ n i ] d_km d_jl
+(13) + 1.0 heff1 [ l i ] d_km d_jn
+(14) - 1.0 heff1 [ m j ] d_kn d_il
+(15) + 1.0 heff1 [ l j ] d_kn d_im
+(16) + 1.0 heff1 [ m i ] d_kn d_jl
+(17) - 1.0 heff1 [ l i ] d_kn d_jm
+
+
+
+
+----------------------------------------------------------
+Begin task:  ['bra', 'heff2', 'ket']
+----------------------------------------------------------
+
+Matrix element expression: <0|{k+ j+ i+ }0.5 heff2 {p+ q+ s r }{l m n }|0>
+Elementary operators string:  [k+, j+, i+, p+, q+, s, r, l, m, n]
+
+
+Possible non-zero contractions:
+-------------------------------
+
+( 0)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  2  3  4  5   
+
+( 1)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  2  3  5  4   
+
+( 2)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  2  4  3  5   
+
+( 3)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  2  5  3  4   
+
+( 4)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  2  4  5  3   
+
+( 5)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  2  5  4  3   
+
+( 6)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  3  2  4  5   
+
+( 7)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  3  2  5  4   
+
+( 8)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  3  4  2  5   
+
+( 9)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  3  5  2  4   
+
+(10)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  3  4  5  2   
+
+(11)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  1  3  5  4  2   
+
+(12)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  1  3  4  5   
+
+(13)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  1  3  5  4   
+
+(14)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  1  4  3  5   
+
+(15)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  1  5  3  4   
+
+(16)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  1  4  5  3   
+
+(17)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  1  5  4  3   
+
+(18)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  1  2  4  5   
+
+(19)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  1  2  5  4   
+
+(20)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  1  4  2  5   
+
+(21)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  1  5  2  4   
+
+(22)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  1  4  5  2   
+
+(23)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  1  5  4  2   
+
+(24)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  3  1  4  5   
+
+(25)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  3  1  5  4   
+
+(26)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  2  1  4  5   
+
+(27)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  2  1  5  4   
+
+(28)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  3  4  1  5   
+
+(29)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  3  5  1  4   
+
+(30)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  2  4  1  5   
+
+(31)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  2  5  1  4   
+
+(32)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  3  4  5  1   
+
+(33)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  2  3  5  4  1   
+
+(34)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  2  4  5  1   
+
+(35)   k+ j+ i+ p+ q+ s  r  l  m  n  
+       1  2  3  4  5  3  2  5  4  1   
+
+-------------------------------
+Total number of possible contractions:  36 
+
+
+Expression for matrix element:
+------------------------------
++0.5 heff2 [ p q r s ] d_ks d_jr d_il d_mp d_nq => +0.5 heff2 [ m n j k ] d_il
+-0.5 heff2 [ p q r s ] d_ks d_jr d_il d_np d_mq => -0.5 heff2 [ n m j k ] d_il
+-0.5 heff2 [ p q r s ] d_ks d_jr d_im d_lp d_nq => -0.5 heff2 [ l n j k ] d_im
++0.5 heff2 [ p q r s ] d_ks d_jr d_im d_np d_lq => +0.5 heff2 [ n l j k ] d_im
++0.5 heff2 [ p q r s ] d_ks d_jr d_in d_lp d_mq => +0.5 heff2 [ l m j k ] d_in
+-0.5 heff2 [ p q r s ] d_ks d_jr d_in d_mp d_lq => -0.5 heff2 [ m l j k ] d_in
+-0.5 heff2 [ p q r s ] d_ks d_jl d_ir d_mp d_nq => -0.5 heff2 [ m n i k ] d_jl
++0.5 heff2 [ p q r s ] d_ks d_jl d_ir d_np d_mq => +0.5 heff2 [ n m i k ] d_jl
++0.5 heff2 [ p q r s ] d_ks d_jm d_ir d_lp d_nq => +0.5 heff2 [ l n i k ] d_jm
+-0.5 heff2 [ p q r s ] d_ks d_jm d_ir d_np d_lq => -0.5 heff2 [ n l i k ] d_jm
+-0.5 heff2 [ p q r s ] d_ks d_jn d_ir d_lp d_mq => -0.5 heff2 [ l m i k ] d_jn
++0.5 heff2 [ p q r s ] d_ks d_jn d_ir d_mp d_lq => +0.5 heff2 [ m l i k ] d_jn
+-0.5 heff2 [ p q r s ] d_kr d_js d_il d_mp d_nq => -0.5 heff2 [ m n k j ] d_il
++0.5 heff2 [ p q r s ] d_kr d_js d_il d_np d_mq => +0.5 heff2 [ n m k j ] d_il
++0.5 heff2 [ p q r s ] d_kr d_js d_im d_lp d_nq => +0.5 heff2 [ l n k j ] d_im
+-0.5 heff2 [ p q r s ] d_kr d_js d_im d_np d_lq => -0.5 heff2 [ n l k j ] d_im
+-0.5 heff2 [ p q r s ] d_kr d_js d_in d_lp d_mq => -0.5 heff2 [ l m k j ] d_in
++0.5 heff2 [ p q r s ] d_kr d_js d_in d_mp d_lq => +0.5 heff2 [ m l k j ] d_in
++0.5 heff2 [ p q r s ] d_kr d_jl d_is d_mp d_nq => +0.5 heff2 [ m n k i ] d_jl
+-0.5 heff2 [ p q r s ] d_kr d_jl d_is d_np d_mq => -0.5 heff2 [ n m k i ] d_jl
+-0.5 heff2 [ p q r s ] d_kr d_jm d_is d_lp d_nq => -0.5 heff2 [ l n k i ] d_jm
++0.5 heff2 [ p q r s ] d_kr d_jm d_is d_np d_lq => +0.5 heff2 [ n l k i ] d_jm
++0.5 heff2 [ p q r s ] d_kr d_jn d_is d_lp d_mq => +0.5 heff2 [ l m k i ] d_jn
+-0.5 heff2 [ p q r s ] d_kr d_jn d_is d_mp d_lq => -0.5 heff2 [ m l k i ] d_jn
++0.5 heff2 [ p q r s ] d_kl d_js d_ir d_mp d_nq => +0.5 heff2 [ m n i j ] d_kl
+-0.5 heff2 [ p q r s ] d_kl d_js d_ir d_np d_mq => -0.5 heff2 [ n m i j ] d_kl
+-0.5 heff2 [ p q r s ] d_kl d_jr d_is d_mp d_nq => -0.5 heff2 [ m n j i ] d_kl
++0.5 heff2 [ p q r s ] d_kl d_jr d_is d_np d_mq => +0.5 heff2 [ n m j i ] d_kl
+-0.5 heff2 [ p q r s ] d_km d_js d_ir d_lp d_nq => -0.5 heff2 [ l n i j ] d_km
++0.5 heff2 [ p q r s ] d_km d_js d_ir d_np d_lq => +0.5 heff2 [ n l i j ] d_km
++0.5 heff2 [ p q r s ] d_km d_jr d_is d_lp d_nq => +0.5 heff2 [ l n j i ] d_km
+-0.5 heff2 [ p q r s ] d_km d_jr d_is d_np d_lq => -0.5 heff2 [ n l j i ] d_km
++0.5 heff2 [ p q r s ] d_kn d_js d_ir d_lp d_mq => +0.5 heff2 [ l m i j ] d_kn
+-0.5 heff2 [ p q r s ] d_kn d_js d_ir d_mp d_lq => -0.5 heff2 [ m l i j ] d_kn
+-0.5 heff2 [ p q r s ] d_kn d_jr d_is d_lp d_mq => -0.5 heff2 [ l m j i ] d_kn
++0.5 heff2 [ p q r s ] d_kn d_jr d_is d_mp d_lq => +0.5 heff2 [ m l j i ] d_kn
+------------------------------
+
+Optimization of analytic expression
+-----------------------------------
+Terms:
+(0) + 0.5 heff2 [ m n j k ] d_il
+(1) - 0.5 heff2 [ n m j k ] d_il
+(2) - 0.5 heff2 [ l n j k ] d_im
+(3) + 0.5 heff2 [ n l j k ] d_im
+(4) + 0.5 heff2 [ l m j k ] d_in
+(5) - 0.5 heff2 [ m l j k ] d_in
+(6) - 0.5 heff2 [ m n i k ] d_jl
+(7) + 0.5 heff2 [ n m i k ] d_jl
+(8) + 0.5 heff2 [ l n i k ] d_jm
+(9) - 0.5 heff2 [ n l i k ] d_jm
+(10) - 0.5 heff2 [ l m i k ] d_jn
+(11) + 0.5 heff2 [ m l i k ] d_jn
+(12) - 0.5 heff2 [ m n k j ] d_il
+(13) + 0.5 heff2 [ n m k j ] d_il
+(14) + 0.5 heff2 [ l n k j ] d_im
+(15) - 0.5 heff2 [ n l k j ] d_im
+(16) - 0.5 heff2 [ l m k j ] d_in
+(17) + 0.5 heff2 [ m l k j ] d_in
+(18) + 0.5 heff2 [ m n k i ] d_jl
+(19) - 0.5 heff2 [ n m k i ] d_jl
+(20) - 0.5 heff2 [ l n k i ] d_jm
+(21) + 0.5 heff2 [ n l k i ] d_jm
+(22) + 0.5 heff2 [ l m k i ] d_jn
+(23) - 0.5 heff2 [ m l k i ] d_jn
+(24) + 0.5 heff2 [ m n i j ] d_kl
+(25) - 0.5 heff2 [ n m i j ] d_kl
+(26) - 0.5 heff2 [ m n j i ] d_kl
+(27) + 0.5 heff2 [ n m j i ] d_kl
+(28) - 0.5 heff2 [ l n i j ] d_km
+(29) + 0.5 heff2 [ n l i j ] d_km
+(30) + 0.5 heff2 [ l n j i ] d_km
+(31) - 0.5 heff2 [ n l j i ] d_km
+(32) + 0.5 heff2 [ l m i j ] d_kn
+(33) - 0.5 heff2 [ m l i j ] d_kn
+(34) - 0.5 heff2 [ l m j i ] d_kn
+(35) + 0.5 heff2 [ m l j i ] d_kn
+
+Terms unique wrt permutations of electrons:
+(0) + 1.0 heff2 [ m n j k ] d_il
+(1) - 1.0 heff2 [ n m j k ] d_il
+(2) - 1.0 heff2 [ l n j k ] d_im
+(3) + 1.0 heff2 [ n l j k ] d_im
+(4) + 1.0 heff2 [ l m j k ] d_in
+(5) - 1.0 heff2 [ m l j k ] d_in
+(6) - 1.0 heff2 [ m n i k ] d_jl
+(7) + 1.0 heff2 [ n m i k ] d_jl
+(8) + 1.0 heff2 [ l n i k ] d_jm
+(9) - 1.0 heff2 [ n l i k ] d_jm
+(10) - 1.0 heff2 [ l m i k ] d_jn
+(11) + 1.0 heff2 [ m l i k ] d_jn
+(12) + 1.0 heff2 [ m n i j ] d_kl
+(13) - 1.0 heff2 [ n m i j ] d_kl
+(14) - 1.0 heff2 [ l n i j ] d_km
+(15) + 1.0 heff2 [ n l i j ] d_km
+(16) + 1.0 heff2 [ l m i j ] d_kn
+(17) - 1.0 heff2 [ m l i j ] d_kn
+
+
+
+
+----------------------------------------------------------
+Begin task:  ['bra', 'heff3', 'ket']
+----------------------------------------------------------
+
+Matrix element expression: <0|{k+ j+ i+ }1.0 heff3 {p+ q+ r+ u t s }{l m n }|0>
+Elementary operators string:  [k+, j+, i+, p+, q+, r+, u, t, s, l, m, n]
+
+
+Possible non-zero contractions:
+-------------------------------
+
+( 0)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  2  3  4  5  6   
+
+( 1)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  2  3  4  6  5   
+
+( 2)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  2  3  5  4  6   
+
+( 3)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  2  3  6  4  5   
+
+( 4)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  2  3  5  6  4   
+
+( 5)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  2  3  6  5  4   
+
+( 6)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  3  2  4  5  6   
+
+( 7)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  3  2  4  6  5   
+
+( 8)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  3  2  5  4  6   
+
+( 9)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  3  2  6  4  5   
+
+(10)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  3  2  5  6  4   
+
+(11)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  1  3  2  6  5  4   
+
+(12)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  1  3  4  5  6   
+
+(13)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  1  3  4  6  5   
+
+(14)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  1  3  5  4  6   
+
+(15)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  1  3  6  4  5   
+
+(16)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  1  3  5  6  4   
+
+(17)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  1  3  6  5  4   
+
+(18)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  1  2  4  5  6   
+
+(19)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  1  2  4  6  5   
+
+(20)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  1  2  5  4  6   
+
+(21)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  1  2  6  4  5   
+
+(22)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  1  2  5  6  4   
+
+(23)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  1  2  6  5  4   
+
+(24)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  3  1  4  5  6   
+
+(25)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  3  1  4  6  5   
+
+(26)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  3  1  5  4  6   
+
+(27)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  3  1  6  4  5   
+
+(28)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  3  1  5  6  4   
+
+(29)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  2  3  1  6  5  4   
+
+(30)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  2  1  4  5  6   
+
+(31)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  2  1  4  6  5   
+
+(32)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  2  1  5  4  6   
+
+(33)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  2  1  6  4  5   
+
+(34)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  2  1  5  6  4   
+
+(35)   k+ j+ i+ p+ q+ r+ u  t  s  l  m  n  
+       1  2  3  4  5  6  3  2  1  6  5  4   
+
+-------------------------------
+Total number of possible contractions:  36 
+
+
+Expression for matrix element:
+------------------------------
+-1.0 heff3 [ p q r s t u ] d_ku d_jt d_is d_lp d_mq d_nr => -1.0 heff3 [ l m n i j k ]
++1.0 heff3 [ p q r s t u ] d_ku d_jt d_is d_lp d_nq d_mr => +1.0 heff3 [ l n m i j k ]
++1.0 heff3 [ p q r s t u ] d_ku d_jt d_is d_mp d_lq d_nr => +1.0 heff3 [ m l n i j k ]
+-1.0 heff3 [ p q r s t u ] d_ku d_jt d_is d_mp d_nq d_lr => -1.0 heff3 [ m n l i j k ]
+-1.0 heff3 [ p q r s t u ] d_ku d_jt d_is d_np d_lq d_mr => -1.0 heff3 [ n l m i j k ]
++1.0 heff3 [ p q r s t u ] d_ku d_jt d_is d_np d_mq d_lr => +1.0 heff3 [ n m l i j k ]
++1.0 heff3 [ p q r s t u ] d_ku d_js d_it d_lp d_mq d_nr => +1.0 heff3 [ l m n j i k ]
+-1.0 heff3 [ p q r s t u ] d_ku d_js d_it d_lp d_nq d_mr => -1.0 heff3 [ l n m j i k ]
+-1.0 heff3 [ p q r s t u ] d_ku d_js d_it d_mp d_lq d_nr => -1.0 heff3 [ m l n j i k ]
++1.0 heff3 [ p q r s t u ] d_ku d_js d_it d_mp d_nq d_lr => +1.0 heff3 [ m n l j i k ]
++1.0 heff3 [ p q r s t u ] d_ku d_js d_it d_np d_lq d_mr => +1.0 heff3 [ n l m j i k ]
+-1.0 heff3 [ p q r s t u ] d_ku d_js d_it d_np d_mq d_lr => -1.0 heff3 [ n m l j i k ]
++1.0 heff3 [ p q r s t u ] d_kt d_ju d_is d_lp d_mq d_nr => +1.0 heff3 [ l m n i k j ]
+-1.0 heff3 [ p q r s t u ] d_kt d_ju d_is d_lp d_nq d_mr => -1.0 heff3 [ l n m i k j ]
+-1.0 heff3 [ p q r s t u ] d_kt d_ju d_is d_mp d_lq d_nr => -1.0 heff3 [ m l n i k j ]
++1.0 heff3 [ p q r s t u ] d_kt d_ju d_is d_mp d_nq d_lr => +1.0 heff3 [ m n l i k j ]
++1.0 heff3 [ p q r s t u ] d_kt d_ju d_is d_np d_lq d_mr => +1.0 heff3 [ n l m i k j ]
+-1.0 heff3 [ p q r s t u ] d_kt d_ju d_is d_np d_mq d_lr => -1.0 heff3 [ n m l i k j ]
+-1.0 heff3 [ p q r s t u ] d_kt d_js d_iu d_lp d_mq d_nr => -1.0 heff3 [ l m n j k i ]
++1.0 heff3 [ p q r s t u ] d_kt d_js d_iu d_lp d_nq d_mr => +1.0 heff3 [ l n m j k i ]
++1.0 heff3 [ p q r s t u ] d_kt d_js d_iu d_mp d_lq d_nr => +1.0 heff3 [ m l n j k i ]
+-1.0 heff3 [ p q r s t u ] d_kt d_js d_iu d_mp d_nq d_lr => -1.0 heff3 [ m n l j k i ]
+-1.0 heff3 [ p q r s t u ] d_kt d_js d_iu d_np d_lq d_mr => -1.0 heff3 [ n l m j k i ]
++1.0 heff3 [ p q r s t u ] d_kt d_js d_iu d_np d_mq d_lr => +1.0 heff3 [ n m l j k i ]
+-1.0 heff3 [ p q r s t u ] d_ks d_ju d_it d_lp d_mq d_nr => -1.0 heff3 [ l m n k i j ]
++1.0 heff3 [ p q r s t u ] d_ks d_ju d_it d_lp d_nq d_mr => +1.0 heff3 [ l n m k i j ]
++1.0 heff3 [ p q r s t u ] d_ks d_ju d_it d_mp d_lq d_nr => +1.0 heff3 [ m l n k i j ]
+-1.0 heff3 [ p q r s t u ] d_ks d_ju d_it d_mp d_nq d_lr => -1.0 heff3 [ m n l k i j ]
+-1.0 heff3 [ p q r s t u ] d_ks d_ju d_it d_np d_lq d_mr => -1.0 heff3 [ n l m k i j ]
++1.0 heff3 [ p q r s t u ] d_ks d_ju d_it d_np d_mq d_lr => +1.0 heff3 [ n m l k i j ]
++1.0 heff3 [ p q r s t u ] d_ks d_jt d_iu d_lp d_mq d_nr => +1.0 heff3 [ l m n k j i ]
+-1.0 heff3 [ p q r s t u ] d_ks d_jt d_iu d_lp d_nq d_mr => -1.0 heff3 [ l n m k j i ]
+-1.0 heff3 [ p q r s t u ] d_ks d_jt d_iu d_mp d_lq d_nr => -1.0 heff3 [ m l n k j i ]
++1.0 heff3 [ p q r s t u ] d_ks d_jt d_iu d_mp d_nq d_lr => +1.0 heff3 [ m n l k j i ]
++1.0 heff3 [ p q r s t u ] d_ks d_jt d_iu d_np d_lq d_mr => +1.0 heff3 [ n l m k j i ]
+-1.0 heff3 [ p q r s t u ] d_ks d_jt d_iu d_np d_mq d_lr => -1.0 heff3 [ n m l k j i ]
+------------------------------
+
+Optimization of analytic expression
+-----------------------------------
+Terms:
+(0) - 1.0 heff3 [ l m n i j k ]
+(1) + 1.0 heff3 [ l n m i j k ]
+(2) + 1.0 heff3 [ m l n i j k ]
+(3) - 1.0 heff3 [ m n l i j k ]
+(4) - 1.0 heff3 [ n l m i j k ]
+(5) + 1.0 heff3 [ n m l i j k ]
+(6) + 1.0 heff3 [ l m n j i k ]
+(7) - 1.0 heff3 [ l n m j i k ]
+(8) - 1.0 heff3 [ m l n j i k ]
+(9) + 1.0 heff3 [ m n l j i k ]
+(10) + 1.0 heff3 [ n l m j i k ]
+(11) - 1.0 heff3 [ n m l j i k ]
+(12) + 1.0 heff3 [ l m n i k j ]
+(13) - 1.0 heff3 [ l n m i k j ]
+(14) - 1.0 heff3 [ m l n i k j ]
+(15) + 1.0 heff3 [ m n l i k j ]
+(16) + 1.0 heff3 [ n l m i k j ]
+(17) - 1.0 heff3 [ n m l i k j ]
+(18) - 1.0 heff3 [ l m n j k i ]
+(19) + 1.0 heff3 [ l n m j k i ]
+(20) + 1.0 heff3 [ m l n j k i ]
+(21) - 1.0 heff3 [ m n l j k i ]
+(22) - 1.0 heff3 [ n l m j k i ]
+(23) + 1.0 heff3 [ n m l j k i ]
+(24) - 1.0 heff3 [ l m n k i j ]
+(25) + 1.0 heff3 [ l n m k i j ]
+(26) + 1.0 heff3 [ m l n k i j ]
+(27) - 1.0 heff3 [ m n l k i j ]
+(28) - 1.0 heff3 [ n l m k i j ]
+(29) + 1.0 heff3 [ n m l k i j ]
+(30) + 1.0 heff3 [ l m n k j i ]
+(31) - 1.0 heff3 [ l n m k j i ]
+(32) - 1.0 heff3 [ m l n k j i ]
+(33) + 1.0 heff3 [ m n l k j i ]
+(34) + 1.0 heff3 [ n l m k j i ]
+(35) - 1.0 heff3 [ n m l k j i ]
+
+Terms unique wrt permutations of electrons:
+(0) - 6.0 heff3 [ l m n i j k ]
+(1) + 6.0 heff3 [ l n m i j k ]
+(2) + 6.0 heff3 [ m l n i j k ]
+(3) - 6.0 heff3 [ m n l i j k ]
+(4) - 6.0 heff3 [ n l m i j k ]
+(5) + 6.0 heff3 [ n m l i j k ]
+

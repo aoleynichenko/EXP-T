@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,8 +24,6 @@
 /*
  * Diagram contractions.
  * Are based on low-level operations (see diagram.h)
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #include <stdio.h>
@@ -43,7 +41,11 @@
 #include "timer.h"
 #include "utils.h"
 
-//#include "omp.h"
+#if defined BLAS_MKL
+  #include "mkl.h"
+#endif
+
+#include "omp.h"
 
 /*
  * type of multiplication:
@@ -71,7 +73,9 @@ static diagram_t *mult_product_template(diagram_t *dg1, diagram_t *dg2, int ncon
 
 static int mult_type(diagram_t *op1, diagram_t *op2, diagram_t *prod);
 
-void mult_algorithm_m_mm(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int ncontr);
+void mult_algorithm_m_mm_openmp_external(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int ncontr);
+
+void mult_algorithm_m_mm_openmp_internal(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int ncontr);
 
 void mult_algorithm_m_dm(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int ncontr);
 
@@ -83,7 +87,7 @@ void mulblocks_lapack(double complex *A, int ma, int na,
                       double complex *B, int mb, int nb,
                       double beta, double complex *C);
 
-void mulblocks(block_t *op1, block_t *op2, block_t *prod, int ncontr);
+void mulblocks(block_t *op1, block_t *op2, block_t *prod, int ncontr, int nthreads);
 
 
 /**
@@ -161,7 +165,12 @@ diagram_t *diagram_mult(diagram_t *dg1, diagram_t *dg2, int ncontr, int perm_uni
         case MULT_D_MM:
         case MULT_D_DM:
             timer_start("mult_mmm");
-            mult_algorithm_m_mm(dg1, dg2, tgt, ncontr);
+            if (cc_opts->openmp_algorithm == CC_OPENMP_ALGORITHM_EXTERNAL) {
+                mult_algorithm_m_mm_openmp_external(dg1, dg2, tgt, ncontr);
+            }
+            else {
+                mult_algorithm_m_mm_openmp_internal(dg1, dg2, tgt, ncontr);
+            }
             timer_stop("mult_mmm");
             break;
         case MULT_M_DM:
@@ -183,6 +192,30 @@ diagram_t *diagram_mult(diagram_t *dg1, diagram_t *dg2, int ncontr, int perm_uni
 }
 
 
+void restore_unique_blocks(diagram_t *dg)
+{
+    for (size_t ib = 0; ib < dg->n_blocks; ib++) {
+        block_t *block = dg->blocks[ib];
+
+        if (block->is_unique == 0) {
+            restore_block(dg, block);
+        }
+    }
+}
+
+
+void destroy_unique_blocks(diagram_t *dg)
+{
+    for (size_t ib = 0; ib < dg->n_blocks; ib++) {
+        block_t *block = dg->blocks[ib];
+
+        if (block->is_unique == 0) {
+            destroy_block(block);
+        }
+    }
+}
+
+
 /*
  * sequence of loops:
  * for block C in product:
@@ -190,7 +223,60 @@ diagram_t *diagram_mult(diagram_t *dg1, diagram_t *dg2, int ncontr, int perm_uni
  *          for block B in operand-2:
  *              C += A * B
  */
-void mult_algorithm_m_mm(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int ncontr)
+void mult_algorithm_m_mm_openmp_external(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int ncontr)
+{
+    int rk1 = op1->rank;
+    int rk2 = op2->rank;
+
+    restore_unique_blocks(op1);
+    restore_unique_blocks(op2);
+
+    #pragma omp parallel for schedule(dynamic) num_threads(cc_opts->nthreads)
+    for (size_t ib3 = 0; ib3 < tgt->n_blocks; ib3++) {
+        block_t *b3 = tgt->blocks[ib3];
+        block_load(b3);
+        if (b3->is_unique == 0) {
+            continue;
+        }
+
+        for (size_t ib1 = 0; ib1 < op1->n_blocks; ib1++) {
+            block_t *b1 = op1->blocks[ib1];
+            if (intcmp(rk1 - ncontr, b1->spinor_blocks, b3->spinor_blocks) != 0) {
+                continue;
+            }
+            block_load(b1);
+
+            for (size_t ib2 = 0; ib2 < op2->n_blocks; ib2++) {
+                block_t *b2 = op2->blocks[ib2];
+                if (intcmp(rk2 - ncontr, b2->spinor_blocks, b3->spinor_blocks + rk1 - ncontr) != 0) {
+                    continue;
+                }
+                if (intcmp(ncontr, b1->spinor_blocks + rk1 - ncontr, b2->spinor_blocks + rk2 - ncontr) != 0) {
+                    continue;
+                }
+
+                block_load(b2);
+                mulblocks(b1, b2, b3, ncontr, 1);
+                block_unload(b2);
+            }
+            block_unload(b1);
+        }
+        block_store(b3);
+    }
+
+    destroy_unique_blocks(op1);
+    destroy_unique_blocks(op2);
+}
+
+
+/*
+ * sequence of loops:
+ * for block C in product:
+ *      for block A in operand-1:
+ *          for block B in operand-2:
+ *              C += A * B
+ */
+void mult_algorithm_m_mm_openmp_internal(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int ncontr)
 {
     int rk1 = op1->rank;
     int rk2 = op2->rank;
@@ -225,7 +311,7 @@ void mult_algorithm_m_mm(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int nco
                 }
 
                 block_load(b2);
-                mulblocks(b1, b2, b3, ncontr);
+                mulblocks(b1, b2, b3, ncontr, cc_opts->nthreads);
                 block_unload(b2);
 
                 if (b2->is_unique == 0) {
@@ -240,6 +326,7 @@ void mult_algorithm_m_mm(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int nco
         block_store(b3);
     }
 }
+
 
 
 /*
@@ -285,7 +372,7 @@ void mult_algorithm_m_dm(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int nco
                 }
 
                 block_load(b3);
-                mulblocks(b1, b2, b3, ncontr);
+                mulblocks(b1, b2, b3, ncontr, cc_opts->nthreads);
                 block_unload(b3);
             }
             if (b2->is_unique == 0) {
@@ -308,7 +395,7 @@ void mult_algorithm_m_dm(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int nco
  *
  * @note all locks must be preloaded!
  */
-void mulblocks(block_t *op1, block_t *op2, block_t *prod, int ncontr)
+void mulblocks(block_t *op1, block_t *op2, block_t *prod, int ncontr, int nthreads)
 {
     int M, N, K;
 
@@ -324,9 +411,9 @@ void mulblocks(block_t *op1, block_t *op2, block_t *prod, int ncontr)
 
         // enable internal threading
 #if defined BLAS_MKL
-        mkl_set_num_threads_local(cc_opts->nthreads);
+        mkl_set_num_threads_local(nthreads);
 #elif defined BLAS_OPENBLAS
-        openblas_set_num_threads(cc_opts->nthreads);
+        openblas_set_num_threads(nthreads);
 #else
         // printf("else!\n");
 #endif
@@ -349,7 +436,7 @@ void mulblocks(block_t *op1, block_t *op2, block_t *prod, int ncontr)
 #endif /* CUDA_FOUND */
     }
 
-    omp_set_num_threads(cc_opts->nthreads);
+    omp_set_num_threads(nthreads);
 }
 
 

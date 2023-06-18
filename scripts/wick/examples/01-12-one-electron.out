@@ -1,0 +1,68 @@
+wick v1.1
+by a. oleynichenko
+run date:  15/09/2022 08:34:07
+
+echo of input file:
+----------------------------------------------------------
+#
+# Matrix elements between determinants from two different
+# Fock space sectors, 0h1p and 1h2p
+#
+
+holes i j k
+particles a b c d e f
+any p q r s t u
+
+operator bra 1.0 { a }
+operator ket 1.0 { b+ c+ i }
+operator heff1 1.0 { p+ q }
+operator heff2 0.5 { p+ q+ s r }
+operator heff3 1.0 { p+ q+ r+ u t s }
+
+? bra heff1 ket
+
+----------------------------------------------------------
+
+hole indices are:  ['j', 'k', 'i']
+particle indices are:  ['d', 'a', 'e', 'c', 'b', 'f']
+any indices are:  ['t', 'q', 'p', 's', 'r', 'u']
+
+
+
+----------------------------------------------------------
+Begin task:  ['bra', 'heff1', 'ket']
+----------------------------------------------------------
+
+Matrix element expression: <0|{a }1.0 heff1 {p+ q }{b+ c+ i }|0>
+Elementary operators string:  [a, p+, q, b+, c+, i]
+
+
+Possible non-zero contractions:
+-------------------------------
+
+( 0)   a  p+ q  b+ c+ i  
+       1  2  3  1  3  2   
+
+( 1)   a  p+ q  b+ c+ i  
+       1  2  3  3  1  2   
+
+-------------------------------
+Total number of possible contractions:  2 
+
+
+Expression for matrix element:
+------------------------------
++1.0 heff1 [ p q ] d_ab d_ip d_cq => +1.0 heff1 [ i c ] d_ab
+-1.0 heff1 [ p q ] d_ac d_ip d_bq => -1.0 heff1 [ i b ] d_ac
+------------------------------
+
+Optimization of analytic expression
+-----------------------------------
+Terms:
+(0) + 1.0 heff1 [ i c ] d_ab
+(1) - 1.0 heff1 [ i b ] d_ac
+
+Terms unique wrt permutations of electrons:
+(0) + 1.0 heff1 [ i c ] d_ab
+(1) - 1.0 heff1 [ i b ] d_ac
+

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,8 +24,6 @@
 /*
  * Tools for construction and diagonalization of the effective Hamiltonian
  * matrix and the subsequent analysis of its eigenvalues and eigenvectors.
- *
- * 2019-2021 Alexander Oleynichenko
  */
 
 #ifndef CC_HEFF_H_INCLUDED

@@ -1,0 +1,130 @@
+wick v1.1
+by a. oleynichenko
+run date:  15/09/2022 08:29:29
+
+echo of input file:
+----------------------------------------------------------
+#
+# Heff operator matrix elements for the Fock-space sector 0h2p
+#
+
+holes i j k
+particles a b c d
+any p q r s t u
+
+operator bra 1.0 { b a }
+operator ket 1.0 { c+ d+ }
+operator heff1 1.0 { p+ q }
+operator heff2 0.5 { p+ q+ s r }
+operator heff3 1.0 { p+ q+ r+ u t s }
+
+? bra heff1 ket
+? bra heff2 ket
+
+----------------------------------------------------------
+
+hole indices are:  ['j', 'i', 'k']
+particle indices are:  ['b', 'c', 'd', 'a']
+any indices are:  ['u', 'p', 't', 'r', 's', 'q']
+
+
+
+----------------------------------------------------------
+Begin task:  ['bra', 'heff1', 'ket']
+----------------------------------------------------------
+
+Matrix element expression: <0|{b a }1.0 heff1 {p+ q }{c+ d+ }|0>
+Elementary operators string:  [b, a, p+, q, c+, d+]
+
+
+Possible non-zero contractions:
+-------------------------------
+
+( 0)   b  a  p+ q  c+ d+ 
+       1  2  1  3  2  3   
+
+( 1)   b  a  p+ q  c+ d+ 
+       1  2  1  3  3  2   
+
+( 2)   b  a  p+ q  c+ d+ 
+       1  2  2  3  1  3   
+
+( 3)   b  a  p+ q  c+ d+ 
+       1  2  2  3  3  1   
+
+-------------------------------
+Total number of possible contractions:  4 
+
+
+Expression for matrix element:
+------------------------------
++1.0 heff1 [ p q ] d_bp d_ac d_dq => +1.0 heff1 [ b d ] d_ac
+-1.0 heff1 [ p q ] d_bp d_ad d_cq => -1.0 heff1 [ b c ] d_ad
+-1.0 heff1 [ p q ] d_bc d_ap d_dq => -1.0 heff1 [ a d ] d_bc
++1.0 heff1 [ p q ] d_bd d_ap d_cq => +1.0 heff1 [ a c ] d_bd
+------------------------------
+
+Optimization of analytic expression
+-----------------------------------
+Terms:
+(0) + 1.0 heff1 [ b d ] d_ac
+(1) - 1.0 heff1 [ b c ] d_ad
+(2) - 1.0 heff1 [ a d ] d_bc
+(3) + 1.0 heff1 [ a c ] d_bd
+
+Terms unique wrt permutations of electrons:
+(0) + 1.0 heff1 [ b d ] d_ac
+(1) - 1.0 heff1 [ b c ] d_ad
+(2) - 1.0 heff1 [ a d ] d_bc
+(3) + 1.0 heff1 [ a c ] d_bd
+
+
+
+
+----------------------------------------------------------
+Begin task:  ['bra', 'heff2', 'ket']
+----------------------------------------------------------
+
+Matrix element expression: <0|{b a }0.5 heff2 {p+ q+ s r }{c+ d+ }|0>
+Elementary operators string:  [b, a, p+, q+, s, r, c+, d+]
+
+
+Possible non-zero contractions:
+-------------------------------
+
+( 0)   b  a  p+ q+ s  r  c+ d+ 
+       1  2  1  2  3  4  3  4   
+
+( 1)   b  a  p+ q+ s  r  c+ d+ 
+       1  2  1  2  3  4  4  3   
+
+( 2)   b  a  p+ q+ s  r  c+ d+ 
+       1  2  2  1  3  4  3  4   
+
+( 3)   b  a  p+ q+ s  r  c+ d+ 
+       1  2  2  1  3  4  4  3   
+
+-------------------------------
+Total number of possible contractions:  4 
+
+
+Expression for matrix element:
+------------------------------
++0.5 heff2 [ p q r s ] d_bp d_aq d_cs d_dr => +0.5 heff2 [ b a d c ]
+-0.5 heff2 [ p q r s ] d_bp d_aq d_ds d_cr => -0.5 heff2 [ b a c d ]
+-0.5 heff2 [ p q r s ] d_bq d_ap d_cs d_dr => -0.5 heff2 [ a b d c ]
++0.5 heff2 [ p q r s ] d_bq d_ap d_ds d_cr => +0.5 heff2 [ a b c d ]
+------------------------------
+
+Optimization of analytic expression
+-----------------------------------
+Terms:
+(0) + 0.5 heff2 [ b a d c ]
+(1) - 0.5 heff2 [ b a c d ]
+(2) - 0.5 heff2 [ a b d c ]
+(3) + 0.5 heff2 [ a b c d ]
+
+Terms unique wrt permutations of electrons:
+(0) + 1.0 heff2 [ b a d c ]
+(1) - 1.0 heff2 [ b a c d ]
+

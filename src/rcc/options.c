@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -23,8 +23,6 @@
 
 /*
  * Functions for object-oriented-like operations with 'struct options'.
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #include <assert.h>
@@ -84,6 +82,7 @@ cc_options_t *new_options()
     opts->tile_size = 100;
     opts->disk_usage_level = CC_DISK_USAGE_LEVEL_2;  // rank-6+ and pppp on disk
     opts->nthreads = 1;
+    opts->openmp_algorithm = CC_OPENMP_ALGORITHM_EXTERNAL;
     opts->cuda_enabled = 0;
     opts->maxiter = 50;
     opts->conv_thresh = 1e-9;
@@ -108,6 +107,7 @@ cc_options_t *new_options()
     opts->ground_energy_2h0p = 0.0;
     opts->cc_model = CC_MODEL_CCSD;
     opts->hughes_kaldor_1h2p = 0;
+    opts->hughes_kaldor_2h1p = 0;
     opts->sector_h = 0;
     opts->sector_p = 0;
     opts->curr_sector_h = 0;
@@ -359,6 +359,8 @@ void print_options(cc_options_t *opts)
     }
     printf(" %-15s  %-40s  %d\n", "tilesize", "max dimension of formal blocks (tiles)", opts->tile_size);
     printf(" %-15s  %-40s  %d\n", "nthreads", "number of OpenMP parallel threads", opts->nthreads);
+    printf(" %-15s  %-40s  %s\n", "openmp_algorithm", "parallelization algorithm for mult",
+        opts->openmp_algorithm == CC_OPENMP_ALGORITHM_EXTERNAL ? "external" : "internal");
     printf(" %-15s  %-40s  %s\n", "cuda", "calculations on GPU (CUDA)", opts->cuda_enabled ? "enabled" : "disabled");
     printf(" %-15s  %-40s  %d\n", "maxiter", "maximum number of CC iterations", opts->maxiter);
     printf(" %-15s  %-40s  %g\n", "conv_thresh", "convergence threshold (by amplitudes)", opts->conv_thresh);

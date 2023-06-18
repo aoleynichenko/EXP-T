@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -25,8 +25,6 @@
  * Interface to the diagram engine. It includes only some top-level routines,
  * so the user is not required to think about diagrams' internal structure and
  * algorithms used.
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #ifndef CC_ENGINE_H_INCLUDED
@@ -62,6 +60,9 @@ void tmplt_sym(char *name, char *qparts, char *valence, char *order, int perm_un
 
 // sets all matrix elements in the diagram to zero
 void clear(char *name);
+
+// checks if a diagram exists
+void check_diagram_exists(char *name);
 
 // find max (abs value) matrix element in the diagram;
 void findmax(char *name, double *max_val, int *idx);

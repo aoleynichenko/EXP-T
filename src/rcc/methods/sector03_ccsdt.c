@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -47,8 +47,6 @@
  * to extract the Bi nuclear quadrupole moment.
  * Phys. Rev. C, 104(3), 034316 (2021)
  * DOI: 10.1103/physrevc.104.034316
- *
- * 2019-2022 Alexander Oleynichenko
  */
 
 #include "methods.h"

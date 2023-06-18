@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,8 +24,6 @@
 /*
  * Slater rules: evaluation of matrix elements in the basis of Slater
  * determinants.
- *
- * 2019-2021 Alexander Oleynichenko
  */
 
 #include <stdlib.h>
@@ -76,6 +74,12 @@ double complex slater_12_1_12(slater_det_t *bra, slater_det_t *ket);
 double complex slater_12_2_12(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_12_3_12(slater_det_t *bra, slater_det_t *ket);
+
+double complex slater_21_1_21(slater_det_t *bra, slater_det_t *ket);
+
+double complex slater_21_2_21(slater_det_t *bra, slater_det_t *ket);
+
+double complex slater_21_3_21(slater_det_t *bra, slater_det_t *ket);
 
 double complex slater_01_1_12(slater_det_t *bra, slater_det_t *ket);
 
@@ -237,6 +241,21 @@ void setup_slater(void *source, double complex (*getter)(void *source, void *ind
     if (bra_sect_h == 1 && bra_sect_p == 2 && ket_sect_h == 0 && ket_sect_p == 1) {
         if (npart == 1) {
             slater_rule = slater_12_1_01;
+        }
+    }
+    
+    /*
+     * 2h1p - 2h1p
+     */
+    if (bra_sect_h == 2 && bra_sect_p == 1 && ket_sect_h == 2 && ket_sect_p == 1) {
+        if (npart == 1) {
+            slater_rule = slater_21_1_21;
+        }
+        else if (npart == 2) {
+            slater_rule = slater_21_2_21;
+        }
+        else if (npart == 3) {
+            slater_rule = slater_21_3_21;
         }
     }
 
@@ -1055,7 +1074,7 @@ double complex slater_12_1_12(slater_det_t *bra, slater_det_t *ket)
     if ((b == c) && (a == d)) {
         idx2[0] = j;
         idx2[1] = i;
-        matr_elem -= get_element(source_matrix, idx2);
+        matr_elem += get_element(source_matrix, idx2);
     }
     // (1) - 1.0 heff1 [ j i ] d_bd d_ac
     if ((b == d) && (a == c)) {
@@ -1240,6 +1259,164 @@ double complex slater_12_1_01(slater_det_t *bra, slater_det_t *ket)
     }
 
     return matr_elem;
+}
+
+/*
+ * Sector 2h1p
+ * 1-particle operator
+ */
+double complex slater_21_1_21(slater_det_t *bra, slater_det_t *ket)
+{
+    /*
+    (0) - 1.0 heff1 [ l j ] d_ik d_ab
+    (1) + 1.0 heff1 [ k j ] d_il d_ab
+    (2) + 1.0 heff1 [ l i ] d_jk d_ab
+    (3) - 1.0 heff1 [ a b ] d_jk d_il
+    (4) - 1.0 heff1 [ k i ] d_jl d_ab
+    (5) + 1.0 heff1 [ a b ] d_jl d_ik
+    */
+
+    int idx2[2];
+    int i = bra->indices[0];
+    int j = bra->indices[1];
+    int a = bra->indices[2];
+    int k = ket->indices[0];
+    int l = ket->indices[1];
+    int b = ket->indices[2];
+    double complex matr_elem = 0.0 + 0.0 * I;
+
+    // (0) - 1.0 heff1 [ l j ] d_ik d_ab
+    if ((i == k) && (a == b)) {
+        idx2[0] = l;
+        idx2[1] = j;
+        matr_elem -= get_element(source_matrix, idx2);
+    }
+    // (1) + 1.0 heff1 [ k j ] d_il d_ab
+    if ((i == l) && (a == b)) {
+        idx2[0] = k;
+        idx2[1] = j;
+        matr_elem += get_element(source_matrix, idx2);
+    }
+    // (2) + 1.0 heff1 [ l i ] d_jk d_ab
+    if ((j == k) && (a == b)) {
+        idx2[0] = l;
+        idx2[1] = i;
+        matr_elem += get_element(source_matrix, idx2);
+    }
+    // (3) - 1.0 heff1 [ a b ] d_jk d_il
+    if ((j == k) && (i == l)) {
+        idx2[0] = a;
+        idx2[1] = b;
+        matr_elem -= get_element(source_matrix, idx2);
+    }
+    // (4) - 1.0 heff1 [ k i ] d_jl d_ab
+    if ((j == l) && (a == b)) {
+        idx2[0] = k;
+        idx2[1] = i;
+        matr_elem -= get_element(source_matrix, idx2);
+    }
+    // (5) + 1.0 heff1 [ a b ] d_jl d_ik
+    if ((j == l) && (i == k)) {
+        idx2[0] = a;
+        idx2[1] = b;
+        matr_elem += get_element(source_matrix, idx2);
+    }
+
+    return matr_elem;
+}
+
+
+/*
+ * Sector 2h1p
+ * 2-particle operator
+ */
+double complex slater_21_2_21(slater_det_t *bra, slater_det_t *ket)
+{
+    /*
+    (0) + 1.0 heff2 [ k l i j ] d_ab
+    (2) - 1.0 heff2 [ a l b j ] d_ik
+    (4) + 1.0 heff2 [ a k b j ] d_il
+    (6) + 1.0 heff2 [ a l b i ] d_jk
+    (8) - 1.0 heff2 [ a k b i ] d_jl
+    */
+    int idx4[4];
+    int i = bra->indices[0];
+    int j = bra->indices[1];
+    int a = bra->indices[2];
+    int k = ket->indices[0];
+    int l = ket->indices[1];
+    int b = ket->indices[2];
+    double complex matr_elem = 0.0 + 0.0 * I;
+
+    // (0) + 1.0 heff2 [ k l i j ] d_ab
+    if (a == b) {
+        idx4[0] = k;
+        idx4[1] = l;
+        idx4[2] = i;
+        idx4[3] = j;
+        matr_elem += get_element(source_matrix, idx4);
+    }
+    // (2) - 1.0 heff2 [ a l b j ] d_ik
+    if (i == k) {
+        idx4[0] = a;
+        idx4[1] = l;
+        idx4[2] = b;
+        idx4[3] = j;
+        matr_elem -= get_element(source_matrix, idx4);
+    }
+    // (4) + 1.0 heff2 [ a k b j ] d_il
+    if (i == l) {
+        idx4[0] = a;
+        idx4[1] = k;
+        idx4[2] = b;
+        idx4[3] = j;
+        matr_elem += get_element(source_matrix, idx4);
+    }
+    // (6) + 1.0 heff2 [ a l b i ] d_jk
+    if (j == k) {
+        idx4[0] = a;
+        idx4[1] = l;
+        idx4[2] = b;
+        idx4[3] = i;
+        matr_elem += get_element(source_matrix, idx4);
+    }
+    // (8) - 1.0 heff2 [ a k b i ] d_jl
+    if (j == l) {
+        idx4[0] = a;
+        idx4[1] = k;
+        idx4[2] = b;
+        idx4[3] = i;
+        matr_elem -= get_element(source_matrix, idx4);
+    }
+
+    return matr_elem;
+}
+
+
+/*
+ * Sector 2h1p
+ * 3-particle operator
+ */
+double complex slater_21_3_21(slater_det_t *bra, slater_det_t *ket)
+{
+    int idx6[6];
+    int i = bra->indices[0];
+    int j = bra->indices[1];
+    int a = bra->indices[2];
+    int k = ket->indices[0];
+    int l = ket->indices[1];
+    int b = ket->indices[2];
+
+    idx6[0] = k;
+    idx6[1] = l;
+    idx6[2] = a;
+    idx6[3] = i;
+    idx6[4] = j;
+    idx6[5] = b;
+
+    // + 1.0 heff3 [ k l a i j b ]
+    // prefactor = 1/6 is accounted for
+    return get_element(source_matrix, idx6);
 }
 
 

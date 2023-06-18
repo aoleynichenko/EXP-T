@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -63,7 +63,10 @@ void xaxpy(data_type_t type, size_t n,
 
 void my_daxpy(size_t n, double alpha, const double *x, double *y)
 {
-    for (size_t i = 0; i < n; i++) {
+    size_t i;
+
+    #pragma omp parallel for private(i) shared(x,y)
+    for (i = 0; i < n; i++) {
         y[i] = alpha * x[i] + y[i];
     }
 }
@@ -72,7 +75,10 @@ void my_daxpy(size_t n, double alpha, const double *x, double *y)
 void my_zaxpy(size_t n, double alpha,
               const double complex *x, double complex *y)
 {
-    for (size_t i = 0; i < n; i++) {
+    size_t i;
+
+    #pragma omp parallel for private(i) shared(x,y)
+    for (i = 0; i < n; i++) {
         y[i] = alpha * x[i] + y[i];
     }
 }

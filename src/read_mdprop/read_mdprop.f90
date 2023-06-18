@@ -1,6 +1,6 @@
 !
 ! EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
-! Copyright (C) 2018-2022 The EXP-T developers.
+! Copyright (C) 2018-2023 The EXP-T developers.
 !
 ! This file is part of EXP-T.
 !
@@ -25,7 +25,7 @@
 ! Reads MDPROP unformatted file containing transformed property integrals.
 ! Prints information about stored property matrices in the human-readable format.
 !
-! 2022 Alexander Oleynichenko
+! 2023 Alexander Oleynichenko
 !
 
 

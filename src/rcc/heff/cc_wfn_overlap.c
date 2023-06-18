@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,8 +27,6 @@
  * The formula <psi_I|psi_J> = < phi_I | {e^T^\dagger} {e^T} | phi_J > is used,
  * where |psi> are exact wavefunctions and |phi> are model vectors.
  * Infinite expansion is truncated at quadratic terms (T^2).
- *
- * 2022 Alexander Oleynichenko
  */
 
 #include "cc_wfn_overlap.h"

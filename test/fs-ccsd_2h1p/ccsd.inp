@@ -1,0 +1,35 @@
+sector 2h1p
+nacth 8
+nactp 8
+model ccsd
+diis 200
+roots_cutoff 143000 cm
+
+#nthreads 8
+reuse integrals amplitudes
+#reuse amplitudes
+
+maxiter 500
+conv 1e-7
+disk_usage 0
+memory 200 gb
+diis 200
+div_thresh 1e9
+
+#shifttype real
+#shift 1h2p 3 -0.5
+
+#spinor_labels
+# 2  2s
+# 3  3s
+# 22 2s
+# 23 3s
+# 41 2p
+# 42 2p
+# 43 2p
+# 67 2p
+# 68 2p
+# 69 2p
+#end
+
+

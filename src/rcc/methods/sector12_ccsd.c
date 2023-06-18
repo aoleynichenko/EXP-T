@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -22,13 +22,11 @@
  */
 
 /*
- * Fock space sector 1h2p.
+ * Fock space sector 1h2p. CCSD model
  *
  * For more details, see:
  * S. R. Hughes, U. Kaldor. Fock-space coupled-cluster method: The (1,2) sector.
  * Phys. Rev. A 47, 4705 (1993). doi: 10.1103/PhysRevA.47.4705
- *
- * 2021-2022 Alexander Oleynichenko
  */
 
 #include "methods.h"
@@ -427,6 +425,46 @@ void construct_doubles_1h2p()
     ampl_equations_1h2p_D8b();
     ampl_equations_1h2p_D9();
 }
+
+
+void construct_folded_1h2p()
+{
+    timer_new_entry("12-CCSD-Folded", "1h2p -- Folded diagrams");
+    timer_start("12-CCSD-Folded");
+
+    /*
+     * effective interaction will be used in folded diagrams F9 and F10
+     */
+    if (cc_opts->hughes_kaldor_1h2p == 0) {
+        copy("veff12_const", "veff12");
+        heff12_ccsd_1h2p_dependent();
+    }
+
+    ampl_equations_1h2p_folded_F1();
+    ampl_equations_1h2p_folded_F2();
+    ampl_equations_1h2p_folded_F3();
+    ampl_equations_1h2p_folded_F4();
+    ampl_equations_1h2p_folded_F5();
+    ampl_equations_1h2p_folded_F6();
+    ampl_equations_1h2p_folded_F7();
+    ampl_equations_1h2p_folded_F8();
+
+    /*
+     * folded terms involving the Heff{1h2p} operator
+     */
+    if (cc_opts->hughes_kaldor_1h2p == 0) {
+        ampl_equations_1h2p_folded_F9();
+        ampl_equations_1h2p_folded_F10();
+    }
+
+    timer_stop("12-CCSD-Folded");
+}
+
+
+/*
+ * Amplitude equations for doubles: direct terms, (V\Omega)_conn
+ */
+
 
 void ampl_equations_1h2p_D1()
 {
@@ -980,33 +1018,11 @@ void ampl_equations_1h2p_D9()
     restore_stack_pos(pos);
 }
 
-void construct_folded_1h2p()
-{
-    /*
-     * effective interaction will be used in folded diagrams F9 and F10
-     */
-    if (cc_opts->hughes_kaldor_1h2p == 0) {
-        copy("veff12_const", "veff12");
-        heff12_ccsd_1h2p_dependent();
-    }
 
-    ampl_equations_1h2p_folded_F1();
-    ampl_equations_1h2p_folded_F2();
-    ampl_equations_1h2p_folded_F3();
-    ampl_equations_1h2p_folded_F4();
-    ampl_equations_1h2p_folded_F5();
-    ampl_equations_1h2p_folded_F6();
-    ampl_equations_1h2p_folded_F7();
-    ampl_equations_1h2p_folded_F8();
+/*
+ * Amplitude equations for doubles: folded terms
+ */
 
-    /*
-     * folded terms involving the Heff{1h2p} operator
-     */
-    if (cc_opts->hughes_kaldor_1h2p == 0) {
-        ampl_equations_1h2p_folded_F9();
-        ampl_equations_1h2p_folded_F10();
-    }
-}
 
 void ampl_equations_1h2p_folded_F1()
 {

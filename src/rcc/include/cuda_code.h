@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -25,8 +25,6 @@
  * Interface to the CUDA code.
  * Will be compiled only in case CUDA device is located and drivers
  * and libraries are configured properly.
- *
- * 2020-2021 Alexander Oleynichenko
  */
 
 #ifndef CC_CUDA_H_INCLUDED

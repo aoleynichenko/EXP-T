@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,8 +26,6 @@
  * All other amplitudes will be set to zero.
  * These subroutines not affect performance; they are designed just for fast
  * construction and testing of new approximate schemes.
- *
- * 2020-2021 Alexander Oleynichenko
  */
 
 #include "selection.h"

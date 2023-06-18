@@ -3,6 +3,8 @@ nacth 2
 nactp 6
 model ccsd
 
+hughes_kaldor_1h2p
+
 maxiter 500
 conv 1e-8
 disk_usage 0

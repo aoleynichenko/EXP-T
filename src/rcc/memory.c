@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -23,8 +23,6 @@
 
 /*
  * Memory allocator.
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #include <errno.h>
@@ -77,6 +75,7 @@ void *cc_malloc(size_t nbytes)
     *((size_t *) mem) = nbytes;
 
     // update counters
+    #pragma omp atomic
     n_allocated += nbytes;
     if (n_allocated > max_allocated) {
         max_allocated = n_allocated;
@@ -117,6 +116,7 @@ void cc_free(void *p)
     nbytes = *((size_t *) mem);
 
     // update counter
+    #pragma omp atomic
     n_allocated -= nbytes;
 
     // free memory

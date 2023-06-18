@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,8 +24,6 @@
 /*
  * Model space in FS-CC consists of Slater determinants.
  * Current implementation deals with only the quasi-complete model spaces.
- *
- * 2019-2021 Alexander Oleynichenko
  */
 
 #ifndef CC_MODEL_SPACE_H_INCLUDED

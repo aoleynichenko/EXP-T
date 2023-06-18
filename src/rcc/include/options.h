@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,8 +24,6 @@
 /*
  * Options: all data read from the input file.
  * See the code for detailed description of every option.
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #ifndef CC_OPTIONS_H_INCLUDED
@@ -196,6 +194,12 @@ typedef enum {
     CC_COMPRESS_LZ4
 } cc_compression_type_t;
 
+// parallelization alogirthm (for tensor contractions)
+enum {
+    CC_OPENMP_ALGORITHM_INTERNAL,
+    CC_OPENMP_ALGORITHM_EXTERNAL
+};
+
 // sizeof(double) or sizeof(double complex)
 extern int SIZEOF_WORKING_TYPE;
 extern data_type_t WORKING_TYPE;
@@ -267,6 +271,7 @@ struct cc_options {
      * number of lightweight (OpenMP) threads
      */
     int nthreads;
+    int openmp_algorithm;
 
     /*
      * is CUDA enabled or not
@@ -286,9 +291,10 @@ struct cc_options {
     cc_model_t cc_model;
 
     /*
-     * Hughes & Kaldor version of FS-CCSD(1h2p)
+     * Hughes & Kaldor version of FS-CCSD(1h2p) and FS-CCSD(2h1p)
      */
     int hughes_kaldor_1h2p;
+    int hughes_kaldor_2h1p;
 
     /*
      * target Fock space sector

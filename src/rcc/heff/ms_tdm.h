@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -23,8 +23,6 @@
 
 /*
  * Model-space estimation of transition moments.
- *
- * 2019-2022 Alexander Oleynichenko
  */
 
 #ifndef C_MS_TDM_H_INCLUDED

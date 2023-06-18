@@ -3,6 +3,9 @@
 # (2) DC - relativistic, X2Cmmf, cc-pVTZ basis set
 # (3) symmetry "Cinfv" (actually C32)
 
+nthreads 1  
+openmp_algorithm external
+
 title "Test N atom/cc-pVTZ/DC/Cinfv/CCSDT(0h3p)"
 print medium
 
@@ -11,7 +14,7 @@ model ccsdt
 nactp 6
 x2cmmf
 
-memory 4 gb
+memory 400 gb
 maxiter 300
 diis triples
 conv 1e-8

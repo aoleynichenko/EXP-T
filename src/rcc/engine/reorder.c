@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -50,8 +50,6 @@
  *    inside of symblock will be efficient only for extremely large blocks
  *    (like those in triples and quadruples)
  * 6. Asymptotic behaviour: O(N^{2n}) for the n-particle diagram.
- *
- * 2017-2021 Alexander Oleynichenko
  */
 
 #include <stdio.h>
@@ -155,9 +153,15 @@ diagram_t *diagram_reorder(diagram_t *dg, int *perm, int perm_unique)
     // name of the new diagram consist of the old one + "_copy_" + clone's ID
     sprintf(tgt->name, "%s_rdr_%ld", dg->name, tgt->dg_id);
 
-    // почему нет перестановки order, valence, qparts для блока?
-    // эти характеристики для блоков вообще используются?
-    // copy data: block-by-block
+    int nthreads = 1;
+    if (cc_opts->openmp_algorithm == CC_OPENMP_ALGORITHM_EXTERNAL) {
+        nthreads = cc_opts->nthreads;
+    }
+    else {
+        nthreads = 1;
+    }
+
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
     for (size_t ib1 = 0; ib1 < dg->n_blocks; ib1++) {
         block_t *sb_src = dg->blocks[ib1];
 

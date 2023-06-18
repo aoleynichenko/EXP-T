@@ -1,0 +1,11 @@
+memory 4 gb
+maxiter 500
+conv 1e-5
+sector 0h0p
+model ccsd(t)
+disk_usage 0
+
+nthreads 2
+diis triples
+diis 10
+

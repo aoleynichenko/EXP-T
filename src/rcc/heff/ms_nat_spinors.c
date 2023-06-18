@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -46,8 +46,6 @@
  *     NOTE: state numbering for the case of the 1h1p sector as a target
  *       must be quite different: state 1 == 0h0p, states from 1h1p: 2,3,4...
  *       (numbering is shifted by 1)
- *
- * 2021-2022 Alexander Oleynichenko
  */
 
 #include "ms_nat_spinors.h"

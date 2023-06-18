@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -23,8 +23,6 @@
 
 /*
  * Basic operations with diagrams.
- *
- * 2019-2023 Alexander Oleynichenko
  */
 
 #include <assert.h>
@@ -109,6 +107,18 @@ void clear(char *name)
     }
 
     diagram_clear(dg);
+}
+
+
+/**
+ * Checks is a diagram exists.
+ */
+void check_diagram_exists(char *name)
+{
+    diagram_t *dg = diagram_stack_find(name);
+    if (dg == NULL) {
+        errquit("diagram '%s' doesn't exist", name);
+    }
 }
 
 

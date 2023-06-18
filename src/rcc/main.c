@@ -25,7 +25,11 @@
  * Fock-space multireference coupled cluster program.
  *
  * Authors:
- *   Alexander Oleynichenko (NRC "Kurchatov Institute" - PNPI, Gatchina, Russia)
+ *   Alexander Oleynichenko  NRC "Kurchatov Institute" - PNPI, Gatchina, Russia
+ *   Andrei Zaitsevskii      NRC "Kurchatov Institute" - PNPI, Gatchina, Russia
+ *   Artem Rumyantsev        NRC "Kurchatov Institute" - PNPI, Gatchina, Russia
+ *   Ephraim Eliav           Tel-Aviv University, Tel-Aviv, Israel
+ *    
  * Mailto:
  *   alexvoleynichenko@gmail.com
  *   oleynichenko_av@pnpi.nrcki.ru
@@ -184,6 +188,32 @@ int main(int argc, char **argv)
             goto finalize;
         }
         exit_code = sector_1h2p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+    }
+    else if (opts->sector_h == 2 && opts->sector_p == 1) {
+        exit_code = sector_0h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_1h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_0h1p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_1h1p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_2h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_2h1p(opts);
         if (exit_code == EXIT_FAILURE) {
             goto finalize;
         }

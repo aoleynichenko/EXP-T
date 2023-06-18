@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -37,8 +37,6 @@
  * all we need is to flip hole creation lines to turn them to valence particle
  * annihilation lines. See Kaldor, J. Comp. Chem. V. 8, P.448 (1987) for details.
  * Only two-particle diagrams are required.
- *
- * 2019-2022 Alexander Oleynichenko
  */
 
 #include <math.h>

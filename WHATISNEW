@@ -1,3 +1,9 @@
+ 1.8.1 (19.06.2023)
+ ==================
+ * OpenMP parallelization was rewritten
+ * initial implementation of FS-CCSD in the 2h1p sector
+ * two new tests of OpenMP performance
+
  1.8.0 (29.05.2023)
  ==================
  * CCSDT for the 2h0p sector

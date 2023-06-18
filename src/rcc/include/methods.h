@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -21,11 +21,9 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/**
-* Electronic structure models.
-*
-* 2018-2021 Alexander Oleynichenko
-*/
+/*
+ * Electronic structure models.
+ */
 
 #ifndef CC_METHODS_H_INCLUDED
 #define CC_METHODS_H_INCLUDED
@@ -59,5 +57,7 @@ int sector_0h3p(cc_options_t *opts);
 int sector_3h0p(cc_options_t *opts);
 
 int sector_1h2p(cc_options_t *opts);
+
+int sector_2h1p(cc_options_t *opts);
 
 #endif /* CC_METHODS_H_INCLUDED */

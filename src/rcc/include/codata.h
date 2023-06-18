@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,8 +24,6 @@
 /*
  * CODATA-2018 constants.
  * From: https://physics.nist.gov/cuu/Constants/index.html
- *
- * 2020-2021 Alexander Oleynichenko
  */
 
 

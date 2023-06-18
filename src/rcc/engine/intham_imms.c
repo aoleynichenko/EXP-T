@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,9 +28,7 @@
  * A. V. Zaitsevskii, N. S. Mosyagin, A. V. Oleynichenko, E. Eliav.
  * Generalized relativistic small-core pseudopotentials accounting for
  * quantum electrodynamic effects: construction and pilot applications.
- * Int. J. Quantum Chem. 2022 (submitted)
- *
- * 2021-2022 Alexander Oleynichenko
+ * Int. J. Quantum Chem. V. 123(8), e27077 (2023)
  */
 
 #include "intham_imms.h"

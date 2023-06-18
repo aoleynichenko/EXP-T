@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,8 +28,6 @@
  *
  * For more details on the "template technique" employed, see
  * arnold.uthar.net/index.php?n=Work.TemplatesC
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #ifdef TYPENAME
@@ -91,6 +89,7 @@ void TEMPLATE(reorder_block, TYPENAME)(block_t *src, block_t *tgt, int *perm)
     else {
         omp_set_num_threads(1);
     }
+    
     if (rank == 4) {
         int dim0 = dims1[0];
         int dim1 = dims1[1];

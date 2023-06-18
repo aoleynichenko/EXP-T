@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
 
 #define CROP_MAX 1000
 
-/**
+/*
  * all the amplitudes to be used in extrapolation with corresponding error
  * vectors are stored in the stack-like structure crop_queue_t
  *

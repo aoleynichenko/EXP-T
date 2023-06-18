@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -80,6 +80,7 @@ enum {
     KEYWORD_COMPRESS_TRIPLES,
     KEYWORD_NTHREADS,
     KEYWORD_OPENMP,
+    KEYWORD_OPENMP_ALGORITHM,
     KEYWORD_CUDA,
     KEYWORD_ARITH,
     KEYWORD_MDPROP,
@@ -100,7 +101,8 @@ enum {
     KEYWORD_DENSITY,
     KEYWORD_OVERLAP,
     KEYWORD_SPINOR_LABELS,
-    KEYWORD_HUGHES_KALDOR,
+    KEYWORD_HUGHES_KALDOR_1H2P,
+    KEYWORD_HUGHES_KALDOR_2H1P,
     /* special */
     END_OF_LINE,
     END_OF_FILE

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -21,7 +21,7 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/**
+/*
  * Multireference Fock-space coupled cluster method for model spaces
  * with one hole and one particle (Fock space sector 1h1p)
  * Calculates energies of excitations from the reference state (EE-FS-MRCC)
@@ -40,8 +40,6 @@
  * it is of extreme importance for properties, thus it is calculated separately.
  *
  * This code was obtained by modification of the CC(0,0) program.
- *
- * 2019-2022 Alexander Oleynichenko
  */
 
 #include "methods.h"

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -36,8 +36,6 @@
  *     the opposite sign (antisymmetrzation): <ij||kl> = <ij|kl> - <ij|lk>
  * (5) Construct Fock matrix (using the "hhhh" diagram and the "HINT" file)
  * (6) Construct 1-particle diagrams (requests are again in the queue)
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #include "sort.h"

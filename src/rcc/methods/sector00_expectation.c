@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -21,7 +21,7 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/**
+/*
  * Implementation of the density matrix construction in the 0h0p sector
  * via the expectation value formula:
  * D_pq = <0|(e^{-T^+} {p^+ q} e^T)_conn|0>

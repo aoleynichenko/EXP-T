@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,8 +24,6 @@
 /*
  * Model space in FS-CC consists of Slater determinants.
  * Current implementation deals with only the quasi-complete model spaces.
- *
- * 2019-2021 Alexander Oleynichenko
  */
 
 #include "model_space.h"
@@ -242,6 +240,30 @@ slater_det_t **construct_model_space(int sect_h, int sect_p, size_t *ms_rep_size
                     int rep_iab = mulrep2_abelian(rep_ia, rep_b);
                     det_buf[count].sym = rep_iab;
                     ms_rep_sizes[rep_iab]++;
+                    count++;
+                }
+            }
+        }
+    }
+    else if (sect_h == 2 && sect_p == 1) {
+        count = 0;
+        for (int i = 0; i < nacth; i++) {
+            for (int j = i + 1; j < nacth; j++) {
+                for (int a = 0; a < nactp; a++) {
+                    moindex_t idx_i = active_holes_indices[i];
+                    moindex_t idx_j = active_holes_indices[j];
+                    moindex_t idx_a = active_parts_indices[a];
+                    det_buf[count].indices[0] = idx_i;
+                    det_buf[count].indices[1] = idx_j;
+                    det_buf[count].indices[2] = idx_a;
+
+                    int rep_i = inverse_irrep_abelian(spinor_info[idx_i].repno);
+                    int rep_j = inverse_irrep_abelian(spinor_info[idx_j].repno);
+                    int rep_a = spinor_info[idx_a].repno;
+                    int rep_ij = mulrep2_abelian(rep_i, rep_j);
+                    int rep_ija = mulrep2_abelian(rep_ij, rep_a);
+                    det_buf[count].sym = rep_ija;
+                    ms_rep_sizes[rep_ija]++;
                     count++;
                 }
             }

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -25,8 +25,6 @@
  * For simulation of C++ Templates in pure C.
  * Idea from:
  * http://arnold.uthar.net/index.php?n=Work.TemplatesC
- *
- * 2020-2021 Alexander Oleynichenko
  */
 
 #ifndef TEMPLATES_H_INCLUDED

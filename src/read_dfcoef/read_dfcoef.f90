@@ -1,6 +1,6 @@
 !
 ! EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
-! Copyright (C) 2018-2022 The EXP-T developers.
+! Copyright (C) 2018-2023 The EXP-T developers.
 !
 ! This file is part of EXP-T.
 !
@@ -29,7 +29,7 @@
 ! http://diracprogram.org/doc/release-18/programmers/dfcoef.html
 ! for further details on the DFCOEF files.
 !
-! 2020-2021 Alexander Oleynichenko
+! 2020-2023 Alexander Oleynichenko
 !
 
 

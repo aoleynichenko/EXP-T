@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,7 +24,7 @@
 #include "crop.h"
 
 
-/**
+/*
  * CROP algorithm for convergence acceleration in coupled cluster.
  *
  * For details, see:
@@ -379,7 +379,7 @@ void crop_extrapolate(crop_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
                "U(%i,%i) is zero, so that A is singular;\n", info, info);
         printf(" the solution could not be computed."
                " CROP will be turned off\n");
-        cc_opts->diis_enabled = 0;                                        // надо менять в cc_opts!!!
+        cc_opts->crop_enabled = 0;                                        // надо менять в cc_opts!!!
         goto finalize;
     }
 
@@ -395,7 +395,6 @@ void crop_extrapolate(crop_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
 
 
     // construct extrapolations for T1 and T2
-    //construct x
     crop_push(q, q->t1[dim - 1], q->e1[dim - 1], q->t2[dim - 1], q->e2[dim - 1], q->t3[dim - 1], q->e3[dim - 1]);
     if (q->do_t1) {
         clear(extrap_t1);
@@ -436,3 +435,5 @@ void crop_extrapolate(crop_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
 
     timer_stop("crop");
 }
+
+

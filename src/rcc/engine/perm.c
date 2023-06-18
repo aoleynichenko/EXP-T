@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -23,8 +23,6 @@
 
 /*
  * Permutation operators acting on diagrams.
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #include <ctype.h>
@@ -35,6 +33,7 @@
 #include "error.h"
 #include "templates.h"
 
+int match_permutation_string(char *str, char *pattern);
 void reorder_block_double(block_t *, block_t *, int *);
 void reorder_block_double_complex_t(block_t *, block_t *, int *);
 
@@ -67,9 +66,6 @@ void safe_strncpy(char *dst, char *src, size_t n)
  */
 void elementary_perm(char *src_name, char *perm_str)
 {
-    diagram_t *d_src, *d_tgt;
-    int rk;
-
     typedef struct {
         char perm_str[CC_DIAGRAM_MAX_RANK];
         int sign;
@@ -77,9 +73,10 @@ void elementary_perm(char *src_name, char *perm_str)
     perm_task_t perm_tasks[MAX_PERM_TASKS];
     int n_perm_tasks;
 
-    // rank-4 && '(xx)'
-    if (rank(src_name) == 4 &&
-        perm_str[0] == '(' && isdigit(perm_str[1]) && isdigit(perm_str[2]) && perm_str[3] == ')') {
+    check_diagram_exists(src_name);
+    int rk = rank(src_name);
+
+    if (rk == 4 && match_permutation_string(perm_str, "(xx)")) {
         char p[] = "1234\0";
         int i1 = perm_str[1] - '0' - 1;
         int i2 = perm_str[2] - '0' - 1;
@@ -90,9 +87,7 @@ void elementary_perm(char *src_name, char *perm_str)
         perm_tasks[0].sign = -1;
         safe_strncpy(perm_tasks[0].perm_str, p, 4);
     }
-        // rank-6 && '(xx)'
-    else if (rank(src_name) == 6 &&
-             perm_str[0] == '(' && isdigit(perm_str[1]) && isdigit(perm_str[2]) && perm_str[3] == ')') {
+    else if (rk == 6 && match_permutation_string(perm_str, "(xx)")) {
         char p[] = "123456\0";
         int i1 = perm_str[1] - '0' - 1;
         int i2 = perm_str[2] - '0' - 1;
@@ -103,10 +98,7 @@ void elementary_perm(char *src_name, char *perm_str)
         perm_tasks[0].sign = -1;
         safe_strncpy(perm_tasks[0].perm_str, p, 6);
     }
-        // '(x/xx)'
-    else if (rank(src_name) == 6 &&
-             perm_str[0] == '(' && isdigit(perm_str[1]) && perm_str[2] == '/' &&
-             isdigit(perm_str[3]) && isdigit(perm_str[4]) && perm_str[5] == ')') {
+    else if (rk == 6 && match_permutation_string(perm_str, "(x/xx)")) {
         char p1[] = "123456\0";
         char p2[] = "123456\0";
         int i1 = perm_str[1] - '0' - 1;
@@ -124,39 +116,31 @@ void elementary_perm(char *src_name, char *perm_str)
         perm_tasks[1].sign = -1;
         safe_strncpy(perm_tasks[1].perm_str, p2, 6);
     }
-        // '(xxx)'
-    else if (rank(src_name) == 6 &&
-             perm_str[0] == '(' && isdigit(perm_str[1]) && isdigit(perm_str[2]) &&
-             isdigit(perm_str[3]) && perm_str[4] == ')') {
-        if (strcmp(perm_str, "(456)") == 0) {
-            n_perm_tasks = 5;
-            perm_tasks[0].sign = -1;
-            safe_strncpy(perm_tasks[0].perm_str, "123465", 6);
-            perm_tasks[1].sign = -1;
-            safe_strncpy(perm_tasks[1].perm_str, "123546", 6);
-            perm_tasks[2].sign = 1;
-            safe_strncpy(perm_tasks[2].perm_str, "123564", 6);
-            perm_tasks[3].sign = 1;
-            safe_strncpy(perm_tasks[3].perm_str, "123645", 6);
-            perm_tasks[4].sign = -1;
-            safe_strncpy(perm_tasks[4].perm_str, "123654", 6);
-        }
-        else if (strcmp(perm_str, "(123)") == 0) {
-            n_perm_tasks = 5;
-            perm_tasks[0].sign = -1;
-            safe_strncpy(perm_tasks[0].perm_str, "213456", 6);
-            perm_tasks[1].sign = 1;
-            safe_strncpy(perm_tasks[1].perm_str, "231456", 6);
-            perm_tasks[2].sign = -1;
-            safe_strncpy(perm_tasks[2].perm_str, "132456", 6);
-            perm_tasks[3].sign = 1;
-            safe_strncpy(perm_tasks[3].perm_str, "312456", 6);
-            perm_tasks[4].sign = -1;
-            safe_strncpy(perm_tasks[4].perm_str, "321456", 6);
-        }
-        else {
-            errquit("permute(): wrong permutation: %s", perm_str);
-        }
+    else if (rk == 6 && strcmp(perm_str, "(456)") == 0) {
+        n_perm_tasks = 5;
+        perm_tasks[0].sign = -1;
+        safe_strncpy(perm_tasks[0].perm_str, "123465", 6);
+        perm_tasks[1].sign = -1;
+        safe_strncpy(perm_tasks[1].perm_str, "123546", 6);
+        perm_tasks[2].sign = 1;
+        safe_strncpy(perm_tasks[2].perm_str, "123564", 6);
+        perm_tasks[3].sign = 1;
+        safe_strncpy(perm_tasks[3].perm_str, "123645", 6);
+        perm_tasks[4].sign = -1;
+        safe_strncpy(perm_tasks[4].perm_str, "123654", 6);
+    }
+    else if (rk == 6 && strcmp(perm_str, "(123)") == 0) {
+        n_perm_tasks = 5;
+        perm_tasks[0].sign = -1;
+        safe_strncpy(perm_tasks[0].perm_str, "213456", 6);
+        perm_tasks[1].sign = 1;
+        safe_strncpy(perm_tasks[1].perm_str, "231456", 6);
+        perm_tasks[2].sign = -1;
+        safe_strncpy(perm_tasks[2].perm_str, "132456", 6);
+        perm_tasks[3].sign = 1;
+        safe_strncpy(perm_tasks[3].perm_str, "312456", 6);
+        perm_tasks[4].sign = -1;
+        safe_strncpy(perm_tasks[4].perm_str, "321456", 6);
     }
     else {
         errquit("permute(): wrong permutation: %s", perm_str);
@@ -168,13 +152,15 @@ void elementary_perm(char *src_name, char *perm_str)
     dg_stack_pos_t pos = get_stack_pos();
     copy(src_name, "_buf_dg");
 
-    d_tgt = diagram_stack_find(src_name);
-    if (d_tgt == NULL) {
-        errquit("permute(): diagram '%s' not found", src_name);
-    }
-    d_src = diagram_stack_find("_buf_dg");
-    rk = d_tgt->rank;
+    diagram_t *d_tgt = diagram_stack_find(src_name);
+    diagram_t *d_src = diagram_stack_find("_buf_dg");
 
+    int nthreads = 1;
+    if (cc_opts->openmp_algorithm == CC_OPENMP_ALGORITHM_EXTERNAL) {
+        nthreads = cc_opts->nthreads;
+    }
+
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
     for (size_t ib = 0; ib < d_tgt->n_blocks; ib++) {
         block_t *b_tgt = d_tgt->blocks[ib];
         block_load(b_tgt);
@@ -195,21 +181,22 @@ void elementary_perm(char *src_name, char *perm_str)
 
             int perm_spinor_blocks[CC_DIAGRAM_MAX_RANK];
 
-            block_t *b_direct = diagram_get_block(d_src, b_tgt->spinor_blocks);
-
             for (int i = 0; i < rk; i++) {
                 perm_spinor_blocks[i] = b_tgt->spinor_blocks[perm[i]];
             }
             block_t *b_perm = diagram_get_block(d_src, perm_spinor_blocks);
 
-            block_t *b_reordered = block_new(rk, b_direct->spinor_blocks, d_src->qparts, d_src->valence, d_src->t3space,
-                                             d_src->order, CC_DIAGRAM_IN_MEM, 0);
+            block_t *b_reordered = block_new(
+                rk, b_tgt->spinor_blocks, d_src->qparts,
+                d_src->valence, d_src->t3space,
+                d_src->order, CC_DIAGRAM_IN_MEM, 0
+            );
 
             if (arith == CC_ARITH_COMPLEX) {
                 TEMPLATE(reorder_block, double_complex_t)(b_perm, b_reordered, inv_perm);
 
                 block_load(b_reordered);
-                for (size_t i = 0; i < b_direct->size; i++) {
+                for (size_t i = 0; i < b_tgt->size; i++) {
                     b_tgt->buf[i] += sign * b_reordered->buf[i];
                 }
                 block_store(b_reordered);
@@ -220,7 +207,7 @@ void elementary_perm(char *src_name, char *perm_str)
                 block_load(b_reordered);
                 double *b_tgt_buf = (double *) b_tgt->buf;
                 double *b_reordered_buf = (double *) b_reordered->buf;
-                for (size_t i = 0; i < b_direct->size; i++) {
+                for (size_t i = 0; i < b_tgt->size; i++) {
                     b_tgt_buf[i] += sign * b_reordered_buf[i];
                 }
                 block_store(b_reordered);
@@ -400,3 +387,41 @@ void perm(char *dg_name, char *perm_str)
     }
     restore_stack_pos(pos);
 }
+
+
+/**
+ * 'x' stands for a digit
+ */
+int match_permutation_string(char *str, char *pattern)
+{
+    if (strlen(str) == 0 || strlen(pattern) == 0) {
+        return 0;
+    }
+
+    if (strlen(str) != strlen(pattern)) {
+        return 0;
+    }
+
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] == '(' && pattern[i] == '(') {
+            continue;
+        }
+        else if (str[i] == '/' && pattern[i] == '/') {
+            continue;
+        }
+        else if (str[i] == ')' && pattern[i] == ')') {
+            continue;
+        }
+        else if (isdigit(str[i]) && pattern[i] == 'x') {
+            continue;
+        }
+        else {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+
+

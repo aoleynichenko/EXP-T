@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,8 +26,6 @@
  * Interfaces implemented:
  *   DIRAC
  *   OneProp (by L. V. Skripnikov)
- *
- * 2018-2021 Alexander Oleynichenko
  */
 
 #ifndef CC_INTERFACES_H_INCLUDED

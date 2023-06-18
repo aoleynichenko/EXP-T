@@ -1,0 +1,18 @@
+#
+# Heff operator matrix elements for the Fock-space sector 3h0p
+#
+
+holes i j k l m n
+particles a b c d
+any p q r s t u
+
+operator bra 1.0 { k+ j+ i+ }
+operator ket 1.0 { l m n }
+operator heff1 1.0 { p+ q }
+operator heff2 0.5 { p+ q+ s r }
+operator heff3 1.0 { p+ q+ r+ u t s }
+
+? bra heff1 ket
+? bra heff2 ket
+? bra heff3 ket
+

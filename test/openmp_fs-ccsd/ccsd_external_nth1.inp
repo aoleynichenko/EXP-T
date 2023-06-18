@@ -1,0 +1,13 @@
+memory 4 gb
+maxiter 500
+conv 1e-5
+sector 0h1p
+nactp 18
+model ccsd
+shifttype real
+disk_usage 0
+
+#tilesize 200
+nthreads 1
+crop 3
+

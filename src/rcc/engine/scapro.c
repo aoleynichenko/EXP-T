@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -19,8 +19,6 @@
  *
  *  E-mail:        exp-t-program@googlegroups.com
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
- *
- *  2018-2021 Alexander Oleynichenko
  */
 
 #include "engine.h"

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2022 The EXP-T developers.
+ *  Copyright (C) 2018-2023 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -21,16 +21,12 @@
  *  Google Groups: https://groups.google.com/d/forum/exp-t-program
  */
 
-/**
- * sector_0h0p_perturbative_triples_correction.c
- *
+/*
  * Perturbative corrections to account for triple excitations: +T(CCSD) and (T)
  * For a detailed description of the theoretical part, see:
  *   (1) I. Shavitt, R. J. Bartlett, "Many-Body Methods in Chemistry and
  *       Physics: MBPT and Coupled-Cluster Theory", 1st edition
  *   (2) M. J. O. Deegan, P. J. Knowles, Chem. Phys. Lett. V. 227, P. 321 (1994)
- *
- * 2019-2022 Alexander Oleynichenko
  */
 
 #include "methods.h"
