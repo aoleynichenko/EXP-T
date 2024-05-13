@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -44,7 +44,6 @@
 #include "diis.h"
 #include "engine.h"
 #include "heff.h"
-#include "datamodel.h"
 #include "options.h"
 #include "sort.h"
 #include "spinors.h"
@@ -228,6 +227,8 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p3_const();
 
 void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *new_valence, int extract_valence);
 
+void print_time_mem_usage(char *diagram_name, double t_start);
+
 
 int sector_2h1p(cc_options_t *opts)
 {
@@ -312,11 +313,48 @@ void sort_integrals_2h1p()
     request_sorting("ppph", "ppph", "0000", "1234");
     request_sorting("hvgg", "hphh", "0111", "1234");
     request_sorting("hvhg", "hphh", "0101", "1234");
+
+    request_sorting("gghg", "hhhh", "1101", "1234");
+    request_sorting("gghh", "hhhh", "1100", "1234");
+    request_sorting("pphv", "pphp", "0001", "1234");
+    request_sorting("gvhh", "hphh", "1100", "1234");
+    request_sorting("gvhv", "hphp", "1101", "1234");
+    request_sorting("vghg", "phhh", "1101", "1234");
+    request_sorting("vghh", "phhh", "1100", "1234");
+    request_sorting("gghv", "hhhp", "1101", "1234");
+    request_sorting("pghg", "phhh", "0101", "1234");
+    request_sorting("gphh", "hphh", "1000", "1234");
+    request_sorting("pghv", "phhp", "0101", "2431");
+    request_sorting("pvhv", "pphp", "0101", "1234");
+    request_sorting("pvgv", "pphp", "0111", "1234");
+    request_sorting("ppgv", "pphp", "0011", "3412");
+    request_sorting("pggg", "phhh", "0111", "1234");
+    request_sorting("pghh", "phhh", "0100", "1234");
+    request_sorting("pgvg", "phph", "0111", "1234");
+    request_sorting("ppvg", "ppph", "0011", "1234");
+    request_sorting("ppvh", "ppph", "0010", "1234");
+
     perform_sorting();
 
     /*
      * prepare cluster amplitudes from previous sectors
      */
+    restrict_valence("t1c", "t1c-g", "10", 0);
+    restrict_valence("t1c", "t1c-v", "01", 0);
+    restrict_valence("t2c", "t2c-g12", "1100", 0);
+    restrict_valence("t2c", "t2c-g12-v2", "1101", 0);
+    restrict_valence("t2c", "t2c-g12-v1", "1110", 0);
+    restrict_valence("t2c", "t2c-g2-v2", "0101", 0);
+    restrict_valence("h2c", "h2c-g1", "1010", 0);
+    restrict_valence("h2c", "h2c-g12", "1110", 0);
+    restrict_valence("h2c", "h2c-v", "0011", 0);
+    restrict_valence("h2c", "h2c-v-g1", "1011", 0);
+    restrict_valence("s2c", "s2c-v1-g", "1110", 0);
+    restrict_valence("s2c", "s2c-g", "1100", 0);
+    restrict_valence("g2c", "g2c-g1", "1011", 0);
+    restrict_valence("s2c", "s2c-v1", "1010", 0);
+    restrict_valence("e2c", "e2c-v", "1011", 0);
+    restrict_valence("e2c", "e2c-g", "1101", 0);
 }
 
 
@@ -328,13 +366,13 @@ void init_amplitudes_2h1p()
     if (cc_opts->reuse_amplitudes[2][1]) {
         printf(" Trying to read amplitudes and effective interaction (sector 2h1p) from disk ...\n");
         // Doubles
-        if (diagram_read("w2c.dg") != NULL) {
+        if (diagram_read_binary("w2c.dg") != NULL) {
             printf(" T{2h1p}_1 amplitudes successfully read from disk\n");
         }
         else {
             printf(" T{2h1p}_1 amplitudes will be calculated\n");
         }
-        if (diagram_read("veff21.dg") != NULL) {
+        if (diagram_read_binary("veff21.dg") != NULL) {
             printf(" Heff{2h1p} diagram successfully read from disk\n");
         }
         else {
@@ -443,37 +481,41 @@ void heff21_ccsd_const()
     timer_start("21-CCSD-Heff");
 
     printf("\n Construction of the CCSD eff Hamiltonian in the 2h1p sector (constant part)\n");
+    printf(" type of diagrams        time (sec)  max mem (mb)  max mem (gb)\n");
 
     tmplt("veff21_const", "hhphhp", "111111", "123456", NOT_PERM_UNIQUE);
 
-    printf(" [1/4] P(i/jk|c/ab)\n");
-
+    double t_start = abs_time();
     diag_heff_2h1p_i_jk_c_ab__inv_h12_p3_const();
     diag_heff_2h1p_i_jk_c_ab__inv_h23_p1_const();
     diag_heff_2h1p_i_jk_c_ab__inv_h13_p2_const();
     //diag_heff_2h1p_i_jk_c_ab__inv_h12_p1_w2c(); // depends on 2h1p
+    print_time_mem_usage("[1/4] P(i/jk|c/ab)", t_start);
 
-    printf(" [2/4] P(ijk|c/ab)\n");
+    t_start = abs_time();
     diag_heff_2h1p_ijk_c_ab__inv_h23_p1_const();
     diag_heff_2h1p_ijk_c_ab__inv_h13_p2_const();
     diag_heff_2h1p_ijk_c_ab__inv_h12_p2_const();
     diag_heff_2h1p_ijk_c_ab__inv_h13_p3_const();
     diag_heff_2h1p_ijk_c_ab__inv_h12_p3_const();
     //diag_heff_2h1p_ijk_c_ab__inv_h12_p1_w2c(); // depends on 2h1p
+    print_time_mem_usage("[2/4] P(ijk|c/ab)", t_start);
 
-    printf(" [3/4] P(k/ij|a/bc)\n");
+    t_start = abs_time();
     diag_heff_2h1p_k_ij_a_bc__inv_h12_p3_const();
     diag_heff_2h1p_k_ij_a_bc__inv_h23_p1_const();
     diag_heff_2h1p_k_ij_a_bc__inv_h13_p2_const();
     diag_heff_2h1p_k_ij_a_bc__inv_h23_p3_const();
+    print_time_mem_usage("[3/4] P(k/ij|a/bc)", t_start);
 
-    printf(" [4/4] P(k/ij|abc)\n");
+    t_start = abs_time();
     diag_heff_2h1p_k_ij_abc__inv_h12_p2_const();
     diag_heff_2h1p_k_ij_abc__inv_h23_p1_const();
     diag_heff_2h1p_k_ij_abc__inv_h13_p2_const();
     diag_heff_2h1p_k_ij_abc__inv_h12_p3_const();
     diag_heff_2h1p_k_ij_abc__inv_h23_p3_const();
     diag_heff_2h1p_k_ij_abc__inv_h13_p3_const();
+    print_time_mem_usage("[4/4] P(k/ij|abc)", t_start);
 
     printf("\n");
     timer_stop("21-CCSD-Heff");
@@ -862,7 +904,7 @@ void ampl_equations_2h1p_D5h_2()
     mult("r1", "t1c", "i1", 2);
     reorder("g2c", "r2", "2341");
     mult("i1", "r2", "r3", 1);
-    reorder("r3", "r4", "2143");
+    reorder("r3", "r4", "2143"); // interchange electrons: 1 <-> 2
     update("w2nw", -1.0, "r4");
     restore_stack_pos(pos);
 }
@@ -1221,49 +1263,49 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h12_p3_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hpph", "0100", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "hpph", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1b
-        reorder("hvhp", "r2", "1243");
+        reorder("gvhv", "r2", "1243");
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3a
         reorder("ph", "phr_", "21");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1-g", "s2c_21", "2143");
         reorder("s2c_21", "r1", "1243");
         mult("r1", "phr_", "r2", 1);
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3d
-        reorder("s2c", "s2c_21", "2143");
-        reorder("pphp", "r2", "4312");
+        reorder("s2c-g", "s2c_21", "2143");
+        reorder("pphv", "r2", "4312");
         mult("s2c_21", "r2", "r3", 2);
         update("i1", -0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4b
-        reorder("t1c", "r2", "21");
-        mult("hvhh", "r2", "r3", 1);
+        reorder("t1c-v", "r2", "21");
+        mult("gvhh", "r2", "r3", 1);
         reorder("r3", "r4", "1243");
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
 
         // T7c
-        reorder("pphp", "r1", "4312");
+        reorder("pphv", "r1", "4312");
         mult("s1c", "r1", "r2", 1);
-        mult("t1c", "r2", "r3", 1);
+        mult("t1c-g", "r2", "r3", 1);
         update("i1", -1.0, "r3");
         restore_stack_pos(pos2);
 
         // T8a
         reorder("pphh", "r1", "4231");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1-g", "s2c_21", "2143");
         reorder("s2c_21", "r3", "1243");
         mult("r1", "t1c", "r4", 2);
         mult("r3", "r4", "r5", 1);
@@ -1272,8 +1314,8 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h12_p3_const()
 
         // T8e
         reorder("pphh", "r1", "3412");
-        reorder("t1c", "r3", "21");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("t1c-v", "r3", "21");
+        reorder("s2c-g", "s2c_21", "2143");
         mult("s2c_21", "r1", "r2", 2);
         mult("r2", "r3", "r4", 1);
         reorder("r4", "r5", "1243");
@@ -1281,10 +1323,10 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h12_p3_const()
         restore_stack_pos(pos2);
 
         // T10a
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("pphh", "r2", "3412");
         mult("s1c", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "1243");
         update("i1", 1.0, "r6");
@@ -1292,13 +1334,12 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h12_p3_const()
     }
 
     finish:
-    reorder("g2c", "r1", "3412");
+    reorder("g2c-g1", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
     diagram_stack_erase("r3");
     perm("r4", "(12)");
-    closed("r4", "r5");
-    update("veff21_const", 1.0, "r5");
+    update("veff21_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
@@ -1308,49 +1349,48 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h23_p1_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hhhh", "0010", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "hhhh", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1b
-        reorder("hhhg", "r2", "1243");
+        reorder("gghg", "r2", "1243");
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3a
         reorder("ph", "phr_", "21");
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-g12", "h2c_21", "2143");
         reorder("h2c_21", "r1", "1243");
         mult("r1", "phr_", "r2", 1);
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3d
-        reorder("t2c", "r1", "3412");
         reorder("pphg", "r2", "4312");
-        mult("t2c", "r2", "r3", 2);
+        mult("t2c-g12", "r2", "r3", 2);
         update("i1", -0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4b
         reorder("h1c", "r2", "21");
-        mult("hhhh", "r2", "r3", 1);
+        mult("gghh", "r2", "r3", 1);
         reorder("r3", "r4", "1243");
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
 
         // T7c
         reorder("pphg", "r1", "4312");
-        mult("t1c", "r1", "r2", 1);
-        mult("t1c", "r2", "r3", 1);
+        mult("t1c-g", "r1", "r2", 1);
+        mult("t1c-g", "r2", "r3", 1);
         update("i1", -1.0, "r3");
         restore_stack_pos(pos2);
 
         // T8a
         reorder("pphh", "r1", "4231");
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-g12", "h2c_21", "2143");
         reorder("h2c_21", "r3", "1243");
         mult("r1", "t1c", "r4", 2);
         mult("r3", "r4", "r5", 1);
@@ -1360,7 +1400,7 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h23_p1_const()
         // T8e
         reorder("pphh", "r1", "3412");
         reorder("h1c", "r3", "21");
-        mult("t2c", "r1", "r2", 2);
+        mult("t2c-g12", "r1", "r2", 2);
         mult("r2", "r3", "r4", 1);
         reorder("r4", "r5", "1243");
         update("i1", 0.5, "r5");
@@ -1369,8 +1409,8 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h23_p1_const()
         // T10a
         reorder("h1c", "r1", "21");
         reorder("pphh", "r2", "3412");
-        mult("t1c", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r2", "r3", 1);
+        mult("t1c-g", "r3", "r4", 1);
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "1243");
         update("i1", 1.0, "r6");
@@ -1378,14 +1418,13 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h23_p1_const()
     }
 
     finish:
-    reorder("e2c", "r1", "3412");
+    reorder("e2c-v", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
     diagram_stack_erase("r3");
     perm("r4", "(56)");
-    closed("r4", "r5");
-    reorder("r5", "r6", "321654");
-    update("veff21_const", 1.0, "r6");
+    reorder("r4", "r5", "321654");
+    update("veff21_const", 1.0, "r5");
     restore_stack_pos(pos);
 }
 
@@ -1395,47 +1434,47 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h13_p2_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "phhh", "1010", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "phhh", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1b
-        reorder("vhhg", "r2", "1243");
+        reorder("vghg", "r2", "1243");
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3a
         reorder("ph", "phr_", "21");
-        reorder("e2c", "r1", "1243");
+        reorder("e2c-g", "r1", "1243");
         mult("r1", "phr_", "r2", 1);
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3d
         reorder("pphg", "r2", "4312");
-        mult("s2c", "r2", "r3", 2);
+        mult("s2c-g", "r2", "r3", 2);
         update("i1", -0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4b
         reorder("h1c", "r2", "21");
-        mult("vhhh", "r2", "r3", 1);
+        mult("vghh", "r2", "r3", 1);
         reorder("r3", "r4", "1243");
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
 
         // T7c
         reorder("pphg", "r1", "4312");
-        mult("t1c", "r1", "r2", 1);
+        mult("t1c-g", "r1", "r2", 1);
         mult("s1c", "r2", "r3", 1);
         update("i1", -1.0, "r3");
         restore_stack_pos(pos2);
 
         // T8a
         reorder("pphh", "r1", "4231");
-        reorder("e2c", "r3", "1243");
+        reorder("e2c-g", "r3", "1243");
         mult("r1", "t1c", "r4", 2);
         mult("r3", "r4", "r5", 1);
         update("i1", -1.0, "r5");
@@ -1444,7 +1483,7 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h13_p2_const()
         // T8e
         reorder("pphh", "r1", "3412");
         reorder("h1c", "r3", "21");
-        mult("s2c", "r1", "r2", 2);
+        mult("s2c-g", "r1", "r2", 2);
         mult("r2", "r3", "r4", 1);
         reorder("r4", "r5", "1243");
         update("i1", 0.5, "r5");
@@ -1453,7 +1492,7 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h13_p2_const()
         // T10a
         reorder("h1c", "r1", "21");
         reorder("pphh", "r2", "3412");
-        mult("t1c", "r2", "r3", 1);
+        mult("t1c-g", "r2", "r3", 1);
         mult("s1c", "r3", "r4", 1);
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "1243");
@@ -1462,14 +1501,13 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h13_p2_const()
     }
 
     finish:
-    reorder("h2c", "r1", "3412");
+    reorder("h2c-v-g1", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
     diagram_stack_erase("r3");
-    closed("r4", "r5");
-    perm("r5", "(13|46)");
-    reorder("r5", "r6", "132465"); // interchange electrons 2 <-> 3
-    update("veff21_const", 1.0, "r6");
+    perm("r4", "(13|46)");
+    reorder("r4", "r5", "132465"); // interchange electrons 2 <-> 3
+    update("veff21_const", 1.0, "r5");
     restore_stack_pos(pos);
 }
 
@@ -1480,48 +1518,47 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h12_p1_w2c()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hhph", "0000", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "hhph", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1b
-        reorder("hhhp", "r2", "1243");
+        reorder("gghv", "r2", "1243");
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3a
         reorder("ph", "phr_", "21");
-        reorder("t2c", "r1", "1243");
+        reorder("t2c-g12-v2", "r1", "1243");
         mult("r1", "phr_", "r2", 1);
         update("i1", -1.0, "r2");
         restore_stack_pos(pos2);
 
         // T3d
-        reorder("t2c", "r1", "3412");
-        reorder("pphp", "r2", "4312");
-        mult("t2c", "r2", "r3", 2);
+        reorder("pphv", "r2", "4312");
+        mult("t2c-g12", "r2", "r3", 2);
         update("i1", -0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4b
-        reorder("t1c", "r2", "21");
-        mult("hhhh", "r2", "r3", 1);
+        reorder("t1c-v", "r2", "21");
+        mult("gghh", "r2", "r3", 1);
         reorder("r3", "r4", "1243");
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
 
         // T7c
-        reorder("pphp", "r1", "4312");
-        mult("t1c", "r1", "r2", 1);
-        mult("t1c", "r2", "r3", 1);
+        reorder("pphv", "r1", "4312");
+        mult("t1c-g", "r1", "r2", 1);
+        mult("t1c-g", "r2", "r3", 1);
         update("i1", -1.0, "r3");
         restore_stack_pos(pos2);
 
         // T8a
         reorder("pphh", "r1", "4231");
-        reorder("t2c", "r3", "1243");
+        reorder("t2c-g12-v2", "r3", "1243");
         mult("r1", "t1c", "r4", 2);
         mult("r3", "r4", "r5", 1);
         update("i1", -1.0, "r5");
@@ -1529,18 +1566,18 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h12_p1_w2c()
 
         // T8e
         reorder("pphh", "r1", "3412");
-        reorder("t1c", "r3", "21");
-        mult("t2c", "r1", "r2", 2);
+        reorder("t1c-v", "r3", "21");
+        mult("t2c-g12", "r1", "r2", 2);
         mult("r2", "r3", "r4", 1);
         reorder("r4", "r5", "1243");
         update("i1", 0.5, "r5");
         restore_stack_pos(pos2);
 
         // T10a
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("pphh", "r2", "3412");
-        mult("t1c", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r2", "r3", 1);
+        mult("t1c-g", "r3", "r4", 1);
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "1243");
         update("i1", 1.0, "r6");
@@ -1552,9 +1589,8 @@ void diag_heff_2h1p_i_jk_c_ab__inv_h12_p1_w2c()
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
     diagram_stack_erase("r3");
-    closed("r4", "r5");
-    reorder("r5", "r6", "321456"); // and the sign must be changed, +1 -> -1
-    update("veff21", -1.0, "r6");
+    reorder("r4", "r5", "321456"); // and the sign must be changed, +1 -> -1
+    update("veff21", -1.0, "r5");
     restore_stack_pos(pos);
 }
 
@@ -1569,54 +1605,53 @@ void diag_heff_2h1p_ijk_c_ab__inv_h23_p1_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hhhh", "0010", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "hhhh", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3c
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r1", "2413");
-        reorder("hphh", "r2", "3142");
+        reorder("gphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "4123");
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
 
         // T4c
-        reorder("phhg", "r0", "2431");
-        mult("t1c", "r0", "r1", 1);
+        reorder("pghg", "r0", "2431");
+        mult("t1c-g", "r0", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
 
         // T7b
         reorder("h1c", "r1", "21");
-        reorder("hphh", "r2", "1324");
+        reorder("gphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         reorder("r4", "r5", "3124");
         update("i1", 1.0, "r5");
         restore_stack_pos(pos2);
 
         // T8b
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("pphh", "r1", "3142");
         reorder("h2c_21", "r2", "2413");
         mult("r2", "r1", "r3", 2);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
     }
 
     finish:
-    reorder("e2c", "r1", "3412");
+    reorder("e2c-v", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
-    closed("r4", "r5");
-    perm("r5", "(23|56)");
-    reorder("r5", "r6", "321654"); // interchange electrons 1 <-> 3
-    update("veff21_const", 1.0, "r6");
+    perm("r4", "(23|56)");
+    reorder("r4", "r5", "321654"); // interchange electrons 1 <-> 3
+    update("veff21_const", 1.0, "r5");
     restore_stack_pos(pos);
 }
 
@@ -1626,14 +1661,14 @@ void diag_heff_2h1p_ijk_c_ab__inv_h13_p2_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "phhh", "1010", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "phhh", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3c
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r1", "2413");
         reorder("vphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
@@ -1642,7 +1677,7 @@ void diag_heff_2h1p_ijk_c_ab__inv_h13_p2_const()
         restore_stack_pos(pos2);
 
         // T4c
-        reorder("phhg", "r0", "2431");
+        reorder("pghg", "r0", "2431");
         mult("s1c", "r0", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
@@ -1651,14 +1686,14 @@ void diag_heff_2h1p_ijk_c_ab__inv_h13_p2_const()
         reorder("h1c", "r1", "21");
         reorder("vphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         reorder("r4", "r5", "3124");
         update("i1", 1.0, "r5");
         restore_stack_pos(pos2);
 
         // T8b
         reorder("pphh", "r1", "3142");
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r2", "2413");
         mult("r2", "r1", "r3", 2);
         mult("s1c", "r3", "r4", 1);
@@ -1667,13 +1702,12 @@ void diag_heff_2h1p_ijk_c_ab__inv_h13_p2_const()
     }
 
     finish:
-    reorder("h2c", "r1", "3412");
+    reorder("h2c-v-g1", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
-    closed("r4", "r5");
-    perm("r5", "(13|46)");
-    reorder("r5", "r6", "132465"); // interchange electrons 2 <-> 3
-    update("veff21_const", 1.0, "r6");
+    perm("r4", "(13|46)");
+    reorder("r4", "r5", "132465"); // interchange electrons 2 <-> 3
+    update("veff21_const", 1.0, "r5");
     restore_stack_pos(pos);
 }
 
@@ -1683,14 +1717,14 @@ void diag_heff_2h1p_ijk_c_ab__inv_h12_p2_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "phph", "1000", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "phph", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3c
-        reorder("t2c", "r1", "2413");
+        reorder("t2c-g2-v2", "r1", "2413");
         reorder("vphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "4123");
@@ -1698,22 +1732,22 @@ void diag_heff_2h1p_ijk_c_ab__inv_h12_p2_const()
         restore_stack_pos(pos2);
 
         // T4c
-        mult("s1c", "phhp", "r1", 1);
+        mult("s1c", "pghv", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
 
         // T7b
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("vphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         reorder("r4", "r5", "3124");
         update("i1", 1.0, "r5");
         restore_stack_pos(pos2);
 
         // T8b
         reorder("pphh", "r1", "3142");
-        reorder("t2c", "r2", "2413");
+        reorder("t2c-g2-v2", "r2", "2413");
         mult("r2", "r1", "r3", 2);
         mult("s1c", "r3", "r4", 1);
         update("i1", -1.0, "r4");
@@ -1721,13 +1755,12 @@ void diag_heff_2h1p_ijk_c_ab__inv_h12_p2_const()
     }
 
     finish:
-    reorder("g2c", "r1", "3412");
+    reorder("g2c-g1", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
-    closed("r4", "r5");
-    perm("r5", "(13)");
-    reorder("r5", "r6", "132456"); // + sign will be changed!
-    update("veff21_const", -1.0, "r6");
+    perm("r4", "(13)");
+    reorder("r4", "r5", "132456"); // + sign will be changed!
+    update("veff21_const", -1.0, "r5");
     restore_stack_pos(pos);
 }
 
@@ -1737,7 +1770,7 @@ void diag_heff_2h1p_ijk_c_ab__inv_h13_p3_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hphh", "0110", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "hphh", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
@@ -1746,20 +1779,20 @@ void diag_heff_2h1p_ijk_c_ab__inv_h13_p3_const()
         // T3c
         reorder("e2c", "e2c_2134", "2134");
         reorder("e2c_2134", "r1", "2413");
-        reorder("hphh", "r2", "3142");
+        reorder("gphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "4123");
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
 
         // T4c
-        mult("t1c", "pvhg", "r1", 1);
+        mult("t1c-g", "pvhg", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
 
         // T7b
         reorder("h1c", "r1", "21");
-        reorder("hphh", "r2", "1324");
+        reorder("gphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
         mult("s1c", "r3", "r4", 1);
         reorder("r4", "r5", "3124");
@@ -1771,19 +1804,18 @@ void diag_heff_2h1p_ijk_c_ab__inv_h13_p3_const()
         reorder("e2c", "e2c_2134", "2134");
         reorder("e2c_2134", "r2", "2413");
         mult("r2", "r1", "r3", 2);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
     }
 
     finish:
-    reorder("h2c", "r1", "3412");
+    reorder("h2c-v-g1", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
-    closed("r4", "r5");
-    perm("r5", "(12|46)");
-    reorder("r5", "r6", "123465"); // the sign will be changed!
-    update("veff21_const", -1.0, "r6");
+    perm("r4", "(12|46)");
+    reorder("r4", "r5", "123465"); // the sign will be changed!
+    update("veff21_const", -1.0, "r5");
     restore_stack_pos(pos);
 }
 
@@ -1793,30 +1825,30 @@ void diag_heff_2h1p_ijk_c_ab__inv_h12_p3_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hpph", "0100", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "hpph", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3c
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r1", "2413");
-        reorder("hphh", "r2", "3142");
+        reorder("gphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "4123");
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
 
         // T4c
-        reorder("pvhp", "r0", "2431");
-        mult("t1c", "r0", "r1", 1);
+        reorder("pvhv", "r0", "2431");
+        mult("t1c-g", "r0", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
 
         // T7b
-        reorder("t1c", "r1", "21");
-        reorder("hphh", "r2", "1324");
+        reorder("t1c-v", "r1", "21");
+        reorder("gphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
         mult("s1c", "r3", "r4", 1);
         reorder("r4", "r5", "3124");
@@ -1825,21 +1857,20 @@ void diag_heff_2h1p_ijk_c_ab__inv_h12_p3_const()
 
         // T8b
         reorder("pphh", "r1", "3142");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r2", "2413");
         mult("r2", "r1", "r3", 2);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
     }
 
     finish:
-    reorder("g2c", "r1", "3412");
+    reorder("g2c-g1", "r1", "3412");
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
-    closed("r4", "r5");
-    perm("r5", "(12)");
-    update("veff21_const", 1.0, "r5");
+    perm("r4", "(12)");
+    update("veff21_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
@@ -1850,39 +1881,39 @@ void diag_heff_2h1p_ijk_c_ab__inv_h12_p1_w2c()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hhph", "0000", "1243", NOT_PERM_UNIQUE);
+    tmplt("i1", "hhph", "1110", "1243", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3c
-        reorder("t2c", "r1", "2413");
-        reorder("hphh", "r2", "3142");
+        reorder("t2c-g2-v2", "r1", "2413");
+        reorder("gphh", "r2", "3142");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "4123");
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
 
         // T4c
-        mult("t1c", "phhp", "r1", 1);
+        mult("t1c-g", "pghv", "r1", 1);
         update("i1", -1.0, "r1");
         restore_stack_pos(pos2);
 
         // T7b
-        reorder("t1c", "r1", "21");
-        reorder("hphh", "r2", "1324");
+        reorder("t1c-v", "r1", "21");
+        reorder("gphh", "r2", "1324");
         mult("r1", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         reorder("r4", "r5", "3124");
         update("i1", 1.0, "r5");
         restore_stack_pos(pos2);
 
         // T8b
         reorder("pphh", "r1", "3142");
-        reorder("t2c", "r2", "2413");
+        reorder("t2c-g2-v2", "r2", "2413");
         mult("r2", "r1", "r3", 2);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         update("i1", -1.0, "r4");
         restore_stack_pos(pos2);
     }
@@ -1891,10 +1922,9 @@ void diag_heff_2h1p_ijk_c_ab__inv_h12_p1_w2c()
     reorder("w2c", "r1", "4321"); // [3412] + interchange electrons 1 <-> 2
     mult("r1", "i1", "r3", 1);
     reorder("r3", "r4", "345126");
-    closed("r4", "r5");
-    perm("r5", "(23)");
-    reorder("r5", "r6", "321456"); // the sign will be changed, +1 -> -1
-    update("veff21", -1.0, "r6");
+    perm("r4", "(23)");
+    reorder("r4", "r5", "321456"); // the sign will be changed, +1 -> -1
+    update("veff21", -1.0, "r5");
     restore_stack_pos(pos);
 }
 
@@ -1909,32 +1939,32 @@ void diag_heff_2h1p_k_ij_a_bc__inv_h12_p3_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "phpp", "1100", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "phpp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1a
-        reorder("pvgp", "r1", "2341");
+        reorder("pvgv", "r1", "2341");
         update("i1", 1.0, "r1");
         restore_stack_pos(pos2);
 
         // T3e
-        reorder("h2c", "r1", "3412");
+        reorder("h2c-v", "r1", "3412");
         mult("r1", "pvhh", "r2", 2);
         reorder("r2", "r3", "4123");
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4a
-        mult("ppgp", "s1c", "r1", 1);
+        mult("ppgv", "s1c", "r1", 1);
         reorder("r1", "r2", "4123");
         update("i1", 1.0, "r2");
         restore_stack_pos(pos2);
 
         // T7d
-        reorder("t1c", "r0", "21");
+        reorder("t1c-v", "r0", "21");
         reorder("h1c", "r1", "21");
         mult("r0", "pvhh", "r2", 1);
         mult("r1", "r2", "r3", 1);
@@ -1943,14 +1973,14 @@ void diag_heff_2h1p_k_ij_a_bc__inv_h12_p3_const()
         restore_stack_pos(pos2);
 
         // T8d
-        reorder("h2c", "r1", "3412");
+        reorder("h2c-v", "r1", "3412");
         mult("r1", "pphh", "r2", 2);
         mult("s1c", "r2", "r3", 1);
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T10b
-        reorder("t1c", "r0", "21");
+        reorder("t1c-v", "r0", "21");
         reorder("h1c", "r1", "21");
         mult("r0", "pphh", "r2", 1);
         mult("r1", "r2", "r3", 1);
@@ -1960,12 +1990,11 @@ void diag_heff_2h1p_k_ij_a_bc__inv_h12_p3_const()
     }
 
     finish:
-    mult("h2c", "i1", "r2", 1);
+    mult("h2c-g12", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
     diagram_stack_erase("r2");
-    closed("r3", "r4");
-    perm("r4", "(45)");
-    update("veff21_const", 1.0, "r4");
+    perm("r3", "(45)");
+    update("veff21_const", 1.0, "r3");
     restore_stack_pos(pos);
 }
 
@@ -1975,34 +2004,34 @@ void diag_heff_2h1p_k_ij_a_bc__inv_h23_p1_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hhhp", "0110", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "hhhp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1a
-        reorder("phgg", "r1", "2341");
+        reorder("pggg", "r1", "2341");
         update("i1", 1.0, "r1");
         restore_stack_pos(pos2);
 
         // T3e
         reorder("g2c", "r1", "3412");
-        mult("r1", "phhh", "r2", 2);
+        mult("r1", "pghh", "r2", 2);
         reorder("r2", "r3", "4123");
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4a
         reorder("ppgg", "ppggr", "3412");
-        mult("ppggr", "t1c", "r1", 1);
+        mult("ppggr", "t1c-g", "r1", 1);
         reorder("r1", "r2", "4123");
         update("i1", 1.0, "r2");
         restore_stack_pos(pos2);
 
         // T7d
         reorder("h1c", "r1", "21");
-        mult("r1", "phhh", "r2", 1);
+        mult("r1", "pghh", "r2", 1);
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "4123");
         update("i1", 1.0, "r4");
@@ -2011,7 +2040,7 @@ void diag_heff_2h1p_k_ij_a_bc__inv_h23_p1_const()
         // T8d
         reorder("g2c", "r1", "3412");
         mult("r1", "pphh", "r2", 2);
-        mult("t1c", "r2", "r3", 1);
+        mult("t1c-g", "r2", "r3", 1);
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
@@ -2019,19 +2048,18 @@ void diag_heff_2h1p_k_ij_a_bc__inv_h23_p1_const()
         reorder("h1c", "r1", "21");
         mult("r1", "pphh", "r2", 1);
         mult("r1", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
     }
 
     finish:
-    mult("s2c", "i1", "r2", 1);
+    mult("s2c-v1-g", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
     diagram_stack_erase("r2");
-    closed("r3", "r4");
-    perm("r4", "(23)");
-    reorder("r4", "r5", "321654"); // interchange electrons: 1 <-> 3
-    update("veff21_const", 1.0, "r5");
+    perm("r3", "(23)");
+    reorder("r3", "r4", "321654"); // interchange electrons: 1 <-> 3
+    update("veff21_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
@@ -2041,68 +2069,67 @@ void diag_heff_2h1p_k_ij_a_bc__inv_h13_p2_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hphp", "0010", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "hphp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T1a
-        reorder("phpg", "r1", "2341");
+        reorder("pgvg", "r1", "2341");
         update("i1", 1.0, "r1");
         restore_stack_pos(pos2);
 
         // T3e
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-v", "h2c_21", "2143");
         reorder("h2c_21", "r1", "3412");
-        mult("r1", "phhh", "r2", 2);
+        mult("r1", "pghh", "r2", 2);
         reorder("r2", "r3", "4123");
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T4a
-        reorder("pppg", "pppgr", "3412");
-        mult("pppgr", "t1c", "r1", 1);
+        reorder("ppvg", "ppvgr", "3412");
+        mult("ppvgr", "t1c-g", "r1", 1);
         reorder("r1", "r2", "4123");
         update("i1", 1.0, "r2");
         restore_stack_pos(pos2);
 
         // T7d
         reorder("h1c", "r0", "21");
-        reorder("t1c", "r1", "21");
-        mult("r0", "phhh", "r2", 1);
+        reorder("t1c-v", "r1", "21");
+        mult("r0", "pghh", "r2", 1);
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "4123");
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
 
         // T8d
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-v", "h2c_21", "2143");
         reorder("h2c_21", "r1", "3412");
         mult("r1", "pphh", "r2", 2);
-        mult("t1c", "r2", "r3", 1);
+        mult("t1c-g", "r2", "r3", 1);
         update("i1", 0.5, "r3");
         restore_stack_pos(pos2);
 
         // T10b
         reorder("h1c", "r0", "21");
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         mult("r0", "pphh", "r2", 1);
         mult("r1", "r2", "r3", 1);
-        mult("t1c", "r3", "r4", 1);
+        mult("t1c-g", "r3", "r4", 1);
         update("i1", 1.0, "r4");
         restore_stack_pos(pos2);
     }
 
     finish:
-    reorder("e2c", "e2c_21", "2143");
+    reorder("e2c-g", "e2c_21", "2143");
     mult("e2c_21", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
     diagram_stack_erase("r2");
-    closed("r3", "r4");
-    perm("r4", "(13|46)");
-    reorder("r4", "r5", "132465"); // interchange electrons: 2 <-> 3
-    update("veff21_const", 1.0, "r5");
+    perm("r3", "(13|46)");
+    reorder("r3", "r4", "132465"); // interchange electrons: 2 <-> 3
+    update("veff21_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
@@ -2162,12 +2189,11 @@ void diag_heff_2h1p_k_ij_a_bc__inv_h23_p3_const()
     }
 
     finish:
-    mult("t2c", "i1", "r2", 1);
+    mult("t2c-g12-v1", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
     diagram_stack_erase("r2");
-    closed("r3", "r4");
-    reorder("r4", "r5", "123654"); // the sign of the prefactor will be changed, +1 -> -1
-    update("veff21_const", -1.0, "r5");
+    reorder("r3", "r4", "123654"); // the sign of the prefactor will be changed, +1 -> -1
+    update("veff21_const", -1.0, "r4");
     restore_stack_pos(pos);
 }
 
@@ -2182,7 +2208,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p2_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hhpp", "0100", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "hhpp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
@@ -2190,7 +2216,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p2_const()
 
         // T3b
         reorder("ppgh", "r1", "1342");
-        reorder("t2c", "r2", "2413");
+        reorder("t2c-g2-v2", "r2", "2413");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "1324");
         reorder("r4", "r5", "2341");
@@ -2198,7 +2224,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p2_const()
         restore_stack_pos(pos2);
 
         // T4d
-        reorder("phhp", "r1", "4123");
+        reorder("pghv", "r1", "4123");
         reorder("h1c", "r2", "21");
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "2431");
@@ -2206,9 +2232,9 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p2_const()
         restore_stack_pos(pos2);
 
         // T7a
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("ppgh", "r2", "1342");
-        mult("r2", "t1c", "r3", 1);
+        mult("r2", "t1c-g", "r3", 1);
         reorder("r3", "r4", "1423");
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "2341");
@@ -2217,7 +2243,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p2_const()
 
         // T8c
         reorder("h1c", "r1", "21");
-        reorder("t2c", "r2", "2413");
+        reorder("t2c-g2-v2", "r2", "2413");
         reorder("pphh", "r3", "1342");
         mult("r3", "r2", "r4", 2);
         reorder("r4", "r5", "1342");
@@ -2228,13 +2254,12 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p2_const()
     }
 
     finish:
-    reorder("e2c", "e2c_21", "2143");
+    reorder("e2c-g", "e2c_21", "2143");
     mult("e2c_21", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    closed("r3", "r4");
-    perm("r4", "(13|45)");
-    reorder("r4", "r5", "132456"); // the sign will be changed
-    update("veff21_const", -1.0, "r5");
+    perm("r3", "(13|45)");
+    reorder("r3", "r4", "132456"); // the sign will be changed
+    update("veff21_const", -1.0, "r4");
     restore_stack_pos(pos);
 }
 
@@ -2244,7 +2269,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h23_p1_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hhhp", "0110", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "hhhp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
@@ -2252,7 +2277,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h23_p1_const()
 
         // T3b
         reorder("ppgh", "r1", "1342");
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r2", "2413");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "1324");
@@ -2261,7 +2286,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h23_p1_const()
         restore_stack_pos(pos2);
 
         // T4d
-        reorder("phhg", "r0", "2431");
+        reorder("pghg", "r0", "2431");
         reorder("r0", "r1", "4123");
         reorder("h1c", "r2", "21");
         mult("r1", "r2", "r3", 1);
@@ -2272,7 +2297,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h23_p1_const()
         // T7a
         reorder("h1c", "r1", "21");
         reorder("ppgh", "r2", "1342");
-        mult("r2", "t1c", "r3", 1);
+        mult("r2", "t1c-g", "r3", 1);
         reorder("r3", "r4", "1423");
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "2341");
@@ -2281,7 +2306,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h23_p1_const()
 
         // T8c
         reorder("h1c", "r1", "21");
-        reorder("h2c", "h2c_21", "2143");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r2", "2413");
         reorder("pphh", "r3", "1342");
         mult("r3", "r2", "r4", 2);
@@ -2293,12 +2318,12 @@ void diag_heff_2h1p_k_ij_abc__inv_h23_p1_const()
     }
 
     finish:
-    mult("s2c", "i1", "r2", 1);
+    mult("s2c-v1-g", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    closed("r3", "r4");
-    perm("r4", "(23|56)");
-    reorder("r4", "r5", "321654"); // interchange electrons: 1 <-> 3
-    update("veff21_const", 1.0, "r5");
+    diagram_stack_erase("r2");
+    perm("r3", "(23|56)");
+    reorder("r3", "r4", "321654"); // interchange electrons: 1 <-> 3
+    update("veff21_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
@@ -2308,15 +2333,15 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p2_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "hphp", "0010", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "hphp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3b
-        reorder("ppph", "r1", "1342");
-        reorder("h2c", "h2c_21", "2143");
+        reorder("ppvh", "r1", "1342");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r2", "2413");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "1324");
@@ -2325,9 +2350,9 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p2_const()
         restore_stack_pos(pos2);
 
         // T4d
-        reorder("phhg", "r0", "2431");
+        reorder("pghg", "r0", "2431");
         reorder("r0", "r1", "4123");
-        reorder("t1c", "r2", "21");
+        reorder("t1c-v", "r2", "21");
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "2431");
         update("i1", -1.0, "r4");
@@ -2335,8 +2360,8 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p2_const()
 
         // T7a
         reorder("h1c", "r1", "21");
-        reorder("ppph", "r2", "1342");
-        mult("r2", "t1c", "r3", 1);
+        reorder("ppvh", "r2", "1342");
+        mult("r2", "t1c-g", "r3", 1);
         reorder("r3", "r4", "1423");
         mult("r4", "r1", "r5", 1);
         reorder("r5", "r6", "2341");
@@ -2344,8 +2369,8 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p2_const()
         restore_stack_pos(pos2);
 
         // T8c
-        reorder("t1c", "r1", "21");
-        reorder("h2c", "h2c_21", "2143");
+        reorder("t1c-v", "r1", "21");
+        reorder("h2c-g1", "h2c_21", "2143");
         reorder("h2c_21", "r2", "2413");
         reorder("pphh", "r3", "1342");
         mult("r3", "r2", "r4", 2);
@@ -2357,13 +2382,12 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p2_const()
     }
 
     finish:
-    reorder("e2c", "e2c_21", "2143");
+    reorder("e2c-g", "e2c_21", "2143");
     mult("e2c_21", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    closed("r3", "r4");
-    perm("r4", "(13|46)");
-    reorder("r4", "r5", "132465"); // interchange electrons: 2 <-> 3
-    update("veff21_const", 1.0, "r5");
+    perm("r3", "(13|46)");
+    reorder("r3", "r4", "132465"); // interchange electrons: 2 <-> 3
+    update("veff21_const", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
@@ -2373,7 +2397,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p3_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "phpp", "1100", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "phpp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
@@ -2381,7 +2405,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p3_const()
 
         // T3b
         reorder("ppgh", "r1", "1342");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r2", "2413");
         mult("r1", "r2", "r3", 2);
         reorder("r3", "r4", "1324");
@@ -2390,7 +2414,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p3_const()
         restore_stack_pos(pos2);
 
         // T4d
-        reorder("pvhp", "r0", "2431");
+        reorder("pvhv", "r0", "2431");
         reorder("r0", "r1", "4123");
         reorder("h1c", "r2", "21");
         mult("r1", "r2", "r3", 1);
@@ -2399,7 +2423,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p3_const()
         restore_stack_pos(pos2);
 
         // T7a
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("ppgh", "r2", "1342");
         mult("r2", "s1c", "r3", 1);
         reorder("r3", "r4", "1423");
@@ -2410,7 +2434,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p3_const()
 
         // T8c
         reorder("h1c", "r1", "21");
-        reorder("s2c", "s2c_21", "2143");
+        reorder("s2c-v1", "s2c_21", "2143");
         reorder("s2c_21", "r2", "2413");
         reorder("pphh", "r3", "1342");
         mult("r3", "r2", "r4", 2);
@@ -2422,11 +2446,11 @@ void diag_heff_2h1p_k_ij_abc__inv_h12_p3_const()
     }
 
     finish:
-    mult("h2c", "i1", "r2", 1);
+    mult("h2c-g12", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    closed("r3", "r4");
-    perm("r4", "(45)");
-    update("veff21_const", 1.0, "r4");
+    diagram_stack_erase("r2");
+    perm("r3", "(45)");
+    update("veff21_const", 1.0, "r3");
     restore_stack_pos(pos);
 }
 
@@ -2484,12 +2508,12 @@ void diag_heff_2h1p_k_ij_abc__inv_h23_p3_const()
     }
 
     finish:
-    mult("t2c", "i1", "r2", 1);
+    mult("t2c-g12-v1", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    closed("r3", "r4");
-    perm("r4", "(56)");
-    reorder("r4", "r5", "123654"); // the sign will be changed, +1 -> -1
-    update("veff21_const", -1.0, "r5");
+    diagram_stack_erase("r2");
+    perm("r3", "(56)");
+    reorder("r3", "r4", "123654"); // the sign will be changed, +1 -> -1
+    update("veff21_const", -1.0, "r4");
     restore_stack_pos(pos);
 }
 
@@ -2499,14 +2523,14 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p3_const()
     dg_stack_pos_t pos;
     pos = get_stack_pos();
 
-    tmplt("i1", "pphp", "1010", "2341", NOT_PERM_UNIQUE);
+    tmplt("i1", "pphp", "1110", "2341", NOT_PERM_UNIQUE);
 
     {
         dg_stack_pos_t pos2;
         pos2 = get_stack_pos();
 
         // T3b
-        reorder("ppph", "r1", "1342");
+        reorder("ppvh", "r1", "1342");
         reorder("e2c", "e2c_2134", "2134");
         reorder("e2c_2134", "r2", "2413");
         mult("r1", "r2", "r3", 2);
@@ -2517,7 +2541,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p3_const()
 
         // T4d
         reorder("pvhg", "r1", "4123");
-        reorder("t1c", "r2", "21");
+        reorder("t1c-v", "r2", "21");
         mult("r1", "r2", "r3", 1);
         reorder("r3", "r4", "2431");
         update("i1", -1.0, "r4");
@@ -2525,7 +2549,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p3_const()
 
         // T7a
         reorder("h1c", "r1", "21");
-        reorder("ppph", "r2", "1342");
+        reorder("ppvh", "r2", "1342");
         mult("r2", "s1c", "r3", 1);
         reorder("r3", "r4", "1423");
         mult("r4", "r1", "r5", 1);
@@ -2534,7 +2558,7 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p3_const()
         restore_stack_pos(pos2);
 
         // T8c
-        reorder("t1c", "r1", "21");
+        reorder("t1c-v", "r1", "21");
         reorder("e2c", "e2c_2134", "2134");
         reorder("e2c_2134", "r2", "2413");
         reorder("pphh", "r3", "1342");
@@ -2547,11 +2571,11 @@ void diag_heff_2h1p_k_ij_abc__inv_h13_p3_const()
     }
 
     finish:
-    mult("h2c", "i1", "r2", 1);
+    mult("h2c-g12", "i1", "r2", 1);
     reorder("r2", "r3", "124356");
-    closed("r3", "r4");
-    perm("r4", "(46)");
-    reorder("r4", "r5", "123465"); // the sign will be changed, +1 -> -1
-    update("veff21_const", 1.0, "r5");
+    diagram_stack_erase("r2");
+    perm("r3", "(46)");
+    reorder("r3", "r4", "123465"); // the sign will be changed, +1 -> -1
+    update("veff21_const", -1.0, "r4");
     restore_stack_pos(pos);
 }

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,8 +24,12 @@
 #ifdef TYPENAME_UNCOMPRESSED
 #ifdef TYPENAME_COMPRESSED
 
-#include "templates.h"
+#include "c_templates.h"
 
+#include <math.h>
+
+#include "error.h"
+#include "memory.h"
 
 /**
  * Functions used to calculate absolute value are different for real and complex numbers,

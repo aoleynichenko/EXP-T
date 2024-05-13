@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -180,8 +180,6 @@ void model_space_property(int bra_sect_h, int bra_sect_p, int ket_sect_h, int ke
     if (prop_query->do_transpose) {
         xtranspose(CC_COMPLEX, nspinors, nspinors, prop_spinor);
     }
-
-    //xprimat(CC_COMPLEX, prop_spinor, get_num_spinors(), get_num_spinors(), "prop_pp");
 
     /*
      * print information about non-zero matrix elements of the operator

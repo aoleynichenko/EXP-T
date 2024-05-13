@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,7 +24,7 @@
 #ifndef CC_CROP_H_INCLUDED
 #define CC_CROP_H_INCLUDED
 
-#include "datamodel.h"
+#include "engine.h"
 
 #define CROP_MAX 1000
 

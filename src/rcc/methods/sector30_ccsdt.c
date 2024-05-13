@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -48,7 +48,6 @@
 
 #include "ccutils.h"
 #include "engine.h"
-#include "datamodel.h"
 #include "diis.h"
 #include "heff.h"
 #include "options.h"
@@ -260,14 +259,14 @@ void init_amplitudes_3h0p()
 
     if (cc_opts->reuse_amplitudes[3][0]) {
         printf(" Trying to read amplitudes (sector 3h0p) from disk ...\n");
-        if (diagram_read("k3c.dg") != NULL) {
+        if (diagram_read_binary("k3c.dg") != NULL) {
             printf(" T{3h0p}_3 amplitudes successfully read from disk\n");
             calc_t3 = 0;
         }
         else {
             printf(" T{3h0p}_3 amplitudes will be calculated\n");
         }
-        if (diagram_read("veff30.dg") != NULL) {
+        if (diagram_read_binary("veff30.dg") != NULL) {
             printf(" Heff{3h0p} diagram successfully read from disk\n");
             calc_veff = 0;
         }
@@ -301,16 +300,6 @@ void heff30_ccsd()
     restrict_valence("h2c", "h2c-g12", "1110", 0);
     restrict_valence("h2c", "h2c-g1", "1010", 0);
     restrict_valence("g2c", "g2c-g1", "1011", 0);
-
-    /*restrict_valence("t1c", "t1-v", "01", 0);
-    restrict_valence("t2c", "t2-v1", "0010", 0);
-    restrict_valence("t2c", "t2-v2", "0001", 0);
-    restrict_valence("t2c", "t2-v12", "0011", 0);
-    restrict_valence("s2c", "s2-v1", "1010", 0);
-    restrict_valence("s2c", "s2-v2", "1001", 0);
-    restrict_valence("s2c", "s2-v12", "1011", 0);
-    restrict_valence("x2c", "x2-v1", "1110", 0);
-    restrict_valence("x2c", "x2-v2", "1101", 0);*/
     printf("done\n");
 
     printf(" T1 and T2 contributions to Heff(3h0p)\n");

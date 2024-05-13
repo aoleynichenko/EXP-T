@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -36,7 +36,6 @@
 #include <stdarg.h>
 
 #include "cc_properies.h"
-#include "datamodel.h"
 #include "engine.h"
 #include "mvcoef.h"
 #include "spinors.h"
@@ -124,20 +123,20 @@ void calculate_wavefunction_norms_and_overlaps(int sect_h, int sect_p)
      * 1 + fully contracted diagrams without any external lines
      */
     printf(" construction of the overlap diagram (0h0p) ...\n");
-    double complex scalar_part = 1.0;//sector_0h0p_overlap(CC_PROPERTIES_APPROX_QUADRATIC);
+    double complex scalar_part = sector_0h0p_overlap(CC_PROPERTIES_APPROX_QUADRATIC);
 
     /*
      * one-electron part
      */
     if (sect_h >= 1) {
         printf(" construction of the overlap diagram (1h0p) ...\n");
-        //sector_1h0p_overlap("overlap_1h0p", CC_PROPERTIES_APPROX_QUADRATIC);
-        //overlap_diagrams[n_overlap_diagrams++] = cc_strdup("overlap_1h0p");
+        sector_1h0p_overlap("overlap_1h0p", CC_PROPERTIES_APPROX_QUADRATIC);
+        overlap_diagrams[n_overlap_diagrams++] = cc_strdup("overlap_1h0p");
     }
     if (sect_p >= 1) {
         printf(" construction of the overlap diagram (0h1p) ...\n");
-        //sector_0h1p_overlap("overlap_0h1p", CC_PROPERTIES_APPROX_QUADRATIC);
-        //overlap_diagrams[n_overlap_diagrams++] = cc_strdup("overlap_0h1p");
+        sector_0h1p_overlap("overlap_0h1p", CC_PROPERTIES_APPROX_QUADRATIC);
+        overlap_diagrams[n_overlap_diagrams++] = cc_strdup("overlap_0h1p");
     }
 
     /*
@@ -292,6 +291,13 @@ void sector_0h1p_overlap(char *result_name, int approximation)
     restrict_valence("s2c", "s2c_v1", "1010", 0);
     restrict_valence("s2c+", "s2c+_v1", "1010", 0);
 
+    if (triples_enabled()) {
+        restrict_valence("t3c", "t3c_v1", "000100", 0);
+        restrict_valence("t3c+", "t3c+_v1", "100000", 0);
+        restrict_valence("s3c", "s3c_v1", "100100", 0);
+        restrict_valence("s3c+", "s3c+_v1", "100100", 0);
+    }
+
     dg_stack_pos_t pos = get_stack_pos();
 
     // Q1
@@ -345,31 +351,27 @@ void sector_0h1p_overlap(char *result_name, int approximation)
     if (triples_enabled()) {
 
         // Q7
-        reorder("t3c", "r1", "456123");
-        mult("t3c+", "r1", "r2", 5);
-        closed("r2", "r3");
-        update(result_name, -1.0 / 12.0, "r3");
+        reorder("t3c_v1", "r1", "456123");
+        mult("t3c+_v1", "r1", "r2", 5);
+        update(result_name, -1.0 / 12.0, "r2");
         restore_stack_pos(pos);
 
         // Q8
-        reorder("s3c", "r1", "145623");
+        reorder("s3c_v1", "r1", "145623");
         mult("r1", "t2c+", "r2", 4);
-        closed("r2", "r3");
-        update(result_name, 0.25, "r3");
+        update(result_name, 0.25, "r2");
         restore_stack_pos(pos);
 
         // Q9
-        reorder("s3c+", "r1", "145623");
+        reorder("s3c+_v1", "r1", "145623");
         mult("r1", "t2c", "r2", 4);
-        closed("r2", "r3");
-        update(result_name, 0.25, "r3");
+        update(result_name, 0.25, "r2");
         restore_stack_pos(pos);
 
         // Q10
         reorder("s3c+", "r1", "456123");
         mult("s3c", "r1", "r2", 5);
-        closed("r2", "r3");
-        update(result_name, +1.0 / 12.0, "r3");
+        update(result_name, +1.0 / 12.0, "r2");
         restore_stack_pos(pos);
     }
 }
@@ -578,13 +580,31 @@ void sector_0h2p_overlap(char *result_name, int approximation)
     restrict_valence("t1c", "t1c_v", "01", 0);
     restrict_valence("t1c+", "t1c+_v", "10", 0);
     restrict_valence("t2c", "t2c_v12", "0011", 0);
+    restrict_valence("t2c", "t2c_v1", "0010", 0);
     restrict_valence("t2c+", "t2c+_v12", "1100", 0);
+    restrict_valence("t2c+", "t2c+_v1", "1000", 0);
+
     restrict_valence("s2c", "s2c_v12", "1011", 0);
     restrict_valence("s2c+", "s2c+_v12", "1110", 0);
     restrict_valence("s2c", "s2c_v1", "1010", 0);
     restrict_valence("s2c+", "s2c+_v1", "1010", 0);
     restrict_valence("x2c", "x2c_v1", "1110", 0);
     restrict_valence("x2c+", "x2c+_v1", "1011", 0);
+
+    if (triples_enabled()) {
+        restrict_valence("t3c", "t3c_v12", "000110", 0);
+        restrict_valence("t3c+", "t3c+_v12", "110000", 0);
+
+        restrict_valence("s3c", "s3c_v12", "100110", 0);
+        restrict_valence("s3c", "s3c_v2", "100010", 0);
+        restrict_valence("s3c+", "s3c+_v12", "110100", 0);
+        restrict_valence("s3c+", "s3c+_v2", "010100", 0);
+
+        restrict_valence("x3c", "x3c_v1", "110100", 0);
+        restrict_valence("x3c", "x3c_v12", "110110", 0);
+        restrict_valence("x3c+", "x3c+_v1", "100110", 0);
+        restrict_valence("x3c+", "x3c+_v12", "110110", 0);
+    }
 
     dg_stack_pos_t pos = get_stack_pos();
 
@@ -657,77 +677,86 @@ void sector_0h2p_overlap(char *result_name, int approximation)
     if (triples_enabled()) {
 
         // Q8
-        reorder("x3c", "r1", "124563");
+        double t_start_Q8 = abs_time();
+        reorder("x3c_v12", "r1", "124563");
         mult("r1", "t1c+", "r2", 2);
-        closed("r2", "r3");
-        update(result_name, +1.0, "r3");
+        update(result_name, +1.0, "r2");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q8", t_start_Q8);
 
         // Q9
-        reorder("x3c+", "r1", "124563");
+        double t_start_Q9 = abs_time();
+        reorder("x3c+_v12", "r1", "124563");
         mult("r1", "t1c", "r2", 2);
-        closed("r2", "r3");
-        update(result_name, +1.0, "r3");
+        update(result_name, +1.0, "r2");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q9", t_start_Q9);
 
         // Q10
+        double t_start_Q10 = abs_time();
         reorder("s2c+", "r1", "3412");
-        reorder("x3c", "r2", "124356");
+        reorder("x3c_v1", "r2", "124356");
         mult("r2", "r1", "r3", 3);
-        closed("r3", "r4");
-        perm("r4", "(34)");
-        update(result_name, +0.5, "r4");
+        perm("r3", "(34)");
+        update(result_name, +0.5, "r3");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q10", t_start_Q10);
 
         // Q11
-        reorder("x3c+", "r1", "145623");
+        double t_start_Q11 = abs_time();
+        reorder("x3c+_v1", "r1", "145623");
         mult("r1", "s2c", "r2", 3);
         reorder("r2", "r3", "1423");
-        closed("r3", "r4");
-        perm("r4", "(12)");
-        update(result_name, +0.5, "r4");
+        perm("r3", "(12)");
+        update(result_name, +0.5, "r3");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q11", t_start_Q11);
 
         // Q12
-        reorder("s3c", "r1", "145623");
-        mult("r1", "t2c+", "r2", 3);
+        double t_start_Q12 = abs_time();
+        reorder("s3c_v12", "r1", "145623");
+        mult("r1", "t2c+_v1", "r2", 3);
         reorder("r2", "r3", "1423");
-        closed("r3", "r4");
-        perm("r4", "(12)");
-        update(result_name, -0.5, "r4");
+        perm("r3", "(12)");
+        update(result_name, -0.5, "r3");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q12", t_start_Q12);
 
         // Q13
-        reorder("s3c+", "r1", "124356");
-        reorder("t2c", "r2", "3412");
+        double t_start_Q13 = abs_time();
+        reorder("s3c+_v12", "r1", "124356");
+        reorder("t2c_v1", "r2", "3412");
         mult("r1", "r2", "r3", 3);
-        closed("r3", "r4");
-        perm("r4", "(34)");
-        update(result_name, -0.5, "r4");
+        perm("r3", "(34)");
+        update(result_name, -0.5, "r3");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q13", t_start_Q13);
 
         // Q14
-        reorder("t3c", "r1", "456123");
-        mult("t3c+", "r1", "r2", 4);
-        closed("r2", "r3");
-        update(result_name, 1.0 / 6.0, "r3");
+        double t_start_Q14 = abs_time();
+        reorder("t3c_v12", "r1", "456123");
+        mult("t3c+_v12", "r1", "r2", 4);
+        update(result_name, 1.0 / 6.0, "r2");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q14", t_start_Q14);
 
         // Q15
-        reorder("s3c+", "r1", "245613");
-        reorder("s3c", "r2", "152346");
+        double t_start_Q15 = abs_time();
+        reorder("s3c+_v2", "r1", "245613");
+        reorder("s3c_v2", "r2", "152346");
         mult("r2", "r1", "r3", 4);
         reorder("r3", "r4", "1342");
-        closed("r4", "r5");
-        perm("r5", "(12|34)");
-        update(result_name, -0.25, "r5");
+        perm("r4", "(12|34)");
+        update(result_name, -0.25, "r4");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q15", t_start_Q15);
 
         // Q16
+        double t_start_Q16 = abs_time();
         reorder("x3c+", "r1", "456123");
         mult("x3c", "r1", "r2", 4);
-        closed("r2", "r3");
-        update(result_name, 1.0 / 6.0, "r3");
+        update(result_name, 1.0 / 6.0, "r2");
         restore_stack_pos(pos);
+        print_time_mem_usage("Q16", t_start_Q16);
     }
 }

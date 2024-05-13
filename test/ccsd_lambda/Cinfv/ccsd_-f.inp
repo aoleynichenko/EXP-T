@@ -1,0 +1,13 @@
+sector 0h0p
+model ccd
+diis 500
+maxiter 200
+disk_usage 0
+conv 1e-10
+
+occ 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+#reuse 2-integrals amplitudes
+oneprop -1e-5 0 "ZDIPLEN"
+#analyt_prop ZDIPLEN
+

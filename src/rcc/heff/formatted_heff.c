@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -65,8 +65,8 @@ void write_formatted_heff(int sect_h, int sect_p, size_t *block_dims, double com
 
 
 /**
- * Writes total energy to the file with formatted Heff.
- * file will be truncated
+ * Trites total energy to the file with formatted Heff.
+ * The file will be truncated
  */
 void write_formatted_heff_0h0p(double total_energy)
 {

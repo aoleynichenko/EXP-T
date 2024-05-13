@@ -1,0 +1,100 @@
+
+	**********************************************************************************
+	**                                                                              **
+	**           program for rotational-vibrational levels and properties           **
+	**                              of diatomic molecules                           **
+	**                                                                              **
+	**                              2022 A. Oleynichenko                            **
+	**                       compiled Apr 18 2024 16:01:16                          **
+	**                                                                              **
+	**********************************************************************************
+
+ > started at Thu May  2 19:03:20 2024
+
+ > echo of the input file
+
+   #
+   # second excited state of HgH
+   # A2Pi_3/2
+   #
+   
+   # Hg-202
+   masses 1.00782503223 201.97064340
+   
+   rotlevels 0 0
+   viblevels 0 100
+   
+   # numerov solver is used by default
+   grid_size 1000
+   
+   potential angstrom cm
+   1.30    35024.65
+   1.40    29369.19
+   1.50    26910.92
+   1.60    26405.67
+   1.70    27069.65
+   1.80    28402.81
+   1.90    30085.01
+   2.00    31912.63
+   2.10    33756.97
+   end
+
+ > input data:
+
+   atomic mass 1       : 1.00782503 (amu)
+   atomic mass 2       : 201.97064340 (amu)
+   net charge          : +0
+   reduced mass        : 1.00282100 (amu) = 1828.03085016 (electron masses)
+   vibrational levels  : from 0 to 100
+   rotational levels   : from 0 to 0
+   elec transition     : no
+   write wavefun files : no
+   grid size           : 1000 points
+   solver (integrator) : numerov
+   mapping of r grid   : identity = off
+
+           r [a.u.]          U1(r) [a.u.]  
+         2.456643962014      0.159584047516
+         2.645616574476      0.133815875746
+         2.834589186939      0.122615173484
+         3.023561799401      0.120313085098
+         3.212534411864      0.123338400579
+         3.401507024326      0.129412724485
+         3.590479636789      0.137077391647
+         3.779452249252      0.145404641082
+         3.968424861714      0.153808072442
+
+ > begin ground state potential
+
+ > equilibrium parameters
+
+   e(min) = 0.120268776574 a.u. = 26395.945403 cm^-1
+   re     = 3.0003 a.u. = 1.5877 angstrom
+
+ > analysis in the harmonic oscillator + rigid rotor approximation
+
+   we = 2055.7248 cm^-1
+   Be = 6.668674 cm^-1
+   De = 0.000281 cm^-1
+
+ > analysis in the morse approximation
+
+   (parameters are estimated at the minimum point only)
+   alpha = 0.6329 bohr^-1
+   De    = 0.200217 a.u. = 43942 cm^-1
+   we    = 2055.72 cm^-1
+   wexe  = 24.04 cm^-1
+   vmax  = 42
+
+ > rovibrational energy levels
+
+                        energy           < r >         < B_v >         <prop>
+     J   v             (cm^-1)           (Ang)         (cm^-1)               
+
+@    0   0           1011.2705        1.607763        6.566584        0.000000
+@    0   1           2983.1614        1.657089        6.295744        0.000000
+@    0   2           4924.1864        1.705819        6.032176        0.000000
+@    0   3           6978.0326        1.728221        5.935838        0.000000
+
+ > finished at Thu May  2 19:03:26 2024
+

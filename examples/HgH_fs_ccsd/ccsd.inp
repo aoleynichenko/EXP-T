@@ -1,0 +1,14 @@
+# Test:
+# (1) HgH molecule, FSCC scheme: HgH+ -> HgH
+# (2) hamiltionian: 2-comp gatchina ECP
+# (3) symmetry Cinfv
+# (4) sector (0h,1p)
+
+title "Test HgH+ -> HgH/gatchina ECP/Cinfv"
+sector 0h1p
+nactp 6
+conv 1e-9
+maxiter 200
+diis 100
+
+

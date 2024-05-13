@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -33,7 +33,6 @@
 #include <stdio.h>
 
 #include "error.h"
-#include "datamodel.h"
 #include "spinors.h"
 
 
@@ -45,14 +44,8 @@
  */
 int rank(char *name)
 {
-    diagram_t *dg;
-
-    dg = diagram_stack_find(name);
-    if (dg == NULL) {
-        errquit("rank(): diagram '%s' not found", name);
-    }
-
-    return dg->rank;
+    assert_diagram_exists(name);
+    return diagram_stack_find(name)->rank;
 }
 
 
@@ -63,13 +56,8 @@ int rank(char *name)
  */
 void summary(char *name)
 {
-    diagram_t *diag;
-
-    diag = diagram_stack_find(name);
-    if (diag == NULL) {
-        errquit("diagram '%s' not found", name);
-    }
-
+    assert_diagram_exists(name);
+    diagram_t *diag = diagram_stack_find(name);
     diagram_summary(diag);
 }
 
@@ -82,14 +70,9 @@ void summary(char *name)
  */
 void prt(char *name)
 {
-    diagram_t *dg;
-
-    dg = diagram_stack_find(name);
-    if (dg == NULL) {
-        errquit("prt(): diagram '%s' not found", name);
-    }
-
-    diagram_print(dg);
+    assert_diagram_exists(name);
+    diagram_t *dg = diagram_stack_find(name);
+    diagram_debug_print(dg);
 }
 
 
@@ -98,13 +81,10 @@ void prt(char *name)
  */
 size_t count_amplitudes(char *diagram_name)
 {
-    size_t num_amplitudes = 0;
-
+    assert_diagram_exists(diagram_name);
     diagram_t *diag = diagram_stack_find(diagram_name);
-    if (diag == NULL) {
-        errquit("count_amplitudes(): diagram '%s' is not found", diagram_name);
-    }
 
+    size_t num_amplitudes = 0;
     for (size_t iblock = 0; iblock < diag->n_blocks; iblock++) {
         block_t *block = diag->blocks[iblock];
 
@@ -120,19 +100,15 @@ size_t count_amplitudes(char *diagram_name)
 }
 
 
-
 /**
  * counts amplitudes with absolute values in the given range.
  */
 size_t count_amplitudes_in_range(char *diagram_name, double lower_bound, double upper_bound)
 {
-    size_t num_amplitudes = 0;
-
+    assert_diagram_exists(diagram_name);
     diagram_t *diag = diagram_stack_find(diagram_name);
-    if (diag == NULL) {
-        errquit("count_amplitudes_in_range(): diagram '%s' is not found", diagram_name);
-    }
 
+    size_t num_amplitudes = 0;
     for (size_t iblock = 0; iblock < diag->n_blocks; iblock++) {
         block_t *block = diag->blocks[iblock];
 
@@ -172,15 +148,17 @@ void print_amplitude_distribution_analysis(char *diagram_name)
     while (upper_bound >= 1e-15) {
         size_t num_in_range = count_amplitudes_in_range(diagram_name, lower_bound, upper_bound);
 
-        printf("  [%6.0e :%6.0e ]%16ld  %4.1f%%\n", lower_bound, upper_bound, num_in_range, 100.0 * ((double) num_in_range) / num_total);
+        printf("  [%6.0e :%6.0e ]%16ld  %4.1f%%\n", lower_bound, upper_bound, num_in_range,
+               100.0 * ((double) num_in_range) / ((double) num_total));
 
-        upper_bound /= 10;
-        lower_bound /= 10;
+        upper_bound /= 10.0;
+        lower_bound /= 10.0;
     }
 
     // all remaining amplitudes
     lower_bound = 0.0;
     size_t num_in_range = count_amplitudes_in_range(diagram_name, lower_bound, upper_bound);
-    printf("  [%6.0e :%6.0e ]%16ld  %4.1f%%\n", lower_bound, upper_bound, num_in_range, 100.0 * ((double) num_in_range) / num_total);
+    printf("  [%6.0e :%6.0e ]%16ld  %4.1f%%\n", lower_bound, upper_bound, num_in_range,
+           100.0 * ((double) num_in_range) / ((double) num_total));
     printf("\n");
 }

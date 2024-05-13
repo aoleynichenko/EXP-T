@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -144,15 +144,9 @@ void parse_argv(int argc, char **argv, char *input_name, char **scratch_dir_path
 
 void display_version()
 {
-#ifdef VERSION_DEVEL
-    printf("expt v. %d.%d.%d (%d %s %d) development\n",
-           CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
-           CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
-#else
     printf("expt v. %d.%d.%d (%d %s %d) public\n",
            CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
            CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
-#endif
 
 #if defined __ICC
     printf("Intel C Compiler %d (%s)\n", __ICC, __VERSION__);

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -28,7 +28,7 @@
 #ifndef CC_DIIS_H_INCLUDED
 #define CC_DIIS_H_INCLUDED
 
-#include "datamodel.h"
+#include "engine.h"
 
 #define DIIS_MAX 1000
 
@@ -54,6 +54,7 @@ typedef struct {
     int do_t1;
     int do_t2;
     int do_t3;
+    double *err_matrix;  // matrix of scalar products between error vectors (e_i,e_j)
 } diis_queue_t;
 
 diis_queue_t *new_diis_queue(int do_t1, int do_t2, int do_t3);

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -38,7 +38,6 @@
 #include "diis.h"
 #include "engine.h"
 #include "heff.h"
-#include "datamodel.h"
 #include "options.h"
 #include "sort.h"
 #include "spinors.h"
@@ -50,109 +49,107 @@ void heff12_ccsd_const();
 
 void sort_integrals_1h2p();
 
-int solve_amplitude_equations_1h2p();
-
-void linsys_solver();
-
-int iterative_solver();
-
-void add_eps_to_diagonal(char *name);
-
-void calc_1h2p_intermediates();
-
 void init_amplitudes_1h2p();
+
+void const_terms_1h2p();
 
 void construct_doubles_1h2p();
 
+void construct_triples_1h2p(int pt_order);
+
+void construct_triples_1h2p_const_terms(int pt_order);
+
 void construct_folded_1h2p();
 
-void ampl_equations_1h2p_D1();
+void t3_contrib_to_folded_1h2p(int pt_order);
 
-void ampl_equations_1h2p_D2a_1();
+void ampl_equations_1h2p_D1_const();
+
+void ampl_equations_1h2p_D2a_1_const();
 
 void ampl_equations_1h2p_D2a_2();
 
-void ampl_equations_1h2p_D2b();
+void ampl_equations_1h2p_D2b_const();
 
-void ampl_equations_1h2p_D2c();
+void ampl_equations_1h2p_D2c_const();
 
-void ampl_equations_1h2p_D2d();
+void ampl_equations_1h2p_D2d_const();
 
-void ampl_equations_1h2p_D2e_1();
+void ampl_equations_1h2p_D2e_1_const();
 
-void ampl_equations_1h2p_D2e_2();
+void ampl_equations_1h2p_D2e_2_const();
 
-void ampl_equations_1h2p_D3a();
+void ampl_equations_1h2p_D3a_const();
 
-void ampl_equations_1h2p_D3b();
+void ampl_equations_1h2p_D3b_const();
 
-void ampl_equations_1h2p_D3c();
+void ampl_equations_1h2p_D3c_const();
 
-void ampl_equations_1h2p_D3d_1();
+void ampl_equations_1h2p_D3d_1_const();
 
 void ampl_equations_1h2p_D3d_2();
 
-void ampl_equations_1h2p_D4a();
+void ampl_equations_1h2p_D4a_const();
 
-void ampl_equations_1h2p_D4b_1();
+void ampl_equations_1h2p_D4b_1_const();
 
-void ampl_equations_1h2p_D4b_2();
+void ampl_equations_1h2p_D4b_2_const();
 
-void ampl_equations_1h2p_D5a();
+void ampl_equations_1h2p_D5a_const();
 
 void ampl_equations_1h2p_D5b_1();
 
-void ampl_equations_1h2p_D5b_2();
+void ampl_equations_1h2p_D5b_2_const();
 
-void ampl_equations_1h2p_D5c_1();
+void ampl_equations_1h2p_D5c_1_const();
 
-void ampl_equations_1h2p_D5c_2();
+void ampl_equations_1h2p_D5c_2_const();
 
-void ampl_equations_1h2p_D5d_1();
+void ampl_equations_1h2p_D5d_1_const();
 
-void ampl_equations_1h2p_D5d_2();
+void ampl_equations_1h2p_D5d_2_const();
 
-void ampl_equations_1h2p_D5e_1();
+void ampl_equations_1h2p_D5e_1_const();
 
-void ampl_equations_1h2p_D5e_2();
+void ampl_equations_1h2p_D5e_2_const();
 
-void ampl_equations_1h2p_D5f();
+void ampl_equations_1h2p_D5f_const();
 
 void ampl_equations_1h2p_D5g_1();
 
-void ampl_equations_1h2p_D5g_2();
+void ampl_equations_1h2p_D5g_2_const();
 
-void ampl_equations_1h2p_D5h();
+void ampl_equations_1h2p_D5h_const();
 
-void ampl_equations_1h2p_D6a();
+void ampl_equations_1h2p_D6a_const();
 
-void ampl_equations_1h2p_D6b();
+void ampl_equations_1h2p_D6b_const();
 
-void ampl_equations_1h2p_D6c_1();
+void ampl_equations_1h2p_D6c_1_const();
 
-void ampl_equations_1h2p_D6c_2();
+void ampl_equations_1h2p_D6c_2_const();
 
-void ampl_equations_1h2p_D7a();
+void ampl_equations_1h2p_D7a_const();
 
-void ampl_equations_1h2p_D7b();
+void ampl_equations_1h2p_D7b_const();
 
-void ampl_equations_1h2p_D7c_1();
+void ampl_equations_1h2p_D7c_1_const();
 
-void ampl_equations_1h2p_D7c_2();
+void ampl_equations_1h2p_D7c_2_const();
 
-void ampl_equations_1h2p_D7d();
+void ampl_equations_1h2p_D7d_const();
 
 void ampl_equations_1h2p_D7e_1();
 
-void ampl_equations_1h2p_D7e_2();
+void ampl_equations_1h2p_D7e_2_const();
 
-void ampl_equations_1h2p_D8a_1();
+void ampl_equations_1h2p_D8a_1_const();
 
-void ampl_equations_1h2p_D8a_2();
+void ampl_equations_1h2p_D8a_2_const();
 
-void ampl_equations_1h2p_D8b();
+void ampl_equations_1h2p_D8b_const();
 
-void ampl_equations_1h2p_D9();
+void ampl_equations_1h2p_D9_const();
 
 void ampl_equations_1h2p_folded_F1();
 
@@ -173,6 +170,8 @@ void ampl_equations_1h2p_folded_F8();
 void ampl_equations_1h2p_folded_F9();
 
 void ampl_equations_1h2p_folded_F10();
+
+void t3_contrib_to_doubles_1h2p(int pt_order);
 
 void diag_heff_1h2p_i_jk_c_ab__inv_h2_p13_const(int pt_order);
 
@@ -216,6 +215,8 @@ void diag_heff_1h2p_k_ij_abc__inv_h3_p13_const(int pt_order);
 
 void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *new_valence, int extract_valence);
 
+void print_time_mem_usage(char *diagram_name, double t_start);
+
 
 int sector_1h2p(cc_options_t *opts)
 {
@@ -235,6 +236,8 @@ int sector_1h2p(cc_options_t *opts)
     opts->curr_sector_h = 1;
     opts->curr_sector_p = 2;
 
+    int triples = triples_enabled();
+
     // setup shifts for the IH-like technique by A. V. Zaitsevskii
     if (intham_imms_in_sector(1, 2)) {
         intham_imms_setup(1, 2);
@@ -242,20 +245,31 @@ int sector_1h2p(cc_options_t *opts)
 
     sort_integrals_1h2p();
     init_amplitudes_1h2p();
-    predict_intruders_for_diagram("m2nw", 10);
+    const_terms_1h2p();
+    intruder_state_analysis(NULL, "m2c", triples ? "m3c" : NULL);
 
     /*
      * initial approximation to Veff{1h2p}.
      * includes diagrams independent on the T{1h2p} cluster amplitudes.
      */
-    heff12_ccsd_const();
+    // CCSD only
+    if (!triples) {
+        heff12_ccsd_const();
+    }
 
     /*
      * main loop
      */
     int success = solve_amplitude_equations(
-            1, 2, NULL, NULL, "m2c", "m2nw", NULL, NULL, NULL,
-            NULL, construct_doubles_1h2p, NULL, construct_folded_1h2p
+            1, 2,
+            NULL, NULL,
+            "m2c", "m2nw",
+            triples ? "m3c" : NULL, triples ? "m3nw" : NULL,
+            triples ? "veff12" : NULL,
+            NULL,
+            construct_doubles_1h2p,
+            construct_triples_1h2p,
+            construct_folded_1h2p
     );
     if (success == EXIT_FAILURE) {
         return EXIT_FAILURE;
@@ -264,17 +278,20 @@ int sector_1h2p(cc_options_t *opts)
     /*
      * analyze cluster amplitudes and write them to disk
      */
-    print_cluster_operator_analysis(1, 2, NULL, "m2c", NULL);
-    save_cluster_amplitudes(1, 2, NULL, "m2c", NULL, NULL);
+    print_cluster_operator_analysis(1, 2, NULL, "m2c", triples ? "m3c" : NULL);
+    save_cluster_amplitudes(1, 2, NULL, "m2c", triples ? "m3c" : NULL, "veff12");
     if (cc_opts->do_flush_amplitudes_txt) {
-        save_cluster_amplitudes_formatted(1, 2, NULL, "m2c", NULL);
+        save_cluster_amplitudes_formatted(1, 2, NULL, "m2c", triples ? "m3c" : NULL);
     }
 
     /*
      * effective Hamiltonian construction and analysis
      */
-    copy("veff12_const", "veff12");
-    heff12_ccsd_1h2p_dependent();
+    if (!triples) {
+        // for CCSD only
+        copy("veff12_const", "veff12");
+        heff12_ccsd_1h2p_dependent();
+    }
 
     heff_analysis(1, 2, "veff01", "veff10", "veff11", "veff02", "veff12");
 
@@ -314,6 +331,7 @@ void sort_integrals_1h2p()
     request_sorting("ppvh", "ppph", "0010", "1234");
 
     request_sorting("vphh", "pphh", "1000", "1234");
+    request_sorting("vpph", "ppph", "1000", "1234");
     request_sorting("phpg", "phph", "0001", "1234");
     request_sorting("pppg", "ppph", "0001", "1234");
     request_sorting("ppph", "ppph", "0000", "1234");
@@ -352,26 +370,126 @@ void sort_integrals_1h2p()
 
 void init_amplitudes_1h2p()
 {
-    tmplt("m2nw", "ppph", "1101", "1234", NOT_PERM_UNIQUE);
-    copy("m2nw", "m2c");
+    int triples = (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) ? 1 : 0;
+    int calc_t2 = 1;
+    int calc_t3 = 1;
+    int calc_veff = 1;
+
+    printf("\n Initialization of cluster amplitudes ...\n");
 
     if (cc_opts->reuse_amplitudes[1][2]) {
         printf(" Trying to read amplitudes and effective interaction (sector 1h2p) from disk ...\n");
         // Doubles
-        if (diagram_read("m2c.dg") != NULL) {
-            printf(" T{1h2p}_1 amplitudes successfully read from disk\n");
+        if (diagram_read_binary("m2c.dg") != NULL) {
+            calc_t2 = 0;
+            printf(" T{1h2p}_2 amplitudes successfully read from disk\n");
         }
         else {
-            printf(" T{1h2p}_1 amplitudes will be calculated\n");
+            printf(" T{1h2p}_2 amplitudes will be calculated\n");
         }
-        if (diagram_read("veff12.dg") != NULL) {
+        if (diagram_read_binary("veff12.dg") != NULL) {
+            calc_veff = 0;
             printf(" Heff{1h2p} diagram successfully read from disk\n");
         }
         else {
             printf(" Heff{1h2p} diagram will be calculated\n");
         }
+        // Triples
+        if (triples) {
+            if (diagram_read_binary("m3c.dg") != NULL) {
+                calc_t3 = 0;
+                printf(" T{1h2p}_3 amplitudes successfully read from disk\n");
+            }
+            else {
+                printf(" T{1h2p}_3 amplitudes will be calculated\n");
+            }
+        }
     }
+
+    if (calc_t2) {
+        tmplt("m2nw", "ppph", "1101", "1234", NOT_PERM_UNIQUE);
+        copy("m2nw", "m2c");
+    }
+    if (triples && calc_t3) {
+        tmplt("m3nw", "pphpph", "110001", "123456", NOT_PERM_UNIQUE);
+        copy("m3nw", "m3c");
+    }
+
     printf("\n");
+}
+
+
+/**
+ * In sector 0h2p amplitude equations there are diagrams which are independent
+ * on the X{01}_2 amplitudes and can be evaluated only once -- at
+ * start of the calculation. They include only f, V, T{00}_1, T{00}_2, T{01}_1,
+ * T{01}_2 oper-s.
+ */
+void const_terms_1h2p()
+{
+    timer_new_entry("const_s12", "Constant part of 1h2p amplitudes");
+    timer_start("const_s12");
+
+    printf(" Construction of T^(1h2p)-independent contributions to the FSCC-equations ...\n");
+
+    tmplt("m2_0", "ppph", "1101", "1234", NOT_PERM_UNIQUE);
+    if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
+        tmplt("m3_0", "pphpph", "110001", "123456", IS_PERM_UNIQUE);
+    }
+    dg_stack_pos_t pos = get_stack_pos();
+
+    // constant contributions to doubles
+    ampl_equations_1h2p_D1_const();
+    ampl_equations_1h2p_D2a_1_const();
+    //ampl_equations_1h2p_D2a_2();
+    ampl_equations_1h2p_D2b_const();
+    ampl_equations_1h2p_D2c_const();
+    ampl_equations_1h2p_D2d_const();
+    ampl_equations_1h2p_D2e_1_const();
+    ampl_equations_1h2p_D2e_2_const();
+    ampl_equations_1h2p_D3a_const();
+    ampl_equations_1h2p_D3b_const();
+    ampl_equations_1h2p_D3c_const();
+    ampl_equations_1h2p_D3d_1_const();
+    //ampl_equations_1h2p_D3d_2();
+    ampl_equations_1h2p_D4a_const();
+    ampl_equations_1h2p_D4b_1_const();
+    ampl_equations_1h2p_D4b_2_const();
+    ampl_equations_1h2p_D5a_const();
+    //ampl_equations_1h2p_D5b_1();
+    ampl_equations_1h2p_D5b_2_const();
+    ampl_equations_1h2p_D5c_1_const();
+    ampl_equations_1h2p_D5c_2_const();
+    ampl_equations_1h2p_D5d_1_const();
+    ampl_equations_1h2p_D5d_2_const();
+    ampl_equations_1h2p_D5e_1_const();
+    ampl_equations_1h2p_D5e_2_const();
+    ampl_equations_1h2p_D5f_const();
+    //ampl_equations_1h2p_D5g_1();
+    ampl_equations_1h2p_D5g_2_const();
+    ampl_equations_1h2p_D5h_const();
+    ampl_equations_1h2p_D6a_const();
+    ampl_equations_1h2p_D6b_const();
+    ampl_equations_1h2p_D6c_1_const();
+    ampl_equations_1h2p_D6c_2_const();
+    ampl_equations_1h2p_D7a_const();
+    ampl_equations_1h2p_D7b_const();
+    ampl_equations_1h2p_D7c_1_const();
+    ampl_equations_1h2p_D7c_2_const();
+    ampl_equations_1h2p_D7d_const();
+    //ampl_equations_1h2p_D7e_1();
+    ampl_equations_1h2p_D7e_2_const();
+    ampl_equations_1h2p_D8a_1_const();
+    ampl_equations_1h2p_D8a_2_const();
+    ampl_equations_1h2p_D8b_const();
+    ampl_equations_1h2p_D9_const();
+
+    // constant contributions to triples
+    if (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) {
+        construct_triples_1h2p_const_terms(PT_INF);
+    }
+
+    timer_stop("const_s12");
 }
 
 
@@ -380,50 +498,58 @@ void construct_doubles_1h2p()
     /*
      * (V\Omega)_conn
      */
-    ampl_equations_1h2p_D1();
-    ampl_equations_1h2p_D2a_1();
+    copy("m2_0", "m2nw");
+
+    //ampl_equations_1h2p_D1_const();
+    //ampl_equations_1h2p_D2a_1_const();
     ampl_equations_1h2p_D2a_2();
-    ampl_equations_1h2p_D2b();
-    ampl_equations_1h2p_D2c();
-    ampl_equations_1h2p_D2d();
-    ampl_equations_1h2p_D2e_1();
-    ampl_equations_1h2p_D2e_2();
-    ampl_equations_1h2p_D3a();
-    ampl_equations_1h2p_D3b();
-    ampl_equations_1h2p_D3c();
-    ampl_equations_1h2p_D3d_1();
+    //ampl_equations_1h2p_D2b_const();
+    //ampl_equations_1h2p_D2c_const();
+    //ampl_equations_1h2p_D2d_const();
+    //ampl_equations_1h2p_D2e_1_const();
+    //ampl_equations_1h2p_D2e_2_const();
+    //ampl_equations_1h2p_D3a_const();
+    //ampl_equations_1h2p_D3b_const();
+    //ampl_equations_1h2p_D3c_const();
+    //ampl_equations_1h2p_D3d_1_const();
     ampl_equations_1h2p_D3d_2();
-    ampl_equations_1h2p_D4a();
-    ampl_equations_1h2p_D4b_1();
-    ampl_equations_1h2p_D4b_2();
-    ampl_equations_1h2p_D5a();
+    //ampl_equations_1h2p_D4a_const();
+    //ampl_equations_1h2p_D4b_1_const();
+    //ampl_equations_1h2p_D4b_2_const();
+    //ampl_equations_1h2p_D5a_const();
     ampl_equations_1h2p_D5b_1();
-    ampl_equations_1h2p_D5b_2();
-    ampl_equations_1h2p_D5c_1();
-    ampl_equations_1h2p_D5c_2();
-    ampl_equations_1h2p_D5d_1();
-    ampl_equations_1h2p_D5d_2();
-    ampl_equations_1h2p_D5e_1();
-    ampl_equations_1h2p_D5e_2();
-    ampl_equations_1h2p_D5f();
+    //ampl_equations_1h2p_D5b_2_const();
+    //ampl_equations_1h2p_D5c_1_const();
+    //ampl_equations_1h2p_D5c_2_const();
+    //ampl_equations_1h2p_D5d_1_const();
+    //ampl_equations_1h2p_D5d_2_const();
+    //ampl_equations_1h2p_D5e_1_const();
+    //ampl_equations_1h2p_D5e_2_const();
+    //ampl_equations_1h2p_D5f_const();
     ampl_equations_1h2p_D5g_1();
-    ampl_equations_1h2p_D5g_2();
-    ampl_equations_1h2p_D5h();
-    ampl_equations_1h2p_D6a();
-    ampl_equations_1h2p_D6b();
-    ampl_equations_1h2p_D6c_1();
-    ampl_equations_1h2p_D6c_2();
-    ampl_equations_1h2p_D7a();
-    ampl_equations_1h2p_D7b();
-    ampl_equations_1h2p_D7c_1();
-    ampl_equations_1h2p_D7c_2();
-    ampl_equations_1h2p_D7d();
+    //ampl_equations_1h2p_D5g_2_const();
+    //ampl_equations_1h2p_D5h_const();
+    //ampl_equations_1h2p_D6a_const();
+    //ampl_equations_1h2p_D6b_const();
+    //ampl_equations_1h2p_D6c_1_const();
+    //ampl_equations_1h2p_D6c_2_const();
+    //ampl_equations_1h2p_D7a_const();
+    //ampl_equations_1h2p_D7b_const();
+    //ampl_equations_1h2p_D7c_1_const();
+    //ampl_equations_1h2p_D7c_2_const();
+    //ampl_equations_1h2p_D7d_const();
     ampl_equations_1h2p_D7e_1();
-    ampl_equations_1h2p_D7e_2();
-    ampl_equations_1h2p_D8a_1();
-    ampl_equations_1h2p_D8a_2();
-    ampl_equations_1h2p_D8b();
-    ampl_equations_1h2p_D9();
+    //ampl_equations_1h2p_D7e_2_const();
+    //ampl_equations_1h2p_D8a_1_const();
+    //ampl_equations_1h2p_D8a_2_const();
+    //ampl_equations_1h2p_D8b_const();
+    //ampl_equations_1h2p_D9_const();
+
+    // Triples contribution to Doubles
+    int triples = (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) ? 1 : 0;
+    if (triples) {
+        t3_contrib_to_doubles_1h2p(PT_INF);
+    }
 }
 
 
@@ -435,7 +561,8 @@ void construct_folded_1h2p()
     /*
      * effective interaction will be used in folded diagrams F9 and F10
      */
-    if (cc_opts->hughes_kaldor_1h2p == 0) {
+    int triples = (cc_opts->cc_model >= CC_MODEL_CCSDT_1A) ? 1 : 0;
+    if (!triples && cc_opts->hughes_kaldor_1h2p == 0) {
         copy("veff12_const", "veff12");
         heff12_ccsd_1h2p_dependent();
     }
@@ -457,6 +584,13 @@ void construct_folded_1h2p()
         ampl_equations_1h2p_folded_F10();
     }
 
+    /*
+     * triples contributions to folded diagrams
+     */
+    if (triples) {
+        t3_contrib_to_folded_1h2p(PT_INF);
+    }
+
     timer_stop("12-CCSD-Folded");
 }
 
@@ -466,20 +600,21 @@ void construct_folded_1h2p()
  */
 
 
-void ampl_equations_1h2p_D1()
+void ampl_equations_1h2p_D1_const()
 {
-    tmplt("m2nw", "ppph", "1101", "1234", NOT_PERM_UNIQUE);
-    update("m2nw", 1.0, "vvpg");
+    update("m2_0", 1.0, "vvpg");
 }
 
-void ampl_equations_1h2p_D2a_1()
+
+void ampl_equations_1h2p_D2a_1_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pg", "pgr", "21");
     mult("x2c", "pgr", "r1", 1);
-    update("m2nw", 1.0, "r1");
+    update("m2_0", 1.0, "r1");
     restore_stack_pos(pos);
 }
+
 
 void ampl_equations_1h2p_D2a_2()
 {
@@ -492,62 +627,68 @@ void ampl_equations_1h2p_D2a_2()
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D2b()
+
+void ampl_equations_1h2p_D2b_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("e2c", "e2cr_", "3412");
     mult("e2cr_", "vh", "r1", 1);
     reorder("r1", "r2", "3412");
     perm("r2", "(12)");
-    update("m2nw", -1.0, "r2");
+    update("m2_0", -1.0, "r2");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D2c()
+
+void ampl_equations_1h2p_D2c_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     mult("ppgp", "x2c", "r1", 2);
     reorder("r1", "r2", "4321");
-    update("m2nw", 0.5, "r2");
+    update("m2_0", 0.5, "r2");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D2d()
+
+void ampl_equations_1h2p_D2d_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("h2c", "h2c_21", "2143");
     reorder("h2c_21", "r1", "3412");
     mult("vvhh", "r1", "r2", 2);
-    update("m2nw", 0.5, "r2");
+    update("m2_0", 0.5, "r2");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D2e_1()
+
+void ampl_equations_1h2p_D2e_1_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("s2c", "r1", "1324");
     mult("r1", "pvhg", "r3", 2);
     reorder("r3", "r4", "1324");
     perm("r4", "(12)");
-    update("m2nw", 1.0, "r4");
+    update("m2_0", 1.0, "r4");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D2e_2()
+
+void ampl_equations_1h2p_D2e_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
-    reorder("e2c", "e2c_1243", "1243");
-    reorder("e2c_1243", "r1", "1324");
-    reorder("pvhp", "r0", "2431");
-    mult("r1", "r0", "r3", 2);
+
+    reorder("vpph", "r1", "1342");
+    reorder("e2c", "r2", "1423");
+    mult("r1", "r2", "r3", 2);
     reorder("r3", "r4", "1324");
     perm("r4", "(12)");
-    reorder("r4", "r5", "2143"); // 1 <-> 2
-    update("m2nw", -1.0, "r5");  // sign is changed
+    update("m2_0", -1.0, "r4");
+
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D3a()
+
+void ampl_equations_1h2p_D3a_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("h2c", "h2c_21", "2143");
@@ -555,11 +696,12 @@ void ampl_equations_1h2p_D3a()
     reorder("pphh", "v1", "3412");
     mult("x2c", "v1", "r1", 2);
     mult("r1", "h2cr_", "r2", 2);
-    update("m2nw", 0.25, "r2");
+    update("m2_0", 0.25, "r2");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D3b()
+
+void ampl_equations_1h2p_D3b_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("e2c", "r1", "1423");
@@ -569,32 +711,37 @@ void ampl_equations_1h2p_D3b()
     mult("r3", "r4", "r5", 2);
     reorder("r5", "r6", "1324");
     perm("r6", "(12)");
-    update("m2nw", -1.0, "r6"); // sign is changed
+    update("m2_0", -1.0, "r6");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D3c()
+
+void ampl_equations_1h2p_D3c_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
-    reorder("pphh", "v1", "3412");
-    mult("s2c", "v1", "r1", 3);
-    reorder("e2c", "e2c_2134", "2134");
-    reorder("e2c_2134", "r2", "2341");
-    mult("r1", "r2", "r3", 1);
-    perm("r3", "(12)");
-    update("m2nw", -0.5, "r3");
+
+    reorder("pphh", "r1", "3412");
+    reorder("e2c", "r2", "3412");
+    mult("s2c", "r1", "r3", 3);
+    mult("r2", "r3", "r4", 1);
+    reorder("r4", "r5", "3412");
+    perm("r5", "(12)");
+    update("m2_0", -0.5, "r5");
+
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D3d_1()
+
+void ampl_equations_1h2p_D3d_1_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("h2c", "t2cr_", "3412");
     mult("t2cr_", "pphh", "r1", 3);
     mult("x2c", "r1", "r2", 1);
-    update("m2nw", -0.5, "r2");
+    update("m2_0", -0.5, "r2");
     restore_stack_pos(pos);
 }
+
 
 void ampl_equations_1h2p_D3d_2()
 {
@@ -608,50 +755,57 @@ void ampl_equations_1h2p_D3d_2()
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D4a()
+
+void ampl_equations_1h2p_D4a_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pvpg", "r1", "2341");
     mult("s1c", "r1", "r2", 1);
     perm("r2", "(12)");
-    update("m2nw", 1.0, "r2");
+    update("m2_0", 1.0, "r2");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D4b_1()
+
+void ampl_equations_1h2p_D4b_1_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("vvhg", "r1", "1243");
     reorder("t1c", "t1cr", "21");
     mult("r1", "t1cr", "r2", 1);
     reorder("r2", "r3", "1243");
-    update("m2nw", -1.0, "r3");
+    update("m2_0", -1.0, "r3");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D4b_2()
+
+void ampl_equations_1h2p_D4b_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("vvhp", "r1", "1243");
     reorder("h1c", "t1cr", "21");
     mult("r1", "t1cr", "r2", 1);
     reorder("r2", "r3", "2134");   // 1243 + interchange electrons 1 <-> 2
-    update("m2nw", -1.0, "r3");
+    update("m2_0", -1.0, "r3");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5a()
+
+void ampl_equations_1h2p_D5a_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
-    reorder("ph", "r1", "21");
-    reorder("e2c", "r2", "1342");
-    mult("s1c", "r1", "r3", 1);
-    mult("r2", "r3", "r4", 1);
-    reorder("r4", "r5", "1423");
+
+    reorder("e2c", "r1", "3412");
+    reorder("ph", "r2", "21");
+    mult("s1c", "r2", "r3", 1);
+    mult("r1", "r3", "r4", 1);
+    reorder("r4", "r5", "3412");
     perm("r5", "(12)");
-    update("m2nw", -1.0, "r5");
+    update("m2_0", -1.0, "r5");
+
     restore_stack_pos(pos);
 }
+
 
 void ampl_equations_1h2p_D5b_1()
 {
@@ -666,32 +820,36 @@ void ampl_equations_1h2p_D5b_1()
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5b_2()
+
+void ampl_equations_1h2p_D5b_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("ph", "r1", "21");
     reorder("h1c", "r2", "21");
     mult("x2c", "r1", "r3", 1);
     mult("r3", "r2", "r4", 1);
-    update("m2nw", -1.0, "r4");
+    update("m2_0", -1.0, "r4");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5c_1()
+
+void ampl_equations_1h2p_D5c_1_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
-    reorder("ppph", "r1", "3421");
-    reorder("e2c", "e2c_2134", "2134");  // sign will be changed
-    reorder("e2c_2134", "r2", "2413");
+
+    reorder("ppph", "r1", "3412");
+    reorder("e2c", "r2", "4123");
     mult("s1c", "r1", "r3", 1);
     mult("r3", "r2", "r4", 2);
-    reorder("r4", "r5", "1324");
+    reorder("r4", "r5", "1423");
     perm("r5", "(12)");
-    update("m2nw", -1.0, "r5"); // sign is changed
+    update("m2_0", -1.0, "r5");
+
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5c_2()
+
+void ampl_equations_1h2p_D5c_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("s2c", "r0", "2143");
@@ -702,27 +860,30 @@ void ampl_equations_1h2p_D5c_2()
     reorder("r4", "r5", "1324");
     perm("r5", "(12)");
     reorder("r5", "r6", "2143");
-    update("m2nw", 1.0, "r6");
+    update("m2_0", 1.0, "r6");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5d_1()
+
+void ampl_equations_1h2p_D5d_1_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
-    reorder("pvhh", "r1", "2314");
-    reorder("t1c", "t1cr", "21");
-    mult("t1cr", "r1", "i1", 1);
-    reorder("e2c", "e2c_1243", "1243"); // sign will be changed
-    reorder("e2c_1243", "r2", "1324");
-    mult("r2", "i1", "i2", 2);
-    reorder("i2", "r3", "1423");
-    perm("r3", "(12)");
-    reorder("r3", "r4", "2143");
-    update("m2nw", 1.0, "r4"); // sign is changed
+
+    reorder("vphh", "r1", "1342");
+    reorder("e2c", "r2", "1423");
+    reorder("t1c", "r3", "21");
+    mult("r1", "r2", "r4", 2);
+    reorder("r4", "r5", "1342");
+    mult("r5", "r3", "r6", 1);
+    reorder("r6", "r7", "1243");
+    perm("r7", "(12)");
+    update("m2_0", 1.0, "r7");
+
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5d_2()
+
+void ampl_equations_1h2p_D5d_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pvhh", "r1", "2314");
@@ -732,11 +893,12 @@ void ampl_equations_1h2p_D5d_2()
     mult("r2", "i1", "i2", 2);
     reorder("i2", "r3", "1423");
     perm("r3", "(12)");
-    update("m2nw", -1.0, "r3");
+    update("m2_0", -1.0, "r3");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5e_1()
+
+void ampl_equations_1h2p_D5e_1_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pphg", "r1", "4312");
@@ -744,11 +906,12 @@ void ampl_equations_1h2p_D5e_1()
     mult("x2c", "r1", "i1", 2);
     mult("i1", "t1cr", "r2", 1);
     reorder("r2", "r3", "1243");
-    update("m2nw", -0.5, "r3");
+    update("m2_0", -0.5, "r3");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5e_2()
+
+void ampl_equations_1h2p_D5e_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pphp", "r1", "4312");
@@ -757,11 +920,12 @@ void ampl_equations_1h2p_D5e_2()
     mult("i1", "t1cr", "r2", 1);
     reorder("r2", "r3", "1243");
     reorder("r3", "r4", "2143");
-    update("m2nw", -0.5, "r4");
+    update("m2_0", -0.5, "r4");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5f()
+
+void ampl_equations_1h2p_D5f_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pvhh", "r1", "2341");
@@ -770,9 +934,10 @@ void ampl_equations_1h2p_D5f()
     mult("s1c", "r1", "i1", 1);
     mult("i1", "t2cr", "r2", 2);
     perm("r2", "(12)");
-    update("m2nw", 0.5, "r2");
+    update("m2_0", 0.5, "r2");
     restore_stack_pos(pos);
 }
+
 
 void ampl_equations_1h2p_D5g_1()
 {
@@ -786,41 +951,47 @@ void ampl_equations_1h2p_D5g_1()
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5g_2()
+
+void ampl_equations_1h2p_D5g_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pphg", "r1", "4231");
     mult("r1", "t1c", "i1", 2);
     mult("x2c", "i1", "r2", 1);
-    update("m2nw", 1.0, "r2");
+    update("m2_0", 1.0, "r2");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D5h()
+
+void ampl_equations_1h2p_D5h_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
-    reorder("pvhh", "r1", "2431");
-    mult("r1", "t1c", "i1", 2);
-    reorder("e2c", "e2c_2134", "2134");
-    reorder("e2c_2134", "r2", "2341");
-    mult("i1", "r2", "r3", 1);
-    perm("r3", "(12)");
-    update("m2nw", -1.0, "r3");
+
+    reorder("vphh", "r1", "1342");
+    reorder("e2c", "r2", "1342");
+    mult("r1", "t1c", "r3", 2);
+    mult("r2", "r3", "r4", 1);
+    reorder("r4", "r5", "1423");
+    perm("r5", "(12)");
+    update("m2_0", -1.0, "r5");
+
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D6a()
+
+void ampl_equations_1h2p_D6a_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     mult("ppgp", "s1c", "i1", 1);
     reorder("i1", "r1", "4123");
     mult("s1c", "r1", "r2", 1);
     reorder("r2", "r3", "2143"); // interchange electrons 1 <-> 2
-    update("m2nw", 1.0, "r3");
+    update("m2_0", 1.0, "r3");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D6b()
+
+void ampl_equations_1h2p_D6b_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("t1c", "t1c_21", "21");
@@ -828,11 +999,12 @@ void ampl_equations_1h2p_D6b()
     mult("h1c_21", "vvhh", "i1", 1);
     mult("t1c_21", "i1", "i2", 1);
     reorder("i2", "r1", "3412");
-    update("m2nw", 1.0, "r1");
+    update("m2_0", 1.0, "r1");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D6c_1()
+
+void ampl_equations_1h2p_D6c_1_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("t1c", "r1", "21");
@@ -840,11 +1012,12 @@ void ampl_equations_1h2p_D6c_1()
     mult("r2", "r1", "r3", 1);
     reorder("r3", "r4", "1243");
     perm("r4", "(12)");
-    update("m2nw", -1.0, "r4");
+    update("m2_0", -1.0, "r4");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D6c_2()
+
+void ampl_equations_1h2p_D6c_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pvhp", "r1", "2431");
@@ -854,11 +1027,12 @@ void ampl_equations_1h2p_D6c_2()
     reorder("r4", "r5", "1243");
     perm("r5", "(12)");
     reorder("r5", "r6", "2143");  // interchange electrons 1 <-> 2
-    update("m2nw", -1.0, "r6");
+    update("m2_0", -1.0, "r6");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D7a()
+
+void ampl_equations_1h2p_D7a_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pphh", "vr1", "3412");
@@ -867,11 +1041,12 @@ void ampl_equations_1h2p_D7a()
     mult("s1c", "vr1", "r1", 1);
     mult("s1c", "r1", "r2", 1);
     mult("r2", "t2cr", "r3", 2);
-    update("m2nw", 0.5, "r3");
+    update("m2_0", 0.5, "r3");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D7b()
+
+void ampl_equations_1h2p_D7b_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pphh", "vr1", "3412");
@@ -881,27 +1056,30 @@ void ampl_equations_1h2p_D7b()
     mult("h1cr", "r1", "r2", 1);
     mult("t1cr", "r2", "r3", 1);
     reorder("r3", "r4", "3412");
-    update("m2nw", 0.5, "r4");
+    update("m2_0", 0.5, "r4");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D7c_1()
+
+void ampl_equations_1h2p_D7c_1_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
-    reorder("pphh", "r1", "3142");
-    reorder("e2c", "e2c_2134", "2134");  // the sign will be changed
-    reorder("e2c_2134", "r2", "2413");
-    reorder("t1c", "r5", "21");
-    mult("r2", "r1", "r3", 2);
-    mult("s1c", "r3", "r4", 1);
-    mult("r4", "r5", "r6", 1);
-    reorder("r6", "r7", "1243");
+
+    reorder("pphh", "r1", "1342");
+    reorder("e2c", "r2", "1423");
+    reorder("t1c", "r3", "21");
+    mult("r2", "r1", "r4", 2);
+    mult("r3", "r4", "r5", 1);
+    mult("s1c", "r5", "r6", 1);
+    reorder("r6", "r7", "1324");
     perm("r7", "(12)");
-    update("m2nw", 1.0, "r7");  // sign is changed
+    update("m2_0", 1.0, "r7");
+
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D7c_2()
+
+void ampl_equations_1h2p_D7c_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pphh", "r1", "3142");
@@ -914,24 +1092,27 @@ void ampl_equations_1h2p_D7c_2()
     reorder("r6", "r7", "1243");
     perm("r7", "(12)");
     reorder("r7", "r8", "2143");
-    update("m2nw", -1.0, "r8");
+    update("m2_0", -1.0, "r8");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D7d()
+
+void ampl_equations_1h2p_D7d_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
-    reorder("pphh", "v_", "2431");
-    mult("v_", "t1c", "r1", 2);
-    reorder("r1", "r2", "21");
-    mult("s1c", "r2", "r3", 1);
-    reorder("e2c", "e2c_2134", "2134");
-    reorder("e2c_2134", "t2r", "2341");
-    mult("r3", "t2r", "r4", 1);
-    perm("r4", "(12)");
-    update("m2nw", -1.0, "r4");
+
+    reorder("pphh", "r1", "3142");
+    reorder("e2c", "r2", "3412");
+    mult("r1", "t1c", "r3", 2);
+    mult("s1c", "r3", "r4", 1);
+    mult("r2", "r4", "r5", 1);
+    reorder("r5", "r6", "3412");
+    perm("r6", "(12)");
+    update("m2_0", -1.0, "r6");
+
     restore_stack_pos(pos);
 }
+
 
 void ampl_equations_1h2p_D7e_1()
 {
@@ -947,7 +1128,8 @@ void ampl_equations_1h2p_D7e_1()
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D7e_2()
+
+void ampl_equations_1h2p_D7e_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pphh", "v_", "2431");
@@ -958,11 +1140,12 @@ void ampl_equations_1h2p_D7e_2()
     mult("x2r", "r2", "r3", 1);
     reorder("r3", "r4", "1243");
     reorder("r4", "r5", "2143");  // interchange electrons 1 <-> 2
-    update("m2nw", -1.0, "r5");
+    update("m2_0", -1.0, "r5");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D8a_1()
+
+void ampl_equations_1h2p_D8a_1_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pphp", "r1", "4312");
@@ -971,11 +1154,12 @@ void ampl_equations_1h2p_D8a_1()
     mult("s1c", "r2", "r3", 1);
     mult("r3", "h1cr", "r4", 1);
     reorder("r4", "r5", "2134");  // 1243 + interchange electrons 1<->2
-    update("m2nw", -1.0, "r5");
+    update("m2_0", -1.0, "r5");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D8a_2()
+
+void ampl_equations_1h2p_D8a_2_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pphg", "r1", "4312");
@@ -984,11 +1168,12 @@ void ampl_equations_1h2p_D8a_2()
     mult("s1c", "r2", "r3", 1);
     mult("r3", "t1cr", "r4", 1);
     reorder("r4", "r5", "1243");
-    update("m2nw", -1.0, "r5");
+    update("m2_0", -1.0, "r5");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D8b()
+
+void ampl_equations_1h2p_D8b_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("pvhh", "r1", "2341");
@@ -999,11 +1184,12 @@ void ampl_equations_1h2p_D8b()
     mult("t1cr", "i2", "r2", 1);
     reorder("r2", "r3", "3412");
     perm("r3", "(12)");
-    update("m2nw", 1.0, "r3");
+    update("m2_0", 1.0, "r3");
     restore_stack_pos(pos);
 }
 
-void ampl_equations_1h2p_D9()
+
+void ampl_equations_1h2p_D9_const()
 {
     dg_stack_pos_t pos = get_stack_pos();
     reorder("t1c", "t1cr", "21");
@@ -1014,7 +1200,7 @@ void ampl_equations_1h2p_D9()
     mult("h1cr", "r2", "r3", 1);
     mult("t1cr", "r3", "r4", 1);
     reorder("r4", "r5", "3412");
-    update("m2nw", 1.0, "r5");
+    update("m2_0", 1.0, "r5");
     restore_stack_pos(pos);
 }
 
@@ -1034,6 +1220,7 @@ void ampl_equations_1h2p_folded_F1()
     restore_stack_pos(pos);
 }
 
+
 void ampl_equations_1h2p_folded_F2()
 {
     dg_stack_pos_t pos = get_stack_pos();
@@ -1043,6 +1230,7 @@ void ampl_equations_1h2p_folded_F2()
     restore_stack_pos(pos);
 }
 
+
 void ampl_equations_1h2p_folded_F3()
 {
     dg_stack_pos_t pos = get_stack_pos();
@@ -1051,6 +1239,7 @@ void ampl_equations_1h2p_folded_F3()
     update("m2nw", -0.5, "r2");
     restore_stack_pos(pos);
 }
+
 
 void ampl_equations_1h2p_folded_F4()
 {
@@ -1062,6 +1251,7 @@ void ampl_equations_1h2p_folded_F4()
     update("m2nw", -1.0, "r1_ext");
     restore_stack_pos(pos);
 }
+
 
 void ampl_equations_1h2p_folded_F5()
 {
@@ -1075,6 +1265,7 @@ void ampl_equations_1h2p_folded_F5()
     restore_stack_pos(pos);
 }
 
+
 void ampl_equations_1h2p_folded_F6()
 {
     dg_stack_pos_t pos = get_stack_pos();
@@ -1086,6 +1277,7 @@ void ampl_equations_1h2p_folded_F6()
     update("m2nw", 1.0, "r4");
     restore_stack_pos(pos);
 }
+
 
 void ampl_equations_1h2p_folded_F7()
 {
@@ -1100,6 +1292,7 @@ void ampl_equations_1h2p_folded_F7()
     restore_stack_pos(pos);
 }
 
+
 void ampl_equations_1h2p_folded_F8()
 {
     dg_stack_pos_t pos = get_stack_pos();
@@ -1113,6 +1306,7 @@ void ampl_equations_1h2p_folded_F8()
     restore_stack_pos(pos);
 }
 
+
 void ampl_equations_1h2p_folded_F9()
 {
     dg_stack_pos_t pos = get_stack_pos();
@@ -1123,6 +1317,7 @@ void ampl_equations_1h2p_folded_F9()
     update("m2nw", 1.0, "r2_ext");
     restore_stack_pos(pos);
 }
+
 
 void ampl_equations_1h2p_folded_F10()
 {
@@ -1148,36 +1343,41 @@ void heff12_ccsd_const()
     timer_start("12-CCSD-Heff");
 
     printf("\n Construction of the CCSD eff Hamiltonian in the 1h2p sector (constant part)\n");
+    printf(" type of diagrams        time (sec)  max mem (mb)  max mem (gb)\n");
 
     tmplt("veff12_const", "pphpph", "111111", "123456", NOT_PERM_UNIQUE);
 
-    printf(" [1/4] P(i/jk|c/ab)\n");
+    double t_start = abs_time();
     diag_heff_1h2p_i_jk_c_ab__inv_h2_p13_const(PT_INF);
     diag_heff_1h2p_i_jk_c_ab__inv_h3_p12_const(PT_INF);
     diag_heff_1h2p_i_jk_c_ab__inv_h1_p23_const(PT_INF);
-    //diag_heff_1h2p_i_jk_c_ab__inv_h3_p23_m2c(PT_INF);
+    //diag_heff_1h2p_i_jk_c_ab__inv_h3_p23_m2c(PT_INF);   // S2_1h2p is required
+    print_time_mem_usage("[1/4] P(i/jk|c/ab)", t_start);
 
-    printf(" [2/4] P(ijk|c/ab)\n");
+    t_start = abs_time();
     diag_heff_1h2p_ijk_c_ab__inv_h2_p13_const(PT_INF);
     diag_heff_1h2p_ijk_c_ab__inv_h3_p12_const(PT_INF);
     diag_heff_1h2p_ijk_c_ab__inv_h1_p23_const(PT_INF);
     diag_heff_1h2p_ijk_c_ab__inv_h3_p13_const(PT_INF);
     diag_heff_1h2p_ijk_c_ab__inv_h2_p12_const(PT_INF);
     diag_heff_1h2p_ijk_c_ab__inv_h3_p23_const(PT_INF);
+    print_time_mem_usage("[2/4] P(ijk|c/ab)", t_start);
 
-    printf(" [3/4] P(k/ij|a/bc)\n");
+    t_start = abs_time();
     diag_heff_1h2p_k_ij_a_bc__inv_h1_p23_const(PT_INF);
     diag_heff_1h2p_k_ij_a_bc__inv_h3_p12_const(PT_INF);
     diag_heff_1h2p_k_ij_a_bc__inv_h2_p13_const(PT_INF);
     //diag_heff_1h2p_k_ij_a_bc__inv_h1_p12_m2c(PT_INF);   // S2_1h2p is required
+    print_time_mem_usage("[3/4] P(k/ij|a/bc)", t_start);
 
-    printf(" [4/4] P(k/ij|abc)\n");
+    t_start = abs_time();
     diag_heff_1h2p_k_ij_abc__inv_h1_p23_const(PT_INF);
     diag_heff_1h2p_k_ij_abc__inv_h2_p13_const(PT_INF);
     diag_heff_1h2p_k_ij_abc__inv_h3_p12_const(PT_INF);
     //diag_heff_1h2p_k_ij_abc__inv_h1_p12_m2c(PT_INF);   // S2_1h2p is required
     diag_heff_1h2p_k_ij_abc__inv_h2_p12_const(PT_INF);
     diag_heff_1h2p_k_ij_abc__inv_h3_p13_const(PT_INF);
+    print_time_mem_usage("[4/4] P(k/ij|abc)", t_start);
 
     printf("\n");
 

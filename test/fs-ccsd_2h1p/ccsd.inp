@@ -6,8 +6,8 @@ diis 200
 roots_cutoff 143000 cm
 
 #nthreads 8
-reuse integrals amplitudes
-#reuse amplitudes
+#reuse integrals amplitudes
+reuse amplitudes
 
 maxiter 500
 conv 1e-7

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -39,7 +39,7 @@
 #include "utils.h"
 
 // number of one-particle functions (e.g. spinors)
-int NSPINORS;
+int num_spinors;
 
 // array of spinor attributes
 spinor_attr_t *spinor_info;
@@ -60,7 +60,7 @@ void spinor_labels_to_string(int idx, char *dst);
 
 int get_num_spinors()
 {
-    return NSPINORS;
+    return num_spinors;
 }
 
 
@@ -130,7 +130,7 @@ void get_active_space_size(int *nacth, int *nactp)
     *nacth = 0;
     *nactp = 0;
 
-    for (int i = 0; i < NSPINORS; i++) {
+    for (int i = 0; i < num_spinors; i++) {
         if (is_act_hole(i)) {
             (*nacth)++;
         }
@@ -146,7 +146,7 @@ void get_active_holes_particles(int *nacth, int *nactp, moindex_t *active_holes_
     *nacth = 0;
     *nactp = 0;
 
-    for (int i = 0; i < NSPINORS; i++) {
+    for (int i = 0; i < num_spinors; i++) {
         if (is_act_hole(i)) {
             active_holes_indices[*nacth] = i;
             (*nacth)++;
@@ -163,7 +163,6 @@ void get_active_space(int sect_h, int sect_p, int *n_active, int *active_spinors
 {
     *n_active = 0;
 
-    // TODO: refactor, separate utility function (move to spinors.c)
     int nspinors = get_num_spinors();
     for (int i = 0; i < nspinors; i++) {
         if ((is_act_hole(i) && sect_h > 0) || (is_act_particle(i) && sect_p > 0)) {
@@ -192,7 +191,7 @@ int get_num_electrons()
 {
     int nelec = 0;
 
-    for (size_t i = 0; i < NSPINORS; i++) {
+    for (size_t i = 0; i < num_spinors; i++) {
         nelec += is_hole(i);
     }
 
@@ -204,7 +203,7 @@ int get_num_spinors_irrep(int irrep_number)
 {
     int n_spinors = 0;
 
-    for (size_t i = 0; i < NSPINORS; i++) {
+    for (size_t i = 0; i < num_spinors; i++) {
         if (spinor_info[i].repno == irrep_number) {
             n_spinors++;
         }
@@ -218,7 +217,7 @@ int get_num_electrons_irrep(int irrep_number)
 {
     int n_occupied = 0;
 
-    for (size_t i = 0; i < NSPINORS; i++) {
+    for (size_t i = 0; i < num_spinors; i++) {
         if (spinor_info[i].repno == irrep_number && is_hole(i)) {
             n_occupied++;
         }
@@ -235,7 +234,7 @@ void get_spinor_indices_occupied(int *occ_idx)
 {
     int j = 0;
 
-    for (int i = 0; i < NSPINORS; i++) {
+    for (int i = 0; i < num_spinors; i++) {
         if (is_hole(i)) {
             occ_idx[j] = i;
             j++;
@@ -261,10 +260,10 @@ void get_spinor_info(int idx, int *repno, int *occ, int *active, double *eps)
 
 void create_spinor_info(int n_spinors, int *irrep_numbers, double *spinor_energies, int *occ_numbers)
 {
-    NSPINORS = n_spinors;
+    num_spinors = n_spinors;
 
-    spinor_info = (spinor_attr_t *) cc_malloc(sizeof(spinor_attr_t) * NSPINORS);
-    for (int i = 0; i < NSPINORS; i++) {
+    spinor_info = (spinor_attr_t *) cc_malloc(sizeof(spinor_attr_t) * num_spinors);
+    for (int i = 0; i < num_spinors; i++) {
         spinor_info[i].repno = irrep_numbers[i];
         spinor_info[i].eps = spinor_energies[i];
         spinor_info[i].space_flags = 0;
@@ -349,7 +348,7 @@ void create_spinor_blocks(int tilesize)
     }
 
     /* beautiful table with information about spinor blocks */
-    if (cc_opts->print_level >= CC_PRINT_HIGH) {
+    if (1/*cc_opts->print_level >= CC_PRINT_HIGH*/) {
         printf(" Blocks of molecular spinors:\n");
         print_hyphens(1, 80);
         printf("   #  size%*s%s\n", field_width, "irrep", "  spinor indices");
@@ -462,7 +461,7 @@ void setup_occupation_numbers(cc_options_t *options, int num_spinors, spinor_att
     }
 
     if (options->occ_defined) {
-        for (int i = 0; i < NSPINORS; i++) {
+        for (int i = 0; i < num_spinors; i++) {
             set_occupied(i, options->occ[i]);
         }
         return;
@@ -498,7 +497,7 @@ void setup_occupation_numbers(cc_options_t *options, int num_spinors, spinor_att
 
 void setup_active_space_by_energy(double lower_energy_limit, double upper_energy_limit, int space_flag)
 {
-    for (int i = 0; i < NSPINORS; i++) {
+    for (int i = 0; i < num_spinors; i++) {
         double eps = spinor_info[i].eps;
         if (eps >= lower_energy_limit && eps <= upper_energy_limit) {
             spinor_info[i].space_flags |= space_flag;
@@ -516,10 +515,10 @@ void setup_active_space_by_energy(double lower_energy_limit, double upper_energy
  */
 void setup_active_space_by_total(int nacth, int nactp, int space_flag)
 {
-    spinor_attr_t *sorted_spinor_info = (spinor_attr_t *) cc_malloc(NSPINORS * sizeof(spinor_attr_t));
+    spinor_attr_t *sorted_spinor_info = (spinor_attr_t *) cc_malloc(num_spinors * sizeof(spinor_attr_t));
 
-    memcpy(sorted_spinor_info, spinor_info, sizeof(spinor_attr_t) * NSPINORS);
-    qsort(sorted_spinor_info, NSPINORS, sizeof(spinor_attr_t), spinor_attr_cmp_by_eps);
+    memcpy(sorted_spinor_info, spinor_info, sizeof(spinor_attr_t) * num_spinors);
+    qsort(sorted_spinor_info, num_spinors, sizeof(spinor_attr_t), spinor_attr_cmp_by_eps);
 
     int num_occupied = get_num_electrons();
     double lower_energy_limit = sorted_spinor_info[num_occupied - nacth].eps - 1e-7;
@@ -532,7 +531,7 @@ void setup_active_space_by_total(int nacth, int nactp, int space_flag)
 
 void setup_active_space_by_binary_vector(int *active_vector, int space_flag)
 {
-    for (int i = 0; i < NSPINORS; i++) {
+    for (int i = 0; i < num_spinors; i++) {
         if (active_vector[i] == 1) {
             spinor_info[i].space_flags |= space_flag;
         }
@@ -565,7 +564,7 @@ void setup_active_space_by_irreps(int space_flag)
         int n_inact_h = n_occ - sp->nacth;
 
         int count = 0;
-        for (size_t ispinor = 0; ispinor < NSPINORS; ispinor++) {
+        for (size_t ispinor = 0; ispinor < num_spinors; ispinor++) {
             spinor_attr_t *info = &spinor_info[ispinor];
             if (info->repno != irep) {
                 continue;
@@ -703,7 +702,7 @@ void print_spinor_info_table()
     printf("\n");
     printf("     no    rep         occ    active        one-el energy\n");
     printf("    -------------------------------------------------------\n");
-    for (int i = 0; i < NSPINORS; i++) {
+    for (int i = 0; i < num_spinors; i++) {
 
         spinor_labels_to_string(i, spaces_label);
 

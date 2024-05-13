@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -459,7 +459,7 @@ void write_natural_spinors_formatted(
             n_natorb++;
         }
     }
-    fprintf(f, "NSPINORS %d\n", n_natorb);
+    fprintf(f, "number of spinors: %d\n", n_natorb);
 
     // write NOs
     for (int i = 0; i < n_active; i++) {

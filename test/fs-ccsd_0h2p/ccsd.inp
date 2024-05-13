@@ -4,7 +4,13 @@
 # (3) Basis set: cc-pVDZ (it is just a test!)
 # (4) DC - relativistic, 4-comp
 
+#reuse amplitudes
+print "model vectors"
+#density 0h1p [1/2+]:1
+#analyt_prop ZDIPLEN
+
 nthreads 1
+memory 4 gb
 
 title "Test LiNa/cc-pVDZ/Dirac-Coulomb/sector 0h2p"
 maxiter 500
@@ -12,8 +18,9 @@ conv 1e-7
 sector 0h2p
 nactp 8
 model ccsd
-shifttype real
+shift_type real
 shift 0h2p 3 -0.5
+
 disk_usage 0
 
 

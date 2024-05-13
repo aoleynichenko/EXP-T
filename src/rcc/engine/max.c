@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -25,17 +25,9 @@
  * max/diffmax operations for diagrams.
  */
 
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "engine.h"
-#include "datamodel.h"
-#include "error.h"
 #include "linalg.h"
 #include "options.h"
-#include "spinors.h"
-#include "timer.h"
 
 
 /**
@@ -49,13 +41,8 @@
  */
 void findmax(char *name, double *max_val, int *idx)
 {
-    diagram_t *dg;
-
-    dg = diagram_stack_find(name);
-    if (dg == NULL) {
-        errquit("findmax(): diagram '%s' not found", name);
-    }
-
+    assert_diagram_exists(name);
+    diagram_t *dg = diagram_stack_find(name);
     *max_val = diagram_max(dg, idx);
 }
 
@@ -73,16 +60,11 @@ void findmax(char *name, double *max_val, int *idx)
  */
 void diffmax(char *name1, char *name2, double *max_val, int *idx)
 {
-    diagram_t *dg1, *dg2;
+    assert_diagram_exists(name1);
+    assert_diagram_exists(name2);
 
-    dg1 = diagram_stack_find(name1);
-    if (dg1 == NULL) {
-        errquit("findmax(): diagram-1 '%s' not found", name1);
-    }
-    dg2 = diagram_stack_find(name2);
-    if (dg2 == NULL) {
-        errquit("findmax(): diagram-2 '%s' not found", name2);
-    }
+    diagram_t *dg1 = diagram_stack_find(name1);
+    diagram_t *dg2 = diagram_stack_find(name2);
 
     *max_val = diagram_diffmax(dg1, dg2, idx);
 }
@@ -96,15 +78,11 @@ void diffmax(char *name1, char *name2, double *max_val, int *idx)
  */
 double diagram_max(diagram_t *dg, int *indices)
 {
-    int rank;
     double max_val = 0.0;
     size_t max_idx = 0;
-    double max_val_local;
-    size_t max_idx_local;
-    int dims[CC_DIAGRAM_MAX_RANK];
-    block_t *maxblock = NULL;
+    block_t *max_block = NULL;
 
-    rank = dg->rank;
+    int rank = dg->rank;
     for (int j = 0; j < rank; j++) {
         indices[j] = 0;
     }
@@ -116,25 +94,25 @@ double diagram_max(diagram_t *dg, int *indices)
         }
         block_load(block);
 
-        max_idx_local = ixamax(WORKING_TYPE, block->size, block->buf, &max_val_local);
+        double max_val_local;
+        size_t max_idx_local = max_idx_local = ixamax(WORKING_TYPE, block->size, block->buf, &max_val_local);
         if (max_val_local > max_val) {
             max_val = max_val_local;
             max_idx = max_idx_local;
-            maxblock = block;
+            max_block = block;
         }
 
         block_unload(block);
     }   // end loop over blocks
 
     // recalculate index of max value from the "linear" form to the "compound"
-    if (maxblock != NULL) {
-        // get block's dimension
-        block_get_dims(maxblock, dims);
+    if (max_block != NULL) {
         // transform 'linear' -> 'compound'
-        as_compound_index(rank, dims, max_idx, indices);
+        tensor_index_to_compound(rank, max_block->shape, max_idx, indices);
+
         // 'relative' indices into spinor indices
         for (int i = 0; i < rank; i++) {
-            indices[i] = maxblock->indices[i][indices[i] + 1];
+            indices[i] = max_block->indices[i][indices[i]];
         }
     }
 
@@ -151,37 +129,36 @@ double diagram_max(diagram_t *dg, int *indices)
  */
 double diagram_diffmax(diagram_t *dg1, diagram_t *dg2, int *indices)
 {
-    block_t *block1, *block2, *maxblock = NULL;
-    int rank;
     double max_val = 0.0;
-    double max_val_local;
-    size_t max_idx = 0, max_idx_local;
-    int dims[CC_DIAGRAM_MAX_RANK];
+    size_t max_idx = 0;
+    block_t *max_block = NULL;
 
-    rank = dg1->rank;
+    int rank = dg1->rank;
     for (int j = 0; j < rank; j++) {
         indices[j] = 0;
     }
 
     for (size_t isb1 = 0; isb1 < dg1->n_blocks; isb1++) {
-        block1 = dg1->blocks[isb1];
+        block_t *block1 = dg1->blocks[isb1];
         if (block1->is_unique == 0) {
             continue;
         }
 
         // get block2 via its spinor_blocks array
-        block2 = diagram_get_block(dg2, block1->spinor_blocks);
+        block_t *block2 = diagram_get_block(dg2, block1->spinor_blocks);
 
         block_load(block1);
         block_load(block2);
 
-        max_idx_local = ixadiffmax(WORKING_TYPE,
+        double max_val_local;
+        size_t max_idx_local = ixadiffmax(WORKING_TYPE,
                                    block1->size, block1->buf,
                                    block2->buf, &max_val_local);
+
         if (max_val_local > max_val) {
             max_val = max_val_local;
             max_idx = max_idx_local;
-            maxblock = block1;
+            max_block = block1;
         }
 
         block_unload(block1);
@@ -189,14 +166,13 @@ double diagram_diffmax(diagram_t *dg1, diagram_t *dg2, int *indices)
     }
 
     // recalculate index of max value from the "linear" form to the "compound"
-    if (maxblock != NULL) {
-        // get block's dimension
-        block_get_dims(maxblock, dims);
+    if (max_block != NULL) {
         // transform 'linear' -> 'compound'
-        as_compound_index(rank, dims, max_idx, indices);
+        tensor_index_to_compound(rank, max_block->shape, max_idx, indices);
+
         // 'relative' indices into spinor indices
         for (int i = 0; i < rank; i++) {
-            indices[i] = maxblock->indices[i][indices[i] + 1];
+            indices[i] = max_block->indices[i][indices[i]];
         }
     }
 

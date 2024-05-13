@@ -1,0 +1,25 @@
+#
+# ground state of HgH
+# X2Sigma+_1/2
+#
+
+# Hg-202
+masses 1.00782503223 201.97064340
+
+rotlevels 0 0
+viblevels 0 100
+
+# numerov solver is used by default
+grid_size 1000
+
+potential angstrom atomic
+1.30    -153.84194909
+1.40    -153.87510640
+1.50    -153.89291224
+1.60    -153.90122623
+1.70    -153.90380335
+1.80    -153.90305815
+1.90    -153.90052604
+2.00    -153.89716570
+2.10    -153.89357117
+end

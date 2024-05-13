@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -23,39 +23,177 @@
 
 /*
  * Permutation operators acting on diagrams.
+ *
+ * Operators implemented:
+ * P(ij), P(ab), P(ij|ab)
+ * P(i/kj), P(ijk), P(a/bc), P(abc) + permutations + their products P(i/jk|abc) etc
  */
 
 #include <ctype.h>
 #include <string.h>
 
-#include "datamodel.h"
 #include "engine.h"
 #include "error.h"
-#include "templates.h"
 
 int match_permutation_string(char *str, char *pattern);
-void reorder_block_double(block_t *, block_t *, int *);
-void reorder_block_double_complex_t(block_t *, block_t *, int *);
+void reorder_block(block_t *source_block, block_t *target_block, int *perm);
+void elementary_perm(char *src_name, char *perm_str);
+void safe_strncpy(char *dst, char *src, size_t n);
 
 #define MAX_PERM_TASKS 64
 
-void reverse_perm(int n, int *a, int *ainv);
+void reverse_perm(int n, const int *direct_perm, int *inv_perm);
 
 
 /**
- * simple hand-coded strncpy implementation.
- * to prevent usage of compiler intrinsics and buffer overflow bugs.
+ * Performs index permutation for the diagram.
+ * P(ij) = 1 - Pij
+ * P(ab) = 1 - Pab
+ * P(ij|ab) = P(ij)P(ab) = 1 - Pij - Pab + Pij*Pab
+ * P(i/jk) = 1 - Pij - Pik
+ * P(i/jk|a/bc) = P(i/jk)P(a/bc)
  *
- * @param dst destination buffer
- * @param src source buffer
- * @param n number of chars to be copied
+ * TODO: permutations for 3-particle diagrams
+ * TODO: refactoring, pattern matching in a regexp-like manner
  */
-void safe_strncpy(char *dst, char *src, size_t n)
+void perm(char *dg_name, char *perm_str)
 {
-    for (size_t i = 0; i < n; i++) {
-        dst[i] = src[i];
+    int rk = rank(dg_name);
+
+    dg_stack_pos_t pos = get_stack_pos();
+
+    if (rk == 4) {
+        if (strcmp(perm_str, "(12)") == 0) {
+            elementary_perm(dg_name, "(12)");
+        }
+        else if (strcmp(perm_str, "(34)") == 0) {
+            elementary_perm(dg_name, "(34)");
+        }
+        else if (strcmp(perm_str, "(12|34)") == 0) {
+            elementary_perm(dg_name, "(12)");
+            elementary_perm(dg_name, "(34)");
+        }
     }
-    dst[n] = '\0';
+    else if (rk == 6) {
+        if (match_permutation_string(perm_str, "(xx)")) {
+            elementary_perm(dg_name, perm_str);
+        }
+        else if (match_permutation_string(perm_str, "(x/xx)")) {
+            elementary_perm(dg_name, perm_str);
+        }
+        else if (strcmp(perm_str, "(456)") == 0) {
+            elementary_perm(dg_name, perm_str);
+        }
+        else if (strcmp(perm_str, "(123)") == 0) {
+            elementary_perm(dg_name, perm_str);
+        }
+        else if (match_permutation_string(perm_str, "(xx|yy)")) {
+            char perm1[] = "(xx)";
+            char perm2[] = "(yy)";
+            perm1[1] = perm_str[1];
+            perm1[2] = perm_str[2];
+            perm2[1] = perm_str[4];
+            perm2[2] = perm_str[5];
+            elementary_perm(dg_name, perm1);
+            elementary_perm(dg_name, perm2);
+        }
+        else if (match_permutation_string(perm_str, "(x/xx|y/yy)")) {
+            char perm1[] = "(x/xx)";
+            char perm2[] = "(y/yy)";
+            perm1[1] = perm_str[1];
+            perm1[3] = perm_str[3];
+            perm1[4] = perm_str[4];
+            perm2[1] = perm_str[6];
+            perm2[3] = perm_str[8];
+            perm2[4] = perm_str[9];
+            elementary_perm(dg_name, perm1);
+            elementary_perm(dg_name, perm2);
+        }
+        else if (match_permutation_string(perm_str, "(xx|y/yy)")) {
+            char perm1[] = "(xx)";
+            char perm2[] = "(y/yy)";
+            perm1[1] = perm_str[1];
+            perm1[2] = perm_str[2];
+            perm2[1] = perm_str[4];
+            perm2[3] = perm_str[6];
+            perm2[4] = perm_str[7];
+            elementary_perm(dg_name, perm1);
+            elementary_perm(dg_name, perm2);
+        }
+        else if (match_permutation_string(perm_str, "(x/xx|yy)")) {
+            char perm1[] = "(x/xx)";
+            char perm2[] = "(yy)";
+            perm1[1] = perm_str[1];
+            perm1[3] = perm_str[3];
+            perm1[4] = perm_str[4];
+            perm2[1] = perm_str[6];
+            perm2[2] = perm_str[7];
+            elementary_perm(dg_name, perm1);
+            elementary_perm(dg_name, perm2);
+        }
+        else if (match_permutation_string(perm_str, "(x/xx|yyy)")) {
+            //              012345
+            char perm1[] = "(x/xx)";
+            //              01234
+            char perm2[] = "(yyy)";
+            perm1[1] = perm_str[1];
+            perm1[3] = perm_str[3];
+            perm1[4] = perm_str[4];
+            perm2[1] = perm_str[6];
+            perm2[2] = perm_str[7];
+            perm2[3] = perm_str[8];
+            elementary_perm(dg_name, perm1);
+            elementary_perm(dg_name, perm2);
+        }
+        else if (match_permutation_string(perm_str, "(xxx|y/yy)")) {
+            //              01234
+            char perm1[] = "(xxx)";
+            //              012345
+            char perm2[] = "(y/yy)";
+            perm1[1] = perm_str[1];
+            perm1[2] = perm_str[2];
+            perm1[3] = perm_str[3];
+            perm2[1] = perm_str[5];
+            perm2[3] = perm_str[7];
+            perm2[4] = perm_str[8];
+            elementary_perm(dg_name, perm1);
+            elementary_perm(dg_name, perm2);
+        }
+        else if (match_permutation_string(perm_str, "(xx|yyy)")) {
+            //              0123
+            char perm1[] = "(xx)";
+            //              01234
+            char perm2[] = "(yyy)";
+            perm1[1] = perm_str[1];
+            perm1[2] = perm_str[2];
+            perm2[1] = perm_str[4];
+            perm2[2] = perm_str[5];
+            perm2[3] = perm_str[6];
+            elementary_perm(dg_name, perm1);
+            elementary_perm(dg_name, perm2);
+        }
+        else if (match_permutation_string(perm_str, "(xxx|yy)")) {
+            //              0123
+            char perm1[] = "(xxx)";
+            //              01234
+            char perm2[] = "(yy)";
+            perm1[1] = perm_str[1];
+            perm1[2] = perm_str[2];
+            perm1[3] = perm_str[3];
+            perm2[1] = perm_str[5];
+            perm2[2] = perm_str[6];
+            elementary_perm(dg_name, perm1);
+            elementary_perm(dg_name, perm2);
+        }
+        else {
+            errquit("perm(): wrong permutation string %s", perm_str);
+        }
+    }
+    else {
+        errquit("perm(): permutation operators for rank = %d are not yet implemented", rk);
+    }
+
+    restore_stack_pos(pos);
 }
 
 
@@ -73,7 +211,7 @@ void elementary_perm(char *src_name, char *perm_str)
     perm_task_t perm_tasks[MAX_PERM_TASKS];
     int n_perm_tasks;
 
-    check_diagram_exists(src_name);
+    assert_diagram_exists(src_name);
     int rk = rank(src_name);
 
     if (rk == 4 && match_permutation_string(perm_str, "(xx)")) {
@@ -192,27 +330,13 @@ void elementary_perm(char *src_name, char *perm_str)
                 d_src->order, CC_DIAGRAM_IN_MEM, 0
             );
 
-            if (arith == CC_ARITH_COMPLEX) {
-                TEMPLATE(reorder_block, double_complex_t)(b_perm, b_reordered, inv_perm);
+            reorder_block(b_perm, b_reordered, inv_perm);
+            block_load(b_reordered);
 
-                block_load(b_reordered);
-                for (size_t i = 0; i < b_tgt->size; i++) {
-                    b_tgt->buf[i] += sign * b_reordered->buf[i];
-                }
-                block_store(b_reordered);
-            }
-            else {
-                TEMPLATE(reorder_block, double)(b_perm, b_reordered, inv_perm);
+            xaxpy(arith == CC_ARITH_COMPLEX ? CC_DOUBLE_COMPLEX : CC_DOUBLE,
+                  b_tgt->size, sign, b_reordered->buf, b_tgt->buf);
 
-                block_load(b_reordered);
-                double *b_tgt_buf = (double *) b_tgt->buf;
-                double *b_reordered_buf = (double *) b_reordered->buf;
-                for (size_t i = 0; i < b_tgt->size; i++) {
-                    b_tgt_buf[i] += sign * b_reordered_buf[i];
-                }
-                block_store(b_reordered);
-            }
-
+            block_store(b_reordered);
             block_delete(b_reordered);
         }
         block_store(b_tgt);
@@ -220,172 +344,6 @@ void elementary_perm(char *src_name, char *perm_str)
     restore_stack_pos(pos);
 
     timer_stop("permute");
-}
-
-
-/**
- * Performs index permutation for the diagram.
- * P(ij) = 1 - Pij
- * P(ab) = 1 - Pab
- * P(ij|ab) = P(ij)P(ab) = 1 - Pij - Pab + Pij*Pab
- * P(i/jk) = 1 - Pij - Pik
- * P(i/jk|a/bc) = P(i/jk)P(a/bc)
- *
- * TODO: permutations for 3-particle diagrams
- * TODO: refactoring, patternmatching in a regexp-like manner
- */
-void perm(char *dg_name, char *perm_str)
-{
-    int rk = rank(dg_name);
-
-    dg_stack_pos_t pos = get_stack_pos();
-    if (rk == 4 && strcmp(perm_str, "(12)") == 0) {
-        elementary_perm(dg_name, "(12)");
-    }
-    else if (rk == 4 && strcmp(perm_str, "(34)") == 0) {
-        elementary_perm(dg_name, "(34)");
-    }
-    else if (rk == 4 && strcmp(perm_str, "(12|34)") == 0) {
-        elementary_perm(dg_name, "(12)");
-        elementary_perm(dg_name, "(34)");
-    }
-        // case of (xx) permutations
-        // note: for 6-rank diagram only!
-    else if (rank(dg_name) == 6 &&
-             perm_str[0] == '(' && perm_str[3] == ')' && isdigit(perm_str[1]) && isdigit(perm_str[2])) {
-        elementary_perm(dg_name, perm_str);
-    }
-        // case of (x/xx) permutations
-        // note: for 6-rank diagram only!
-    else if (strlen(perm_str) == 6 &&
-             perm_str[0] == '(' && perm_str[5] == ')' && perm_str[2] == '/' &&
-             isdigit(perm_str[1]) && isdigit(perm_str[3]) && isdigit(perm_str[4])) {
-        elementary_perm(dg_name, perm_str);
-    }
-        // case of (xxx) permutations
-    else if (strcmp(perm_str, "(456)") == 0) {
-        elementary_perm(dg_name, perm_str);
-    }
-    else if (strcmp(perm_str, "(123)") == 0) {
-        elementary_perm(dg_name, perm_str);
-    }
-        // case of (xx|yy) permutations
-    else if (strlen(perm_str) == 7 && perm_str[0] == '(' && perm_str[6] == ')' && perm_str[3] == '|') {
-        char perm1[] = "(xx)";
-        char perm2[] = "(yy)";
-        perm1[1] = perm_str[1];
-        perm1[2] = perm_str[2];
-        perm2[1] = perm_str[4];
-        perm2[2] = perm_str[5];
-        elementary_perm(dg_name, perm1);
-        elementary_perm(dg_name, perm2);
-    }
-        // case of (x/xx|y/yy) permutations
-    else if (strlen(perm_str) == 11 && perm_str[0] == '(' && perm_str[10] == ')' && perm_str[5] == '|') {
-        char perm1[] = "(x/xx)";
-        char perm2[] = "(y/yy)";
-        perm1[1] = perm_str[1];
-        perm1[3] = perm_str[3];
-        perm1[4] = perm_str[4];
-        perm2[1] = perm_str[6];
-        perm2[3] = perm_str[8];
-        perm2[4] = perm_str[9];
-        elementary_perm(dg_name, perm1);
-        elementary_perm(dg_name, perm2);
-    }
-        // case of (xx|y/yy) permutations
-    else if (strlen(perm_str) == 9 && perm_str[0] == '(' && perm_str[8] == ')' && perm_str[3] == '|') {
-        char perm1[] = "(xx)";
-        char perm2[] = "(y/yy)";
-        perm1[1] = perm_str[1];
-        perm1[2] = perm_str[2];
-        perm2[1] = perm_str[4];
-        perm2[3] = perm_str[6];
-        perm2[4] = perm_str[7];
-        elementary_perm(dg_name, perm1);
-        elementary_perm(dg_name, perm2);
-    }
-        //         012345678
-        // case of (x/xx|yy) permutations
-    else if (strlen(perm_str) == 9 && perm_str[0] == '(' && perm_str[8] == ')' && perm_str[5] == '|') {
-        char perm1[] = "(x/xx)";
-        char perm2[] = "(yy)";
-        perm1[1] = perm_str[1];
-        perm1[3] = perm_str[3];
-        perm1[4] = perm_str[4];
-        perm2[1] = perm_str[6];
-        perm2[2] = perm_str[7];
-        elementary_perm(dg_name, perm1);
-        elementary_perm(dg_name, perm2);
-    }
-        //         0123456789
-        // case of (x/xx|yyy) permutations
-    else if (strlen(perm_str) == 10 && perm_str[0] == '(' && perm_str[9] == ')' && perm_str[5] == '|' &&
-             perm_str[2] == '/') {
-        //              012345
-        char perm1[] = "(x/xx)";
-        //              01234
-        char perm2[] = "(yyy)";
-        perm1[1] = perm_str[1];
-        perm1[3] = perm_str[3];
-        perm1[4] = perm_str[4];
-        perm2[1] = perm_str[6];
-        perm2[2] = perm_str[7];
-        perm2[3] = perm_str[8];
-        elementary_perm(dg_name, perm1);
-        elementary_perm(dg_name, perm2);
-    }
-        //         0123456789
-        // case of (xxx|y/yy) permutations
-    else if (strlen(perm_str) == 10 && perm_str[0] == '(' && perm_str[9] == ')' && perm_str[4] == '|' &&
-             perm_str[6] == '/') {
-        //              01234
-        char perm1[] = "(xxx)";
-        //              012345
-        char perm2[] = "(y/yy)";
-        perm1[1] = perm_str[1];
-        perm1[2] = perm_str[2];
-        perm1[3] = perm_str[3];
-        perm2[1] = perm_str[5];
-        perm2[3] = perm_str[7];
-        perm2[4] = perm_str[8];
-        elementary_perm(dg_name, perm1);
-        elementary_perm(dg_name, perm2);
-    }
-        //         01234567
-        // case of (xx|yyy) permutations
-    else if (strlen(perm_str) == 8 && perm_str[0] == '(' && perm_str[7] == ')' && perm_str[3] == '|') {
-        //              0123
-        char perm1[] = "(xx)";
-        //              01234
-        char perm2[] = "(yyy)";
-        perm1[1] = perm_str[1];
-        perm1[2] = perm_str[2];
-        perm2[1] = perm_str[4];
-        perm2[2] = perm_str[5];
-        perm2[3] = perm_str[6];
-        elementary_perm(dg_name, perm1);
-        elementary_perm(dg_name, perm2);
-    }
-        //         01234567
-        // case of (xxx|yy) permutations
-    else if (strlen(perm_str) == 8 && perm_str[0] == '(' && perm_str[7] == ')' && perm_str[4] == '|') {
-        //              0123
-        char perm1[] = "(xxx)";
-        //              01234
-        char perm2[] = "(yy)";
-        perm1[1] = perm_str[1];
-        perm1[2] = perm_str[2];
-        perm1[3] = perm_str[3];
-        perm2[1] = perm_str[5];
-        perm2[2] = perm_str[6];
-        elementary_perm(dg_name, perm1);
-        elementary_perm(dg_name, perm2);
-    }
-    else {
-        errquit("perm(): wrong permutation string %s", perm_str);
-    }
-    restore_stack_pos(pos);
 }
 
 
@@ -409,10 +367,13 @@ int match_permutation_string(char *str, char *pattern)
         else if (str[i] == '/' && pattern[i] == '/') {
             continue;
         }
+        else if (str[i] == '|' && pattern[i] == '|') {
+            continue;
+        }
         else if (str[i] == ')' && pattern[i] == ')') {
             continue;
         }
-        else if (isdigit(str[i]) && pattern[i] == 'x') {
+        else if (isdigit(str[i]) && (pattern[i] == 'x' || pattern[i] == 'y')) {
             continue;
         }
         else {
@@ -421,6 +382,23 @@ int match_permutation_string(char *str, char *pattern)
     }
 
     return 1;
+}
+
+
+/**
+ * simple hand-coded strncpy implementation.
+ * to prevent usage of compiler intrinsics and buffer overflow bugs.
+ *
+ * @param dst destination buffer
+ * @param src source buffer
+ * @param n number of chars to be copied
+ */
+void safe_strncpy(char *dst, char *src, size_t n)
+{
+    for (size_t i = 0; i < n; i++) {
+        dst[i] = src[i];
+    }
+    dst[n] = '\0';
 }
 
 

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -31,7 +31,6 @@
 #include <math.h>
 
 #include "engine.h"
-#include "datamodel.h"
 #include "error.h"
 #include "options.h"
 #include "spinors.h"
@@ -57,27 +56,17 @@ double get_shift_value(int sect_h, int sect_p, int rank, int *indices);
 
 void divide_with_shift(double complex *val, double denom, int shift_type, double shift, int npower);
 
-int count_active_indices(int rank, int *indices);
-
-int count_active_intermediate_indices(int rank, int *indices);
-
-int count_active_interm_quasipart_annihilation_indices(int sect_h, int sect_p, int rank, int *indices);
 
 /**
  * Division of the diagram by the energy denominators
  */
 void diveps(char *name)
 {
-    diagram_t *dg;
-
     timer_new_entry("diveps", "Energy denominators (diveps)");
     timer_start("diveps");
 
-    dg = diagram_stack_find(name);
-    if (dg == NULL) {
-        errquit("diveps(): diagram '%s' not found", name);
-    }
-
+    assert_diagram_exists(name);
+    diagram_t *dg = diagram_stack_find(name);
     diagram_diveps(dg);
 
     timer_stop("diveps");
@@ -94,12 +83,12 @@ diagram_t *diagram_diveps(diagram_t *dg)
     int rank = dg->rank;
     curr_valence = dg->valence;
 
-    for (size_t isb = 0; isb < dg->n_blocks; isb++) {
-        block_t *block = dg->blocks[isb];
-        block_load(block);
+    for (size_t iblock = 0; iblock < dg->n_blocks; iblock++) {
+        block_t *block = dg->blocks[iblock];
         if (block->is_unique == 0) {
             continue;
         }
+        block_load(block);
 
         if (rank == 2) {
             diveps_block_rank_2(block);
@@ -121,20 +110,25 @@ diagram_t *diagram_diveps(diagram_t *dg)
 }
 
 
+/*
+ * Division of the diagram by the energy denominators:
+ * special case of a rank-2 tensor
+ */
 void diveps_block_rank_2(block_t *block)
 {
-    int nspinors = get_num_spinors();
     int sect_h = cc_opts->curr_sector_h;
     int sect_p = cc_opts->curr_sector_p;
     int shift_type = get_shift_type(sect_h, sect_p);
     int npower = get_attenuation_parameter(sect_h, sect_p);
 
-    int dims_0 = block->indices[0][0];
-    int dims_1 = block->indices[1][0];
+    int dims_0 = block->shape[0];
+    int dims_1 = block->shape[1];
     int coef_0 = dims_1;
-    int *block_indices_0 = block->indices[0] + 1; // +1 to skip first element (length)
-    int *block_indices_1 = block->indices[1] + 1;
+    int *block_indices_0 = block->indices[0];
+    int *block_indices_1 = block->indices[1];
 
+    // get one-electron energies
+    int nspinors = get_num_spinors();
     double *eps = (double *) cc_malloc(nspinors * sizeof(double));
     get_spinor_energies(nspinors, eps);
 
@@ -145,18 +139,21 @@ void diveps_block_rank_2(block_t *block)
         if (cabs(t) < ZERO_THRESH) {
             continue;
         }
+
         // calculate compound index
         int index = i;
         int idx_0 = index / coef_0;
         index = index % coef_0;
         int idx_1 = index;    // since coef_1 == 1
-        // relative index to spinor indices
+
+        // convert relative indices into spinor indices
         idx_0 = block_indices_0[idx_0];
         idx_1 = block_indices_1[idx_1];
 
         // calculate denominator and divide matrix element by it
         double denom = eps[idx_0] - eps[idx_1];
 
+        // for lambda equations
         extern int diveps_lambda;
         if (diveps_lambda) {
             denom *= -1;
@@ -185,27 +182,34 @@ void diveps_block_rank_2(block_t *block)
 }
 
 
+/*
+ * Division of the diagram by the energy denominators:
+ * special case of a rank-4 tensor
+ */
 void diveps_block_rank_4(block_t *block)
 {
-    int nspinors = get_num_spinors();
     int sect_h = cc_opts->curr_sector_h;
     int sect_p = cc_opts->curr_sector_p;
     int shift_type = get_shift_type(sect_h, sect_p);
     int npower = get_attenuation_parameter(sect_h, sect_p);
 
-    int dims_0 = block->indices[0][0];
-    int dims_1 = block->indices[1][0];
-    int dims_2 = block->indices[2][0];
-    int dims_3 = block->indices[3][0];
+    int dims_0 = block->shape[0];
+    int dims_1 = block->shape[1];
+    int dims_2 = block->shape[2];
+    int dims_3 = block->shape[3];
+
     int coef_0 = dims_1 * dims_2 * dims_3;
     int coef_1 = dims_2 * dims_3;
     int coef_2 = dims_3;
     //int coef_3 = 1;
-    int *block_indices_0 = block->indices[0] + 1; // +1 to skip first element (length)
-    int *block_indices_1 = block->indices[1] + 1;
-    int *block_indices_2 = block->indices[2] + 1;
-    int *block_indices_3 = block->indices[3] + 1;
 
+    int *block_indices_0 = block->indices[0];
+    int *block_indices_1 = block->indices[1];
+    int *block_indices_2 = block->indices[2];
+    int *block_indices_3 = block->indices[3];
+
+    // get one-electron energies
+    int nspinors = get_num_spinors();
     double *eps = (double *) cc_malloc(nspinors * sizeof(double));
     get_spinor_energies(nspinors, eps);
 
@@ -216,6 +220,7 @@ void diveps_block_rank_4(block_t *block)
         if (cabs(t) < ZERO_THRESH) {
             continue;
         }
+
         // calculate compound index
         int index = i;
         int idx_0 = index / coef_0;
@@ -226,7 +231,7 @@ void diveps_block_rank_4(block_t *block)
         index = index % coef_2;
         int idx_3 = index;    // since coef_3 == 1
 
-        // relative index to spinor indices
+        // convert relative indices into spinor indices
         idx_0 = block_indices_0[idx_0];
         idx_1 = block_indices_1[idx_1];
         idx_2 = block_indices_2[idx_2];
@@ -235,7 +240,7 @@ void diveps_block_rank_4(block_t *block)
         // calculate denominator and divide matrix element by it
         double denom = eps[idx_0] + eps[idx_1] - eps[idx_2] - eps[idx_3];
 
-
+        // for lambda equations
         extern int diveps_lambda;
         if (diveps_lambda) {
             denom *= -1;
@@ -251,10 +256,6 @@ void diveps_block_rank_4(block_t *block)
             indices[2] = idx_2;
             indices[3] = idx_3;
             double shift = get_shift_value(sect_h, sect_p, 4, indices);
-            /*if (fabs(shift) > 1e-3) {
-                printf("denom %d-%d-%d-%d = %f\n", idx_0, idx_1, idx_2, idx_3, denom);
-                printf("shift = %f\n", shift);
-            }*/
             divide_with_shift(&t, denom, shift_type, shift, npower);
         }
 
@@ -270,50 +271,63 @@ void diveps_block_rank_4(block_t *block)
 }
 
 
+/*
+ * Division of the diagram by the energy denominators:
+ * special case of a rank-6 tensor
+ */
 void diveps_block_rank_6(block_t *block)
 {
-    int nspinors = get_num_spinors();
     int sect_h = cc_opts->curr_sector_h;
     int sect_p = cc_opts->curr_sector_p;
     int shift_type = get_shift_type(sect_h, sect_p);
     int npower = get_attenuation_parameter(sect_h, sect_p);
 
-    int dims_1 = block->indices[0][0];
-    int dims_2 = block->indices[1][0];
-    int dims_3 = block->indices[2][0];
-    int dims_4 = block->indices[3][0];
-    int dims_5 = block->indices[4][0];
-    int dims_6 = block->indices[5][0];
+    int dims_1 = block->shape[0];
+    int dims_2 = block->shape[1];
+    int dims_3 = block->shape[2];
+    int dims_4 = block->shape[3];
+    int dims_5 = block->shape[4];
+    int dims_6 = block->shape[5];
 
-    int *block_indices_1 = block->indices[0] + 1; // +1 to skip first element (length)
-    int *block_indices_2 = block->indices[1] + 1;
-    int *block_indices_3 = block->indices[2] + 1;
-    int *block_indices_4 = block->indices[3] + 1;
-    int *block_indices_5 = block->indices[4] + 1;
-    int *block_indices_6 = block->indices[5] + 1;
+    int *block_indices_1 = block->indices[0];
+    int *block_indices_2 = block->indices[1];
+    int *block_indices_3 = block->indices[2];
+    int *block_indices_4 = block->indices[3];
+    int *block_indices_5 = block->indices[4];
+    int *block_indices_6 = block->indices[5];
 
+    // get one-electron energies
+    int nspinors = get_num_spinors();
     double *eps = (double *) cc_malloc(nspinors * sizeof(double));
     get_spinor_energies(nspinors, eps);
 
+    // denom = eps[idx_1] + eps[idx_2] + eps[idx_3] - eps[idx_4] - eps[idx_5] - eps[idx_6];
+    // energy denominator is formed step-by-step
+
     size_t index = 0;
-    for (int i1 = 0; i1 < dims_1; i1++) {
-        int idx_1 = block_indices_1[i1]; // relative index to spinor indices
-        double denom_1 = eps[idx_1];
-        for (int i2 = 0; i2 < dims_2; i2++) {
-            int idx_2 = block_indices_2[i2];
-            double denom_2 = denom_1 + eps[idx_2];
-            for (int i3 = 0; i3 < dims_3; i3++) {
-                int idx_3 = block_indices_3[i3];
-                double denom_3 = denom_2 + eps[idx_3];
-                for (int i4 = 0; i4 < dims_4; i4++) {
-                    int idx_4 = block_indices_4[i4];
-                    double denom_4 = denom_3 - eps[idx_4];
-                    for (int i5 = 0; i5 < dims_5; i5++) {
-                        int idx_5 = block_indices_5[i5];
-                        double denom_5 = denom_4 - eps[idx_5];
-                        for (int i6 = 0; i6 < dims_6; i6++) {
-                            int idx_6 = block_indices_6[i6];
-                            double denom = denom_5 - eps[idx_6];
+    for (int i = 0; i < dims_1; i++) {
+        int idx_i = block_indices_1[i]; // convert relative index into spinor index
+        double denom_i = eps[idx_i];
+
+        for (int j = 0; j < dims_2; j++) {
+            int idx_j = block_indices_2[j];
+            double denom_ij = denom_i + eps[idx_j];
+
+            for (int k = 0; k < dims_3; k++) {
+                int idx_k = block_indices_3[k];
+                double denom_ijk = denom_ij + eps[idx_k];
+
+                for (int a = 0; a < dims_4; a++) {
+                    int idx_a = block_indices_4[a];
+                    double denom_ijka = denom_ijk - eps[idx_a];
+
+                    for (int b = 0; b < dims_5; b++) {
+                        int idx_b = block_indices_5[b];
+                        double denom_ijkab = denom_ijka - eps[idx_b];
+
+                        for (int c = 0; c < dims_6; c++) {
+                            int idx_c = block_indices_6[c];
+                            double denom = denom_ijkab - eps[idx_c];
 
                             double complex t = (arith == CC_ARITH_COMPLEX) ?
                                                block->buf[index] : ((double *) block->buf)[index] + 0.0 * I;
@@ -323,18 +337,17 @@ void diveps_block_rank_6(block_t *block)
                             }
 
                             // calculate denominator and divide matrix element by it
-                            //denom = eps[idx_1] + eps[idx_2] + eps[idx_3] - eps[idx_4] - eps[idx_5] - eps[idx_6];
                             if (shift_type == CC_SHIFT_NONE) {
                                 t /= denom;
                             }
                             else {
                                 int indices[6];
-                                indices[0] = idx_1;
-                                indices[1] = idx_2;
-                                indices[2] = idx_3;
-                                indices[3] = idx_4;
-                                indices[4] = idx_5;
-                                indices[5] = idx_6;
+                                indices[0] = idx_i;
+                                indices[1] = idx_j;
+                                indices[2] = idx_k;
+                                indices[3] = idx_a;
+                                indices[4] = idx_b;
+                                indices[5] = idx_c;
                                 double shift = get_shift_value(sect_h, sect_p, 6, indices);
                                 divide_with_shift(&t, denom, shift_type, shift, npower);
                             }
@@ -357,30 +370,35 @@ void diveps_block_rank_6(block_t *block)
 }
 
 
-// general case: n-dim tensor
+/*
+ * Division of the diagram by the energy denominators:
+ * general case of a rank-N tensor (quadruples, pentuples, etc.)
+ */
 void diveps_block_general(block_t *block)
 {
-    int dims[CC_DIAGRAM_MAX_RANK];
     int idx[CC_DIAGRAM_MAX_RANK];
 
     int rank = block->rank;
-    int nspinors = get_num_spinors();
     int sect_h = cc_opts->curr_sector_h;
     int sect_p = cc_opts->curr_sector_p;
     int shift_type = get_shift_type(sect_h, sect_p);
     int npower = get_attenuation_parameter(sect_h, sect_p);
 
+    // get one-electron energies
+    int nspinors = get_num_spinors();
     double *eps = (double *) cc_malloc(get_num_spinors() * sizeof(double));
     get_spinor_energies(nspinors, eps);
-    block_get_dims(block, dims);
 
     // loop over matrix elements
     for (size_t i = 0; i < block->size; i++) {
-        as_compound_index(rank, dims, i /* linear index */, idx);
+        tensor_index_to_compound(rank, block->shape, i /* linear index */, idx);
+
         // relative indices -> spinor indices
         for (int j = 0; j < rank; j++) {
-            idx[j] = block->indices[j][idx[j] + 1];
+            idx[j] = block->indices[j][idx[j]];
         }
+
+        // construct energy denominator
         double denom = 0.0;
         for (int j = 0; j < rank / 2; j++) {
             denom += eps[idx[j]];

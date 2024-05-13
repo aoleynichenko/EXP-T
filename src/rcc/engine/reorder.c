@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,7 +26,7 @@
  * Tensors are stored in a linear array row-wise (C-like style).
  *
  * Algorithm notes:
- * 1. Tensors are splitted into symmetry blocks (blocks) by irrep. Every
+ * 1. Tensors are split into symmetry blocks (blocks) by irrep. Every
  *    symblock "knows" its dimensions and ranges of spinor indices for each
  *    dimension.
  * 2. Using metainfo you can easily calculate sizes of tensor for each dimension
@@ -61,48 +61,50 @@
 #include "comdef.h"
 #include "cuda_code.h"
 #include "engine.h"
-#include "datamodel.h"
-#include "templates.h"
+#include "c_templates.h"
 #include "options.h"
+#include "utils.h"
+#include "linalg.h"
 
-void reverse_perm(int n, int *a, int *ainv);
+
+void reverse_perm(int n, const int *direct_perm, int *inv_perm);
+
+void reorder_block(block_t *source_block, block_t *target_block, int *perm);
 
 
 /**
- * Reorders diagram 'src'; puts result into 'target'
+ * Reorders diagram 'src_diargam_name'; puts result into 'target_diagram_name'
+ * (tensor transposition)
  *
  * Arguments:
- *   src        symbolic name of the diagram to be reordered
- *   target     symbolic name of the new diagram -- result
- *   perm_str   permutation, smth like "124365" (reorders dim-s 3<->4 and 5<->6)
+ *   src_diargam_name        symbolic name of the diagram to be reordered
+ *   target_diagram_name     symbolic name of the new diagram -- result
+ *   perm_str                permutation, smth like "124365" (reorders dim-s 3<->4 and 5<->6)
  */
-void reorder(char *src, char *target, char *perm_str)
+void reorder(char *src_diargam_name, char *target_diagram_name, char *perm_str)
 {
-    diagram_t *dg_src, *dg_tgt;
-    int i;
-    int perm[32];
-
-    timer_new_entry("reorder", "Multidim transposition (reorder)");
+    timer_new_entry("reorder", "Tensor transposition (reorder)");
     timer_start("reorder");
 
-    dg_src = diagram_stack_find(src);
-    if (dg_src == NULL) {
-        errquit("reorder(): diagram '%s' not found", src);
-    }
-
     // parse "permutation string"
-    for (i = 0; i < dg_src->rank; i++) {
-        perm[i] = perm_str[i] - '0';
+    int perm[32];
+    int success = (str_to_int_array(perm_str, perm) == 0);
+    if (!success) {
+        errquit("wrong permutation string in reorder: \"%s\"", perm_str);
     }
 
-    // reorder
-    dg_tgt = diagram_reorder(dg_src, perm, dg_src->only_unique /*(target[0] == '$') ? 1 : 0*/);
-    strcpy(dg_tgt->name, target);
+    // get operand
+    assert_diagram_exists(src_diargam_name);
+    diagram_t *dg_src = diagram_stack_find(src_diargam_name);
+
+    // perform reordering
+    diagram_t *dg_tgt = diagram_reorder(dg_src, perm);
 
     // save new diagram to stack
-    // (replace the old diagram named 'target' if needed)
-    if (diagram_stack_find(target) != NULL) {
-        diagram_stack_replace(target, dg_tgt);
+    // (replace the old diagram named 'target_diagram_name' if needed)
+    strcpy(dg_tgt->name, target_diagram_name);
+    if (diagram_stack_find(target_diagram_name) != NULL) {
+        diagram_stack_replace(target_diagram_name, dg_tgt);
     }
     else {
         diagram_stack_push(dg_tgt);
@@ -111,47 +113,53 @@ void reorder(char *src, char *target, char *perm_str)
     timer_stop("reorder");
 }
 
-/* include "template function" reorder_block_<TYPENAME>
+
+/*
+ * include "template function" reorder_block_<TYPENAME>
  * for real and complex numbers
  */
 #define TYPENAME double_complex_t
-#include "reorder_block.c"
+
+#include "tensor_transpose.c"
+
 #undef TYPENAME
 
 #define TYPENAME double
-#include "reorder_block.c"
+
+#include "tensor_transpose.c"
+
 #undef TYPENAME
 
 
-diagram_t *diagram_reorder(diagram_t *dg, int *perm, int perm_unique)
+/**
+ * Apply tensor transposition to a diagram.
+ * Returns new diagram with the dimensions reordered (transposed) according to
+ * a permutation 'perm'
+ */
+diagram_t *diagram_reorder(diagram_t *diag, int *perm)
 {
-    int rank;
-    diagram_t *tgt;
+    int rank = diag->rank;
     char qparts[CC_DIAGRAM_MAX_RANK];
     char valence[CC_DIAGRAM_MAX_RANK];
     char t3space[CC_DIAGRAM_MAX_RANK];
     char order[CC_DIAGRAM_MAX_RANK];
 
-    rank = dg->rank;
-
-    // dirty code!
-    // create strings from in arrays
+    // prepare characteristics of a new (transposed) diagram
     for (int i = 0; i < rank; i++) {
         perm[i] = perm[i] - 1;
-        qparts[i] = dg->qparts[perm[i]];
-        valence[i] = dg->valence[perm[i]] + '0';
-        t3space[i] = dg->t3space[perm[i]] + '0';
-        order[i] = dg->order[perm[i]] + '0';
+        qparts[i] = diag->qparts[perm[i]];
+        valence[i] = diag->valence[perm[i]] + '0';
+        t3space[i] = diag->t3space[perm[i]] + '0';
+        order[i] = diag->order[perm[i]] + '0';
     }
     qparts[rank] = '\0';
     valence[rank] = '\0';
     t3space[rank] = '\0';
     order[rank] = '\0';
 
-    tgt = diagram_new("rdr " /*dg->name*/, qparts, valence, t3space, order, perm_unique, dg->symmetry);
-
-    // name of the new diagram consist of the old one + "_copy_" + clone's ID
-    sprintf(tgt->name, "%s_rdr_%ld", dg->name, tgt->dg_id);
+    // name of the new diagram consist of the old one + "_rdr"
+    diagram_t *target_diag = diagram_new("", qparts, valence, t3space, order, diag->only_unique, diag->symmetry);
+    sprintf(target_diag->name, "%s_rdr", diag->name);
 
     int nthreads = 1;
     if (cc_opts->openmp_algorithm == CC_OPENMP_ALGORITHM_EXTERNAL) {
@@ -161,65 +169,28 @@ diagram_t *diagram_reorder(diagram_t *dg, int *perm, int perm_unique)
         nthreads = 1;
     }
 
-    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-    for (size_t ib1 = 0; ib1 < dg->n_blocks; ib1++) {
-        block_t *sb_src = dg->blocks[ib1];
-
-        int src_spib_rdr[CC_DIAGRAM_MAX_RANK];
-        for (int idim = 0; idim < rank; idim++) {
-            src_spib_rdr[idim] = sb_src->spinor_blocks[perm[idim]];
-        }
-
-        block_t *sb_tgt = diagram_get_block(tgt, src_spib_rdr);
-
-        if (sb_src->is_unique != sb_tgt->is_unique) {
-            printf("reorder(): %d %d\n", sb_src->is_unique, sb_tgt->is_unique);
-            exit(0);
-        }
-
-        if (sb_src->is_unique == 0) {
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    for (size_t iblock = 0; iblock < diag->n_blocks; iblock++) {
+        block_t *src_block = diag->blocks[iblock];
+        if (src_block->is_unique == 0) {
             continue;
         }
 
-        if (arith == CC_ARITH_COMPLEX) {
-            TEMPLATE(reorder_block, double_complex_t)(sb_src, sb_tgt, perm);
-        }
-        else {
-            TEMPLATE(reorder_block, double)(sb_src, sb_tgt, perm);
+        int spinor_blocks_transposed[CC_DIAGRAM_MAX_RANK];
+        for (int idim = 0; idim < rank; idim++) {
+            spinor_blocks_transposed[idim] = src_block->spinor_blocks[perm[idim]];
         }
 
-    }  // end loop over blocks
+        block_t *target_block = diagram_get_block(target_diag, spinor_blocks_transposed);
+        if (src_block->is_unique != target_block->is_unique) {
+            printf("reorder(): %d %d\n", src_block->is_unique, target_block->is_unique);
+            exit(0);
+        }
 
-    return tgt;
-}
+        reorder_block(src_block, target_block, perm);
+    }  // end of loop over blocks
 
-
-/* helper functions */
-
-typedef struct {
-    int i;
-    int j;
-} pair_t;
-
-
-static int pair_t_less(pair_t *a, pair_t *b)
-{
-    return a->j - b->j;
-}
-
-
-void reverse_perm(int n, int *a, int *ainv)
-{
-    pair_t p[CC_DIAGRAM_MAX_RANK];
-
-    for (int i = 0; i < n; i++) {
-        p[i].i = i;
-        p[i].j = a[i];
-    }
-    qsort(p, n, sizeof(pair_t), (int (*)(const void *, const void *)) pair_t_less);
-    for (int i = 0; i < n; i++) {
-        ainv[i] = p[i].i;
-    }
+    return target_diag;
 }
 
 
@@ -247,24 +218,78 @@ void restore_block(diagram_t *dg, block_t *b)
     b->buf = (double complex *) cc_calloc(b->size, SIZEOF_WORKING_TYPE);
     block_store(b);
 
-    if (arith == CC_ARITH_COMPLEX) {
-        TEMPLATE(reorder_block, double_complex_t)(uniq_block, b, b->perm_from_unique);
+    reorder_block(uniq_block, b, b->perm_from_unique);
 
-        block_load(b);
-        double complex *zbuf = b->buf;
-        for (size_t i = 0; i < b->size; i++) {
-            zbuf[i] *= b->sign;
-        }
-        block_store(b);
+    /*
+     * multiply by a sign factor according to a parity of a permutation
+     */
+    block_load(b);
+    if (arith == CC_ARITH_COMPLEX) {
+        double complex sign = b->sign + 0.0 * I;
+        xscale(CC_DOUBLE_COMPLEX, b->size, b->buf, &sign);
     }
     else {
-        TEMPLATE(reorder_block, double)(uniq_block, b, b->perm_from_unique);
+        double sign = b->sign;
+        xscale(CC_DOUBLE, b->size, b->buf, &sign);
+    }
+    block_store(b);
+}
 
-        block_load(b);
-        double *dbuf = (double *) b->buf;
-        for (size_t i = 0; i < b->size; i++) {
-            dbuf[i] *= b->sign;
-        }
-        block_store(b);
+
+/**
+ * Tensor transposition of a block 'source_block' (according to the 'perm' permutation).
+ * Result is stored in the 'target_block' block.
+ */
+void reorder_block(block_t *source_block, block_t *target_block, int *perm)
+{
+    block_load(source_block);
+    block_load(target_block);
+
+    if (arith == CC_ARITH_COMPLEX) {
+        TEMPLATE(tensor_transpose, double_complex_t)(source_block->rank, source_block->buf,
+                                                     source_block->shape, target_block->shape, perm,
+                                                     target_block->buf, cc_opts->nthreads);
+    }
+    else {
+        TEMPLATE(tensor_transpose, double)(source_block->rank, (const double *) source_block->buf,
+                                           source_block->shape, target_block->shape, perm,
+                                           (double *) target_block->buf, cc_opts->nthreads);
+    }
+
+    block_unload(source_block);
+    block_store(target_block);
+}
+
+
+/* helper functions */
+
+typedef struct {
+    int i;
+    int j;
+} pair_t;
+
+
+static int pair_t_less(pair_t *a, pair_t *b)
+{
+    return a->j - b->j;
+}
+
+
+void reverse_perm(int n, const int *direct_perm, int *inv_perm)
+{
+    pair_t p[CC_DIAGRAM_MAX_RANK];
+
+    for (int i = 0; i < n; i++) {
+        p[i].i = i;
+        p[i].j = direct_perm[i];
+    }
+
+    qsort(p, n, sizeof(pair_t), (int (*)(const void *, const void *)) pair_t_less);
+
+    for (int i = 0; i < n; i++) {
+        inv_perm[i] = p[i].i;
     }
 }
+
+
+

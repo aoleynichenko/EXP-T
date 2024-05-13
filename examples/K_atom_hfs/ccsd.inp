@@ -1,0 +1,19 @@
+title "K atom hyperfine structure constant"
+
+sector 0h1p
+nactp 8
+
+maxiter 500
+memory 120 gb
+nthreads 2
+conv 1e-8
+disk_usage 0
+
+#
+# electronic factor for the
+# magnetic dipole hyperfine structure constant A_z
+#
+mdprop "A_z" sym 0g  approx 2 2 scheme connected
+
+
+

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -94,7 +94,7 @@ void directive_diis(cc_options_t *opts);
 
 void directive_crop(cc_options_t *opts);
 
-void directive_shifttype(cc_options_t *opts);
+void directive_shift_type(cc_options_t *opts);
 
 void directive_shift(cc_options_t *opts);
 
@@ -143,6 +143,8 @@ void directive_restrict_t3(cc_options_t *opts);
 void directive_compress_triples(cc_options_t *opts);
 
 void directive_spinor_labels(cc_options_t *opts);
+
+void directive_tt_tol(cc_options_t *opts);
 
 void yyerror(char *s);
 
@@ -256,8 +258,8 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_CROP:
                 directive_crop(opts);
                 break;
-            case KEYWORD_SHIFTTYPE:
-                directive_shifttype(opts);
+            case KEYWORD_SHIFT_TYPE:
+                directive_shift_type(opts);
                 break;
             case KEYWORD_SHIFT:
                 directive_shift(opts);
@@ -276,6 +278,9 @@ int readinp(char *file_name, cc_options_t *opts)
                 break;
             case KEYWORD_X2CMMF:
                 opts->x2cmmf = 1;
+                break;
+            case KEYWORD_NEW_SORTING:
+                opts->new_sorting = 1;
                 break;
             case KEYWORD_GAUNT:
                 directive_gaunt(opts);
@@ -347,8 +352,23 @@ int readinp(char *file_name, cc_options_t *opts)
             case KEYWORD_HUGHES_KALDOR_2H1P:
                 opts->hughes_kaldor_2h1p = 1;
                 break;
+            case KEYWORD_USE_ORB_ENERGIES:
+                opts->use_oe = 1;
+                break;
+            case KEYWORD_RECALC_ORB_ENERGIES:
+                opts->use_oe = 0;
+                break;
             case KEYWORD_SPINOR_LABELS:
                 directive_spinor_labels(opts);
+                break;
+            case KEYWORD_TT_TOL:
+                directive_tt_tol(opts);
+                break;
+            case KEYWORD_TT_MULT_PPPP:
+                opts->use_tt_mult = 1;
+                break;
+            case KEYWORD_TT_DIIS:
+                opts->use_tt_diis = 1;
                 break;
             case END_OF_LINE:
                 // nothing to do
@@ -373,6 +393,20 @@ int readinp(char *file_name, cc_options_t *opts)
     fclose(yyin);
 
     // post-processing of options
+
+    // by default, if denominator shifts are specified by the "shift" directive,
+    // but the "shift_type" directive is absent, the real simulation of imaginary
+    // shifts will be switched on
+    if (opts->shift_type == CC_SHIFT_NONE) {
+        for (int h = 0; h < MAX_SECTOR_RANK; h++) {
+            for (int p = 0; p < MAX_SECTOR_RANK; p++) {
+                if (opts->shifts[h][p].enabled) {
+                    opts->shift_type = CC_SHIFT_REAL;
+                    opts->shifts[h][p].type = CC_SHIFT_REAL;
+                }
+            }
+        }
+    }
 
     // if occupation number were setted up explicitly => ignore occ_irreps input
     if (opts->occ_defined) {
@@ -1181,9 +1215,9 @@ void directive_crop(cc_options_t *opts)
 
 /**
  * Syntax:
- * shifttype ( none || real || realimag || imag || taylor )
+ * shift_type ( none || real || realimag || imag || taylor )
  */
-void directive_shifttype(cc_options_t *opts)
+void directive_shift_type(cc_options_t *opts)
 {
     static char *msg = "wrong specification of the denominators shift formula!\n"
                        "Possible values: none, taylor, real, realimag, imag";
@@ -1651,7 +1685,6 @@ void directive_nthreads(cc_options_t *opts)
 }
 
 
-
 /**
  * Syntax:
  * openmp_algorithm ( internal || external )
@@ -1675,7 +1708,6 @@ void directive_openmp_algorithm(cc_options_t *opts)
         yyerror(msg);
     }
 }
-
 
 
 /**
@@ -1879,8 +1911,11 @@ void directive_txtprop(cc_options_t *opts)
                 else if (token_type == TT_WORD && strcmp(yytext, "non-hermitian") == 0) {
                     q->scheme = CC_DIRECT_PROP_SCHEME_NON_HERMITIAN;
                 }
+                else if (token_type == TT_WORD && strcmp(yytext, "connected") == 0) {
+                    q->scheme = CC_DIRECT_PROP_SCHEME_CONNECTED;
+                }
                 else {
-                    yyerror("expected keyword: 'hermitian' or 'non-hermitian'");
+                    yyerror("expected keyword: 'hermitian', 'non-hermitian' or connected");
                 }
             }
             else if (strcmp(yytext, "approx") == 0) {
@@ -1962,13 +1997,16 @@ void directive_analyt_prop(cc_options_t *opts)
 
 /**
  * Syntax:
- * density <sector-label> [lambda|expect]
+ * density <sector-label> [lambda|expect] [irrep:state]
 
  * Example:
  * density 0h0p
  * (lambda by default)
  * or
  * density 0h0p expect
+ * or
+ * density 0h1p 1/2+:1
+ * (the 1st state of symmetry 1/2+)
  */
 void directive_density(cc_options_t *opts)
 {
@@ -1980,31 +2018,69 @@ void directive_density(cc_options_t *opts)
         yyerror(msg_param);
     }
 
+    /*
+     * parse sector label
+     */
     int sect_h = 0, sect_p = 0;
     parse_sector_label(yytext, &sect_h, &sect_p);
     opts->selects[opts->n_select].sect_h = sect_h;
     opts->selects[opts->n_select].sect_p = sect_p;
-    if (sect_h != 0 || sect_p != 0) {
+    if ((sect_h == 0 && sect_p == 0) ||
+        (sect_h == 0 && sect_p == 1)) {
+        // OK
+    }
+    else {
         yyerror(msg_wrong_sector);
     }
 
-    token_type = next_token();
-    if (token_type == TT_WORD) {
-        str_tolower(yytext);
-        if (strcmp(yytext, "lambda") == 0) {
-            opts->calc_density_0h0p = CC_DENSITY_MATRIX_LAMBDA;
-        }
-        else if (strcmp(yytext, "expect") == 0) {
-            opts->calc_density_0h0p = CC_DENSITY_MATRIX_EXPECTATION;
-        }
-        else {
-            yyerror(msg_wrong_sector);
-        }
+    /*
+     * defaults
+     */
+    if (sect_h == 0 && sect_p == 0) {
+        opts->calc_density_0h0p = CC_DENSITY_MATRIX_LAMBDA;
     }
     else {
-        // default: lambda equations
-        opts->calc_density_0h0p = CC_DENSITY_MATRIX_LAMBDA;
-        put_back(token_type);
+        opts->calc_density_0h1p = CC_DENSITY_MATRIX_LAMBDA;
+    }
+
+    /*
+     * optional method of calculation: "lambda" or "expect" (0h0p only)
+     */
+    if (sect_h == 0 && sect_p == 0) {
+        token_type = next_token();
+        if (token_type == TT_WORD) {
+            str_tolower(yytext);
+            if (strcmp(yytext, "lambda") == 0) {
+                    opts->calc_density_0h0p = CC_DENSITY_MATRIX_LAMBDA;
+            }
+            else if (strcmp(yytext, "expect") == 0) {
+                    opts->calc_density_0h0p = CC_DENSITY_MATRIX_EXPECTATION;
+            }
+            else {
+                yyerror(msg_param);
+            }
+        }
+        else {
+            put_back(token_type);
+        }
+    }
+
+    /*
+     * number of electronic state of interest
+     * mandatory for the 0h1p sector
+     */
+    if (sect_h == 0 && sect_p == 1) {
+        token_type = next_token();
+        if (token_type != TT_ELEC_STATE) {
+            yyerror("symbol of electronic state is required");
+        }
+
+        cc_denmat_query_t *query = opts->density_0h1p_states + opts->density_0h1p_num_states;
+        query->sect1[0] = 0;
+        query->sect1[1] = 1;
+        parse_state_spec(yytext, query->rep1_name, &query->state1);
+        query->state1 -= 1;
+        opts->density_0h1p_num_states++;
     }
 }
 
@@ -2220,7 +2296,7 @@ void directive_model(cc_options_t *opts)
         // short form
         if (token_type == TT_EQ || token_type == TT_NEQ) {
             opts->selects[opts->n_select].task =
-                    (token_type == TT_EQ) ? CC_SELECTION_SET_ZERO : CC_SELECTION_SET_ZERO_EXCEPT;
+                (token_type == TT_EQ) ? CC_SELECTION_SET_ZERO : CC_SELECTION_SET_ZERO_EXCEPT;
             token_type = next_token();
             if (token_type != TT_INTEGER || atoi(yytext) != 0) {
                 yyerror("'0' (zero) is expected");
@@ -2414,7 +2490,30 @@ void directive_spinor_labels(cc_options_t *opts)
         /* go to the next directive */
         token_type = next_token();
     }
+}
 
+
+/**
+ * Syntax:
+ * tt_tol <real thresh>
+ */
+void directive_tt_tol(cc_options_t *opts)
+{
+    static char *msg = "wrong specification of threshold for SVD in tensor trains!\n"
+                       "A positive real is expected";
+    double thresh;
+    int token_type;
+
+    token_type = next_token();
+    if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
+        yyerror(msg);
+    }
+
+    thresh = atof(yytext);
+    if (thresh <= 0) {
+        yyerror(msg);
+    }
+    opts->tensor_train_tol = thresh;
 }
 
 

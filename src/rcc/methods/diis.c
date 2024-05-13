@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -39,7 +39,6 @@
 
 #include "error.h"
 #include "engine.h"
-#include "datamodel.h"
 #include "linalg.h"
 #include "memory.h"
 #include "options.h"
@@ -57,6 +56,7 @@
 diis_queue_t *new_diis_queue(int do_t1, int do_t2, int do_t3)
 {
     diis_queue_t *q = (diis_queue_t *) cc_malloc(sizeof(diis_queue_t) * 1);
+    q->err_matrix = (double *) cc_malloc(sizeof(double) * DIIS_MAX * DIIS_MAX);
     q->n = 0;
     q->do_t1 = do_t1;
     q->do_t2 = do_t2;
@@ -81,6 +81,7 @@ void delete_diis_queue(diis_queue_t *q)
         diagram_stack_erase(q->t2[i]);
         diagram_stack_erase(q->t3[i]);
     }
+    cc_free(q->err_matrix);
     cc_free(q);
 
     timer_stop("diis");
@@ -155,6 +156,29 @@ void diis_put(diis_queue_t *q,
         strcpy(q->e3[q->n], buf_err);
     }
 
+    // calculate scalar products with itself and all previous error vectors
+    int n = q->n;
+    for (int i = 0; i <= n; i++) {
+
+        double s1 = 0.0, s2 = 0.0, s3 = 0.0;
+
+        if (q->do_t1) {
+            double complex z1 = scalar_product("C", "N", q->e1[i], q->e1[n]);
+            s1 = creal(z1);
+        }
+        if (q->do_t2) {
+            double complex z2 = scalar_product("C", "N", q->e2[i], q->e2[n]);
+            s2 = creal(z2);
+        }
+        if (q->do_t3) {
+            double complex z3 = scalar_product("C", "N", q->e3[i], q->e3[n]);
+            s3 = creal(z3);
+        }
+
+        q->err_matrix[i * DIIS_MAX + n] = s1 + s2 + s3;
+        q->err_matrix[n * DIIS_MAX + i] = s1 + s2 + s3;
+    }
+
     q->n++;
 
     timer_stop("diis");
@@ -203,6 +227,14 @@ void diis_truncate(diis_queue_t *q, int len)
             strcpy(q->e3[i], q->e3[i + offs]);
         }
     }
+
+    // shift the submatrix of the whole error matrix to the upper-left corner
+    for (int i = 0; i < len; i++) {
+        for (int j = 0; j < len; j++) {
+            q->err_matrix[i * DIIS_MAX + j] = q->err_matrix[(i + offs) * DIIS_MAX + (j + offs)];
+        }
+    }
+
     q->n = len;
 
     timer_stop("diis");
@@ -233,7 +265,7 @@ void diis_extrapolate(diis_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
     for (int i = 0; i < dim; i++) {
         int j;
         for (j = i; j < dim; j++) {
-            double s1 = 0.0, s2 = 0.0, s3 = 0.0;
+            /*double s1 = 0.0, s2 = 0.0, s3 = 0.0;
             if (q->do_t1) {
                 double complex z1 = scalar_product("C", "N", q->e1[i], q->e1[j]);
                 s1 = creal(z1);
@@ -247,7 +279,10 @@ void diis_extrapolate(diis_queue_t *q, char *extrap_t1, char *extrap_t2, char *e
                 s3 = creal(z3);
             }
             B[i * bdim + j] = s1 + s2 + s3;
-            B[j * bdim + i] = s1 + s2 + s3;
+            B[j * bdim + i] = s1 + s2 + s3;*/
+
+            B[i * bdim + j] = q->err_matrix[i * DIIS_MAX + j];
+            B[j * bdim + i] = B[i * bdim + j];
         }
         B[i * bdim + j] = -1.0;
     }

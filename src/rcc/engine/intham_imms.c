@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -163,11 +163,17 @@ void intham_imms_setup(int sect_h, int sect_p)
 
     /*
      * automatic determination of the frontier energy (if needed)
+     * (upper bound)
      */
     if (ih_opts->det_shift_auto[sect_h][sect_p]) {
         double frontier_energy = intham_imms_calculate_frontier_energy_auto(sect_h, sect_p);
         ih_opts->det_shift_to[sect_h][sect_p] = frontier_energy;
     }
+
+    /*
+     * automatic determination of the frontier energy (if needed)
+     * (lower bound)
+     */
 
     /*
      * print table with determinantal shifts
@@ -251,8 +257,11 @@ void intham_imms_print_options(ih_imms_options_t *ih_opts)
     for (int h = 0; h < MAX_SECTOR_RANK; h++) {
         for (int p = 0; p < MAX_SECTOR_RANK; p++) {
             if (ih_opts->sectors[h][p]) {
-                if (ih_opts->det_shift_auto[h][p]) {
-                    printf("       %dh%dp  determinant frontier energy = auto\n", h, p);
+                if (ih_opts->det_shift_auto[h][p] == IH_IMMS_FRONTIER_ENERGY_UPPER_BOUND) {
+                    printf("       %dh%dp  determinant frontier energy = upper bound\n", h, p);
+                }
+                else if (ih_opts->det_shift_auto[h][p] == IH_IMMS_FRONTIER_ENERGY_LOWER_BOUND) {
+                    printf("       %dh%dp  determinant frontier energy = lower bound\n", h, p);
                 }
                 else {
                     printf("       %dh%dp  determinant frontier energy = %g a.u.\n",
@@ -292,13 +301,21 @@ void intham_imms_print_options(ih_imms_options_t *ih_opts)
 /**
  * automatic determination of frontier energy for the given main model space.
  * returns frontier energy.
+ * depending on the value of ih1_opts->det_shift_auto[sect_h][sect_p],
+ * we can search for the upper of the lower energy of model space determinants.
  */
 double intham_imms_calculate_frontier_energy_auto(int sect_h, int sect_p)
 {
     size_t block_dims[CC_MAX_NUM_IRREPS];
     ih_imms_options_t *ih1_opts = &cc_opts->intham_imms_opts;
 
-    double frontier_energy = -1e9;
+    double frontier_energy = 0.0;
+    if (ih1_opts->det_shift_auto[sect_h][sect_p] == IH_IMMS_FRONTIER_ENERGY_UPPER_BOUND) {
+        frontier_energy = -1e9;
+    }
+    else { // lower bound
+        frontier_energy = +1e9;
+    }
 
     slater_det_t **det_basis = construct_model_space(sect_h, sect_p, block_dims);
     for (int irrep = 0; irrep < get_num_irreps(); irrep++) {
@@ -327,8 +344,16 @@ double intham_imms_calculate_frontier_energy_auto(int sect_h, int sect_p)
                 }
             }
 
-            if (is_main && det_energy > frontier_energy) {
-                frontier_energy = det_energy;
+            if (ih1_opts->det_shift_auto[sect_h][sect_p] == IH_IMMS_FRONTIER_ENERGY_UPPER_BOUND) {
+                if (is_main && det_energy > frontier_energy) {
+                    frontier_energy = det_energy;
+                }
+            }
+
+            if (ih1_opts->det_shift_auto[sect_h][sect_p] == IH_IMMS_FRONTIER_ENERGY_LOWER_BOUND) {
+                if (is_main && det_energy < frontier_energy) {
+                    frontier_energy = det_energy;
+                }
             }
         }
     }
@@ -511,11 +536,11 @@ double intham_imms_get_model_det_shift(int sect_h, int sect_p, slater_det_t *det
  * to be used with the simple Intermediate Hamiltonian technique.
  */
 double get_fraction_of_main_space_determinants(
-        int sector_h,
-        int sector_p,
-        size_t dim,
-        slater_det_t *det_list,
-        const double complex *model_vector
+    int sector_h,
+    int sector_p,
+    size_t dim,
+    slater_det_t *det_list,
+    const double complex *model_vector
 )
 {
     double fraction_main = 0.0;

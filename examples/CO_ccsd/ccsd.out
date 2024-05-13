@@ -1,0 +1,449 @@
+
+		**********************************************************************************
+		**                                                                              **
+		**                                   E X P - T                                  **
+		**        Relativistic Fock-Space Multireference Coupled Cluster Program        **
+		**                                                                              **
+		**                         version 1.8.3 (22 Aug 2023)                         **
+		**                                                                              **
+		**********************************************************************************
+		**                                                                              **
+		** EXP-T is free software: you can redistribute it and/or modify                **
+		** it under the terms of the GNU Lesser General Public License as published by  **
+		** the Free Software Foundation, either version 3 of the License, or            **
+		** (at your option) any later version.                                          **
+		**                                                                              **
+		** EXP-T is distributed in the hope that it will be useful,                     **
+		** but WITHOUT ANY WARRANTY; without even the implied warranty of               **
+		** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                **
+		** GNU Lesser General Public License for more details.                          **
+		**                                                                              **
+		** You should have received a copy of the GNU Lesser General Public License     **
+		** along with EXP-T.  If not, see <http://www.gnu.org/licenses/>.               **
+		**                                                                              **
+		**********************************************************************************
+		**                                                                              **
+		** For more information about the EXP-T program system see                      **
+		** http://www.qchem.pnpi.spb.ru/expt                                            **
+		**                                                                              **
+		** This is an experimental code. The authors accept no responsibility           **
+		** for the performance of the code or for the correctness of the results.       **
+		**                                                                              **
+		** If results obtained with this code are published, an                         **
+		** appropriate citation would be:                                               **
+		**                                                                              **
+		** [1] A. Oleynichenko, A. Zaitsevskii, E. Eliav.                               **
+		**     EXP-T, An Extensible Code for Fock Space Relativistic Coupled Cluster    **
+		**     Calculations. See http://www.qchem.pnpi.spb.ru/expt.                     **
+		** [2] A. V. Oleynichenko, A. Zaitsevskii, E. Eliav.                            **
+		**     Towards high performance relativistic electronic structure modelling:    **
+		**     the EXP-T program package. Commun. Comput. Inf. Sci. 1331, 375 (2020).   **
+		**     doi: 10.1007/978-3-030-64616-5_33                                        **
+		**                                                                              **
+		**********************************************************************************
+
+Authors:
+  Alexander Oleynichenko [alexvoleynichenko@gmail.com]
+  Andrei Zaitsevskii
+  Artem Rumyantsev
+  Ephraim Eliav
+Compiler: GNU C Compiler 4.8.5
+BLAS/LAPACK implementation: OpenBLAS
+Build date: Apr 18 2024 16:01:18
+Run date: Wed May  1 19:30:51 2024
+Hostname: l009
+CUDA disabled
+Tensor trains (TT) disabled
+Reading input file: ccsd.inp
+
+
+				****************
+				** Input file **
+				****************
+
+ -----
+ # CO molecule, CCSD/cc-pVDZ
+ # nonrelativistic, symmetry C1
+ 
+ # title for the task (of type "string")
+ title "CO/CCSD/cc-pVDZ"
+ 
+ # print level, default medium
+ print medium
+ 
+ # max number of iterations
+ maxiter 30
+ 
+ # convergence threshold (by cluster amplitudes)
+ conv 1e-9
+ 
+ # target Fock space sector
+ sector 0h0p
+ 
+ # CC model: ccsd, ccsdt-1, etc
+ model ccsd
+ 
+ # import integrals from
+ integrals MRCONEE-C1 MDCINT-C1
+ 
+ 
+ -----
+
+
+
+				*************
+				** Options **
+				*************
+
+ title            title string - comment                    CO/CCSD/cc-pVDZ
+ scratch_dir      scratch directory for tmp files           scratch
+ --no-clean       retain scratch directory on exit          no
+ print            print level                               medium
+ flush_amplitude  write formatted files with cluser ampl-s  no
+ arith            recommended arithmetic                    real
+ memory           max allowed RAM usage                     1024.0 Mb
+ compress         compression of integrals on disk          disabled
+ compress_triples compression of triples tensors in RAM     disabled
+ disk_usage       disk usage level                          2 (rank-6+ and pppp on disk)
+ tilesize         max dimension of formal blocks (tiles)    100
+ nthreads         number of OpenMP parallel threads         1
+ openmp_algorithm  parallelization algorithm for mult        external
+ cuda             calculations on GPU (CUDA)                disabled
+ maxiter          maximum number of CC iterations           30
+ conv_thresh      convergence threshold (by amplitudes)     1e-09
+ div_thresh       divergence threshold (by amplitudes)      1000
+ reuse            reuse amplitudes and/or integrals         nothing
+
+ skip             skip computations in sectors:             
+ flush            flush amplitudes                          no
+ interface        source of transformed molecular integrals  DIRAC
+ integrals        one-electron Hamiltonian integrals file   MRCONEE-C1
+                  two-electron (Coulomb) integrals file     MDCINT-C1
+                  one-electron property integrals file      MDPROP
+ x2cmmf           X2Cmmf Hamiltonian                        no
+ new_sorting      new implementation of integral sorting    no
+ gaunt            two-electron (Gaunt) integrals file       not used
+ sector           target Fock space sector                  0h0p
+ model            coupled cluster model (level of theory)   CCSD
+ shifttype        formula for denominator shifts            shifts are disabled
+ nroots           number of roots to be processed           all
+ roots_cutoff     energy cutoff for roots to be processed   all
+ degen_thresh     degeneracy threshold (a.u.)               1.0e-08
+ occ_irreps       occupation numbers of spinors             default (from integral interface)
+ occ              occupation numbers of spinors             default
+ diis             DIIS technique for convergence            enabled
+ diis <n>         DIIS subspace dimension                   10
+ diis triples     DIIS for triples amplitudes               disabled
+ diis             DIIS technique for convergence            disabled
+ oneprop          interface to OneProp (by L.V.Skripnikov)  disabled
+ twoprop          interface to TwoProp (by D.E.Maison)      disabled
+ oneprop          interface to the MDPROP file              disabled
+ density 0h0p     construct density matrix in 0h0p          disabled
+ density 0h1p     construct density matrix in 0h1p          disabled
+ overlap          calculate overlap int-s for target wfns   disabled
+ nohermit         hermitization of effective Hamiltonians   disabled
+ dltdm            model-space estimates of tran dipoles     disabled
+ natorb           model-space natural orbitals              disabled
+ prop             model-space estimates of properties       disabled
+ select           selection of cluster amplitudes           disabled
+ restrict_t3      restriction of triples                    disabled
+ use_oe           use orbital energies from DIRAC           disabled
+ ih_imms          simple intermediate Hamiltonian           disabled
+
+
+ Creating scratch directory 'scratch' ...
+ Current working directory:
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/CO_ccsd
+ Full path to one-electron integrals:
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/CO_ccsd/MRCONEE-C1
+ Full path to Coulomb integrals:
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/CO_ccsd/MDCINT-C1
+ Full path to properties integrals:
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/CO_ccsd/MDPROP
+ Changing working directory to scratch ...
+ Current working directory:
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/CO_ccsd/scratch
+ Wed May  1 19:30:51 2024
+ Wed May  1 19:30:52 2024
+
+ ******************************************************************
+ **       BINARY INTERFACE TO THE DIRAC PROGRAM PACKAGE          **
+ **                    version 10 Apr 2020                       **
+ ******************************************************************
+
+ required unformatted files (produced by DIRAC):
+   MRCONEE -- spinor info & transformed one-electron integrals
+   MDCINT  -- transformed two-electron integrals
+ optional files (DIRAC):
+   MDPROP  -- transformed integrals of one-electron properties
+ optional files (D. E. Maison, L. V. Skripnikov):
+   MGINT   -- transformed Gaunt integrals
+
+ HINT: in order to obtain these files, add option .4INDEX to the
+   **DIRAC section of the DIRAC input file; this will enable the
+   code for integrals transformation. Then run:
+   $ pam --inp=<inp-file> --mol=<mol-file> --get="MRCONEE MDCINT"
+
+
+ Names of integral files:
+ MRCONEE = /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/CO_ccsd/MRCONEE-C1
+ MDCINT  = /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/CO_ccsd/MDCINT-C1
+ MDPROP  = /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/CO_ccsd/MDPROP
+ MDPROP unformatted file is not found!
+ will be continued without properties
+ default integer type in DIRAC              integer(8)
+
+ *** MRCONEE FILE ***
+ NSPINORS                                             56
+ was breit in DHF                            F
+ nuclear repulsion energy                      22.514072232645404     
+ inversion symmetry (1-no,2-yes)                       1
+ group type (1-real,2-cmplx,4-quater)                  4
+ is spinfree                                           0
+ arithmetic                                 complex
+ total num of orb-s (+frozen+deleted)                 56
+ Total SCF energy =                           -112.82048022712151     
+ number of fermion irreps in parent group              2
+ names of these reps (grd, ungrd)             1A            2A          
+ number of spinors active in the transf-n              7           7
+ total number of orb-s of this ircop                  28
+ number of occupied frozen (core) spinors   
+   - total                                             0
+   - positive energy                                   0
+   - negative energy                                   0
+ number of deleted spinors                             0
+ number of fermion irreps in Abelian subgrp            1
+ names of these irreps                         A   a
+ number of g/u Kramers pairs          56
+ number of boson symmetry reps(LUCITA)            1
+ *** END OF MRCONEE FILE ***
+
+ *** MDPROP FILE ***
+ path to MDPROP file = /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/CO_ccsd/MDPROP
+ MDPROP file does not exist, properties integrals cannot be read
+ *** END OF MDPROP FILE ***
+
+ expectation value of dipole moment at the SCF level cannot be calculated
+
+ *** MDCINT FILE ***
+ datex                                   1May24  
+ timex                                 19:30:49
+ number of Kramers pairs                         28
+ *** END OF MDCINT FILE ***
+
+ number of VINT* files written                     1
+ written to disk: 418677540 bytes =    0.39 Gb
+ Blocks of molecular spinors:
+ --------------------------------------------------------------------------------
+   #  size  irrep  spinor indices
+ --------------------------------------------------------------------------------
+ [ 0]   56      A  1-56
+ --------------------------------------------------------------------------------
+
+
+		Symmetry & irreducible representations
+		--------------------------------------
+
+ Point group: C1
+ Group type: quaternion
+ Arithmetic: complex
+ Is abelian: yes
+ Number of irreps: 2
+ Totally symmetric irrep: a
+ Representation names:
+   0 A    1 a 
+multiplication table (for abelian only):
+
+ ||A|a|
+=++=+=+
+A||a|A|
+-++-+-+
+a||A|a|
+-++-+-+
+
+
+				Spinors info
+				------------
+
+     no    rep         occ    active        one-el energy
+    -------------------------------------------------------
+       1   0 "A     "   1       -         -20.690636740947
+       2   0 "A     "   1       -         -11.373247503022
+       3   0 "A     "   1       -          -1.524432039555
+       4   0 "A     "   1       -          -0.802554073307
+       5   0 "A     "   1       -          -0.634563489698
+       6   0 "A     "   1       -          -0.633710529853
+       7   0 "A     "   1       -          -0.548943179709
+       8   0 "A     "   0       -           0.154591991281
+       9   0 "A     "   0       -           0.154903767862
+      10   0 "A     "   0       -           0.382252808110
+      11   0 "A     "   0       -           0.672083223062
+      12   0 "A     "   0       -           0.672270077495
+      13   0 "A     "   0       -           0.726253111006
+      14   0 "A     "   0       -           1.017883632355
+      15   0 "A     "   0       -           1.061695487719
+      16   0 "A     "   0       -           1.223532461249
+      17   0 "A     "   0       -           1.224634388716
+      18   0 "A     "   0       -           1.344366266045
+      19   0 "A     "   0       -           1.344421870598
+      20   0 "A     "   0       -           1.558370939265
+      21   0 "A     "   0       -           1.558576938448
+      22   0 "A     "   0       -           1.938439794755
+      23   0 "A     "   0       -           2.342170277727
+      24   0 "A     "   0       -           2.937129632793
+      25   0 "A     "   0       -           2.937505120296
+      26   0 "A     "   0       -           3.426264052524
+      27   0 "A     "   0       -           3.426464991211
+      28   0 "A     "   0       -           3.871478246837
+      29   0 "A     "   1       -         -20.690636740947
+      30   0 "A     "   1       -         -11.373247503022
+      31   0 "A     "   1       -          -1.524432039555
+      32   0 "A     "   1       -          -0.802554073307
+      33   0 "A     "   1       -          -0.634563489698
+      34   0 "A     "   1       -          -0.633710529853
+      35   0 "A     "   1       -          -0.548943179709
+      36   0 "A     "   0       -           0.154591991281
+      37   0 "A     "   0       -           0.154903767862
+      38   0 "A     "   0       -           0.382252808110
+      39   0 "A     "   0       -           0.672083223062
+      40   0 "A     "   0       -           0.672270077495
+      41   0 "A     "   0       -           0.726253111006
+      42   0 "A     "   0       -           1.017883632355
+      43   0 "A     "   0       -           1.061695487719
+      44   0 "A     "   0       -           1.223532461249
+      45   0 "A     "   0       -           1.224634388716
+      46   0 "A     "   0       -           1.344366266045
+      47   0 "A     "   0       -           1.344421870598
+      48   0 "A     "   0       -           1.558370939265
+      49   0 "A     "   0       -           1.558576938448
+      50   0 "A     "   0       -           1.938439794755
+      51   0 "A     "   0       -           2.342170277727
+      52   0 "A     "   0       -           2.937129632793
+      53   0 "A     "   0       -           2.937505120296
+      54   0 "A     "   0       -           3.426264052524
+      55   0 "A     "   0       -           3.426464991211
+      56   0 "A     "   0       -           3.871478246837
+    -------------------------------------------------------
+
+    irreps                 A
+    occupied inactive     14
+    occupied active        0
+    virtual active         0
+    virtual inactive      42
+
+
+
+				*****************
+				** Sector 0h0p **
+				*****************
+
+
+
+ Integral sorting for the 0h0p sector
+ started at Wed May  1 19:30:52 2024
+ number of spinors                              56
+ number of spinor blocks                        1
+ tile size                                      100
+ max spinor block size                          56
+ size of i/o buffer for integrals and indices   0.375 MB
+ size of the buffer for two-elec integrals      9.379 MB
+ sorting two-electron integrals
+   step    #blocks   ints read    time,s  rate,G/s
+   0 /  1       11   191891920         1      4.87
+   total        11   191891920         1      4.09
+ sorting one-electron integrals ...
+   Fock matrix reconstruction ...
+   SCF energy (energy of reference determinant) =    -112.820480227128 a.u.
+ max deviation of the diagonal elements of the reconstructed Fock matrix and orbital energies = 1.294662e-10
+ fill 1-electron diagrams ... hh hp ph pp done
+ time for 2-e integrals sorting, sec: 0.83
+ time for DIRAC interface (integral extraction & write), sec: 0.95
+ total time for sorting operations, sec: 1.77
+ finished at at Wed May  1 19:30:53 2024
+
+ Initial guess
+ -------------
+ Contributions to the MP2 energy:
+   one-particle    -0.0000000000   0.0000000000
+   two-particle    -0.2908923958  -0.0000000000
+ MP2 correlation energy =      -0.290892395807
+       Total MP2 energy =    -113.111372622928
+
+ solution of amplitude equations (sector 0h0p)		 Wed May  1 19:30:53 2024
+ ---------------------------------------------------------------------------------------
+ it.       diffmax(T1)       diffmax(T2)     max(T1)     max(T2)    t,sec       mem,Gb
+ ---------------------------------------------------------------------------------------
+   1    0.031599097154    0.011701624732    0.031599    0.053127      1.0    0.10/0.25
+   2    0.003704487660    0.007074146145    0.027895    0.060046      1.0    0.11/0.25
+   3    0.004905306014    0.002392153466    0.033367    0.059669      1.0    0.12/0.25
+   4    0.000582590778    0.000657433623    0.034799    0.060852      1.0    0.13/0.25
+   5    0.000264106280    0.000201179914    0.035429    0.061042      1.0    0.14/0.25
+   6    0.000025285759    0.000034062872    0.035581    0.061060      1.0    0.15/0.25
+   7    0.000007530639    0.000006161410    0.035604    0.061039      1.0    0.16/0.25
+   8    0.000002174989    0.000001326863    0.035610    0.061035      1.0    0.17/0.25
+   9    0.000000685004    0.000000219564    0.035612    0.061034      1.0    0.18/0.25
+  10    0.000000175575    0.000000099678    0.035612    0.061034      1.0    0.19/0.25
+  11    0.000000108168    0.000000021492    0.035612    0.061034      1.1    0.19/0.25
+  12    0.000000062974    0.000000006748    0.035613    0.061034      1.0    0.19/0.25
+  13    0.000000026075    0.000000003234    0.035613    0.061034      1.1    0.19/0.25
+  14    0.000000006932    0.000000001496    0.035613    0.061034      1.1    0.19/0.25
+  15    0.000000001880    0.000000000561    0.035613    0.061034      1.1    0.19/0.25
+  16    0.000000000677    0.000000000279    0.035613    0.061034      1.0    0.19/0.25
+ ---------------------------------------------------------------------------------------
+ converged in 16 iterations
+
+ average time per iteration = 1.028 sec
+
+
+          SCF reference energy =    -112.820480227122
+       CCSD correlation energy =      -0.298117912023
+             Total CCSD energy =    -113.118598139144
+
+
+ (absolute values)
+ Max T{0h0p}_1 amplitude (t{00}_ia) [ 5 -> 8 ] = 0.03561256
+   [   5] eps=     -0.63456349 rep=A inactive occ
+   [   8] eps=      0.15459199 rep=A inactive virt
+ Max T{0h0p}_2 amplitude (t{00}_ijab) [ 7 35 -> 8 36 ] = 0.06103399
+   [   7] eps=     -0.54894318 rep=A inactive occ
+   [  35] eps=     -0.54894318 rep=A inactive occ
+   [   8] eps=      0.15459199 rep=A inactive virt
+   [  36] eps=      0.15459199 rep=A inactive virt
+
+ Norm |T{0h0p}_1| = 0.08639455
+ Norm |T{0h0p}_2| = 0.64566826
+
+ T1 diagnostic = 0.02308991
+ More on T1 diagnostic: [T.J.Lee,P.R.Taylor,IJQC 23,199(1989)]
+
+
+ time for (sec):
+ -------------------------------------------------------
+  Total time of execution                        18.387
+  Diagram contraction (mult) for <PP||PP>         4.111
+  DIRAC interface (MRCONEE/MDCINT)                0.946
+  Diagram template constr (tmplt)                 0.117
+  Sorting of integrals                            0.827
+  Tensor transposition (reorder)                  2.754
+  Energy denominators (diveps)                    0.188
+  0h0p -- Singles equations (T1)                  0.943
+  Diagram contraction (mult)                     11.229
+  mult M <- M x M                                 6.790
+  mult M <- D x M                                 4.086
+  Diagram addition (update)                       0.437
+  0h0p -- Doubles equations (T2)                 14.846
+  Permutation operators                           1.433
+  DIIS extrapolation                              0.261
+ -------------------------------------------------------
+
+
+ memory in usage  = 83694072 bytes = 79.8 Mb = 0.08 Gb
+ max memory usage = 271717928 bytes = 259.1 Mb = 0.25 Gb
+
+ Disk I/O:
+   files created: 1119   files removed: 0
+   read        2111490344 bytes = 1.966 Gb
+   write       2228347645 bytes = 2.075 Gb
+
+ EXP-T terminated normally at Wed May  1 19:31:10 2024
+ Total run time: 0 days 0 hours 0 minutes 18 seconds 386 milliseconds

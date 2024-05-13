@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -26,26 +26,34 @@
  * Are based on low-level operations (see diagram.h)
  */
 
+#include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "cuda_code.h"
 #include "engine.h"
-#include "platform.h"
-#include "datamodel.h"
 #include "error.h"
 #include "linalg.h"
 #include "options.h"
 #include "symmetry.h"
 #include "timer.h"
 #include "utils.h"
+#include "tt.h"
 
 #if defined BLAS_MKL
   #include "mkl.h"
 #endif
 
-#include "omp.h"
+#ifndef COMPILER_CLANG
+  #include "omp.h"
+#else
+void omp_set_num_threads(int num_threads) {
+    // ... stub ...
+}
+void openblas_set_num_threads(int num_threads);
+#endif
 
 /*
  * type of multiplication:
@@ -88,6 +96,18 @@ void mulblocks_lapack(double complex *A, int ma, int na,
                       double beta, double complex *C);
 
 void mulblocks(block_t *op1, block_t *op2, block_t *prod, int ncontr, int nthreads);
+
+static int tt_on = 0;
+
+void tt_enable()
+{
+    tt_on = 1;
+}
+
+void tt_disable()
+{
+    tt_on = 0;
+}
 
 
 /**
@@ -328,7 +348,6 @@ void mult_algorithm_m_mm_openmp_internal(diagram_t *op1, diagram_t *op2, diagram
 }
 
 
-
 /*
  * sequence of loops:
  * for block A in operand-1:
@@ -388,12 +407,91 @@ void mult_algorithm_m_dm(diagram_t *op1, diagram_t *op2, diagram_t *tgt, int nco
 }
 
 
+int all_elements_zero(size_t n, void *buf, const double thresh)
+{
+    if (WORKING_TYPE == CC_DOUBLE) {
+        double *dbuf = (double *) buf;
+        for (size_t i = 0; i < n; i++) {
+            if (fabs(dbuf[i]) > thresh) {
+                return 0;
+            }
+        }
+    }
+    else {
+        double complex *zbuf = (double complex *) buf;
+        for (size_t i = 0; i < n; i++) {
+            if (cabs(zbuf[i]) > thresh) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+
+void transpose_tensor(double *arr, int dim, unsigned long *shape, int *perm, double *result, unsigned long *new_shape)
+{
+    assert(dim == 4);
+    int rank = dim;
+
+    int dims1[CC_DIAGRAM_MAX_RANK];
+    int dims2[CC_DIAGRAM_MAX_RANK];
+    size_t coef1[CC_DIAGRAM_MAX_RANK];
+    size_t coef2[CC_DIAGRAM_MAX_RANK];
+
+    for (int i = 0; i < dim; i++) {
+        dims1[i] = shape[i];
+        dims2[i] = shape[perm[i]];
+        new_shape[i] = shape[perm[i]];
+    }
+
+    // prepare coefficients for recalculation: compound index <-> linear index
+    for (int i = 0; i < rank; i++) {
+        coef1[i] = 1;
+        coef2[i] = 1;
+    }
+    for (int i = 0; i < rank - 1; i++) {
+        coef1[i] = 1;
+        coef2[i] = 1;
+        for (int j = i + 1; j < rank; j++) {
+            coef1[i] *= dims1[j];
+            coef2[i] *= dims2[j];
+        }
+    }
+
+    int dim0 = dims1[0];
+    int dim1 = dims1[1];
+    int dim2 = dims1[2];
+    int dim3 = dims1[3];
+    int to[4];
+    reverse_perm(4, perm, to);
+
+    for (int i0 = 0; i0 < dim0; i0++) {
+        size_t index = i0 * dim1 * dim2 * dim3;
+        size_t index2 = i0 * coef2[to[0]];
+        for (int i1 = 0; i1 < dim1; i1++) {
+            size_t index2_1 = index2 + i1 * coef2[to[1]];
+            for (int i2 = 0; i2 < dim2; i2++) {
+                size_t index2_2 = index2_1 + i2 * coef2[to[2]];
+                for (int i3 = 0; i3 < dim3; i3++) {
+                    size_t index2_3 = index2_2 + i3 * coef2[to[3]];
+                    // copy matrix element
+                    result[index2_3] = arr[index];
+                    index++;
+                }
+            }
+        }
+    }
+}
+
+
 /**
  * general interface for contraction of two blocks.
  * encapsulates invocations of library-specific threading operations
  * (in case of OpenMP) or CUDA BLAS library (in case of CUDA)
  *
- * @note all locks must be preloaded!
+ * @note all blocks must be preloaded!
  */
 void mulblocks(block_t *op1, block_t *op2, block_t *prod, int ncontr, int nthreads)
 {
@@ -418,7 +516,80 @@ void mulblocks(block_t *op1, block_t *op2, block_t *prod, int ncontr, int nthrea
         // printf("else!\n");
 #endif
 
+#ifdef TENSOR_TRAIN
+
+        /*
+        if (tt_on && cc_opts->use_tt_mult) {
+
+            //printf("begin tt mult\n");
+
+            // blocks to be decomposed must not be zero
+            if (all_elements_zero(op1->size, op1->buf, 1e-14) ||
+                all_elements_zero(op2->size, op2->buf, 1e-14)) {
+                goto end_mult;
+            }
+
+            // decompose blocks
+            unsigned long shape_1[10];
+            //printf("shape 1 = [ ");
+            for (int j = 0; j < op1->rank; j++) {
+                shape_1[j] = op1->indices[j][0];
+                //printf(" %ld ", shape_1[j]);
+            }
+            //printf("]\n");
+
+            unsigned long shape_2[10];
+            //printf("shape 2 = [ ");
+            for (int j = 0; j < op2->rank; j++) {
+                shape_2[j] = op2->indices[j][0];
+                //printf(" %ld ", shape_2[j]);
+            }
+            //printf("]\n");
+
+            // reorder second operand
+            unsigned long new_shape_2[10];
+            int perm[] = {3, 2, 0, 1};
+            double *arr = cc_malloc(sizeof(double) * op2->size);
+            transpose_tensor((double *) op2->buf, 4, shape_2, perm, arr, new_shape_2);
+
+            printf("new shape 2 = [ ");
+            for (int j = 0; j < op2->rank; j++) {
+                printf(" %ld ", new_shape_2[j]);
+            }
+            printf("]\n");
+
+            void *train_1 = dttnew((const double *) op1->buf, op1->size, shape_1, op1->rank, 1e-12);
+            //void *train_2 = dttnew((const double *) arr, op2->size, new_shape_2, op2->rank, 1e-12);
+
+            void *train_prod = dttcontraction_tt(train_1, &train_2, 1, ncontr, 1);
+
+            double *dst_tensor = dttto_tensor_into(train_prod);
+            for (size_t i = 0; i < prod->size; i++) {
+                ((double *) prod->buf)[i] += dst_tensor[i];
+            }
+
+            printf("TT:\n");
+            symblock_print(prod);
+
+            printf("GEMM:\n");
+            mulblocks_lapack(A, N, K, B, M, K, 1.0, C);
+            //block_debug_print(prod);
+        }
+        else {
+            mulblocks_lapack(A, N, K, B, M, K, 1.0, C);
+        }*/
+
+        /*for (int i = 0; i < prod->size; i++) {
+            printf("%20.12e %20.12e    %20.12e\n", dst_tensor[i], ((double *)C)[i], dst_tensor[i] - ((double *)C)[i]);
+        }*/
+
         mulblocks_lapack(A, N, K, B, M, K, 1.0, C);
+
+#else
+        mulblocks_lapack(A, N, K, B, M, K, 1.0, C);
+#endif // TENSOR_TRAIN
+
+        end_mult:
 
 #if defined BLAS_MKL
         mkl_set_num_threads_local(1);
@@ -474,21 +645,24 @@ void supmat_dims(block_t *b1, block_t *b2, int ncontr, int *m, int *n, int *k)
 {
     int rk1 = b1->rank;
     int rk2 = b2->rank;
-    int **ix1 = b1->indices;
-    int **ix2 = b2->indices;
-    int N = 1, M = 1, K = 1;
+
+    int N = 1;
+    int M = 1;
+    int K = 1;
 
     for (int i = 0; i < rk1 - ncontr; i++) {
-        N *= ix1[i][0];
+        N *= b1->shape[i];
     }
     for (int i = 0; i < rk2 - ncontr; i++) {
-        M *= ix2[i][0];
+        M *= b2->shape[i];
     }
     for (int i = 0; i < ncontr; i++) {
-        K *= ix1[rk1 - ncontr + i][0];
+        K *= b1->shape[rk1 - ncontr + i];
     }
 
-    *m = M, *n = N, *k = K;
+    *m = M;
+    *n = N;
+    *k = K;
 }
 
 

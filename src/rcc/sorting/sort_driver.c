@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -47,7 +47,6 @@
 
 #include "sorting_request.h"
 
-#include "datamodel.h"
 #include "engine.h"
 #include "error.h"
 #include "io.h"
@@ -66,6 +65,10 @@ void sorting_print_configuration();
 void sort_onel();
 
 void sort_twoel();
+
+void new_sort_2e();
+
+void new_sort_1e();
 
 
 /**
@@ -130,7 +133,7 @@ void request_sorting_sym(char *name, char *qparts, char *valence, char *order, i
     // try to read from disk
     sprintf(file_name, "%s.dg", name);
     if (rank == 2 && cc_opts->reuse_integrals_1) {
-        if (diagram_read(file_name) != NULL) {
+        if (diagram_read_binary(file_name) != NULL) {
             printf(" Reuse 1-electron integrals file '%s'\n", name);
             return;
         }
@@ -139,7 +142,7 @@ void request_sorting_sym(char *name, char *qparts, char *valence, char *order, i
         }
     }
     if (rank == 4 && cc_opts->reuse_integrals_2) {
-        if (diagram_read(file_name) != NULL) {
+        if (diagram_read_binary(file_name) != NULL) {
             printf(" Reuse 2-electron integrals file '%s'\n", name);
             return;
         }
@@ -200,8 +203,14 @@ void perform_sorting()
 
     sorting_print_configuration();
 
-    sort_twoel();
-    sort_onel();
+    if (cc_opts->new_sorting) {
+        new_sort_2e();
+        new_sort_1e();
+    }
+    else {
+        sort_twoel();
+        sort_onel();
+    }
 
     // только для реально отсортированных в этом запуске запросов!
     // reorder some diagrams (if required)
@@ -232,7 +241,7 @@ void perform_sorting()
         char dg_file_name[CC_MAX_PATH_LENGTH];
         req = &sorting_requests[ireq];
         sprintf(dg_file_name, "%s.dg", req->dg_name);
-        diagram_write(diagram_stack_find(req->dg_name), dg_file_name);
+        diagram_write_binary(diagram_stack_find(req->dg_name), dg_file_name);
         //printf("%s ", req->dg_name);
     }
 
@@ -247,9 +256,12 @@ void perform_sorting()
     //printf("   total number of bytes read from disk: %ld (%.2f GB)\n", n_bytes_read,
     //       (double) n_bytes_read / (1024.0 * 1024.0 * 1024.0));
     //printf("   sorting performance, Mb/sec: %.2f\n", (double) n_bytes_read / (1024.0 * 1024.0) / timer_get("sort"));
-    printf(" time for 2-e integrals sorting, sec: %.2f\n", timer_get("sort"));
-    printf(" time for DIRAC interface (integral extraction & write), sec: %.2f\n", timer_get("dirac"));
-    printf(" total time for sorting operations, sec: %.2f\n", timer_get("dirac") + timer_get("sort"));
+
+    if (!cc_opts->new_sorting) {
+        printf(" time for 2-e integrals sorting, sec: %.2f\n", timer_get("sort"));
+        printf(" time for DIRAC interface (integral extraction & write), sec: %.2f\n", timer_get("dirac"));
+        printf(" total time for sorting operations, sec: %.2f\n", timer_get("dirac") + timer_get("sort"));
+    }
 
     printf(" finished at at");
     print_asctime();

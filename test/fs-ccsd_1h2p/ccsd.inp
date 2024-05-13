@@ -3,17 +3,22 @@ nacth 2
 nactp 6
 model ccsd
 
-hughes_kaldor_1h2p
+#hughes_kaldor_1h2p
 
 maxiter 500
-conv 1e-8
+conv 1e-6
 disk_usage 0
-memory 1 gb
+memory 3 gb
 diis 200
+#diis triples
+flush 1 iter
 div_thresh 1e9
 
-shifttype real
-shift 1h2p 3 -0.5
+#reuse 0h0p 0h1p 1h0p 1h1p 0h2p
+#reuse integrals
+
+shifttype realimag
+shift 1h2p 3 -1.0
 
 spinor_labels
  2  2s

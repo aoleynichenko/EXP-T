@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -30,7 +30,6 @@
 
 #include "sorting_request.h"
 
-#include "datamodel.h"
 #include "error.h"
 #include "io.h"
 #include "memory.h"
@@ -112,7 +111,7 @@ void sort_onel()
     // substitute eps[] with new Fock matrix diagonal elements for the subsequent
     // use in perturbation expressions
     double max_eps_diff = max_diagonal_diff(f_ints);
-    if (max_eps_diff > 1e-10) {
+    if ((max_eps_diff > 1e-10) && (cc_opts->use_oe == 0)) {
         if (max_eps_diff > 1e-6) {
             printf("   The diagonal elements of the reconstructed Fock matrix don't "
                    "coincide with the orbital energies!\n");
@@ -134,6 +133,7 @@ void sort_onel()
         }
         printf(" max deviation of the diagonal elements of the reconstructed"
                " Fock matrix and orbital energies = %.6e\n", max_eps_diff);
+
         // recalculate energies
         for (int i = 0; i < nspinors; i++) {
             spinor_info[i].eps = creal(f_ints[i * nspinors + i]);
@@ -149,11 +149,13 @@ void sort_onel()
             continue;
         }
         printf("%s ", dg->name);
+
         // assign values of matrix elements
         for (size_t isb = 0; isb < dg->n_blocks; isb++) {
             block_t *block = dg->blocks[isb];
             block_load(block);
-            fill_block_one_elec(block, f_ints, 1);
+            int ignore_diagonal = cc_opts->use_oe ? 0 : 1;
+            fill_block_one_elec(block, f_ints, ignore_diagonal);
             block_unload(block);
         }
     }
@@ -272,10 +274,12 @@ void fill_block_one_elec(block_t *block, double complex *ints_matrix, int ignore
     assert(block->rank == 2);
 
     int nspinors = get_num_spinors();
-    int dims_1 = block->indices[0][0];
-    int dims_2 = block->indices[1][0];
-    int *block_indices_1 = block->indices[0] + 1;
-    int *block_indices_2 = block->indices[1] + 1;
+
+    int dims_1 = block->shape[0];
+    int dims_2 = block->shape[1];
+    int *block_indices_1 = block->indices[0];
+    int *block_indices_2 = block->indices[1];
+
     double *dbuf = (double *) block->buf;
 
     size_t index = 0;
@@ -283,8 +287,6 @@ void fill_block_one_elec(block_t *block, double complex *ints_matrix, int ignore
         for (int i2 = 0; i2 < dims_2; i2++) {
             int idx_1 = block_indices_1[i1];
             int idx_2 = block_indices_2[i2];
-
-            //printf("%d %d => %.8f %.8f\n", idx_1, idx_2, creal(ints_matrix[idx_1 * nspinors + idx_2]), cimag(ints_matrix[idx_1 * nspinors + idx_2]));
 
             if ((idx_1 == idx_2) && ignore_diagonal) {
                 if (arith == CC_ARITH_COMPLEX) {

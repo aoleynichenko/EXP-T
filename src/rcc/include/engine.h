@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -46,6 +46,11 @@
 
 #include "options.h"
 
+// data structures:
+#include "../engine/block.h"    // blocks
+#include "../engine/diagram.h"  // diagrams
+#include "../engine/dgstack.h"  // stack of diagrams
+
 enum {
     NOT_PERM_UNIQUE = 0,
     IS_PERM_UNIQUE = 1
@@ -61,9 +66,6 @@ void tmplt_sym(char *name, char *qparts, char *valence, char *order, int perm_un
 // sets all matrix elements in the diagram to zero
 void clear(char *name);
 
-// checks if a diagram exists
-void check_diagram_exists(char *name);
-
 // find max (abs value) matrix element in the diagram;
 void findmax(char *name, double *max_val, int *idx);
 
@@ -76,17 +78,23 @@ void prt(char *name);
 // brief summary about the diagram
 void summary(char *name);
 
-// renames diagram in the stack
-void rename_diagram(char *old_name, char *new_name);
-
 // creates a copy of a diagram
 void copy(char *src, char *target);
 
-// reorders diagram 'src'; puts result into 'target'
-void reorder(char *src, char *target, char *perm_str);
+// interchanges vertices in the two-electron diagram
+void interchange_electrons(char *src_name, char *dst_name);
+
+// in-place complex conjugation of all matrix elements in the diagram
+void conjugate_elements_inplace(char *source_name);
+
+// reorders diagram 'src_diargam_name'; puts result into 'target_diagram_name'
+void reorder(char *src_diargam_name, char *target_diagram_name, char *perm_str);
 
 // performs contraction of two diagrams
 void mult(char *name1, char *name2, char *target, int ncontr);
+
+void tt_enable();
+void tt_disable();
 
 // scalar product of two diagrams (full contraction)
 // (mult.c)
@@ -106,6 +114,9 @@ void diveps(char *name);
 
 // extracts closed part of the diagram
 void closed(char *src_name, char *tgt_name);
+
+// restricts some lines from general to valence
+void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *new_valence, int extract_valence);;
 
 // get symmetry information
 void get_rep_name(int irep, char *name);
@@ -140,5 +151,7 @@ size_t count_amplitudes_in_range(char *diagram_name, double lower_bound, double 
 void print_amplitude_distribution_analysis(char *diagram_name);
 
 void diagram_conjugate(char *source_name, char *target_name);
+
+#include "../engine/tensor_trains.h"
 
 #endif /* CC_ENGINE_H_INCLUDED */

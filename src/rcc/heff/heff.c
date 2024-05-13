@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -39,7 +39,6 @@
 #include "cc_properies.h"
 #include "engine.h"
 #include "eigenvalues.h"
-#include "datamodel.h"
 #include "linalg.h"
 #include "model_vectors.h"
 #include "model_space.h"

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -66,7 +66,7 @@ enum {
     KEYWORD_CONV,
     KEYWORD_DIV_THRESH,
     KEYWORD_DAMPING,
-    KEYWORD_SHIFTTYPE,
+    KEYWORD_SHIFT_TYPE,
     KEYWORD_SHIFT,
     KEYWORD_REUSE,
     KEYWORD_FLUSH,
@@ -93,6 +93,7 @@ enum {
     KEYWORD_GAUNT,
     KEYWORD_BREIT,
     KEYWORD_X2CMMF,
+    KEYWORD_NEW_SORTING,
     KEYWORD_SKIP,
     KEYWORD_INTERFACE,
     KEYWORD_RESTRICT_T3,
@@ -103,6 +104,12 @@ enum {
     KEYWORD_SPINOR_LABELS,
     KEYWORD_HUGHES_KALDOR_1H2P,
     KEYWORD_HUGHES_KALDOR_2H1P,
+    KEYWORD_USE_ORB_ENERGIES,
+    KEYWORD_RECALC_ORB_ENERGIES,
+    /* tensor trains */
+    KEYWORD_TT_TOL,
+    KEYWORD_TT_MULT_PPPP,
+    KEYWORD_TT_DIIS,
     /* special */
     END_OF_LINE,
     END_OF_FILE

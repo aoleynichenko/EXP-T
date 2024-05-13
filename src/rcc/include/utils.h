@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -73,11 +73,11 @@ size_t run_id();
 
 int int_search(size_t count, int *arr, int x);
 
-void reverse_perm(int n, int *a, int *ainv);
+void reverse_perm(int n, const int *direct_perm, int *inv_perm);
 
 int in_range(double x, double a, double b);
 
-void intcpy(int *a, int *b, size_t n);
+void intcpy(int *dst, int *src, size_t n);
 
 void str_replace(char *s, char x, char y);
 
@@ -98,5 +98,11 @@ void print_hyphens(int offs, int len);
 void print_asctime();
 
 void array_get_real_part(size_t n, double complex *array_complex, double *array_real);
+
+int cc_asprintf(char **str, char *fmt, ...);
+
+int str_to_int_array(char *str, int *array);
+
+int int_array_to_str(int n, const int *array, char *str);
 
 #endif /* CC_UTILS_H_INCLUDED */

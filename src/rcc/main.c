@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -53,6 +53,7 @@
 #include "timer.h"
 #include "utils.h"
 #include "version.h"
+#include "new_sorting/new_sorting.h"
 
 
 /*
@@ -74,7 +75,6 @@ void print_footer_banner(int exit_code);
  */
 int main(int argc, char **argv)
 {
-    cc_options_t *opts;
     char input_name[256];
     int exit_code = EXIT_SUCCESS;
     int do_clean_scratch = 0;
@@ -88,20 +88,17 @@ int main(int argc, char **argv)
 
     print_header_banner();
 
-    // ???
-    execute_external_program("rm", "-rf HEFF", NULL);
-
     // setup timers
     timer_new_entry("tot", "Total time of execution");
     timer_start("tot");
-    timer_new_entry("mult_pppp", "Diagram contraction (mult) for <PP||PP>");
+    timer_new_entry("mult_pppp", "Diagram contraction (mult) for <PP||PP>");  // ???
 
     // read input file
-    opts = new_options();
+    cc_options_t *opts = new_options();
     cc_opts = opts;
     readinp(input_name, opts);
 
-    // apply options from command line
+    // apply options from the command line
     if (scratch_dir_path != NULL) {
         strcpy(opts->scratch_dir, scratch_dir_path);
     }
@@ -117,7 +114,12 @@ int main(int argc, char **argv)
     // load transformed MO integrals
     // prepare raw integrals for sorting
     if (opts->int_source == CC_INTEGRALS_DIRAC) {
-        dirac_interface(opts);
+        if (opts->new_sorting) {
+            new_sorting(opts);
+        }
+        else {
+            dirac_interface(opts);
+        }
     }
     else {
         printf("unknown integral interface\n");
@@ -162,58 +164,6 @@ int main(int argc, char **argv)
             goto finalize;
         }
         exit_code = sector_1h1p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-    }
-    else if (opts->sector_h == 1 && opts->sector_p == 2) {
-        exit_code = sector_0h0p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-        exit_code = sector_1h0p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-        exit_code = sector_0h1p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-        exit_code = sector_1h1p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-        exit_code = sector_0h2p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-        exit_code = sector_1h2p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-    }
-    else if (opts->sector_h == 2 && opts->sector_p == 1) {
-        exit_code = sector_0h0p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-        exit_code = sector_1h0p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-        exit_code = sector_0h1p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-        exit_code = sector_1h1p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-        exit_code = sector_2h0p(opts);
-        if (exit_code == EXIT_FAILURE) {
-            goto finalize;
-        }
-        exit_code = sector_2h1p(opts);
         if (exit_code == EXIT_FAILURE) {
             goto finalize;
         }
@@ -282,6 +232,58 @@ int main(int argc, char **argv)
             goto finalize;
         }
     }
+    else if (opts->sector_h == 1 && opts->sector_p == 2) {
+        exit_code = sector_0h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_1h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_0h1p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_1h1p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_0h2p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_1h2p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+    }
+    else if (opts->sector_h == 2 && opts->sector_p == 1) {
+        exit_code = sector_0h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_1h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_0h1p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_1h1p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_2h0p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+        exit_code = sector_2h1p(opts);
+        if (exit_code == EXIT_FAILURE) {
+            goto finalize;
+        }
+    }
     else {
         errquit("Fock space sector %dh%dp is not implemented yet", opts->sector_h, opts->sector_p);
     }
@@ -319,14 +321,10 @@ int main(int argc, char **argv)
  */
 void setup_scratch()
 {
-    int status;
     char *scratch_dir = cc_opts->scratch_dir;
-    char cwd_path[CC_MAX_PATH_LENGTH];
-    char tmp[CC_MAX_PATH_LENGTH];
-
     if (!io_directory_exists(scratch_dir)) {
         printf(" Creating scratch directory '%s' ...\n", scratch_dir);
-        status = io_mkdir(scratch_dir);
+        int status = io_mkdir(scratch_dir);
         if (status != 0) {
             errquit("Unable to create scratch directory "
                     "(errno = %d, strerror = %s)", errno, strerror(errno));
@@ -336,33 +334,35 @@ void setup_scratch()
         printf(" Scratch directory '%s' exists\n", scratch_dir);
     }
 
+    char cwd_path[CC_MAX_PATH_LENGTH];
     io_getcwd(cwd_path, CC_MAX_PATH_LENGTH);
-    printf(" Current working directory = %s\n", cwd_path);
+    printf(" Current working directory:\n %s\n", cwd_path);
 
     /*
      * determine absolute path to files with integrals:
      */
-
+    char tmp[CC_MAX_PATH_LENGTH];
+     
     // "MRCONEE" - 1el integrals
     strcpy(tmp, cwd_path);
     strcat(tmp, "/");
     strcat(tmp, cc_opts->integral_file_1);
     strcpy(cc_opts->integral_file_1, tmp);
-    printf(" Full path to one-electron integrals = %s\n", cc_opts->integral_file_1);
+    printf(" Full path to one-electron integrals:\n %s\n", cc_opts->integral_file_1);
 
     // "MDCINT" - 2el (Coulomb) integrals
     strcpy(tmp, cwd_path);
     strcat(tmp, "/");
     strcat(tmp, cc_opts->integral_file_2);
     strcpy(cc_opts->integral_file_2, tmp);
-    printf(" Full path to Coulomb integrals = %s\n", cc_opts->integral_file_2);
+    printf(" Full path to Coulomb integrals:\n %s\n", cc_opts->integral_file_2);
 
     // "MDPROP" - properties integrals
     strcpy(tmp, cwd_path);
     strcat(tmp, "/");
     strcat(tmp, cc_opts->integral_file_prop);
     strcpy(cc_opts->integral_file_prop, tmp);
-    printf(" Full path to properties integrals = %s\n", cc_opts->integral_file_prop);
+    printf(" Full path to properties integrals:\n %s\n", cc_opts->integral_file_prop);
 
     // "MGINT" - Gaunt integrals
     if (cc_opts->gaunt_defined) {
@@ -370,7 +370,7 @@ void setup_scratch()
         strcat(tmp, "/");
         strcat(tmp, cc_opts->integral_file_gaunt);
         strcpy(cc_opts->integral_file_gaunt, tmp);
-        printf(" Full path to Gaunt integrals = %s\n", cc_opts->integral_file_gaunt);
+        printf(" Full path to Gaunt integrals:\n %s\n", cc_opts->integral_file_gaunt);
     }
 
     // OneProp files (1el integrals, real and imaginary parts)
@@ -380,12 +380,12 @@ void setup_scratch()
             strcat(tmp, "/");
             strcat(tmp, cc_opts->oneprop_file_re[i]);
             strcpy(cc_opts->oneprop_file_re[i], tmp);
-            printf(" Full path to OneProp 1-el integrals (real part) = %s\n", cc_opts->oneprop_file_re[i]);
+            printf(" Full path to OneProp 1-el integrals (real part):\n %s\n", cc_opts->oneprop_file_re[i]);
             strcpy(tmp, cwd_path);
             strcat(tmp, "/");
             strcat(tmp, cc_opts->oneprop_file_im[i]);
             strcpy(cc_opts->oneprop_file_im[i], tmp);
-            printf(" Full path to OneProp 1-el integrals (imag part) = %s\n", cc_opts->oneprop_file_im[i]);
+            printf(" Full path to OneProp 1-el integrals (imag part):\n %s\n", cc_opts->oneprop_file_im[i]);
         }
     }
 
@@ -396,12 +396,12 @@ void setup_scratch()
                 strcat(tmp, "/");
                 strcat(tmp, cc_opts->prop_queries[i].file_real);
                 strcpy(cc_opts->prop_queries[i].file_real, tmp);
-                printf(" Full path to OneProp 1-el integrals (real part) = %s\n", cc_opts->prop_queries[i].file_real);
+                printf(" Full path to OneProp 1-el integrals (real part):\n %s\n", cc_opts->prop_queries[i].file_real);
                 strcpy(tmp, cwd_path);
                 strcat(tmp, "/");
                 strcat(tmp, cc_opts->prop_queries[i].file_imag);
                 strcpy(cc_opts->prop_queries[i].file_imag, tmp);
-                printf(" Full path to OneProp 1-el integrals (imag part) = %s\n", cc_opts->prop_queries[i].file_imag);
+                printf(" Full path to OneProp 1-el integrals (imag part):\n %s\n", cc_opts->prop_queries[i].file_imag);
             }
         }
     }
@@ -413,19 +413,19 @@ void setup_scratch()
             strcat(tmp, "/");
             strcat(tmp, cc_opts->twoprop_file[i]);
             strcpy(cc_opts->twoprop_file[i], tmp);
-            printf(" Full path to 2-el property integrals = %s\n", cc_opts->twoprop_file[i]);
+            printf(" Full path to 2-el property integrals:\n %s\n", cc_opts->twoprop_file[i]);
         }
     }
 
     // change working directory
     printf(" Changing working directory to %s ...\n", scratch_dir);
-    status = io_chdir(scratch_dir);
+    int status = io_chdir(scratch_dir);
     if (status != 0) {
         errquit("Unable to use scratch directory '%s' as working directory "
                 "(errno = %d, strerror = %s)", scratch_dir, errno, strerror(errno));
     }
     io_getcwd(cwd_path, CC_MAX_PATH_LENGTH);
-    printf(" Current working directory = %s\n", cwd_path);
+    printf(" Current working directory:\n %s\n", cwd_path);
 }
 
 
@@ -509,6 +509,13 @@ void print_header_banner()
     cuda_device_query();
 #else
     printf("CUDA disabled\n");
+#endif
+
+    // Tensor trains by Artem Rumyantsev
+#ifdef TENSOR_TRAIN
+    printf("Tensor trains (TT) enabled\n");
+#else
+    printf("Tensor trains (TT) disabled\n");
 #endif
 }
 

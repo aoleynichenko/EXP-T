@@ -1,5 +1,5 @@
 # input file for the CCSDT-1b calculation
-print high
+#print high
 conv 1e-7
 maxiter 100
 model ccsdt-1
@@ -11,9 +11,10 @@ disk_usage 0
 #disk_usage 0
 #nthreads 2
 
-compress_triples 1e-8 float
-diis triples
-diis 3
-#crop triples
-#crop 3
+memory 1 gb
+#compress_triples 1e-8 float
+#diis triples
+#diis 10
+crop triples
+crop 3
 

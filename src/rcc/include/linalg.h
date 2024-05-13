@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -60,6 +60,9 @@ void xaxpby(data_type_t type, size_t n, const void *alpha,
 size_t ixadiffmax(data_type_t type, size_t n, const void *a, const void *b, double *diffmax);
 
 size_t ixamax(data_type_t type, size_t n, const void *a, double *max_val);
+
+// scale vector element-wise by a number
+void xscale(data_type_t type, size_t n, void *x, void *multiplier);
 
 // scalar product
 double complex xdot(data_type_t type, char *conjx, char *conjy, size_t n, const void *x, const void *y);

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -37,6 +37,12 @@
 
 #define IH_IMMS_MAX_SPINOR_SUBSPACES 50
 #define IH_IMMS_MAX_MAIN_SUBSPACES   50
+
+enum {
+    IH_IMMS_FRONTIER_ENERGY_MANUAL = 0,
+    IH_IMMS_FRONTIER_ENERGY_LOWER_BOUND = 1,
+    IH_IMMS_FRONTIER_ENERGY_UPPER_BOUND = 2
+};
 
 typedef struct {
     int sectors[MAX_SECTOR_RANK][MAX_SECTOR_RANK];

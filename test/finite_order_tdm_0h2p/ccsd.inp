@@ -1,0 +1,19 @@
+maxiter 200
+
+conv 1e-9
+sector 0h2p
+nactp 8
+disk_usage 0
+
+mdprop "XDIPLEN" sym 1u+ approx 2 2 scheme hermitian
+mdprop "ZDIPLEN" sym 0u  approx 2 2 scheme non-hermitian
+
+roots_cutoff 60000 cm
+arith complex
+
+#reuse 2-integrals amplitudes
+#print "model vectors"
+
+#shifttype realimag
+#shift 0h2p 3 -0.2
+

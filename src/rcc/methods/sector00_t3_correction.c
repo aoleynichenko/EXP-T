@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -35,7 +35,6 @@
 #include <string.h>
 
 #include "engine.h"
-#include "datamodel.h"
 #include "options.h"
 #include "spinors.h"
 
@@ -192,18 +191,18 @@ void sector_0h0p_perturbative_triples_energy_corrections(double *de_t, double *d
         block_load(block_t3d);
         double complex *buf_t3d = block_t3d->buf;
 
-        int dim_i = block_t3c->indices[0][0];
-        int dim_j = block_t3c->indices[1][0];
-        int dim_k = block_t3c->indices[2][0];
-        int dim_a = block_t3c->indices[3][0];
-        int dim_b = block_t3c->indices[4][0];
-        int dim_c = block_t3c->indices[5][0];
-        int *block_indices_i = block_t3c->indices[0] + 1; // +1 to skip first element (length)
-        int *block_indices_j = block_t3c->indices[1] + 1;
-        int *block_indices_k = block_t3c->indices[2] + 1;
-        int *block_indices_a = block_t3c->indices[3] + 1;
-        int *block_indices_b = block_t3c->indices[4] + 1;
-        int *block_indices_c = block_t3c->indices[5] + 1;
+        int dim_i = block_t3c->shape[0];
+        int dim_j = block_t3c->shape[1];
+        int dim_k = block_t3c->shape[2];
+        int dim_a = block_t3c->shape[3];
+        int dim_b = block_t3c->shape[4];
+        int dim_c = block_t3c->shape[5];
+        int *block_indices_i = block_t3c->indices[0];
+        int *block_indices_j = block_t3c->indices[1];
+        int *block_indices_k = block_t3c->indices[2];
+        int *block_indices_a = block_t3c->indices[3];
+        int *block_indices_b = block_t3c->indices[4];
+        int *block_indices_c = block_t3c->indices[5];
 
         // energy denominators are constructed stepwise
         // to reduce the number of memory access operations
@@ -335,19 +334,19 @@ void construct_disconnected_rank4_rank2(char *src1_name, char *src2_name, char *
             continue;
         }
 
-        int dim_i = block->indices[0][0];
-        int dim_j = block->indices[1][0];
-        int dim_k = block->indices[2][0];
-        int dim_a = block->indices[3][0];
-        int dim_b = block->indices[4][0];
-        int dim_c = block->indices[5][0];
+        int dim_i = block->shape[0];
+        int dim_j = block->shape[1];
+        int dim_k = block->shape[2];
+        int dim_a = block->shape[3];
+        int dim_b = block->shape[4];
+        int dim_c = block->shape[5];
 
-        int *block_indices_i = block->indices[0] + 1; // +1 to skip first element (length)
-        int *block_indices_j = block->indices[1] + 1;
-        int *block_indices_k = block->indices[2] + 1;
-        int *block_indices_a = block->indices[3] + 1;
-        int *block_indices_b = block->indices[4] + 1;
-        int *block_indices_c = block->indices[5] + 1;
+        int *block_indices_i = block->indices[0];
+        int *block_indices_j = block->indices[1];
+        int *block_indices_k = block->indices[2];
+        int *block_indices_a = block->indices[3];
+        int *block_indices_b = block->indices[4];
+        int *block_indices_c = block->indices[5];
 
         size_t index = 0;
 

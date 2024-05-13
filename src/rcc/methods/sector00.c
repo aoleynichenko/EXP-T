@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -50,7 +50,6 @@
 #include "cc_properies.h"
 #include "ccutils.h"
 #include "engine.h"
-#include "datamodel.h"
 #include "diis.h"
 #include "heff.h"
 #include "options.h"
@@ -59,6 +58,7 @@
 #include "symmetry.h"
 #include "utils.h"
 
+#include "../engine/tt.h"
 
 /*
  * declarations of functions used in this file
@@ -90,6 +90,8 @@ int sector_0h0p_lambda_equations();
 void sector_0h0p_analytic_density_matrix_lambda();
 
 void sector_0h0p_analytic_density_matrix_expectation(int pt_order);
+
+void sector_0h0p_calculate_properties();
 
 
 /**
@@ -135,6 +137,15 @@ int sector_0h0p(cc_options_t *opts)
     write_formatted_heff_0h0p(opts->escf + ecorr);
 
     /*
+     * analyze performance of the tensor train expansions - if needed
+     */
+#ifdef TENSOR_TRAIN
+//    tensor_decomposition_benchmark("ppppr", 1e-8);
+//    tensor_decomposition_benchmark("t2c", 1e-8);
+//    tensor_decomposition_benchmark("t3c", 1e-8);
+#endif // TENSOR_TRAIN
+
+    /*
      * analyze cluster amplitudes and save them to disk
      */
     print_cluster_operator_analysis(0, 0, "t1c", "t2c", triples ? "t3c" : NULL);
@@ -173,12 +184,11 @@ int sector_0h0p(cc_options_t *opts)
             return EXIT_FAILURE;
         }
         sector_0h0p_analytic_density_matrix_lambda();
+        sector_0h0p_calculate_properties();
     }
     else if (cc_opts->calc_density_0h0p == CC_DENSITY_MATRIX_EXPECTATION) {
         sector_0h0p_analytic_density_matrix_expectation(PT_2);
     }
-
-    sector_0h0p_calculate_properties();
 
     return EXIT_SUCCESS;
 }
@@ -190,6 +200,7 @@ int sector_0h0p(cc_options_t *opts)
 void sort_integrals_0h0p()
 {
     int triples = (cc_opts->cc_model < CC_MODEL_CCSDT_1A) ? 0 : 1;
+    triples = triples || cc_opts->cc_model == CC_MODEL_CCSD_T3 || cc_opts->cc_model == CC_MODEL_CCSD_T4;
 
     // prepare one-electron integrals
     request_sorting("hh", "hh", "00", "12");
@@ -198,31 +209,34 @@ void sort_integrals_0h0p()
     request_sorting("pp", "pp", "00", "12");
 
     // prepare two-electron integrals
-    request_sorting("hhpp", "hhpp", "0000", "1234");
+    request_sorting("hhpp", "hhpp", "0000", "1234"); // unique
     request_sorting("pphh", "pphh", "0000", "1234");
-    request_sorting("hhhh", "hhhh", "0000", "1234");
-    request_sorting("phhp", "phhp", "0000", "2431");
-    request_sorting("ppppr", "pppp", "0000", "3412");
-    request_sorting("pphp", "pphp", "0000", "1234");
+    request_sorting("hhhh", "hhhh", "0000", "1234"); // unique
+    request_sorting("phhp", "phhp", "0000", "2431"); // unique
+    request_sorting("ppppr", "pppp", "0000", "3412"); // unique
+    request_sorting("pphp", "pphp", "0000", "1234"); // unique
     request_sorting("phpp", "phpp", "0000", "1234");
     request_sorting("phhh", "phhh", "0000", "1234");
-    request_sorting("hhhp", "hhhp", "0000", "1234");
+    request_sorting("hhhp", "hhhp", "0000", "1234"); // unique
     request_sorting("hphh", "hphh", "0000", "1234");  // for Fock matrix only
-    request_sorting("hphp", "hphp", "0000", "1234");  // for Fock matrix only
-    if (triples || cc_opts->cc_model == CC_MODEL_CCSD_T3 || cc_opts->cc_model == CC_MODEL_CCSD_T4) {
+    request_sorting("hphp", "hphp", "0000", "1234");  // for Fock matrix only - unique
+
+    if (triples) {
         request_sorting("ppph", "ppph", "0000", "1234");
         request_sorting("hhph", "hhph", "0000", "1234");
     }
 
     // for lambda equations
-    if (cc_opts->calc_density_0h0p == CC_DENSITY_MATRIX_LAMBDA) {
+    if (cc_opts->calc_density_0h0p == CC_DENSITY_MATRIX_LAMBDA ||
+        cc_opts->calc_density_0h1p == CC_DENSITY_MATRIX_LAMBDA) {
         request_sorting("hpph", "hpph", "0000", "1234");
         request_sorting("pppp", "pppp", "0000", "1234");
     }
 
     perform_sorting();
 
-    // hphp -> phph
+    //print_amplitude_distribution_analysis("hhpp");
+
     reorder("hphp", "phph", "2143");
     set_order("phph", "1234");
 
@@ -248,14 +262,14 @@ void init_amplitudes_0h0p()
 
     if (cc_opts->reuse_amplitudes[0][0]) {
         printf(" Trying to read amplitudes from disk ...\n");
-        if (diagram_read("t1c.dg") != NULL) {
+        if (diagram_read_binary("t1c.dg") != NULL) {
             printf(" T1 amplitudes successfully read from disk\n");
             calc_t1 = 0;
         }
         else {
             printf(" T1 amplitudes will be calculated\n");
         }
-        if (diagram_read("t2c.dg") != NULL) {
+        if (diagram_read_binary("t2c.dg") != NULL) {
             printf(" T2 amplitudes successfully read from disk\n");
             calc_t2 = 0;
         }
@@ -263,7 +277,7 @@ void init_amplitudes_0h0p()
             printf(" T2 amplitudes will be calculated\n");
         }
         if (triples) {
-            if (diagram_read("t3c.dg") != NULL) {
+            if (diagram_read_binary("t3c.dg") != NULL) {
                 printf(" T3 amplitudes successfully read from disk\n");
                 calc_t3 = 0;
             }
@@ -524,7 +538,9 @@ void construct_doubles_0h0p()
 
     // D2c
     timer_start("mult_pppp");
+    //tt_enable();
     mult("ppppr", "t2c", "$r1", 2);
+    //tt_disable();
     timer_stop("mult_pppp");
     reorder("$r1", "r2", "3412");
     update("t2nw", 0.5, "r2");

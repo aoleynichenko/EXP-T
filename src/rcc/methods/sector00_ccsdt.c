@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -63,7 +63,6 @@
 
 #include "ccutils.h"
 #include "engine.h"
-#include "datamodel.h"
 #include "diis.h"
 #include "options.h"
 #include "sort.h"
@@ -777,7 +776,11 @@ void diag_T3_0h0p_a_bc(int pt_order)
     }
 
     finish:
+    //tt_enable();
+    timer_start("mult_pppp");
     mult("t3c", "i1", "r1", 2);
+    timer_stop("mult_pppp");
+    //tt_disable();
     perm("r1", "(4/56)");
     update("t3nw", 1.0, "r1");
     restore_stack_pos(pos);

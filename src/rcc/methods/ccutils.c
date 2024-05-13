@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -37,7 +37,6 @@
 #include "crop.h"
 #include "diis.h"
 #include "engine.h"
-#include "datamodel.h"
 #include "methods.h"
 #include "options.h"
 #include "symmetry.h"
@@ -133,7 +132,7 @@ int solve_amplitude_equations(
             else if (sector_h + sector_p == 2) {
                 closed(doubles_buf, veff);
             }
-            else if (sector_h + sector_p == 3) {
+            else if (sector_h + sector_p == 3 && veff) {
                 closed(triples_buf, veff);
             }
         }
@@ -661,19 +660,19 @@ void save_cluster_amplitudes(int sect_h, int sect_p, char *oper_t1, char *oper_t
 
     if (oper_t1) {
         sprintf(file_name, "%s.dg", oper_t1);
-        diagram_write(diagram_stack_find(oper_t1), file_name);
+        diagram_write_binary(diagram_stack_find(oper_t1), file_name);
     }
     if (oper_t2) {
         sprintf(file_name, "%s.dg", oper_t2);
-        diagram_write(diagram_stack_find(oper_t2), file_name);
+        diagram_write_binary(diagram_stack_find(oper_t2), file_name);
     }
     if (oper_t3) {
         sprintf(file_name, "%s.dg", oper_t3);
-        diagram_write(diagram_stack_find(oper_t3), file_name);
+        diagram_write_binary(diagram_stack_find(oper_t3), file_name);
     }
     if (oper_veff) {
         sprintf(file_name, "%s.dg", oper_veff);
-        diagram_write(diagram_stack_find(oper_veff), file_name);
+        diagram_write_binary(diagram_stack_find(oper_veff), file_name);
     }
 }
 

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -57,7 +57,7 @@ void print_space(cc_space_t *space);
  */
 cc_options_t *new_options()
 {
-    cc_options_t *opts = (cc_options_t *) cc_malloc(sizeof(cc_options_t));
+    cc_options_t *opts = (cc_options_t *) cc_calloc(1, sizeof(cc_options_t));
     if (opts == NULL) {
         errquit("Unable to allocate memory for options");
     }
@@ -92,6 +92,7 @@ cc_options_t *new_options()
     strcpy(opts->integral_file_2, "MDCINT");
     strcpy(opts->integral_file_prop, "MDPROP");
     opts->x2cmmf = 0;
+    opts->new_sorting = 0;
     // for Daniel Maison integral program
     opts->gaunt_defined = 0;
     opts->breit_defined = 0;
@@ -208,6 +209,9 @@ cc_options_t *new_options()
         strcpy(opts->analyt_prop_files[i], "\0");
     }
     opts->calc_density_0h0p = CC_DENSITY_MATRIX_DISABLED;
+    opts->calc_density_0h1p = CC_DENSITY_MATRIX_DISABLED;
+    opts->density_0h1p_num_states = 0;
+    memset(opts->density_0h1p_states, 0, sizeof(opts->density_0h1p_num_states));
 
     // perform "hermitization" of Heff or not (default:hermitization is enabled)
     // Bloch (non-Hermitian) or des Cloizeaux (Hermitian) Hamiltonian?
@@ -237,7 +241,7 @@ cc_options_t *new_options()
     opts->intham_imms_opts.npower = 5;
     for (int i = 0; i < MAX_SECTOR_RANK; i++) {
         for (int j = 0; j < MAX_SECTOR_RANK; j++) {
-            opts->intham_imms_opts.det_shift_auto[i][j] = 1;
+            opts->intham_imms_opts.det_shift_auto[i][j] = IH_IMMS_FRONTIER_ENERGY_UPPER_BOUND;
         }
     }
 
@@ -257,6 +261,23 @@ cc_options_t *new_options()
      * (in the given sector)
      */
     memset(opts->calc_overlap, 0, sizeof(opts->calc_overlap));
+
+    /*
+     * data from the MRCONEE (DIRAC) file
+     */
+    opts->mrconee_data = NULL;
+
+    /*
+     * do not recalculate orbital energies
+     */
+    opts->use_oe = 0;
+
+    /*
+     * use tensor trains in different situations
+     */
+    opts->tensor_train_tol = 1e-12;
+    opts->use_tt_mult = 0;
+    opts->use_tt_diis = 0;
 
     return opts;
 }
@@ -420,6 +441,13 @@ void print_options(cc_options_t *opts)
     else {
         printf("no\n");
     }
+    printf(" %-15s  %-40s  ", "new_sorting", "new implementation of integral sorting");
+    if (opts->new_sorting) {
+        printf("yes\n");
+    }
+    else {
+        printf("no\n");
+    }
     printf(" %-15s  %-40s  ", "gaunt", "two-electron (Gaunt) integrals file");
     if (opts->gaunt_defined) {
         printf("%s\n", opts->integral_file_gaunt);
@@ -492,7 +520,7 @@ void print_options(cc_options_t *opts)
         printf("\n");
     }
 
-    printf(" %-15s  %-40s  ", "shifttype", "formula for denominator shifts");
+    printf(" %-15s  %-40s  ", "shift_type", "formula for denominator shifts");
     if (opts->shift_type == CC_SHIFT_NONE) {
         printf("shifts are disabled\n");
     }
@@ -647,6 +675,22 @@ void print_options(cc_options_t *opts)
         printf("expectation value\n");
     }
 
+    // density matrix in the 0h1p sector
+    printf(" %-15s  %-40s  ", "density 0h1p", "construct density matrix in 0h1p");
+    if (opts->calc_density_0h1p == CC_DENSITY_MATRIX_DISABLED) {
+        printf("disabled\n");
+    }
+    else if (opts->calc_density_0h1p == CC_DENSITY_MATRIX_LAMBDA) {
+        printf("lambda equations for states");
+        for (int i = 0; i < opts->density_0h1p_num_states; i++) {
+            printf(" %s:%d", opts->density_0h1p_states[i].rep1_name, opts->density_0h1p_states[i].state1 + 1);
+        }
+        printf("\n");
+    }
+    else if (opts->calc_density_0h1p == CC_DENSITY_MATRIX_EXPECTATION) {
+        printf("expectation value\n");
+    }
+
     // overlap integrals in non-trivial sectors
     printf(" %-15s  %-40s  ", "overlap", "calculate overlap int-s for target wfns");
     int n_overlap_sectors = 0;
@@ -767,6 +811,11 @@ void print_options(cc_options_t *opts)
         printf(" %-15s  %-40s  %s\n", "restrict_t3", "restriction of triples", "disabled");
     }
 
+    /*
+     * do not recalculate orbital energies
+     */
+    printf(" %-15s  %-40s  %s\n", "use_oe", "use orbital energies from DIRAC", opts->use_oe ? "enabled" : "disabled");
+
     // (simple) intermediate hamiltonian ("IH-1") parameters
     printf(" %-15s  %-40s  ", "ih_imms", "simple intermediate Hamiltonian");
     if (opts->do_intham_imms) {
@@ -783,6 +832,16 @@ void print_options(cc_options_t *opts)
     else {
         printf("disabled\n");
     }
+
+    /*
+     * use tensor trains in different situations
+     * if the TT library was linked to EXP-T
+     */
+#ifdef TENSOR_TRAIN
+    printf(" %-15s  %-40s  %.1e\n", "tt_tol", "thresh for singular value decomp in TT", opts->tensor_train_tol);
+    printf(" %-15s  %-40s  %s\n", "tt_mult_pppp", "use TT for contractions with <pp||pp>", opts->use_tt_mult ? "enabled" : "disabled");
+    printf(" %-15s  %-40s  %s\n", "tt_diis", "use TT for data storage in DIIS", opts->use_tt_diis ? "enabled" : "disabled");
+#endif // TENSOR_TRAIN
 
     printf("\n\n");
 }

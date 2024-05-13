@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -33,7 +33,6 @@
 
 #include "ccutils.h"
 #include "engine.h"
-#include "datamodel.h"
 #include "diis.h"
 #include "heff.h"
 #include "linalg.h"
@@ -189,8 +188,10 @@ void sector_0h0p_calculate_natural_spinors()
     printf(" --------------------------------------\n");
     printf("\n");
 
+    double occ_num_sum = 0.0;
     for (int i = nspinors - 1; i >= 0; i--) {
         double occ_num = creal(occ_numbers[i]);
+        occ_num_sum += occ_num;
 
         // find spinor with max weight => determine NO symmetry
         double max_coef = 0.0;
@@ -211,7 +212,9 @@ void sector_0h0p_calculate_natural_spinors()
             printf("\n");
         }
     }
-    printf("\n\n");
+    printf("\n");
+    printf(" sum of occupation numbers: %.7f\n", occ_num_sum);
+    printf("\n");
 
     /*
      * clean up

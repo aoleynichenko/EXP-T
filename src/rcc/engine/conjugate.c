@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -23,19 +23,14 @@
 
 #include "engine.h"
 
-#include "datamodel.h"
-#include "error.h"
-
 
 /**
  * Constructs diagram which is Hermitian conjugate to the given one.
  */
 void diagram_conjugate(char *source_name, char *target_name)
 {
+    assert_diagram_exists(source_name);
     diagram_t *src_diagram = diagram_stack_find(source_name);
-    if (src_diagram == NULL) {
-        errquit("diagram_conjugate(): diagram '%s' not found", source_name);
-    }
 
     /*
      * interchange bra and ket parts. for example:
@@ -61,6 +56,7 @@ void diagram_conjugate(char *source_name, char *target_name)
         new_order[i] = '1' + i;
     }
     new_order[rank] = '\0';
+
     set_order(target_name, new_order);
 
     /*

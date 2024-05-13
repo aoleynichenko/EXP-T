@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -43,7 +43,6 @@
 
 #include "ccutils.h"
 #include "engine.h"
-#include "datamodel.h"
 #include "diis.h"
 #include "options.h"
 #include "symmetry.h"
@@ -139,17 +138,17 @@ void sector_0h0p_lambda_equations_guess()
 
     if (cc_opts->reuse_amplitudes[0][0]) {
         printf(" Trying to read amplitudes from disk ...\n");
-        if (diagram_read("L00_1c.dg") != NULL) {
+        if (diagram_read_binary("L00_1c.dg") != NULL) {
             printf(" L1 amplitudes successfully read from disk\n");
             calc_L1 = 0;
         }
-        if (diagram_read("L00_2c.dg") != NULL) {
+        if (diagram_read_binary("L00_2c.dg") != NULL) {
             printf(" L2 amplitudes successfully read from disk\n");
             calc_L2 = 0;
         }
         printf("\n");
         /*if (triples) {
-            if (diagram_read("t3c.dg") != NULL) {
+            if (diagram_read_binary("t3c.dg") != NULL) {
                 printf(" T3 amplitudes successfully read from disk\n");
                 calc_t3 = 0;
             }
@@ -323,8 +322,8 @@ void construct_lambda_singles_0h0p()
 
     // L00_S20
     reorder("L00_2c", "r1", "3412");
-    mult("r1", "pppp", "r2", 2);
-    reorder("r2", "r3", "3124");
+    mult("pppp", "r1", "r2", 2);
+    reorder("r2", "r3", "1342");
     mult("r3", "t1c", "r4", 2);
     update("L00_1nw", 0.5, "r4");
     restore_stack_pos(pos);
@@ -854,6 +853,102 @@ void construct_lambda_doubles_0h0p()
     mult("pphh", "r4", "r5", 2);
     update("L00_2nw", 0.5, "r5");
     restore_stack_pos(pos);
+
+    /*
+     * contributions from the 0h1p sector if needed
+     */
+    if (cc_opts->sector_h == 0 && cc_opts->sector_p == 1) {
+
+        // intermediate diagram - "cross"
+        copy("dm1", "cross");
+
+        /*reorder("L01_2c", "r1", "3412");
+        mult("s2c", "r1", "r2", 3);
+        update("cross", -0.5, "r2");
+        restore_stack_pos(pos);*/
+
+        // L00_DE1
+        reorder("vphh", "r1", "2341");
+        mult("cross", "r1", "r2", 1);
+        tmplt("r3", "pphh", "0000", "1234", NOT_PERM_UNIQUE);
+        expand_diagram("r2", "r3");
+        perm("r3", "(12)");
+        update("L00_2nw", -1.0, "r3");
+        restore_stack_pos(pos);
+
+        // L00_01_D9
+        reorder("L01_2c", "r1", "1243");
+        reorder("vh", "r2", "21");
+        mult("r1", "r2", "r3", 1);
+        reorder("r3", "r4", "1243");
+        perm("r4", "(34)");
+        update("L00_2nw", -1.0, "r4");
+        restore_stack_pos(pos);
+
+        // L00_01_D10
+        reorder("L01_2c", "r0", "2143"); // interchange electrons
+        reorder("r0", "r1", "1342");
+        reorder("vpph", "r2", "2413");
+        mult("r1", "r2", "r3", 2);
+        reorder("r3", "r4", "1324");
+        perm("r4", "(12|34)");
+        update("L00_2nw", 1.0, "r4");
+        restore_stack_pos(pos);
+
+        // L00_01_D12
+        reorder("vhhh", "r1", "3412");
+        mult("L01_2c", "r1", "r2", 2);
+        update("L00_2nw", 0.5, "r2");
+        restore_stack_pos(pos);
+
+        // L00_D21
+        reorder("pphh", "r1", "3412");
+        reorder("L01_2c", "L01_2c_21", "2143"); // interchange electrons
+        mult("r1", "s2c", "r2", 3);
+        mult("L01_2c_21", "r2", "r3", 1);
+        perm("r3", "(34)");
+        update("L00_2nw", -0.5, "r3");
+        restore_stack_pos(pos);
+
+        // L00_D23
+        reorder("s2c", "r1", "3412");
+        reorder("pphh", "r2", "3412");
+        mult("L01_2c", "r1", "r3", 3);
+        mult("r2", "r3", "r4", 1);
+        reorder("r4", "r5", "3412");
+        perm("r5", "(12)");
+        update("L00_2nw", -0.5, "r5");
+        restore_stack_pos(pos);
+
+        // L00_D24
+        reorder("L01_2c", "L01_2c_21", "2143"); // interchange electrons
+        reorder("s2c", "s2c_21", "2143"); // interchange electrons
+        reorder("L01_2c_21", "r1", "3412");
+        mult("r1", "s2c_21", "r2", 3);
+        mult("pphh", "r2", "r3", 1);
+        perm("r3", "(34)");
+        update("L00_2nw", -0.5, "r3");
+        restore_stack_pos(pos);
+
+        // L00_D25
+        reorder("L01_2c", "L01_2c_21", "2143");
+        reorder("L01_2c_21", "r1", "1342");
+        reorder("s2c", "r2", "1324");
+        reorder("pphh", "r3", "2431");
+        mult("r3", "r2", "r4", 2);
+        mult("r1", "r4", "r5", 2);
+        reorder("r5", "r6", "1324");
+        perm("r6", "(12|34)");
+        update("L00_2nw", 1.0, "r6");
+        restore_stack_pos(pos);
+
+        // L00_D26
+        reorder("pphh", "r1", "3412");
+        mult("r1", "s2c", "r2", 2);
+        mult("L01_2c", "r2", "r3", 2);
+        update("L00_2nw", 0.25, "r3");
+        restore_stack_pos(pos);
+    }
 }
 
 

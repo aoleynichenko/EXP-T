@@ -16,7 +16,7 @@ C2+ ion
 .SCF
 *SCF            
 .CLOSED         
- 4 0        
+ 4 0 
 .ERGCNV         
 1E-12           
 **MOLTRA        
@@ -24,7 +24,9 @@ C2+ ion
 .SCHEME
  4
 .ACTIVE         
- all
-#energy -10.0 100.0 0.1
+all
+all
+#energy -100.0 2.0 0.1
+#energy -100.0 2.0 0.1
 *END OF INPUT   
 				

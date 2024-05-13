@@ -1,0 +1,25 @@
+#
+# first excited state of HgH
+# A2Pi_1/2
+#
+
+# Hg-202
+masses 1.00782503223 201.97064340
+
+rotlevels 0 0
+viblevels 0 100
+
+# numerov solver is used by default
+grid_size 1000
+
+potential angstrom cm
+1.30    31773.15
+1.40    26088.92
+1.50    23608.50
+1.60    23080.16
+1.70    23714.11
+1.80    25004.65
+1.90    26624.26
+2.00    28355.25
+2.10    30033.66
+end

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -120,7 +120,7 @@ void directive_ih_incomplete_main_model_spaces(cc_options_t *opts)
             directive_ih_imms_main_occ(&opts->intham_imms_opts);
             main_specified = 1;
         }
-        else if (token_type == TT_WORD && (strcmp(yytext, "shift_type") == 0)) {
+        else if (token_type == KEYWORD_SHIFT_TYPE) {
             directive_ih_imms_shift_type(&opts->intham_imms_opts);
         }
         else if (token_type == TT_WORD && (strcmp(yytext, "npower") == 0)) {
@@ -138,7 +138,6 @@ void directive_ih_incomplete_main_model_spaces(cc_options_t *opts)
                   strcmp(yytext, "frontier_energy") == 0)) {
             directive_ih_imms_det_energy(&opts->intham_imms_opts);
             shift_to_specified = 1;
-
         }
         else if (token_type == KEYWORD_END) {
             break;
@@ -279,7 +278,7 @@ void directive_ih_imms_npower(ih_imms_options_t *ih1_opts)
 void directive_ih_imms_det_energy(ih_imms_options_t *ih1_opts)
 {
     static char *msg1 = "wrong specification of the shift parameter\n"
-                        "Real number is expected";
+                        "allowed values: lower_bound, upper_bound, real number";
     int sect_h = 0, sect_p = 0;
 
     // first: sector label
@@ -296,12 +295,25 @@ void directive_ih_imms_det_energy(ih_imms_options_t *ih1_opts)
 
     // second: frontier energy for intermediate space determinants
     token_type = next_token();
-    if (token_type != TT_INTEGER && token_type != TT_FLOAT) {
+    if (token_type == TT_WORD) {
+        str_tolower(yytext);
+        if (strcmp(yytext, "lower_bound") == 0) {
+            ih1_opts->det_shift_auto[sect_h][sect_p] = IH_IMMS_FRONTIER_ENERGY_LOWER_BOUND;
+        }
+        else if (strcmp(yytext, "upper_bound") == 0) {
+            ih1_opts->det_shift_auto[sect_h][sect_p] = IH_IMMS_FRONTIER_ENERGY_UPPER_BOUND;
+        }
+        else {
+            yyerror(msg1);
+        }
+    }
+    else if (token_type == TT_INTEGER || token_type == TT_FLOAT) {
+        ih1_opts->det_shift_to[sect_h][sect_p] = atof(yytext);
+        ih1_opts->det_shift_auto[sect_h][sect_p] = IH_IMMS_FRONTIER_ENERGY_MANUAL;
+    }
+    else {
         yyerror(msg1);
     }
-
-    ih1_opts->det_shift_to[sect_h][sect_p] = atof(yytext);
-    ih1_opts->det_shift_auto[sect_h][sect_p] = 0;
 }
 
 

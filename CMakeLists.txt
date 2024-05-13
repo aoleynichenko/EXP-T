@@ -1,6 +1,6 @@
 #
 #  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
-#  Copyright (C) 2018-2023 The EXP-T developers.
+#  Copyright (C) 2018-2024 The EXP-T developers.
 #
 #  This file is part of EXP-T.
 #
@@ -51,12 +51,28 @@ set(C_STANDARD_REQUIRED ON)
 ########################################################################################################################
 
 
-find_package(OpenMP REQUIRED)
+find_package(OpenMP)# REQUIRED)
 if (OpenMP_FOUND)
     message(STATUS "OpenMP_C_FLAGS       : " ${OpenMP_C_FLAGS})
     message(STATUS "OpenMP_C_INCLUDE_DIRS: " ${OpenMP_C_INCLUDE_DIRS})
     message(STATUS "OpenMP_C_LIBRARIES   : " ${OpenMP_C_LIBRARIES})
 endif()
+
+
+########################################################################################################################
+#
+# Optional library for tensor trains by Artem Rumyantsev
+#
+########################################################################################################################
+
+if (TT)
+    message(STATUS "Tensor trains (TT) library will be linked to EXP-T")
+    message(STATUS "Path to TT library: " ${TT})
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DTENSOR_TRAIN")
+    set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}       -DTENSOR_TRAIN")
+else ()
+    message(STATUS "Tensor trains (TT) are not used")
+endif ()
 
 
 ########################################################################################################################
@@ -115,7 +131,7 @@ set(BLAS_LIBRARIES "")
 set(BLAS_OPTIONS "")
 set(BLAS_FOUND FALSE)
 
-find_package(BLAS)
+#find_package(BLAS)
 if (BLAS_FOUND)
     # MKL-specific options
     if (MKL_FOUND)
@@ -164,12 +180,17 @@ set(CMAKE_Fortran_FLAGS       "${CMAKE_Fortran_FLAGS}       ${f90options}")
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
     set(COMPILER_OPTION " -DCOMPILER_GNU ")
-    set(c99options " -O3 -march=native -std=c99 ")
+    set(c99options " -DCOMPILER_GNU -O3 -march=native -std=c99 ")
 endif ()
 if (CMAKE_C_COMPILER_ID MATCHES "Intel")
     set(COMPILER_OPTION " -DCOMPILER_INTEL ")
-    set(c99options " -O3 -xHost -std=c99 ")
+    set(c99options " -DCOMPILER_INTEL -O3 -xHost -std=c99 ")
 endif ()
+if (CMAKE_C_COMPILER_ID MATCHES "AppleClang")
+    set(COMPILER_OPTION " -DCOMPILER_CLANG ")
+    set(c99options " -DCOMPILER_CLANG ")
+endif ()
+
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${c99options} ${OpenMP_C_FLAGS} ${BLAS_OPTIONS}")
 set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS}       ${c99options} ${OpenMP_C_FLAGS} ${BLAS_OPTIONS}")
 
@@ -187,12 +208,11 @@ include_directories(src/rcc/include)
 add_executable(expt.x
         src/rcc/main.c                # MAIN function
 
-        src/rcc/datamodel/dgstack.c   # operations with the "diagram stack"
-        src/rcc/datamodel/diagram.c   # low-level manipulations with "diagrams"
-        src/rcc/datamodel/block.c     # object 'symmetry block of int-s' (see diagram.h)
-
+        src/rcc/engine/dgstack.c   # operations with the "diagram stack"
+        src/rcc/engine/diagram.c   # low-level manipulations with "diagrams"
+        src/rcc/engine/block.c     # object 'symmetry block of int-s' (see diagram.h)
+        src/rcc/engine/tensor.c
         src/rcc/engine/info_queries.c # info queries -- print diagram etc
-        src/rcc/engine/basic.c        # basic operations with diagrams: rename, copy, etc
         src/rcc/engine/max.c          # finding max/diffmax of diagrams
         src/rcc/engine/perm.c         # permutation operations acting on diagrams
         src/rcc/engine/closed.c       # extraction of the closed part from the diagram
@@ -206,6 +226,9 @@ add_executable(expt.x
         src/rcc/engine/intham_imms.c  # simple version of intermediate Hamiltonian
         src/rcc/engine/compress_triples.c # compact storage of triples amplitudes
         src/rcc/engine/conjugate.c    # Hermitian conjugation of a diagram
+        src/rcc/engine/tmplt.c
+        src/rcc/engine/copy.c
+        src/rcc/engine/clear.c
 
         src/rcc/heff/heff.c           # construction & analysis of Heff and eigenvalues
         src/rcc/heff/denmat.c         # model-space density matrices
@@ -259,6 +282,7 @@ add_executable(expt.x
         src/rcc/methods/sector00_lambda.c
         src/rcc/methods/sector00_lambda_dm.c
         src/rcc/methods/sector00_expectation.c
+        src/rcc/methods/sector01_lambda.c
 
         src/rcc/linalg/overlap.c       # interface to BLAS/LAPACK
         src/rcc/linalg/projector.c
@@ -289,6 +313,14 @@ add_executable(expt.x
         src/rcc/sorting/sort_2e.c             # sorting of two-electron integrals
         src/rcc/sorting/sorting_request.c     # data type - sorting request
 
+        src/rcc/new_sorting/new_sorting.c
+        src/rcc/new_sorting/mrconee.c
+        src/rcc/new_sorting/mdprop.c
+        src/rcc/new_sorting/mdcint.c
+        src/rcc/new_sorting/new_sort_1e.c
+        src/rcc/new_sorting/new_sort_2e.c
+        src/rcc/new_sorting/libunf.c
+
         src/rcc/platform.c            # platform compatibility
         src/rcc/error.c               # error handling
         src/rcc/memory.c              # allocator
@@ -298,7 +330,10 @@ add_executable(expt.x
         src/rcc/timer.c               # advanced timer
         src/rcc/utils.c               # small utility functions
         src/rcc/parse_argv.c          # command-line arguments
-        )
+        src/rcc/linalg/xscale.c
+        src/rcc/engine/tensor_trains.c
+        src/rcc/engine/tensor_trains.h
+)
 
 # heffman.x
 # manipulations with effective Hamiltonian matrices
@@ -370,7 +405,10 @@ add_executable(expt_read_dfcoef.x
 # expt_read_mdprop.x
 # reads DIRAC's unformatted files containing transformed propetry integrals
 add_executable(expt_read_mdprop.x
-        src/read_mdprop/read_mdprop.f90
+        src/read_mdprop/main.c
+        src/read_mdprop/mdprop.c
+        src/read_mdprop/mrconee.c
+        src/read_mdprop/unformatted.c
         )
 
 
@@ -381,7 +419,7 @@ add_executable(expt_read_mdprop.x
 ########################################################################################################################
 
 
-target_link_libraries(expt.x          -lm ${BLAS_LIBRARIES} ${OpenMP_C_LIBRARIES} ${OpenMP_C_FLAGS})
+target_link_libraries(expt.x          -lm ${BLAS_LIBRARIES} ${OpenMP_C_LIBRARIES} ${OpenMP_Fortran_FLAGS} ${TT})
 target_link_libraries(heffman.x       -lm ${BLAS_LIBRARIES})
 target_link_libraries(expt_diatomic.x -lm ${BLAS_LIBRARIES})
 target_link_libraries(expt2pam.x      -lm ${BLAS_LIBRARIES})
@@ -399,11 +437,11 @@ target_link_libraries(expt_read_mdprop.x -lm)
 
 add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/expt_spectrum.py"
-        #COMMAND bash -n "${CMAKE_CURRENT_SOURCE_DIR}/scripts/expt_spectrum.py"
+        COMMAND bash -n "${CMAKE_CURRENT_SOURCE_DIR}/scripts/expt_spectrum.py"
         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/scripts/expt_spectrum.py" "${CMAKE_CURRENT_BINARY_DIR}/expt_spectrum.py"
         COMMAND chmod +x "${CMAKE_CURRENT_BINARY_DIR}/expt_spectrum.py"
 )
-add_custom_target(expt_spectrum.py ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/expt_spectrum.py)
+#add_custom_target(expt_spectrum.py ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/expt_spectrum.py)
 
 
 ########################################################################################################################
@@ -418,6 +456,7 @@ include(CTest)
 
 # ccsd
 add_test(NAME ccsd_highspin         COMMAND python test.py WORKING_DIRECTORY ../test/ccsd_highspin       )
+add_test(NAME fs-ccsd_0h1p          COMMAND python test.py WORKING_DIRECTORY ../test/fs-ccsd_0h1p        )
 add_test(NAME fs-ccsd_2h0p          COMMAND python test.py WORKING_DIRECTORY ../test/fs-ccsd_2h0p        )
 add_test(NAME fs-ccsd_0h3p          COMMAND python test.py WORKING_DIRECTORY ../test/fs-ccsd_0h3p        )
 add_test(NAME fs-ccsd_1h1p          COMMAND python test.py WORKING_DIRECTORY ../test/fs-ccsd_1h1p        )
@@ -441,17 +480,19 @@ add_test(NAME ff_tdm_0h1p           COMMAND python test.py WORKING_DIRECTORY ../
 add_test(NAME ms_tdm_1h1p           COMMAND python test.py WORKING_DIRECTORY ../test/ms_tdm_1h1p         )
 add_test(NAME ff_tdm_1h1p           COMMAND python test.py WORKING_DIRECTORY ../test/ff_tdm_1h1p         )
 add_test(NAME ms_tdm_0h2p           COMMAND python test.py WORKING_DIRECTORY ../test/ms_tdm_0h2p         )
-add_test(NAME direct_tdm_0h2p       COMMAND python test.py WORKING_DIRECTORY ../test/direct_tdm_0h2p     )
+add_test(NAME finite_order_tdm_0h2p COMMAND python test.py WORKING_DIRECTORY ../test/finite_order_tdm_0h2p)
+add_test(NAME finite_order_hfs_0h1p COMMAND python test.py WORKING_DIRECTORY ../test/finite_order_hfs_0h1p)
 
 # utilities
 add_test(NAME vibrot_levels         COMMAND python test.py WORKING_DIRECTORY ../test/vibrot_levels       )
 
 # parallelization
 add_test(NAME openmp_ccsd_t         COMMAND python test.py WORKING_DIRECTORY ../test/openmp_ccsd_t       )
-add_test(NAME openmp_fs-ccsd        COMMAND python test.py WORKING_DIRECTORY ../test/openmp_fs-ccsd      )
+#add_test(NAME openmp_fs-ccsd        COMMAND python test.py WORKING_DIRECTORY ../test/openmp_fs-ccsd      )
 
 foreach (t
 	ccsd_highspin        
+	fs-ccsd_0h1p         
 	fs-ccsd_2h0p         
 	fs-ccsd_0h3p         
 	fs-ccsd_1h1p         
@@ -471,9 +512,10 @@ foreach (t
 	ms_tdm_1h1p          
 	ff_tdm_1h1p          
 	ms_tdm_0h2p          
-	direct_tdm_0h2p      
+	finite_order_tdm_0h2p   
+        finite_order_hfs_0h1p   
 	vibrot_levels        
-	openmp_fs-ccsd
+#	openmp_fs-ccsd
 	openmp_ccsd_t
 	)
     set_property(TEST ${t} PROPERTY ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}:$ENV{PATH}")

@@ -1,0 +1,24 @@
+
+reuse amplitudes
+print "model vectors"
+
+#oneprop 1e-3 0.0 "ZDIPLEN"
+
+sector 0h1p
+model ccd
+diis 500
+maxiter 200
+disk_usage 0
+conv 1e-10
+nactp 4
+
+#density 0h0p
+density 0h1p [1/2+]:1
+#density 0h1p [3/2+]:1
+
+#mdprop "ZDIPLEN" sym 0 approx 2 2 scheme connected
+
+#occ 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+analyt_prop ZDIPLEN
+
+

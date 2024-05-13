@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -30,7 +30,6 @@
 #include <string.h>
 
 #include "engine.h"
-#include "datamodel.h"
 #include "memory.h"
 #include "spinors.h"
 #include "timer.h"
@@ -55,27 +54,24 @@ void clear_valence(diagram_t *dg);
  */
 void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *new_valence, int extract_valence)
 {
-    diagram_t *src, *tgt;
     char qparts[CC_DIAGRAM_MAX_RANK];
     char order[CC_DIAGRAM_MAX_RANK];
 
-    src = diagram_stack_find(src_name);
-    if (src == NULL) {
-        errquit("restrict_valence(): diagram '%s' not found", src_name);
-    }
+    assert_diagram_exists(src_name);
+    diagram_t *src = diagram_stack_find(src_name);
+    int rank = src->rank;
 
-    if (strlen(new_valence) != src->rank) {
+    if (strlen(new_valence) != rank) {
         errquit("restrict_valence(): length of the 'valence' string (%d) must "
-                "be equal to the diagrams's rank (%d)", strlen(new_valence), src->rank);
+                "be equal to the diagrams's rank (%d)", strlen(new_valence), rank);
     }
 
     diagram_get_quasiparticles(src, qparts);
     diagram_get_order(src, order);
 
     tmplt_sym(tgt_name, qparts, new_valence, order, NOT_PERM_UNIQUE, src->symmetry);
-    tgt = diagram_stack_find(tgt_name);
+    diagram_t *tgt = diagram_stack_find(tgt_name);
 
-    // code is adapted from closed.c
     // allocate temporary working arrays
     size_t maxsize = 0;
     for (int isb1 = 0; isb1 < tgt->n_blocks; isb1++) {
@@ -84,7 +80,7 @@ void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *
         }
     }
 
-    int *tgt_indices = (int *) cc_malloc(sizeof(int) * maxsize * src->rank);
+    int *tgt_indices = (int *) cc_malloc(sizeof(int) * maxsize * rank);
 
     // for each block in the target (smaller) diagram:
     // 1. find corresponding block in the source (larger) diagram
@@ -94,40 +90,43 @@ void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *
 
     // loop over blocks in the target diagram
     for (size_t isb2 = 0; isb2 < tgt->n_blocks; isb2++) {
-        block_t *sb2 = tgt->blocks[isb2];
+        block_t *target_block = tgt->blocks[isb2];
 
         // obtain corresponding block from the source diagram
-        block_t *sb1 = diagram_get_block(src, sb2->spinor_blocks);
+        block_t *source_block = diagram_get_block(src, target_block->spinor_blocks);
 
-        if (sb1->is_unique == 0) {
-            restore_block(src, sb1);
+        if (source_block->is_unique == 0) {
+            restore_block(src, source_block);
         }
-        block_load(sb1);
-        block_load(sb2);
+        block_load(source_block);
+        block_load(target_block);
 
-        block_gen_indices(sb2, tgt_indices);
+        block_gen_indices(target_block, tgt_indices);
 
-        for (size_t i = 0; i < sb2->size; i++) { // loop over target diagram
+        for (size_t i = 0; i < target_block->size; i++) { // loop over target diagram
+            int *idx = tgt_indices + rank * i;
+
             if (arith == CC_ARITH_COMPLEX) {
-                sb2->buf[i] = symblock_get(sb1, &tgt_indices[src->rank * i]);
+                target_block->buf[i] = block_get_element(source_block, idx);
             }
             else {
-                double v = creal(symblock_get(sb1, &tgt_indices[src->rank * i]));
-                ((double *) sb2->buf)[i] = v;
+                double v = creal(block_get_element(source_block, idx));
+                ((double *) target_block->buf)[i] = v;
             }
         }
 
-        block_store(sb2);
+        block_store(target_block);
         if (extract_valence) {
-            block_store(sb1);
+            block_store(source_block);
         }
         else {
-            block_unload(sb1);
+            block_unload(source_block);
         }
-        if (sb1->is_unique == 0) {
-            destroy_block(sb1);
+        if (source_block->is_unique == 0) {
+            destroy_block(source_block);
         }
     }
+
     if (extract_valence) {
         clear_valence(src);
     }
@@ -137,42 +136,40 @@ void restrict_valence(char *src_name /*large*/, char *tgt_name /*small*/, char *
 }
 
 
+/**
+ * Sets matrix elements with all indices are active (valence) to zero.
+ */
 void clear_valence(diagram_t *dg)
 {
     assert(dg != NULL);
 
     int idx[CC_DIAGRAM_MAX_RANK];
-    int dims[CC_DIAGRAM_MAX_RANK];
     int rank = dg->rank;
 
-    for (size_t isb = 0; isb < dg->n_blocks; isb++) {
-        block_t *block = dg->blocks[isb];
+    for (size_t iblock = 0; iblock < dg->n_blocks; iblock++) {
+        block_t *block = dg->blocks[iblock];
         size_t size = block->size;
 
         if (block->is_unique == 0) {
             continue;
         }
 
-        block_get_dims(block, dims);
         block_load(block);
 
         // loop over matrix elements
         for (size_t i = 0; i < size; i++) {
-            as_compound_index(rank, dims, i /* linear index */, idx);
-            // relative indices -> spinor indices
-            for (int j = 0; j < rank; j++) {
-                idx[j] = block->indices[j][idx[j] + 1];
-            }
+            tensor_index_to_compound(rank, block->shape, i /* linear index */, idx);
 
             // count number of valence indices
             int nvalence = 0;
             for (int j = 0; j < rank; j++) {
-                if (is_active(idx[j])) {
+                int spinor_index = block->indices[j][idx[j]]; // relative index -> spinor index
+                if (is_active(spinor_index)) {
                     nvalence++;
                 }
             }
+
             if (nvalence == rank) {
-                // set value
                 if (arith == CC_ARITH_COMPLEX) {
                     block->buf[i] = 0.0 + 0.0 * I;
                 }
@@ -225,61 +222,57 @@ void closed(char *src_name, char *tgt_name)
  */
 void expand_diagram(char *name_small, char *name_large)
 {
-    diagram_t *dgs = diagram_stack_find(name_small);
-    diagram_t *dgl = diagram_stack_find(name_large);
+    assert_diagram_exists(name_small);
+    assert_diagram_exists(name_large);
 
-    if (dgs == NULL) {
-        errquit("expand_diagram(): diagram '%s' was not found", name_small);
-    }
-    if (dgl == NULL) {
-        errquit("expand_diagram(): diagram '%s' was not found", name_large);
-    }
+    diagram_t *dg_small = diagram_stack_find(name_small);
+    diagram_t *dg_large = diagram_stack_find(name_large);
 
-    if (dgs->rank != dgl->rank) {
-        errquit("expand_diagram(): diagrams must have equal ranks (%d and %d)", dgs->rank, dgl->rank);
+    if (dg_small->rank != dg_large->rank) {
+        errquit("expand_diagram(): diagrams must have equal ranks (%d and %d)", dg_small->rank, dg_large->rank);
     }
-    if (intcmp(dgs->rank, dgs->order, dgl->order) != 0) {
+    if (intcmp(dg_small->rank, dg_small->order, dg_large->order) != 0) {
         errquit("expand_diagram(): diagrams must have equal order");
     }
-    if (intcmp(dgs->rank, dgs->qparts, dgl->qparts) != 0) {
+    if (intcmp(dg_small->rank, dg_small->qparts, dg_large->qparts) != 0) {
         errquit("expand_diagram(): diagrams must have equal holes/particles composition");
     }
 
-    for (size_t isb1 = 0; isb1 < dgs->n_blocks; isb1++) {
-        block_t *sb1 = dgs->blocks[isb1];
-        int *indices = (int *) cc_malloc(sb1->size * sb1->rank * sizeof(int));
-        block_gen_indices(sb1, indices);
+    for (size_t ib1 = 0; ib1 < dg_small->n_blocks; ib1++) {
+        block_t *source_block = dg_small->blocks[ib1];
+        int *indices = (int *) cc_malloc(source_block->size * source_block->rank * sizeof(int));
+        block_gen_indices(source_block, indices);
 
         // obtain corresponding block from the large diagram
-        block_t *sb2 = diagram_get_block(dgl, sb1->spinor_blocks);
+        block_t *target_block = diagram_get_block(dg_large, source_block->spinor_blocks);
 
-        if (sb2->is_unique == 0) {
-            restore_block(dgl, sb2);
+        if (target_block->is_unique == 0) {
+            restore_block(dg_large, target_block);
         }
 
-        block_load(sb1);
-        block_load(sb2);
+        block_load(source_block);
+        block_load(target_block);
 
         if (arith == CC_ARITH_COMPLEX) {
-            for (size_t i = 0; i < sb1->size; i++) {
-                int *idx = &indices[sb1->rank * i];
-                double complex val = sb1->buf[i];
-                symblock_set(sb2, val, idx);
+            for (size_t i = 0; i < source_block->size; i++) {
+                int *idx = indices + source_block->rank * i;
+                double complex val = source_block->buf[i];
+                block_set_element(target_block, val, idx);
             }
         }
         else {
-            for (size_t i = 0; i < sb1->size; i++) {
-                int *idx = &indices[sb1->rank * i];
-                double val = ((double *) sb1->buf)[i];
-                symblock_set(sb2, val + 0.0 * I, idx);
+            for (size_t i = 0; i < source_block->size; i++) {
+                int *idx = indices + source_block->rank * i;
+                double val = ((double *) source_block->buf)[i];
+                block_set_element(target_block, val + 0.0 * I, idx);
             }
         }
 
-        block_unload(sb1);
-        block_store(sb2);
+        block_unload(source_block);
+        block_store(target_block);
 
-        if (sb2->is_unique == 0) {
-            destroy_block(sb2);
+        if (target_block->is_unique == 0) {
+            destroy_block(target_block);
         }
 
         cc_free(indices);

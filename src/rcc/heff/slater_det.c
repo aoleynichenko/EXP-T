@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -55,7 +55,6 @@ int set_vacuum_det(slater_det_t *det)
     det->indices[0] = 0;
     det->indices[1] = 0;
 }
-
 
 
 /**

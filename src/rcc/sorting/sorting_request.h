@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -24,7 +24,7 @@
 #ifndef CC_SORTING_REQUEST_H_INCLUDED
 #define CC_SORTING_REQUEST_H_INCLUDED
 
-#include "datamodel.h"
+#include "engine.h"
 
 #define CC_MAX_SORTING_REQUESTS 64
 

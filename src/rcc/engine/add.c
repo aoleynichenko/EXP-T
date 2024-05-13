@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -22,20 +22,26 @@
  */
 
 /*
- * Subroutines for addition of Goldstone diagrams
+ * Subroutines for addition of diagrams
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "engine.h"
-#include "datamodel.h"
 #include "linalg.h"
 #include "options.h"
 #include "utils.h"
 
-//#include "omp.h"
+#ifndef COMPILER_CLANG
+#include "omp.h"
+#else
+
+void omp_set_num_threads(int num_threads);
+
+void openblas_set_num_threads(int num_threads);
+
+#endif
 
 
 /**
@@ -52,9 +58,6 @@
  */
 void add(double fact1, char *name1, double fact2, char *name2, char *target)
 {
-    timer_new_entry("add", "Diagram addition");
-    timer_start("add");
-
     // A = a*A + b*B
     if (strcmp(name1, target) == 0) {
         dg_stack_pos_t pos = get_stack_pos();
@@ -63,26 +66,25 @@ void add(double fact1, char *name1, double fact2, char *name2, char *target)
         update(name1, fact1, "buf");
         update(name1, fact2, name2);
         restore_stack_pos(pos);
+        return;
     }
-        // B = a*A + b*B
-    else if (strcmp(name2, target) == 0) {
+
+    // B = a*A + b*B
+    if (strcmp(name2, target) == 0) {
         dg_stack_pos_t pos = get_stack_pos();
         copy(name2, "buf");
         clear(name2);
         update(name2, fact1, name1);
         update(name2, fact2, "buf");
         restore_stack_pos(pos);
-    }
-        // C = a*A + b*B
-        // TODO: test this code
-    else {
-        copy(name1, target);
-        clear(target);
-        update(target, fact1, name1);
-        update(target, fact2, name2);
+        return;
     }
 
-    timer_stop("add");
+    // C = a*A + b*B
+    copy(name1, target);
+    clear(target);
+    update(target, fact1, name1);
+    update(target, fact2, name2);
 }
 
 
@@ -92,26 +94,18 @@ void add(double fact1, char *name1, double fact2, char *name2, char *target)
  */
 void update(char *dg1_name, double factor, char *dg2_name)
 {
-    diagram_t *dg1, *dg2;
-    double complex *buf1, *buf2;
-    size_t size;
-    block_t *block1, *block2;
+    timer_new_entry("update", "Diagram addition (update)");
+    timer_start("update");
 
-    timer_new_entry("add-2", "Diagram addition (update)");
-    timer_start("add-2");
+    assert_diagram_exists(dg1_name);
+    assert_diagram_exists(dg2_name);
 
-    dg1 = diagram_stack_find(dg1_name);
-    if (dg1 == NULL) {
-        errquit("update(): diagram '%s' not found", dg1_name);
-    }
-    dg2 = diagram_stack_find(dg2_name);
-    if (dg2 == NULL) {
-        errquit("update(): diagram '%s' not found", dg2_name);
-    }
+    diagram_t *dg1 = diagram_stack_find(dg1_name);
+    diagram_t *dg2 = diagram_stack_find(dg2_name);
 
     // diagrams cannot be added if they represent operators belonging to different irreps
     if (dg1->symmetry != dg2->symmetry) {
-        return;
+        errquit("update(): operators to be added have different symmetries");
     }
 
     // ranks must coincide
@@ -141,17 +135,12 @@ void update(char *dg1_name, double factor, char *dg2_name)
     }
 
     for (size_t isb1 = 0; isb1 < dg1->n_blocks; isb1++) {
-        block1 = dg1->blocks[isb1];
-
-        // diagram_get_block возвращает почему-то неправильный указатель, в котором
-        // первые два байта забиты единицами
-        block2 = diagram_get_block(dg2, block1->spinor_blocks);
-
+        block_t *block1 = dg1->blocks[isb1];
         if (block1->is_unique == 0) {
             continue;
         }
 
-        // дабы не заполнять уникальный блок ерундой
+        block_t *block2 = diagram_get_block(dg2, block1->spinor_blocks);
         if (block1->is_unique && (block2->is_unique == 0)) {
             restore_block(dg2, block2);
         }
@@ -159,9 +148,6 @@ void update(char *dg1_name, double factor, char *dg2_name)
         block_load(block1);
         block_load(block2);
 
-        buf1 = block1->buf;
-        buf2 = block2->buf;
-        size = block1->size;
         if (block1->size != block2->size) {
             printf("block1->size = %ld\n", block1->size);
             printf("block2->size = %ld\n", block2->size);
@@ -178,20 +164,8 @@ void update(char *dg1_name, double factor, char *dg2_name)
             errquit("update(): size mismatch");
         }
 
-            // enable internal threading
-/*#if defined BLAS_MKL
-        mkl_set_num_threads_local(cc_opts->nthreads);
-#elif defined BLAS_OPENBLAS
-        openblas_set_num_threads(cc_opts->nthreads);
-#endif*/
-
-        xaxpy(WORKING_TYPE, size, factor, buf2, buf1);
-
-/*#if defined BLAS_MKL
-        mkl_set_num_threads_local(1);
-#elif defined BLAS_OPENBLAS
-        openblas_set_num_threads(1);
-#endif*/
+        // internal threading is redundant here and typically slows down calculations
+        xaxpy(WORKING_TYPE, block1->size, factor, block2->buf, block1->buf);
 
         block_unload(block2);
         block_store(block1);
@@ -201,6 +175,6 @@ void update(char *dg1_name, double factor, char *dg2_name)
         }
     }
 
-    timer_stop("add-2");
+    timer_stop("update");
 }
 

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -47,7 +47,7 @@ molecule_t *molecule_new()
     mol->cage.n_points = 0;
     mol->cage.points = NULL;
 
-    mol->n_point_charges;
+    mol->n_point_charges = 0;
 
     return mol;
 }
@@ -198,4 +198,26 @@ void molecule_print(molecule_t *mol)
         }
     }
     printf("\n");
+}
+
+
+/**
+ * checks if a symmetry point group of a molecule has an inversion center.
+ */
+int molecule_has_inversion_center(molecule_t *mol)
+{
+    int group = mol->sym_group.group;
+
+    if (group == SYMMETRY_Ci ||
+        group == SYMMETRY_C2h ||
+        group == SYMMETRY_D2h ||
+        group == SYMMETRY_Dinfh) {
+        return 1;
+    }
+    if (group == SYMMETRY_AUTO && mol->n_atoms == 1) { // special case: atom
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }

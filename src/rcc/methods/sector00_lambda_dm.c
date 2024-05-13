@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -39,9 +39,9 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "engine.h"
-#include "datamodel.h"
 #include "options.h"
 #include "spinors.h"
 #include "symmetry.h"
@@ -193,6 +193,24 @@ void sector_0h0p_analytic_density_matrix_block_hp()
         update("dm00_hp", 0.25, "r2");
         restore_stack_pos(pos);
     }
+
+    if (cc_opts->sector_h == 0 && cc_opts->sector_p == 1) {
+        // DM_01_2
+        tmplt("cross_pv", "pp", "01", "12", NOT_PERM_UNIQUE);
+        expand_diagram("cross", "cross_pv");
+        reorder("s2c", "r1", "2431");
+        mult("r1", "cross_pv", "r2", 2);
+        update("dm00_hp", 1.0, "r2");
+        restore_stack_pos(pos);
+
+        // DM_01_5
+        reorder("L01_2c", "r1", "3412");
+        mult("t2c", "r1", "r2", 3);
+        tmplt("r3", "hp", "00", "12", NOT_PERM_UNIQUE);
+        expand_diagram("r2", "r3");
+        update("dm00_hp", -0.5, "r3");
+        restore_stack_pos(pos);
+    }
 }
 
 
@@ -247,6 +265,15 @@ void sector_0h0p_analytic_density_matrix_block_hh()
         update("dm00_hh", -1.0 / 12, "r2");
         restore_stack_pos(pos);
     }
+
+    if (cc_opts->sector_h == 0 && cc_opts->sector_p == 1) {
+        // DM_01_3
+        reorder("L01_2c", "r1", "4123");
+        reorder("s2c", "r2", "2341");
+        mult("r2", "r1", "r3", 3);
+        update("dm00_hh", -0.5, "r3");
+        restore_stack_pos(pos);
+    }
 }
 
 
@@ -287,6 +314,21 @@ void sector_0h0p_analytic_density_matrix_block_pp()
         mult("t3(d)+", "r1", "r2", 5);
         diagram_clear_off_diagonal("r2");
         update("dm00_pp", +1.0 / 12, "r2");
+        restore_stack_pos(pos);
+    }
+
+    if (cc_opts->sector_h == 0 && cc_opts->sector_p == 1) {
+        // DM_01_1
+        tmplt("cross_pp", "pp", "00", "12", NOT_PERM_UNIQUE);
+        expand_diagram("cross", "cross_pp");
+        update("dm00_pp", 1.0, "cross_pp");
+        restore_stack_pos(pos);
+
+        // DM_01_4
+        reorder("L01_2c", "r1", "2341");
+        reorder("s2c", "r2", "4123");
+        mult("r1", "r2", "r3", 3);
+        update("dm00_pp", 0.5, "r3");
         restore_stack_pos(pos);
     }
 }

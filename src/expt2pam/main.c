@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -39,11 +39,18 @@ enum {
 };
 
 void print_usage(char *binary_name);
+
 void parse_argv(int argc, char **argv, char *file_name, int maxlen, int *target);
+
 void expt_parse(char *file_name, molecule_t *mol, basis_lib_t *basis, ecp_lib_t *ecp_lib);
-void gen_pam(FILE *out, molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t *ecp_lib);
+
+void gen_pam(FILE *out, char *mol_file_name, char *inp_file_name,
+             molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t *ecp_lib);
+
 void gen_cfour(FILE *out, molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t *ecp_lib);
+
 void gen_turbomole(FILE *out, molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t *ecp_lib);
+
 void gen_oneprop(FILE *out, molecule_t *mol, basis_lib_t *bas_lib, ecp_lib_t *ecp_lib);
 
 
@@ -68,7 +75,7 @@ int main(int argc, char **argv)
     molecule_print(mol);*/
 
     if (target == TARGET_DIRAC) {
-        gen_pam(stdout, mol, bas, ecp);
+        gen_pam(stdout, "dirac.mol", "moltra.inp", mol, bas, ecp);
     }
     else if (target == TARGET_CFOUR) {
         gen_cfour(stdout, mol, bas, ecp);
@@ -124,5 +131,9 @@ void parse_argv(int argc, char **argv, char *file_name, int maxlen, int *target)
 void print_usage(char *binary_name)
 {
     printf("Usage: %s [target] <input-file>\n", binary_name);
-    printf(" target: --dirac, --cfour, --turbomole or --oneprop\n");
+    printf(" target:\n");
+    printf(" --dirac        DIRAC package\n");
+    printf(" --cfour        CFOUR package\n");
+    printf(" --turbomole    Turbomole package\n");
+    printf(" --oneprop      OneProp code by L. V. Skripnikov\n");
 }

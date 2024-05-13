@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -37,9 +37,6 @@
 
 // types
 typedef int16_t moindex_t;
-
-typedef int bool_t;
-
 typedef double complex double_complex_t;
 typedef float complex float_complex_t;
 

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -36,6 +36,7 @@
 #include "intham_imms.h"
 #include "linalg.h"
 #include "selection.h"
+#include "../new_sorting/mrconee.h"
 
 #define CC_ARITH_REAL    0
 #define CC_ARITH_COMPLEX 1
@@ -342,6 +343,7 @@ struct cc_options {
     char integral_file_2[CC_MAX_PATH_LENGTH];  // name of the file with 2-el MO integrals
     char integral_file_prop[CC_MAX_PATH_LENGTH];  // name of the file with properties MO integrals
     int x2cmmf;    // x2c molecular mean field Hamiltonian enabled in DIRAC
+    int new_sorting;
 
     /*
      * for D. Maison's integral program
@@ -458,6 +460,9 @@ struct cc_options {
     int n_analyt_prop;
     char analyt_prop_files[CC_MAX_NPROP][CC_MAX_PATH_LENGTH];
     int calc_density_0h0p;
+    int calc_density_0h1p;
+    int density_0h1p_num_states;
+    cc_denmat_query_t density_0h1p_states[CC_MAX_NPROP];
 
     /*
      * perform Dipole-Length (DL) estimation of TDMs or not
@@ -507,6 +512,23 @@ struct cc_options {
      * (in the given sector)
      */
     int calc_overlap[MAX_SECTOR_RANK][MAX_SECTOR_RANK];
+
+    /*
+     * pointer to data read from mrconee
+     */
+    mrconee_data_t *mrconee_data;
+
+    /*
+     * do not recalculate orbital energies
+     */
+    int use_oe;
+
+    /*
+     * use tensor trains in different situations
+     */
+    double tensor_train_tol;
+    int use_tt_mult;
+    int use_tt_diis;
 };
 
 typedef struct cc_options cc_options_t;

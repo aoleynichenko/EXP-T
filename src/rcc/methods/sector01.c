@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -46,7 +46,6 @@
 #include "ccutils.h"
 #include "diis.h"
 #include "engine.h"
-#include "datamodel.h"
 #include "options.h"
 #include "methods.h"
 #include "sort.h"
@@ -78,6 +77,14 @@ void t3_contrib_to_singles_0h1p(int pt_order);
 void t3_contrib_to_doubles_0h1p(int pt_order);
 
 void t3_0h1p_const_contrib_to_triples(int pt_order);
+
+int sector_0h0p_lambda_equations();
+
+int sector_0h1p_lambda_equations(char *irrep_name, int state_number);
+
+void sector_0h0p_analytic_density_matrix_lambda();
+
+void sector_0h0p_calculate_properties();
 
 
 /**
@@ -151,6 +158,29 @@ int sector_0h1p(cc_options_t *opts)
     calculate_properties_direct(0, 1);
 
     /*
+     * analytic evaluation of density matrices, expectation values
+     * of property operators, transition properties
+     */
+    if (cc_opts->calc_density_0h1p == CC_DENSITY_MATRIX_LAMBDA) {
+        for (int i = 0; i < cc_opts->density_0h1p_num_states; i++) {
+            cc_denmat_query_t *query = cc_opts->density_0h1p_states + i;
+
+            // reverse SEC order
+            int exit_code = sector_0h1p_lambda_equations(query->rep1_name, query->state1);
+            if (exit_code == EXIT_FAILURE) {
+                return EXIT_FAILURE;
+            }
+            exit_code = sector_0h0p_lambda_equations();
+            if (exit_code == EXIT_FAILURE) {
+                return EXIT_FAILURE;
+            }
+        }
+
+        sector_0h0p_analytic_density_matrix_lambda();
+        sector_0h0p_calculate_properties();
+    }
+
+    /*
      * perturbative correction to the effective interaction
      * Heff will be re-constructed and diagonalized again with corrections added
      */
@@ -171,17 +201,22 @@ int sector_0h1p(cc_options_t *opts)
 void sort_integrals_0h1p()
 {
     // prepare one-electron integrals
-    request_sorting("vh", "ph", "10", "12");
-    request_sorting("vp", "pp", "10", "12");
-    request_sorting("pv", "pp", "01", "12");
+    //request_sorting("vh", "ph", "10", "12");
+    //request_sorting("vp", "pp", "10", "12");
+    //request_sorting("pv", "pp", "01", "12");
 
     // prepare two-electron integrals
-    request_sorting("vhpp", "phpp", "1000", "1234");
-    request_sorting("vhhh", "phhh", "1000", "1234");
-    request_sorting("pvhp", "pphp", "0100", "1234");
-    request_sorting("hvhp", "hphp", "0100", "1234");
-    request_sorting("pvhh", "pphh", "0100", "1234");
+    //request_sorting("vhpp", "phpp", "1000", "1234");
+    //request_sorting("vhhh", "phhh", "1000", "1234");
+    //request_sorting("pvhp", "pphp", "0100", "1234");
+    //request_sorting("hvhp", "hphp", "0100", "1234");
+    //request_sorting("pvhh", "pphh", "0100", "1234");
     request_sorting("pvpp", "pppp", "0100", "1234");
+
+    // for lambda equations
+    /*request_sorting("vphh", "pphh", "1000", "1234");
+    request_sorting("vpph", "ppph", "1000", "1234");
+    request_sorting("ppvh", "ppph", "0010", "1234");*/
 
     // special for triples
     if (cc_opts->cc_model >= CC_MODEL_CCSD_T3) {
@@ -191,6 +226,18 @@ void sort_integrals_0h1p()
         request_sorting("vphh", "pphh", "1000", "1234");
     }
     perform_sorting();
+
+    // prepare one-electron integrals
+    restrict_valence("ph", "vh", "10", 0);
+    restrict_valence("pp", "vp", "10", 0);
+    restrict_valence("pp", "pv", "01", 0);
+
+    // prepare two-electron integrals
+    restrict_valence("phpp", "vhpp", "1000", 0);
+    restrict_valence("phhh", "vhhh", "1000", 0);
+    restrict_valence("pphp", "pvhp", "0100", 0);
+    restrict_valence("hphp", "hvhp", "0100", 0);
+    restrict_valence("pphh", "pvhh", "0100", 0);
 
     // prepare T1 and T2 amplitudes from the 0h0p sector
     reorder("t1c", "t1r", "21");
@@ -216,21 +263,21 @@ void init_amplitudes_0h1p()
 
     if (cc_opts->reuse_amplitudes[0][1]) {
         printf(" Trying to read amplitudes from disk ...\n");
-        if (diagram_read("s1c.dg") != NULL) {
+        if (diagram_read_binary("s1c.dg") != NULL) {
             printf(" T{0h1p}_1 amplitudes successfully read from disk\n");
             calc_s1 = 0;
         }
         else {
             printf(" T{0h1p}_1 amplitudes will be calculated\n");
         }
-        if (diagram_read("s2c.dg") != NULL) {
+        if (diagram_read_binary("s2c.dg") != NULL) {
             printf(" T{0h1p}_2 amplitudes successfully read from disk\n");
             calc_s2 = 0;
         }
         else {
             printf(" T{0h1p}_2 amplitudes will be calculated\n");
         }
-        if (diagram_read("veff01.dg") != NULL) {
+        if (diagram_read_binary("veff01.dg") != NULL) {
             printf(" Heff{0h1p} diagram successfully read from disk\n");
             calc_veff = 0;
         }
@@ -238,7 +285,7 @@ void init_amplitudes_0h1p()
             printf(" Heff{0h1p} diagram will be calculated\n");
         }
         if (triples) {
-            if (diagram_read("s3c.dg") != NULL) {
+            if (diagram_read_binary("s3c.dg") != NULL) {
                 printf(" T{0h1p}_3 amplitudes successfully read from disk\n");
                 calc_s3 = 0;
             }
@@ -295,6 +342,9 @@ void const_terms_0h1p()
     }
     dg_stack_pos_t pos = get_stack_pos();
 
+    //tmplt("s1_0", "pp", "10", "12", NOT_PERM_UNIQUE);
+
+
     // s1_0 -- singles
     // dgs1
     copy("vp", "s1_0");
@@ -326,6 +376,8 @@ void const_terms_0h1p()
     restore_stack_pos(pos);
 
     // s2_0 -- doubles
+
+    //tmplt("s2_0", "phpp", "1000", "1234", NOT_PERM_UNIQUE);
 
     // dgd1
     copy("vhpp", "s2_0");
@@ -452,6 +504,7 @@ void construct_singles_0h1p()
     update("s1nw", 1.0, "r2");
     restore_stack_pos(pos);
 
+    // dgs2b
     reorder("pphp", "r1", "4321");
     mult("s2c", "r1", "r3", 3);
     update("s1nw", 0.5, "r3");
@@ -824,6 +877,7 @@ void construct_folded_0h1p()
     mult("veff01", "s1cr", "r1", 1);
     update("s1nw", -1.0, "r1");
     restore_stack_pos(pos);
+
     // doubles
     reorder("s2c", "r1", "2341");
     mult("veff01", "r1", "r2", 1);

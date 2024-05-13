@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -35,7 +35,7 @@ sorting_request_t *append_sorting_request(sorting_request_t *requests, int *num_
     sorting_request_t *req;
 
     req = sorting_requests + (*num_requests);
-    req->dg = diagram_stack_find(name);;
+    req->dg = diagram_stack_find(name);
     strcpy(req->dg_name, name);
     strcpy(req->hp, qparts);
     strcpy(req->valence, valence);

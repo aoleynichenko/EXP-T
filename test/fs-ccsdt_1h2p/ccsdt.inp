@@ -1,0 +1,37 @@
+sector 1h2p
+nacth 2
+nactp 6
+model ccsdt
+
+skip 0h0p 0h1p 1h0p 1h1p 0h2p
+nthreads 2
+
+#hughes_kaldor_1h2p
+reuse amplitudes
+
+maxiter 500
+conv 1e-6
+disk_usage 0
+memory 6 gb
+diis 10
+diis triples
+flush 1 iter
+div_thresh 1e9
+
+shifttype realimag
+shift 1h2p 3 -1 -1.5
+
+spinor_labels
+ 2  2s
+ 3  3s
+ 22 2s
+ 23 3s
+ 41 2p
+ 42 2p
+ 43 2p
+ 67 2p
+ 68 2p
+ 69 2p
+end
+
+

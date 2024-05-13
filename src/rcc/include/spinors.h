@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -104,7 +104,7 @@ void get_active_space(int sect_h, int sect_p, int *n_active, int *active_spinors
 
 void create_spinor_info(int n_spinors, int *irrep_numbers, double *spinor_energies, int *occ_numbers);
 
-void create_spinor_blocks();
+void create_spinor_blocks(int tilesize);
 
 void setup_occupation_numbers(cc_options_t *options, int num_spinors, spinor_attr_t *spinor_info);
 

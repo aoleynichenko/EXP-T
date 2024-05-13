@@ -1,0 +1,17 @@
+title "Rb atom -- relativistic EA-CCSD calculation"
+maxiter 50
+conv 1e-9
+sector 0h1p
+nactp 8
+disk_usage 0
+
+reuse 2-integrals amplitudes
+arith complex
+print "model vectors"
+
+mdprop "XDIPLEN" sym 1u+ approx 1 0 scheme connected
+mdprop "XDIPLEN" sym 1u- approx 1 0 scheme connected
+mdprop "YDIPLEN" sym 1u+ approx 1 0 scheme connected
+mdprop "YDIPLEN" sym 1u- approx 1 0 scheme connected
+mdprop "ZDIPLEN" sym 0u  approx 1 0 scheme connected
+

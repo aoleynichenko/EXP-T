@@ -1,0 +1,10 @@
+sector 0h2p
+nactp 6
+maxiter 500
+memory 110 gb
+conv 1e-7
+disk_usage 0
+nthreads 4
+model ccsd
+
+

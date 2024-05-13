@@ -1,0 +1,55 @@
+
+    ---- effective hamiltonian manip program ----
+    ----         le 06 janvier  2021, az     ----
+  
+     warning: i do not understand the record ->                                                                                                                                 
+  
+     warning: i do not understand the record ->                                                                                                                                 
+  
+     warning: i do not understand the record ->                                                                                                                                 
+    finite-field transition dipole calculations
+    effective hamiltonian 1 in HEFF1
+    effective hamiltonian 2 in HEFF2
+
+    finite-field step          0.0000200
+    sector                          0h1p
+    complex arithmetic                 F
+    heff hermitization                 T
+    
+    rep no.                            1
+    heff size                          3
+    target states                1 -   3
+    
+  effective hamiltonian            1
+  
+                1                2                3
+    1  -0.15312  .       0.00001  .      -0.00002  .
+    2   0.00002  .      -0.09592  .        .       .
+    3  -0.00002  .        .       .      -0.09486  .
+  
+      heff eigenvecs smallest overlap eigenvalue   0.99992267
+
+  effective hamiltonian            2
+  
+                1                2                3
+    1  -0.15312  .      -0.00001  .       0.00002  .
+    2  -0.00002  .      -0.09592  .        .       .
+    3   0.00002  .        .       .      -0.09486  .
+  
+      heff eigenvecs smallest overlap eigenvalue   0.99992267
+
+
+                 eigenenergies, au      relative energies, cm-1 
+                 left file right file    left file  right file 
+
+            1  -0.1531234  -0.1531234        0.00       -0.00
+            2  -0.0959180  -0.0959180    12555.14    12555.14
+            3  -0.0948636  -0.0948636    12786.56    12786.56
+ 
+
+ transition  energy, cm^-1    Re(d)      Im(d)        |d|^2       |d|       osc str   A,10^6 s-1
+
+   1  ->  2     12555.138   -1.621082   0.000000    2.627905  1.62108158    0.100220   10.537579
+   1  ->  3     12786.559    2.274437   0.000000    5.173064  2.27443710    0.200921   21.911672
+   2  ->  3       231.421    0.000012   0.000000    0.000000  0.00001167    0.000000    0.000000
+    

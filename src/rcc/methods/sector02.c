@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -45,7 +45,6 @@
 #include <string.h>
 
 #include "ccutils.h"
-#include "datamodel.h"
 #include "diis.h"
 #include "engine.h"
 #include "heff.h"
@@ -203,14 +202,14 @@ void init_amplitudes_0h2p()
 
     if (cc_opts->reuse_amplitudes[0][2]) {
         printf(" Trying to read amplitudes (sector 0h2p) from disk ...\n");
-        if (diagram_read("x2c.dg") != NULL) {
+        if (diagram_read_binary("x2c.dg") != NULL) {
             printf(" T{0h2p}_2 amplitudes successfully read from disk\n");
             calc_t2 = 0;
         }
         else {
             printf(" T{0h2p}_2 amplitudes will be calculated\n");
         }
-        if (diagram_read("veff02.dg") != NULL) {
+        if (diagram_read_binary("veff02.dg") != NULL) {
             printf(" Heff{0h2p} diagram successfully read from disk\n");
             calc_veff = 0;
         }
@@ -218,7 +217,7 @@ void init_amplitudes_0h2p()
             printf(" Heff{0h2p} diagram will be calculated\n");
         }
         if (triples) {
-            if (diagram_read("x3c.dg") != NULL) {
+            if (diagram_read_binary("x3c.dg") != NULL) {
                 printf(" T{0h2p}_3 amplitudes successfully read from disk\n");
                 calc_t3 = 0;
             }

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -60,7 +60,8 @@ div_thresh      { inc_col(); return KEYWORD_DIV_THRESH;   }
 damping         { inc_col(); return KEYWORD_DAMPING;      }
 diis            { inc_col(); return KEYWORD_DIIS;         }
 crop            { inc_col(); return KEYWORD_CROP;         }
-shifttype       { inc_col(); return KEYWORD_SHIFTTYPE;    }
+shifttype       { inc_col(); return KEYWORD_SHIFT_TYPE;   }
+shift_type      { inc_col(); return KEYWORD_SHIFT_TYPE;   }
 shift           { inc_col(); return KEYWORD_SHIFT;        }
 reuse           { inc_col(); return KEYWORD_REUSE;        }
 flush           { inc_col(); return KEYWORD_FLUSH;        }
@@ -88,6 +89,7 @@ skip            { inc_col(); return KEYWORD_SKIP;         }
 interface       { inc_col(); return KEYWORD_INTERFACE;    }
 breit           { inc_col(); return KEYWORD_BREIT;        }
 x2cmmf          { inc_col(); return KEYWORD_X2CMMF;       }
+new_sorting     { inc_col(); return KEYWORD_NEW_SORTING;  }
 restrict_t3     { inc_col(); return KEYWORD_RESTRICT_T3;  }
 spinor_labels   { inc_col(); return KEYWORD_SPINOR_LABELS;}
 flush_amplitudes_txt { inc_col(); return KEYWORD_FLUSH_AMPLITUDES_TXT; }
@@ -96,6 +98,11 @@ density         { inc_col(); return KEYWORD_DENSITY;      }
 overlap         { inc_col(); return KEYWORD_OVERLAP;      }
 hughes_kaldor_1h2p { inc_col(); return KEYWORD_HUGHES_KALDOR_1H2P; }
 hughes_kaldor_2h1p { inc_col(); return KEYWORD_HUGHES_KALDOR_2H1P; }
+use_oe          { inc_col(); return KEYWORD_USE_ORB_ENERGIES; }
+recalc_oe       { inc_col(); return KEYWORD_RECALC_ORB_ENERGIES; }
+tt_tol          { inc_col(); return KEYWORD_TT_TOL;       }
+tt_mult_pppp    { inc_col(); return KEYWORD_TT_MULT_PPPP; }
+tt_diis         { inc_col(); return KEYWORD_TT_DIIS;      }
 !=              { inc_col(); return TT_NEQ;               }
 =               { inc_col(); return TT_EQ;                }
 \".*\"          { inc_col(); return TT_QUOTE;             }

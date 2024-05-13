@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -27,12 +27,14 @@
 
 #include <complex.h>
 #include <ctype.h>
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
+#include <utils.h>
 
 
 /**
@@ -217,9 +219,9 @@ int in_range(double x, double a, double b)
 /**
  * Copy integer arrays.
  */
-void intcpy(int *a, int *b, size_t n)
+void intcpy(int *dst, int *src, size_t n)
 {
-    memcpy(a, b, sizeof(int) * n);
+    memcpy(dst, src, sizeof(int) * n);
 }
 
 
@@ -234,20 +236,6 @@ void str_replace(char *s, char x, char y)
             *p = y;
         }
     }
-}
-
-
-/**
- * Convert array of integers into string: [1,2,3,4] -> "1234\0"
- * NOTE: target array 'str' must be preallocated (min length = n+1)
- * NOTE: the 'digits' array is supposed to contain only digits 0-9
- */
-void int2str(int *digits, char *str, size_t n)
-{
-    for (size_t i = 0; i < n; i++) {
-        str[i] = digits[i] + '0';
-    }
-    str[n] = '\0';
 }
 
 
@@ -366,4 +354,85 @@ void array_get_real_part(size_t n, double complex *array_complex, double *array_
     for (size_t i = 0; i < n; i++) {
         array_real[i] = creal(array_complex[i]);
     }
+}
+
+
+/**
+ * An alternative implementation of asprintf
+ */
+int cc_asprintf(char **str, char *fmt, ...)
+{
+    va_list argp;
+
+    // get length of the string
+    va_start(argp, fmt);
+    char one_char[1];
+    int len = vsnprintf(one_char, 1, fmt, argp);
+    if (len < 1) {
+        fprintf(stderr, "An encoding error occurred. Setting the input pointer to NULL.\n");
+        *str = NULL;
+        return len;
+    }
+    va_end(argp);
+
+    // allocate memory for the string
+    *str = malloc(len + 1);
+    if (!str) {
+        fprintf(stderr, "Couldn't allocate %i bytes.\n", len + 1);
+        return -1;
+    }
+
+    // save data to the string
+    va_start(argp, fmt);
+    vsnprintf(*str, len + 1, fmt, argp);
+    va_end(argp);
+
+    return len;
+}
+
+
+/*
+ * parses string of integer numbers, converts it into array of integers.
+ * output array of integers must be pre-allocated.
+ * returns 0 on success, -1 otherwise
+ *
+ * example: "1234" -> [1, 2, 3, 4]
+ */
+int str_to_int_array(char *str, int *array)
+{
+    size_t len = strlen(str);
+
+    for (int i = 0; i < len; i++) {
+        char c = str[i];
+        if (isdigit(c)) {
+            array[i] = c - '0';
+        }
+        else {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+
+/*
+ * converts array of positive integer numbers in range [0,9] into a string.
+ * memory for the string must be pre-allocated.
+ * returns 0 on success, -1 otherwise
+ *
+ * example: [1, 2, 3, 4] -> "1234\0"
+ * (string length = 5 symbols, including '\0')
+ */
+int int_array_to_str(int n, const int *array, char *str)
+{
+    for (int i = 0; i < n; i++) {
+        if (array[i] < 0 || array[i] > 9) {
+            return -1;
+        }
+        str[i] = (char) ('0' + array[i]);
+    }
+    str[n] = '\0';
+
+    return 0;
 }

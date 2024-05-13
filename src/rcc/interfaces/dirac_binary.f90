@@ -1,6 +1,6 @@
 !
 ! EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
-! Copyright (C) 2018-2023 The EXP-T developers.
+! Copyright (C) 2018-2024 The EXP-T developers.
 !
 ! This file is part of EXP-T.
 !
@@ -450,6 +450,9 @@ contains
         sb4 = spinor_to_spinor_block(i4)
 
         ibuf = outbuf_idx(sb1, sb2, sb3, sb4)
+        if (ibuf == 0) then
+            return
+        end if
         nint = buf_nint(ibuf)
 
         ! flush buffer if needed
@@ -489,6 +492,9 @@ contains
         integer(4) :: fd
 
         ibuf = outbuf_idx(sb1, sb2, sb3, sb4)
+        if (ibuf == 0) then
+            return
+        end if
         nint = buf_nint(ibuf)
 
         write (filename, "(a,a1,i0,a1,i0,a1,i0,a1,i0,a1)") trim(files_prefix), "-", sb1, "-", sb2, "-", sb3, "-", sb4
@@ -1076,7 +1082,7 @@ subroutine read_mdcint(nz_arith, is_spinfree, nspinors)
     bind(C) :: /mrconee_mdcint/
     integer :: luint   ! 2-el integrals file
 
-    ! MDCINT content
+    ! MDCINT contents
     character(len = 10) :: datex, timex*8
     integer(4) :: nkr
     integer(4), dimension(:), allocatable :: kr

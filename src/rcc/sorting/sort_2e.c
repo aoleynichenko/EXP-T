@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2023 The EXP-T developers.
+ *  Copyright (C) 2018-2024 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -31,7 +31,6 @@
 
 #include "sorting_request.h"
 
-#include "datamodel.h"
 #include "io.h"
 #include "memory.h"
 #include "options.h"
@@ -485,14 +484,14 @@ void fill_block_twoelec_complex_direct(block_t *block, int sign, double complex 
 {
     assert(block->rank == 4);
 
-    int dims_1 = block->indices[0][0];
-    int dims_2 = block->indices[1][0];
-    int dims_3 = block->indices[2][0];
-    int dims_4 = block->indices[3][0];
-    int *block_indices_1 = block->indices[0] + 1; // +1 to skip first element (length)
-    int *block_indices_2 = block->indices[1] + 1;
-    int *block_indices_3 = block->indices[2] + 1;
-    int *block_indices_4 = block->indices[3] + 1;
+    int dims_1 = block->shape[0];
+    int dims_2 = block->shape[1];
+    int dims_3 = block->shape[2];
+    int dims_4 = block->shape[3];
+    int *block_indices_1 = block->indices[0];
+    int *block_indices_2 = block->indices[1];
+    int *block_indices_3 = block->indices[2];
+    int *block_indices_4 = block->indices[3];
 
     size_t index = 0;
     for (int i1 = 0; i1 < dims_1; i1++) {
@@ -521,14 +520,14 @@ void fill_block_twoelec_complex_exchange(block_t *block, int sign, double comple
 {
     assert(block->rank == 4);
 
-    int dims_1 = block->indices[0][0];
-    int dims_2 = block->indices[1][0];
-    int dims_3 = block->indices[2][0];
-    int dims_4 = block->indices[3][0];
-    int *block_indices_1 = block->indices[0] + 1; // +1 to skip first element (length)
-    int *block_indices_2 = block->indices[1] + 1;
-    int *block_indices_3 = block->indices[2] + 1;
-    int *block_indices_4 = block->indices[3] + 1;
+    int dims_1 = block->shape[0];
+    int dims_2 = block->shape[1];
+    int dims_3 = block->shape[2];
+    int dims_4 = block->shape[3];
+    int *block_indices_1 = block->indices[0];
+    int *block_indices_2 = block->indices[1];
+    int *block_indices_3 = block->indices[2];
+    int *block_indices_4 = block->indices[3];
 
     size_t index = 0;
     for (int i1 = 0; i1 < dims_1; i1++) {
@@ -559,14 +558,14 @@ void fill_block_twoelec_real_direct(block_t *block, int sign, double complex ***
 
     double *dbuf = (double *) block->buf;
 
-    int dims_1 = block->indices[0][0];
-    int dims_2 = block->indices[1][0];
-    int dims_3 = block->indices[2][0];
-    int dims_4 = block->indices[3][0];
-    int *block_indices_1 = block->indices[0] + 1; // +1 to skip first element (length)
-    int *block_indices_2 = block->indices[1] + 1;
-    int *block_indices_3 = block->indices[2] + 1;
-    int *block_indices_4 = block->indices[3] + 1;
+    int dims_1 = block->shape[0];
+    int dims_2 = block->shape[1];
+    int dims_3 = block->shape[2];
+    int dims_4 = block->shape[3];
+    int *block_indices_1 = block->indices[0];
+    int *block_indices_2 = block->indices[1];
+    int *block_indices_3 = block->indices[2];
+    int *block_indices_4 = block->indices[3];
 
     size_t index = 0;
     for (int i1 = 0; i1 < dims_1; i1++) {
@@ -597,14 +596,14 @@ void fill_block_twoelec_real_exchange(block_t *block, int sign, double complex *
 
     double *dbuf = (double *) block->buf;
 
-    int dims_1 = block->indices[0][0];
-    int dims_2 = block->indices[1][0];
-    int dims_3 = block->indices[2][0];
-    int dims_4 = block->indices[3][0];
-    int *block_indices_1 = block->indices[0] + 1; // +1 to skip first element (length)
-    int *block_indices_2 = block->indices[1] + 1;
-    int *block_indices_3 = block->indices[2] + 1;
-    int *block_indices_4 = block->indices[3] + 1;
+    int dims_1 = block->shape[0];
+    int dims_2 = block->shape[1];
+    int dims_3 = block->shape[2];
+    int dims_4 = block->shape[3];
+    int *block_indices_1 = block->indices[0];
+    int *block_indices_2 = block->indices[1];
+    int *block_indices_3 = block->indices[2];
+    int *block_indices_4 = block->indices[3];
 
     size_t index = 0;
     for (int i1 = 0; i1 < dims_1; i1++) {
