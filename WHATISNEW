@@ -1,9 +1,7 @@
- 1.8.4 (13.05.2024)
+ 1.8.5 (10.06.2025)
  ==================
- * improved manual
- * new tests (HgH molecule in 0h1p, K atom HFS by the finite-order method)
- * new examples (HgH molecule, K atom hyperfine structure)
- * bug fixes
+ * approximate analytic density matrices (direct method) for the 0h0p, 0h1p, 0h2p, 0h3p sectors
+ * interface to pyscf (initial implementation)
 
  1.8.1 (19.06.2023)
  ==================
