@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -43,8 +43,8 @@
    Output:
       new_tt: тензорный поезд
 */
-extern void* tt_d_new(const double *tensor_1d, const __uint64_t *shape, __uint64_t len_shape, double tol);
-extern void* tt_z_new(const double complex *tensor_1d, const __uint64_t *shape, __uint64_t len_shape, double tol);
+extern void* tt_d_new(const double *tensor_1d, const uint64_t *shape, uint64_t len_shape, double tol);
+extern void* tt_z_new(const double complex *tensor_1d, const uint64_t *shape, uint64_t len_shape, double tol);
 
 
 // Свертка с матрицами (singles)
@@ -60,8 +60,8 @@ extern void* tt_z_new(const double complex *tensor_1d, const __uint64_t *shape, 
    Output:
       new_tt: тензорный поезд
 */
-extern void* tt_d_contraction_tm(const void *tt, const void *tmp_ts, __uint64_t m_ts, __uint64_t n_ts, const __uint64_t  *tt_axis, const __uint64_t *ts_axis, __uint64_t len_axis);
-extern void* tt_z_contraction_tm(const void *tt, const void *tmp_ts, __uint64_t m_ts, __uint64_t n_ts, const __uint64_t  *tt_axis, const __uint64_t *ts_axis, __uint64_t len_axis);
+extern void* tt_d_contraction_tm(const void *tt, const void *tmp_ts, uint64_t m_ts, uint64_t n_ts, const uint64_t  *tt_axis, const uint64_t *ts_axis, uint64_t len_axis);
+extern void* tt_z_contraction_tm(const void *tt, const void *tmp_ts, uint64_t m_ts, uint64_t n_ts, const uint64_t  *tt_axis, const uint64_t *ts_axis, uint64_t len_axis);
 
 // Свертка с матрицами (singles)
 /*
@@ -74,8 +74,8 @@ extern void* tt_z_contraction_tm(const void *tt, const void *tmp_ts, __uint64_t 
    Output:
       new_tt: тензорный поезд
 */
-extern void* tt_d_contraction_tt(const void *tt, const void *tmp_tt, __uint64_t len_tmp_tt, __uint64_t lencontr, _Bool ordered);
-extern void* tt_z_contraction_tt(const void *tt, const void *tmp_tt, __uint64_t len_tmp_tt, __uint64_t lencontr, _Bool ordered);
+extern void* tt_d_contraction_tt(const void *tt, const void *tmp_tt, uint64_t len_tmp_tt, uint64_t lencontr, _Bool ordered);
+extern void* tt_z_contraction_tt(const void *tt, const void *tmp_tt, uint64_t len_tmp_tt, uint64_t lencontr, _Bool ordered);
 
 //  Возвращение в тензор (одномерный массив)
 /*
@@ -94,8 +94,8 @@ extern double complex* tt_z_to_tensor_into(const void *tt);
    Output:
       массив байтов u8
 */
-extern char* tt_d_as_bytes(const void *tt, __uint64_t *nbytes);
-extern char* tt_z_as_bytes(const void *tt, __uint64_t *nbytes);
+extern char* tt_d_as_bytes(const void *tt, uint64_t *nbytes);
+extern char* tt_z_as_bytes(const void *tt, uint64_t *nbytes);
 
 // Конвертация из массива байтов в поезда
 /*
@@ -106,8 +106,8 @@ extern char* tt_z_as_bytes(const void *tt, __uint64_t *nbytes);
    Output:
       Тензорный поезд
 */
-extern void* tt_d_bytes_to_tt(const char *tt_bytes, __uint64_t nbytes, __uint64_t len_shape);
-extern void* tt_z_bytes_to_tt(const char *tt_bytes, __uint64_t nbytes, __uint64_t len_shape);
+extern void* tt_d_bytes_to_tt(const char *tt_bytes, uint64_t nbytes, uint64_t len_shape);
+extern void* tt_z_bytes_to_tt(const char *tt_bytes, uint64_t nbytes, uint64_t len_shape);
 
 // Перемещение индексов
 /*
@@ -117,8 +117,8 @@ extern void* tt_z_bytes_to_tt(const char *tt_bytes, __uint64_t nbytes, __uint64_
    Output:
       Тензорный поезд
 */
-extern void* tt_d_swap_near_axes(const void *tt,  __uint64_t ax, __uint64_t bx);
-extern void* tt_z_swap_near_axes(const void *tt,  __uint64_t ax, __uint64_t bx);
+extern void* tt_d_swap_near_axes(const void *tt,  uint64_t ax, uint64_t bx);
+extern void* tt_z_swap_near_axes(const void *tt,  uint64_t ax, uint64_t bx);
 
 // Печатает размеры ядер
 /*
@@ -133,8 +133,8 @@ extern void tt_z_print(void* tt);
    Input:
       tt: тензорный поезд
 */
-extern __uint64_t* tt_d_shape(void* tt);
-extern __uint64_t* tt_z_shape(void* tt);
+extern uint64_t* tt_d_shape(void* tt);
+extern uint64_t* tt_z_shape(void* tt);
 
 
 // Освобождение памяти

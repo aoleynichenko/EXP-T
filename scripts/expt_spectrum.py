@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
-# Copyright (C) 2018-2024 The EXP-T developers.
+# Copyright (C) 2018-2025 The EXP-T developers.
 #
 # This file is part of EXP-T.
 #
@@ -23,7 +23,7 @@
 #
 
 #
-# alexander oleynichenko, 21 january 2023
+# alexander oleynichenko, 2023-2024
 #
 
 import argparse
@@ -32,11 +32,12 @@ import math
 import numpy as np
 
 #
-# some physical constants
+# some physical constants & conversion factors
 #
-AU_TO_CM = 219474.63136320  # atomic units of energy -> cm^-1
-AU_TO_EV = 27.211386245988  # atomic units of energy -> eV
-
+AU_TO_CM = 219474.63136320      # atomic units of energy -> cm^-1
+AU_TO_EV = 27.211386245988      # atomic units of energy -> eV
+LIGHT_SPEED_AU = 137.0359998    # speed of light in atomic units
+AU_TO_SEC = 2.418884326505e-17  # atomic units of energy -> sec
 
 class ElectronicState(object):
     """
@@ -94,7 +95,7 @@ class ElectronicStatesList(object):
             try:
                 return len(self.states_by_irreps[irrep_name])
             except:
-                pass
+                return 0
         else:
             count = 0
             for irrep in self.states_by_irreps:
@@ -153,6 +154,34 @@ class TransitionMomentsTable(object):
         d2 = self.get_dipole_moment_squared(bra_irrep, bra_state_no, ket_irrep, ket_state_no)
         return 2.0 / 3.0 * (energy_2 - energy_1) * d2
 
+    def get_einstein_coefficient(self, bra_irrep, bra_state_no, ket_irrep, ket_state_no):
+        """
+        :return: einstein coefficient A_ij for the selected pair of states (in sec^-1)
+        """
+        energy_1 = self.elec_states.get_state_energy(bra_irrep, bra_state_no)
+        energy_2 = self.elec_states.get_state_energy(ket_irrep, ket_state_no)
+        d2 = self.get_dipole_moment_squared(bra_irrep, bra_state_no, ket_irrep, ket_state_no)
+        return (4.0 / 3.0) * (energy_2 - energy_1)**3 * d2 / LIGHT_SPEED_AU**3 / AU_TO_SEC
+
+
+def calculate_einstein_coefficient(irrep, state_number, elec_states_table, tdms_table):
+    """
+    calculate Einstein coefficient A for a given electronic state
+    (spontaneous decay rate)
+    """
+
+    a_coef = 0.0
+    for ket_irrep in elec_states_table.get_irrep_list():
+        for j, ket_state in enumerate(elec_states_table.get_states(ket_irrep)):
+            energy_i = elec_states_table.get_state_energy(irrep, state_number)
+            energy_f = elec_states_table.get_state_energy(ket_irrep, j)
+            if energy_f >= energy_i:
+                continue
+            a_ij = tdms_table.get_einstein_coefficient(irrep, state_number, ket_irrep, j)
+            a_coef += a_ij
+
+    return a_coef
+
 
 def print_electronic_states_list(elec_states, upper_thresh=1e10):
     """
@@ -160,11 +189,19 @@ def print_electronic_states_list(elec_states, upper_thresh=1e10):
     :param elec_states: object of class ElectronicStatesList
     :param upper_thresh: upper energy limit for the electronic states printed
     """
+    print()
+    print()
+    print(' ====================================')
+    print(' electronic states and their energies')
+    print(' ====================================')
+    print()
+
     emin = elec_states.min_energy()
 
     for irrep in elec_states.states_by_irreps:
         print('\nirrep %s' % irrep)
         print('state         abs energy [au]     energy [ev]   energy[cm^-1]')
+        print('-------------------------------------------------------------')
 
         for i, state in enumerate(elec_states.states_by_irreps[irrep]):
             energy = state.abs_energy
@@ -196,7 +233,11 @@ def print_transition_moments_table(
     :param hermitization: force hermiticity of the d_if/d_fi moments or not
     :param units: 'cm' for cm^-1, 'ev' for electron-volts
     """
-    print('\ntable of transition moments:\n')
+    print()
+    print(' ===========================')
+    print(' table of transition moments')
+    print(' ===========================')
+    print()
     print('initial irreps: ', 'all' if irreps_from is None else irreps_from)
     print('initial states: ', 'all' if states_from is None else states_from)
     print('final irreps  : ', 'all' if irreps_to is None else irreps_to)
@@ -257,6 +298,8 @@ def print_transition_moments_table(
                         else:
                             print('                  e_i,ev      e_f,ev          re(dx)      im(dx)'
                                   '        re(dy)      im(dy)        re(dz)      im(dz)        |d|,a.u.    osc.str.')
+                        print('----------------------------------------------------------------'
+                              '--------------------------------------------------------------------------------')
 
                     if units == 'cm':
                         format_string = '%4d -> %4d%12.4f%12.4f    %12.6f%12.6f  %12.6f%12.6f  %12.6f%12.6f    ' \
@@ -279,6 +322,59 @@ def print_transition_moments_table(
                         print('                                                            '
                               '                                                            '
                               '%12.6f%12.6f' % (dabs_if_herm, osc_str_if_herm))
+    print()
+
+
+def print_einstein_coefficients(elec_states, tdms_table, upper_thresh=1e10):
+    """
+    prints a list of electronic states, irrep by irrep,
+    and Einstein A coefficients for each of them
+    :param elec_states: object of class ElectronicStatesList
+    :param tdms_table: table containing transition dipole moments
+    :param upper_thresh: upper energy limit for the electronic states printed
+    """
+
+    print()
+    print()
+    print(' ===========================================')
+    print(' einstein coefficients A (spontaneous decay)')
+    print(' ===========================================')
+    print()
+
+    emin = elec_states.min_energy()
+
+    for irrep in elec_states.states_by_irreps:
+        print('\nirrep %s' % irrep)
+        print('state         abs energy [au]     energy [ev]   energy[cm^-1]      a,10^8 s-1       lifetime')
+        print('--------------------------------------------------------------------------------------------')
+
+        for i, state in enumerate(elec_states.states_by_irreps[irrep]):
+            energy = state.abs_energy
+            e_ev = (energy - emin) * AU_TO_EV
+            e_cm = (energy - emin) * AU_TO_CM
+
+            if e_cm < upper_thresh:
+
+                # calculate Einstein coefficient and lifetime
+                a_coef = abs(calculate_einstein_coefficient(irrep, i, elec_states, tdms_table))
+                if a_coef < 1e-14:
+                    print('%5d%24.12f%16.4f%16.0f          stable    '
+                          '      --' % (i + 1, energy, e_ev, e_cm))
+                else:
+                    lifetime = 1.0 / a_coef
+                    if lifetime <= 1e-6:
+                        lifetime *= 1e9
+                        units = 'ns'
+                    elif 1e-6 < lifetime <= 1e-3:
+                        lifetime *= 1e6
+                        units = 'us'
+                    elif 1e-3 < lifetime <= 1.0:
+                        lifetime *= 1e3
+                        units = 'ms'
+                    else:
+                        units = 's'
+
+                    print('%5d%24.12f%16.4f%16.0f%16.8f%12.3f %s' % (i + 1, energy, e_ev, e_cm, a_coef / 1.0e8, lifetime, units))
 
 
 def parse_expt_output(path):
@@ -300,7 +396,7 @@ def parse_expt_output(path):
                 break
 
             # begin new sector
-            if line.startswith(' solution of amplitude equations'):
+            if line.lstrip().startswith("** Sector"):
                 elec_states.reset()
                 tdm_table = None
 
@@ -374,12 +470,14 @@ if __name__ == '__main__':
                         help='print detailed information on electronic spectrum')
     parser.add_argument('-ev', dest='units_ev', action='store_true', required=False,
                         help='use electron-volts units for energy')
+    parser.add_argument('-a', dest='calc_einstein', action='store_true', required=False,
+                        help='calculate einstein coefficients and lifetimes')
 
     args = parser.parse_args()
     energy_units = 'ev' if args.units_ev else 'cm'
     args.upper = float(args.upper[0]) if args.upper else 1e9
 
-    print('a oleynichenko, 2023')
+    print('a oleynichenko, 2023-2024')
     print()
     print('filename            ', args.filename)
     print('upper limit [%2s]    ' % energy_units, args.upper)
@@ -390,6 +488,7 @@ if __name__ == '__main__':
     print('force hermiticity   ', args.do_hermit)
     print('print elec spectrum ', args.print_spectrum)
     print('energy units        ', energy_units)
+    print('calc einstein coefs ', args.calc_einstein)
 
     irreps_from = args.initial_irrep
     states_from = None
@@ -404,7 +503,7 @@ if __name__ == '__main__':
         states_to = [int(args.final_state[1]) - 1]
 
     # parse EXP-T output file
-    elec_states, tdms = parse_expt_output(args.filename)
+    elec_states, tdms_table = parse_expt_output(args.filename)
 
     # print list of irreducible representations found in the file
     irrep_list = elec_states.get_irrep_list()
@@ -416,6 +515,15 @@ if __name__ == '__main__':
         print_electronic_states_list(elec_states, upper_thresh=args.upper)
 
     # print table of transition moments
-    print_transition_moments_table(tdms, irreps_from, states_from, irreps_to, states_to,
-                                   energy_thresh=args.upper, hermitization=args.do_hermit,
-                                   units=energy_units)
+    if tdms_table is not None:
+        print_transition_moments_table(tdms_table, irreps_from, states_from, irreps_to, states_to,
+                                       energy_thresh=args.upper, hermitization=args.do_hermit,
+                                       units=energy_units)
+    else:
+        print()
+        print(' (!) information on transition moments has not beed found in the file')
+        print()
+
+    # calculate and print einstein coefficients if required
+    if args.calc_einstein:
+        print_einstein_coefficients(elec_states, tdms_table, upper_thresh=args.upper)

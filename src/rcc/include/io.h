@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -46,6 +46,8 @@ int io_open(char *path, char *mode);
 int io_close(int fd);
 
 int64_t io_read(int fd, void *buf, size_t count);
+
+int64_t io_read_unsafe(int fd, void *buf, size_t count);
 
 int64_t io_write(int fd, const void *buf, size_t count);
 

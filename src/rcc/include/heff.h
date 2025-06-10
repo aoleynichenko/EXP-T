@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -38,10 +38,10 @@
 #include "engine.h"
 #include "options.h"
 #include "../heff/slater_rules.h"
-#include "../heff/ms_prop.h"
-#include "../heff/direct_prop.h"
-#include "../heff/ms_nat_spinors.h"
-#include "../heff/cc_wfn_overlap.h"
+#include "../properties/ms_prop.h"
+#include "../properties/finite_order_prop.h"
+#include "../properties/ms_nat_spinors.h"
+#include "../properties/finite_order_overlap.h"
 
 
 void heff_analysis(int sect_h, int sect_p, ...);
@@ -54,6 +54,6 @@ void model_space_property(cc_ms_prop_query_t *prop_query, int approximation);
 
 void model_space_properties_and_natural_orbitals();
 
-void write_formatted_heff_0h0p(double total_energy);
+void write_formatted_heff_file_0h0p(double total_energy);
 
 #endif /* CC_HEFF_H_INCLUDED */

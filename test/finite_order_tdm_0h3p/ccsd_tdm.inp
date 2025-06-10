@@ -1,0 +1,20 @@
+sector 0h3p
+nactp 8
+model ccsd
+print "model vectors"
+x2cmmf
+memory 2 gb
+conv 1e-7
+disk_usage 0
+nthreads 4
+roots_cutoff 100000 cm
+
+arith complex
+reuse 2-integrals amplitudes
+
+mdprop "XDIPLEN" approx 2 2 sym 1u+ scheme connected
+mdprop "XDIPLEN" approx 2 2 sym 1u- scheme connected
+mdprop "YDIPLEN" approx 2 2 sym 1u+ scheme connected
+mdprop "YDIPLEN" approx 2 2 sym 1u- scheme connected
+mdprop "ZDIPLEN" approx 2 2 sym 0u  scheme connected
+

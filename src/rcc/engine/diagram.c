@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -507,6 +507,18 @@ void diagram_set(diagram_t *dg, double complex val, int *idx)
     if (block != NULL && block->is_unique) {
         block_set_element(block, val, idx);
     }
+}
+
+
+void diagram_set_4(diagram_t *dg, double complex val, int i, int j, int k, int l)
+{
+    int idx[4];
+    idx[0] = i;
+    idx[1] = j;
+    idx[2] = k;
+    idx[3] = l;
+
+    diagram_set(dg, val, idx);
 }
 
 

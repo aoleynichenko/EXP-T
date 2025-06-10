@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -114,6 +114,11 @@ cc_options_t *new_options()
     opts->curr_sector_h = 0;
     opts->curr_sector_p = 0;
 
+    /*
+     * flag indicating if we are currently solving lambda equations or not
+     */
+    opts->curr_in_lambda_equations = 0;
+
     // active space specification
     // [inact H] act_energy_min [act H] [act P] act_energy_max [inact P]
     // default: no active space
@@ -208,10 +213,19 @@ cc_options_t *new_options()
     for (int i = 0; i < CC_MAX_NPROP; i++) {
         strcpy(opts->analyt_prop_files[i], "\0");
     }
-    opts->calc_density_0h0p = CC_DENSITY_MATRIX_DISABLED;
-    opts->calc_density_0h1p = CC_DENSITY_MATRIX_DISABLED;
-    opts->density_0h1p_num_states = 0;
-    memset(opts->density_0h1p_states, 0, sizeof(opts->density_0h1p_num_states));
+
+    memset(opts->calc_density, 0, sizeof(opts->calc_density));
+    memset(opts->density_num_states, 0, sizeof(opts->density_num_states));
+    memset(opts->density_target_states, 0, sizeof(opts->density_target_states));
+    for (int h = 0; h < MAX_SECTOR_RANK; h++) {
+        for (int p = 0; p < MAX_SECTOR_RANK; p++) {
+            opts->calc_density[h][p] = CC_DENSITY_MATRIX_DISABLED;
+        }
+    }
+
+    opts->calc_lambda_0h1p = 0;
+    opts->lambda_0h1p_num_states = 0;
+    memset(opts->lambda_0h1p_states, 0, sizeof(opts->lambda_0h1p_num_states));
 
     // perform "hermitization" of Heff or not (default:hermitization is enabled)
     // Bloch (non-Hermitian) or des Cloizeaux (Hermitian) Hamiltonian?
@@ -275,9 +289,17 @@ cc_options_t *new_options()
     /*
      * use tensor trains in different situations
      */
-    opts->tensor_train_tol = 1e-12;
-    opts->use_tt_mult = 0;
-    opts->use_tt_diis = 0;
+    opts->tt_options.tt_module_enabled = 0;
+    opts->tt_options.use_tensor_trains = 1;
+    opts->tt_options.svd_thresh = 1e-9;
+    opts->tt_options.cholesky_thresh = 1e-6;
+    opts->tt_options.use_pyscf_integrals = 0;
+    opts->tt_options.pyscf_integrals_path[0] = '\0';
+
+    /*
+     * use Goldstone formalism
+     */
+    opts->use_goldstone = 0;
 
     return opts;
 }
@@ -381,7 +403,7 @@ void print_options(cc_options_t *opts)
     printf(" %-15s  %-40s  %d\n", "tilesize", "max dimension of formal blocks (tiles)", opts->tile_size);
     printf(" %-15s  %-40s  %d\n", "nthreads", "number of OpenMP parallel threads", opts->nthreads);
     printf(" %-15s  %-40s  %s\n", "openmp_algorithm", "parallelization algorithm for mult",
-        opts->openmp_algorithm == CC_OPENMP_ALGORITHM_EXTERNAL ? "external" : "internal");
+           opts->openmp_algorithm == CC_OPENMP_ALGORITHM_EXTERNAL ? "external" : "internal");
     printf(" %-15s  %-40s  %s\n", "cuda", "calculations on GPU (CUDA)", opts->cuda_enabled ? "enabled" : "disabled");
     printf(" %-15s  %-40s  %d\n", "maxiter", "maximum number of CC iterations", opts->maxiter);
     printf(" %-15s  %-40s  %g\n", "conv_thresh", "convergence threshold (by amplitudes)", opts->conv_thresh);
@@ -429,7 +451,7 @@ void print_options(cc_options_t *opts)
     }
 
     printf(" %-15s  %-40s  %s\n", "interface", "source of transformed molecular integrals",
-           opts->int_source == CC_INTEGRALS_DIRAC ? "DIRAC" : "tm2c");
+           opts->int_source == CC_INTEGRALS_DIRAC ? "DIRAC" : "PySCF");
 
     printf(" %-15s  %-40s  %s\n", "integrals", "one-electron Hamiltonian integrals file", opts->integral_file_1);
     printf(" %-15s  %-40s  %s\n", "", "two-electron (Coulomb) integrals file", opts->integral_file_2);
@@ -520,6 +542,8 @@ void print_options(cc_options_t *opts)
         printf("\n");
     }
 
+    printf(" %-15s  %-40s  %s\n", "goldstone", "use Goldstone formalism", opts->use_goldstone ? "yes" : "no");
+
     printf(" %-15s  %-40s  ", "shift_type", "formula for denominator shifts");
     if (opts->shift_type == CC_SHIFT_NONE) {
         printf("shifts are disabled\n");
@@ -573,7 +597,7 @@ void print_options(cc_options_t *opts)
         printf("%.0f cm^-1\n", opts->roots_cutoff * CODATA_AU_TO_CM);
     }
 
-    printf(" %-15s  %-40s  %.1e\n", "degen_thresh", "degeneracy threshold (a.u.)", opts->degen_thresh);
+    printf(" %-15s  %-40s  %.5e\n", "degen_thresh", "degeneracy threshold (a.u.)", opts->degen_thresh);
     printf(" %-15s  %-40s  ", "occ_irreps", "occupation numbers of spinors");
     if (opts->occ_defined != 0) {
         printf("not used\n");
@@ -665,30 +689,70 @@ void print_options(cc_options_t *opts)
 
     // density matrix in the 0h0p sector
     printf(" %-15s  %-40s  ", "density 0h0p", "construct density matrix in 0h0p");
-    if (opts->calc_density_0h0p == CC_DENSITY_MATRIX_DISABLED) {
+
+    if (opts->calc_density[0][0] == CC_DENSITY_MATRIX_DISABLED) {
         printf("disabled\n");
     }
-    else if (opts->calc_density_0h0p == CC_DENSITY_MATRIX_LAMBDA) {
+    else if (opts->calc_density[0][0] == CC_DENSITY_MATRIX_LAMBDA) {
         printf("lambda equations\n");
     }
-    else if (opts->calc_density_0h0p == CC_DENSITY_MATRIX_EXPECTATION) {
+    else if (opts->calc_density[0][0] == CC_DENSITY_MATRIX_EXPECTATION) {
         printf("expectation value\n");
     }
 
-    // density matrix in the 0h1p sector
-    printf(" %-15s  %-40s  ", "density 0h1p", "construct density matrix in 0h1p");
-    if (opts->calc_density_0h1p == CC_DENSITY_MATRIX_DISABLED) {
+    // density matrix calculations
+    for (int h = 0; h < MAX_SECTOR_RANK; h++) {
+        for (int p = 0; p < MAX_SECTOR_RANK; p++) {
+
+            char sector_label[16];
+            char keyword[16];
+            char explanation[64];
+            sprintf(sector_label, "%dh%dp", h, p);
+            sprintf(keyword, "density %s", sector_label);
+            sprintf(explanation, "construct density matrix in %s", sector_label);
+
+            printf(" %-15s  %-40s  ", keyword, explanation);
+            if (opts->calc_density[h][p] == CC_DENSITY_MATRIX_DISABLED) {
+                printf("disabled\n");
+            }
+            else if (opts->calc_density[h][p] == CC_DENSITY_MATRIX_LAMBDA) {
+                if (opts->density_num_states[h][p] == -1) {
+                    printf("for all target states\n");
+                }
+                else {
+                    printf("for states");
+                    for (int i = 0; i < opts->density_num_states[h][p]; i++) {
+                        cc_denmat_query_t *dm_query = opts->density_target_states[h][p] + i;
+                        if (dm_query->state1 == dm_query->state2 &&
+                            strcmp(dm_query->rep1_name, dm_query->rep2_name) == 0) {
+                            printf(" %s:%d", dm_query->rep1_name, dm_query->state1 + 1);
+                        }
+                        else {
+                            printf(" %s:%d-%s:%d", dm_query->rep1_name, dm_query->state1 + 1,
+                                   dm_query->rep2_name, dm_query->state2 + 1);
+                        }
+                    }
+                    printf("\n");
+                }
+            }
+            else if (opts->calc_density[h][p] == CC_DENSITY_MATRIX_EXPECTATION) {
+                printf("expectation value\n");
+            }
+
+        }
+    }
+
+    // lambda equations & exact analytic density matrix in the 0h1p sector
+    printf(" %-15s  %-40s  ", "lambda 0h1p", "solve lambda equations in the 0h1p sector");
+    if (opts->calc_lambda_0h1p == 0) {
         printf("disabled\n");
     }
-    else if (opts->calc_density_0h1p == CC_DENSITY_MATRIX_LAMBDA) {
-        printf("lambda equations for states");
-        for (int i = 0; i < opts->density_0h1p_num_states; i++) {
-            printf(" %s:%d", opts->density_0h1p_states[i].rep1_name, opts->density_0h1p_states[i].state1 + 1);
+    else {
+        printf("for states");
+        for (int i = 0; i < opts->lambda_0h1p_num_states; i++) {
+            printf(" %s:%d", opts->lambda_0h1p_states[i].rep1_name, opts->lambda_0h1p_states[i].state1 + 1);
         }
         printf("\n");
-    }
-    else if (opts->calc_density_0h1p == CC_DENSITY_MATRIX_EXPECTATION) {
-        printf("expectation value\n");
     }
 
     // overlap integrals in non-trivial sectors
@@ -838,9 +902,7 @@ void print_options(cc_options_t *opts)
      * if the TT library was linked to EXP-T
      */
 #ifdef TENSOR_TRAIN
-    printf(" %-15s  %-40s  %.1e\n", "tt_tol", "thresh for singular value decomp in TT", opts->tensor_train_tol);
-    printf(" %-15s  %-40s  %s\n", "tt_mult_pppp", "use TT for contractions with <pp||pp>", opts->use_tt_mult ? "enabled" : "disabled");
-    printf(" %-15s  %-40s  %s\n", "tt_diis", "use TT for data storage in DIIS", opts->use_tt_diis ? "enabled" : "disabled");
+    printf(" %-15s  %-40s  %s\n", "tensor_trains", "tensor-train-based CCSD in the 0h0p sector", opts->tt_options.tt_module_enabled ? "enabled" : "disabled");
 #endif // TENSOR_TRAIN
 
     printf("\n\n");

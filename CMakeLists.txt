@@ -229,60 +229,78 @@ add_executable(expt.x
         src/rcc/engine/tmplt.c
         src/rcc/engine/copy.c
         src/rcc/engine/clear.c
+        src/rcc/engine/tensor_trains.c
+        src/rcc/engine/disconnected.c
 
         src/rcc/heff/heff.c           # construction & analysis of Heff and eigenvalues
-        src/rcc/heff/denmat.c         # model-space density matrices
         src/rcc/heff/slater_rules.c   # Slater rules
         src/rcc/heff/slater_det.c     # Slater determinants
         src/rcc/heff/model_space.c    # operations with model spaces
         src/rcc/heff/renorm_omega.c   # restoration of the intermediate normalization
         src/rcc/heff/mvcoef.c         # operations with MVCOEF files (unformatted, model vectors)
-        src/rcc/heff/formatted_heff.c # operations with formatted HEFF files (eff Hamiltonians)
+        src/rcc/heff/formatted_heff_file.c # operations with formatted HEFF files (eff Hamiltonians)
         src/rcc/heff/eff_config.c
         src/rcc/heff/model_vectors.c
         src/rcc/heff/eigenvalues.c
-        src/rcc/heff/cc_wfn_overlap.c
-        src/rcc/heff/direct_prop.c
-        src/rcc/heff/ms_tdm.c
-        src/rcc/heff/ms_prop.c        # model-space estimations of properties
-        src/rcc/heff/ms_nat_spinors.c # quasi-natural [transition] spinors
 
         src/rcc/interfaces/dirac_interface.c       # interface to the DIRAC package
         src/rcc/interfaces/dirac_binary.f90        # reads DIRAC's binary integral files
+        src/rcc/interfaces/pyscf_interface.c       # interface to the PySCF package
 
         src/rcc/io/io.c               # cross-platform input/output
         src/rcc/io/lz4.c              # LZ4 compression algorithm implementation
 
-        src/rcc/methods/sector00.c    # ground-state CC, sector 0h0p
-        src/rcc/methods/sector01.c    # EA-FSCC, sector 0h1p
-        src/rcc/methods/sector10.c    # IP-FSCC, sector 1h0p
-        src/rcc/methods/sector11.c    # EE-FSCC, sector 1h1p
-        src/rcc/methods/sector02.c    # DEA-FSCC, sector 0h2p
-        src/rcc/methods/sector20.c    # DIP-FSCC, sector 2h0p
-        src/rcc/methods/ccutils.c     # utility functions for FSCC models
-        src/rcc/methods/diis.c
-        src/rcc/methods/crop.c
+        src/rcc/models/sector00.c    # ground-state CC, sector 0h0p
+        src/rcc/models/sector01.c    # EA-FSCC, sector 0h1p
+        src/rcc/models/sector10.c    # IP-FSCC, sector 1h0p
+        src/rcc/models/sector11.c    # EE-FSCC, sector 1h1p
+        src/rcc/models/sector02.c    # DEA-FSCC, sector 0h2p
+        src/rcc/models/sector20.c    # DIP-FSCC, sector 2h0p
+        src/rcc/models/ccutils.c     # utility functions for FSCC models
+        src/rcc/models/diis.c
+        src/rcc/models/crop.c
 
-        src/rcc/methods/sector00_ccsdt.c
-        src/rcc/methods/sector01_ccsdt.c
-        src/rcc/methods/sector10_ccsdt.c
-        src/rcc/methods/sector11_ccsdt.c
-        src/rcc/methods/sector02_ccsdt.c
-        src/rcc/methods/sector20_ccsdt.c
-        src/rcc/methods/sector03_ccsdt.c
-        src/rcc/methods/sector30_ccsdt.c
-        src/rcc/methods/sector12_ccsd.c
-        src/rcc/methods/sector12_ccsdt.c
-        src/rcc/methods/sector21_ccsd.c
-        src/rcc/methods/sector21_ccsdt.c
-        src/rcc/methods/sector00_t3_correction.c      # (T) perturbative corrections for the 0h0p sector
+        src/rcc/models/sector00_ccsdt.c
+        src/rcc/models/sector01_ccsdt.c
+        src/rcc/models/sector10_ccsdt.c
+        src/rcc/models/sector11_ccsdt.c
+        src/rcc/models/sector02_ccsdt.c
+        src/rcc/models/sector20_ccsdt.c
+        src/rcc/models/sector03_ccsdt.c
+        src/rcc/models/sector30_ccsdt.c
+        src/rcc/models/sector12_ccsd.c
+        src/rcc/models/sector12_ccsdt.c
+        src/rcc/models/sector21_ccsd.c
+        src/rcc/models/sector21_ccsdt.c
+        src/rcc/models/sector00_t3_correction.c      # (T) perturbative corrections for the 0h0p sector
+        src/rcc/models/tt_ccsd.c
 
-        src/rcc/methods/sector00_prop.c
-
-        src/rcc/methods/sector00_lambda.c
-        src/rcc/methods/sector00_lambda_dm.c
-        src/rcc/methods/sector00_expectation.c
-        src/rcc/methods/sector01_lambda.c
+        src/rcc/properties/model_space_tdm.c
+        src/rcc/properties/ms_prop.c        # model-space estimations of properties
+        src/rcc/properties/ms_nat_spinors.c # quasi-natural [transition] spinors
+        src/rcc/properties/sector00_prop.c
+        src/rcc/properties/finite_order_overlap.c
+        src/rcc/properties/model_density_matrix.c         # model-space density matrices
+        src/rcc/properties/finite_order_prop.c
+        src/rcc/properties/finite_order_prop_0h0p.c
+        src/rcc/properties/finite_order_prop_0h1p.c
+        src/rcc/properties/finite_order_prop_0h2p.c
+        src/rcc/properties/finite_order_prop_0h3p.c
+        src/rcc/properties/finite_order_prop_1h0p.c
+        src/rcc/properties/finite_order_prop_2h0p.c
+        src/rcc/properties/finite_order_prop_3h0p.c
+        src/rcc/properties/finite_order_prop_1h1p.c
+        src/rcc/properties/finite_order_dm.c
+        src/rcc/properties/finite_order_dm_0h0p.c
+        src/rcc/properties/finite_order_dm_0h1p.c
+        src/rcc/properties/finite_order_dm_0h2p.c
+        src/rcc/properties/finite_order_dm_0h3p.c
+        src/rcc/properties/finite_order_dm_1h0p.c
+        src/rcc/properties/sector00_lambda.c
+        src/rcc/properties/sector00_lambda_dm.c
+        src/rcc/properties/sector00_expectation.c
+        src/rcc/properties/sector01_lambda.c
+        src/rcc/properties/natural_spinors.c
 
         src/rcc/linalg/overlap.c       # interface to BLAS/LAPACK
         src/rcc/linalg/projector.c
@@ -303,10 +321,12 @@ add_executable(expt.x
         src/rcc/linalg/inverse.c
         src/rcc/linalg/linsys.c
         src/rcc/linalg/xtrace.c
+        src/rcc/linalg/xscale.c
 
         src/rcc/readinp/readinp.c     # reading of the input files - parser
         src/rcc/readinp/lex.yy.c      # lexical analyzer generated by Lex
         src/rcc/readinp/directive_ih_imms.c
+        src/rcc/readinp/directive_tensor_train.c
 
         src/rcc/sorting/sort_driver.c         # sorting - driver routines
         src/rcc/sorting/sort_1e.c             # sorting of one-electron integrals
@@ -329,10 +349,10 @@ add_executable(expt.x
         src/rcc/symmetry.c            # symmetry info, direct product table etc
         src/rcc/timer.c               # advanced timer
         src/rcc/utils.c               # small utility functions
-        src/rcc/parse_argv.c          # command-line arguments
-        src/rcc/linalg/xscale.c
-        src/rcc/engine/tensor_trains.c
-        src/rcc/engine/tensor_trains.h
+        src/rcc/parse_argv.c
+        src/rcc/interfaces/pyscf_interface.c
+        src/rcc/sorting/sort_pyscf.c
+        src/rcc/models/sector00_goldstone.c
 )
 
 # heffman.x
@@ -453,7 +473,6 @@ add_custom_command(
 
 include(CTest)
 
-
 # ccsd
 add_test(NAME ccsd_highspin         COMMAND python test.py WORKING_DIRECTORY ../test/ccsd_highspin       )
 add_test(NAME fs-ccsd_0h1p          COMMAND python test.py WORKING_DIRECTORY ../test/fs-ccsd_0h1p        )
@@ -482,6 +501,10 @@ add_test(NAME ff_tdm_1h1p           COMMAND python test.py WORKING_DIRECTORY ../
 add_test(NAME ms_tdm_0h2p           COMMAND python test.py WORKING_DIRECTORY ../test/ms_tdm_0h2p         )
 add_test(NAME finite_order_tdm_0h2p COMMAND python test.py WORKING_DIRECTORY ../test/finite_order_tdm_0h2p)
 add_test(NAME finite_order_hfs_0h1p COMMAND python test.py WORKING_DIRECTORY ../test/finite_order_hfs_0h1p)
+add_test(NAME finite_order_tdm_1h0p COMMAND python test.py WORKING_DIRECTORY ../test/finite_order_tdm_1h0p)
+add_test(NAME finite_order_tdm_0h3p COMMAND python test.py WORKING_DIRECTORY ../test/finite_order_tdm_0h3p)
+add_test(NAME finite_order_density_0h2p COMMAND python test.py WORKING_DIRECTORY ../test/finite_order_density_0h2p)
+add_test(NAME finite_order_density_1h0p COMMAND python test.py WORKING_DIRECTORY ../test/finite_order_density_1h0p)
 
 # utilities
 add_test(NAME vibrot_levels         COMMAND python test.py WORKING_DIRECTORY ../test/vibrot_levels       )
@@ -491,13 +514,13 @@ add_test(NAME openmp_ccsd_t         COMMAND python test.py WORKING_DIRECTORY ../
 #add_test(NAME openmp_fs-ccsd        COMMAND python test.py WORKING_DIRECTORY ../test/openmp_fs-ccsd      )
 
 foreach (t
-	ccsd_highspin        
-	fs-ccsd_0h1p         
-	fs-ccsd_2h0p         
-	fs-ccsd_0h3p         
-	fs-ccsd_1h1p         
-	fs-ccsd_0h2p         
-	fs-ccsd_0h2p_ih-imms 
+	ccsd_highspin
+	fs-ccsd_0h1p
+	fs-ccsd_2h0p
+	fs-ccsd_0h3p
+	fs-ccsd_1h1p
+	fs-ccsd_0h2p
+	fs-ccsd_0h2p_ih-imms
 	fs-ccsd_1h1p_ih-imms 
 	fs-ccsd_1h2p         
 	ccsd_t               
@@ -512,9 +535,13 @@ foreach (t
 	ms_tdm_1h1p          
 	ff_tdm_1h1p          
 	ms_tdm_0h2p          
-	finite_order_tdm_0h2p   
-        finite_order_hfs_0h1p   
-	vibrot_levels        
+	finite_order_tdm_0h2p 
+	finite_order_hfs_0h1p 
+	finite_order_tdm_1h0p    
+	finite_order_tdm_0h3p
+	finite_order_density_0h2p
+	finite_order_density_1h0p
+	vibrot_levels
 #	openmp_fs-ccsd
 	openmp_ccsd_t
 	)

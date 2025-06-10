@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -124,6 +124,38 @@ int64_t io_read(int fd, void *buf, size_t count)
         if (status != nr) {
             errquit("io_read(): %s", strerror(errno));
         }
+
+        buf += nr;
+        IO_STAT.n_read += status;
+    }
+
+    return count_total;
+}
+
+
+/**
+ * this function does not check status of a read operation,
+ * it should be explicitly checked by the user if needed
+ */
+int64_t io_read_unsafe(int fd, void *buf, size_t count)
+{
+    /*ssize_t status = read(fd, buf, count);
+    if (status != count) {
+        errquit("io_read(): %s", strerror(errno));
+    }
+
+    IO_STAT.n_read += status;
+    return status;*/
+    size_t count_total = count;
+
+    while (count > 0) {
+        size_t nr = (count > CHUNK_SIZE) ? CHUNK_SIZE : count;
+        count -= nr;
+
+        ssize_t status = read(fd, buf, nr);
+        /*if (status != nr) {
+            errquit("io_read(): %s", strerror(errno));
+        }*/
 
         buf += nr;
         IO_STAT.n_read += status;

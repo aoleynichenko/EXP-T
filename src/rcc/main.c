@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -69,6 +69,8 @@ void print_header_banner();
 
 void print_footer_banner(int exit_code);
 
+void tt_ccsd();
+
 
 /**
  * entry point
@@ -111,6 +113,14 @@ int main(int argc, char **argv)
     // setup scratch directory: create if needed and cd to it
     setup_scratch();
 
+    // for debug purposes:
+    #ifdef TENSOR_TRAIN
+    if (cc_opts->tt_options.tt_module_enabled && cc_opts->tt_options.use_pyscf_integrals) {
+        tt_ccsd();
+        return 0;
+    }
+    #endif // TENSOR_TRAIN
+
     // load transformed MO integrals
     // prepare raw integrals for sorting
     if (opts->int_source == CC_INTEGRALS_DIRAC) {
@@ -120,6 +130,9 @@ int main(int argc, char **argv)
         else {
             dirac_interface(opts);
         }
+    }
+    else if (opts->int_source == CC_INTEGRALS_PYSCF) {
+        pyscf_interface(opts);
     }
     else {
         printf("unknown integral interface\n");
@@ -437,6 +450,11 @@ void print_header_banner()
     time_t t = time(0);
     const size_t MAX_HOST_NAME_LEN = 1024;
     char host_name[MAX_HOST_NAME_LEN];
+    char version_date_string[256];
+
+    sprintf(version_date_string, "version %d.%d.%d (%d %s %d)",
+            CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
+            CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
 
     printf("\n");
     printf("\t\t**********************************************************************************\n");
@@ -444,9 +462,7 @@ void print_header_banner()
     printf("\t\t**                                   E X P - T                                  **\n");
     printf("\t\t**        Relativistic Fock-Space Multireference Coupled Cluster Program        **\n");
     printf("\t\t**                                                                              **\n");
-    printf("\t\t**                         version %d.%d.%d (%d %s %d)                         **\n",
-           CC_VERSION_MAJOR, CC_VERSION_MINOR, CC_VERSION_REVISION,
-           CC_VERSION_DAY, CC_VERSION_MONTH, CC_VERSION_YEAR);
+    printf("\t\t**                   %34s                         **\n", version_date_string);
     printf("\t\t**                                                                              **\n");
     printf("\t\t**********************************************************************************\n");
     printf("\t\t**                                                                              **\n");

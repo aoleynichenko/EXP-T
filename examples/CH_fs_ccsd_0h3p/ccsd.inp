@@ -1,0 +1,25 @@
+#
+# Low-lying electronic states of CH+.
+# Reference state: CH^{3+}.
+#
+# More on composition of electronic states of CH+:
+# Z. Biglari, A. Shayesteh, A. Maghari, Comp. Theor. Chem. 1047, 22 (2014).
+# doi: 10.1016/j.comptc.2014.08.012
+#
+
+#reuse 2-integrals amplitudes
+sector 0h3p
+model ccsd
+nactp 6
+print "model vectors"
+
+maxiter 100
+conv 1e-9
+diis 100
+disk_usage 0
+
+mdprop "ZDIPLEN" approx 2 2 sym A1_0 scheme connected
+density 0h3p [B1_a]:1
+
+
+

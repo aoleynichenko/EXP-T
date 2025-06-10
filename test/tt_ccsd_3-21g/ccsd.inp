@@ -1,0 +1,12 @@
+# input file for the CCSD calculations including the tensor-train algorithm
+
+sector 0h0p
+conv 1e-12
+maxiter 100
+model ccsd
+disk_usage 0
+
+tensor_trains
+ accuracy low
+end
+

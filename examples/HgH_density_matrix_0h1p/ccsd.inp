@@ -1,0 +1,24 @@
+# Test:
+# (1) HgH molecule, FSCC scheme: HgH+ -> HgH
+# (2) hamiltionian: 2-comp gatchina ECP
+# (3) symmetry Cinfv
+# (4) sector (0h,1p)
+
+title "Test HgH+ -> HgH/gatchina ECP/Cinfv"
+maxiter 200
+conv 1e-7
+sector 0h1p
+nactp 6
+diis 100
+memory 2 gb
+nthreads 2
+print "model vectors"
+
+#
+# density matrices for the ground and excited states
+#
+density 0h1p [1/2+]:1  # ground
+density 0h1p [1/2+]:2  # first excited
+density 0h1p [3/2+]:1  # second excited
+
+

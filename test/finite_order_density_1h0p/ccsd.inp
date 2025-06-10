@@ -1,0 +1,10 @@
+sector 1h0p
+nacth 6
+x2cmmf
+
+memory 2 gb
+disk_usage 0
+print "model vectors"
+
+density 1h0p [1E]:1
+

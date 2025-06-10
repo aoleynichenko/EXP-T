@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -154,8 +154,7 @@ void diveps_block_rank_2(block_t *block)
         double denom = eps[idx_0] - eps[idx_1];
 
         // for lambda equations
-        extern int diveps_lambda;
-        if (diveps_lambda) {
+        if (cc_opts->curr_in_lambda_equations) {
             denom *= -1;
         }
 
@@ -241,8 +240,7 @@ void diveps_block_rank_4(block_t *block)
         double denom = eps[idx_0] + eps[idx_1] - eps[idx_2] - eps[idx_3];
 
         // for lambda equations
-        extern int diveps_lambda;
-        if (diveps_lambda) {
+        if (cc_opts->curr_in_lambda_equations) {
             denom *= -1;
         }
 

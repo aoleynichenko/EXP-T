@@ -1,0 +1,1699 @@
+
+		**********************************************************************************
+		**                                                                              **
+		**                                   E X P - T                                  **
+		**        Relativistic Fock-Space Multireference Coupled Cluster Program        **
+		**                                                                              **
+		**                          version 1.8.4 (24 May 2024)                         **
+		**                                                                              **
+		**********************************************************************************
+		**                                                                              **
+		** EXP-T is free software: you can redistribute it and/or modify                **
+		** it under the terms of the GNU Lesser General Public License as published by  **
+		** the Free Software Foundation, either version 3 of the License, or            **
+		** (at your option) any later version.                                          **
+		**                                                                              **
+		** EXP-T is distributed in the hope that it will be useful,                     **
+		** but WITHOUT ANY WARRANTY; without even the implied warranty of               **
+		** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                **
+		** GNU Lesser General Public License for more details.                          **
+		**                                                                              **
+		** You should have received a copy of the GNU Lesser General Public License     **
+		** along with EXP-T.  If not, see <http://www.gnu.org/licenses/>.               **
+		**                                                                              **
+		**********************************************************************************
+		**                                                                              **
+		** For more information about the EXP-T program system see                      **
+		** http://www.qchem.pnpi.spb.ru/expt                                            **
+		**                                                                              **
+		** This is an experimental code. The authors accept no responsibility           **
+		** for the performance of the code or for the correctness of the results.       **
+		**                                                                              **
+		** If results obtained with this code are published, an                         **
+		** appropriate citation would be:                                               **
+		**                                                                              **
+		** [1] A. Oleynichenko, A. Zaitsevskii, E. Eliav.                               **
+		**     EXP-T, An Extensible Code for Fock Space Relativistic Coupled Cluster    **
+		**     Calculations. See http://www.qchem.pnpi.spb.ru/expt.                     **
+		** [2] A. V. Oleynichenko, A. Zaitsevskii, E. Eliav.                            **
+		**     Towards high performance relativistic electronic structure modelling:    **
+		**     the EXP-T program package. Commun. Comput. Inf. Sci. 1331, 375 (2020).   **
+		**     doi: 10.1007/978-3-030-64616-5_33                                        **
+		**                                                                              **
+		**********************************************************************************
+
+Authors:
+  Alexander Oleynichenko [alexvoleynichenko@gmail.com]
+  Andrei Zaitsevskii
+  Artem Rumyantsev
+  Ephraim Eliav
+Compiler: Intel C Compiler 2021 (Intel(R) C++ gcc 7.5 mode)
+BLAS/LAPACK implementation: OpenBLAS
+Build date: Jun  3 2024 16:06:55
+Run date: Mon Jun  3 16:42:00 2024
+Hostname: xeon
+CUDA disabled
+Tensor trains (TT) disabled
+Reading input file: ccsd_tdm.inp
+
+
+				****************
+				** Input file **
+				****************
+
+ -----
+ 
+ memory 2 gb
+ sector 1h0p
+ disk_usage 0
+ nthreads 4
+ nacth 12
+ 
+ reuse 2-integrals amplitudes
+ arith complex
+ 
+ mdprop "XDIPLEN" approx 2 2 sym 1u+ scheme connected
+ mdprop "XDIPLEN" approx 2 2 sym 1u- scheme connected
+ mdprop "YDIPLEN" approx 2 2 sym 1u+ scheme connected
+ mdprop "YDIPLEN" approx 2 2 sym 1u- scheme connected
+ mdprop "ZDIPLEN" approx 2 2 sym 0u  scheme connected
+ 
+ -----
+
+
+
+				*************
+				** Options **
+				*************
+
+ title            title string - comment                    no title
+ scratch_dir      scratch directory for tmp files           scratch
+ --no-clean       retain scratch directory on exit          yes
+ print            print level                               medium
+ flush_amplitude  write formatted files with cluser ampl-s  no
+ arith            recommended arithmetic                    complex
+ memory           max allowed RAM usage                     2048.0 Mb
+ compress         compression of integrals on disk          disabled
+ compress_triples compression of triples tensors in RAM     disabled
+ disk_usage       disk usage level                          0 (all data in RAM)
+ tilesize         max dimension of formal blocks (tiles)    100
+ nthreads         number of OpenMP parallel threads         4
+ openmp_algorithm  parallelization algorithm for mult        external
+ cuda             calculations on GPU (CUDA)                disabled
+ maxiter          maximum number of CC iterations           50
+ conv_thresh      convergence threshold (by amplitudes)     1e-09
+ div_thresh       divergence threshold (by amplitudes)      1000
+ reuse            reuse amplitudes and/or integrals         0h0p 0h1p 0h2p 0h3p 1h0p 1h1p 1h2p 1h3p 2h0p 2h1p 2h2p 2h3p 3h0p 3h1p 3h2p 3h3p 2-integrals 
+ skip             skip computations in sectors:             
+ flush            flush amplitudes                          no
+ interface        source of transformed molecular integrals  DIRAC
+ integrals        one-electron Hamiltonian integrals file   MRCONEE
+                  two-electron (Coulomb) integrals file     MDCINT
+                  one-electron property integrals file      MDPROP
+ x2cmmf           X2Cmmf Hamiltonian                        no
+ new_sorting      new implementation of integral sorting    no
+ gaunt            two-electron (Gaunt) integrals file       not used
+ sector           target Fock space sector                  1h0p
+ model            coupled cluster model (level of theory)   CCSD
+ nacth            number of active hole spinors             12 spinors
+ nactp            number of active particle spinors         0 spinors
+ shift_type       formula for denominator shifts            shifts are disabled
+ nroots           number of roots to be processed           all
+ roots_cutoff     energy cutoff for roots to be processed   all
+ degen_thresh     degeneracy threshold (a.u.)               1.00000e-08
+ occ_irreps       occupation numbers of spinors             default (from integral interface)
+ occ              occupation numbers of spinors             default
+ diis             DIIS technique for convergence            enabled
+ diis <n>         DIIS subspace dimension                   10
+ diis triples     DIIS for triples amplitudes               disabled
+ diis             DIIS technique for convergence            disabled
+ oneprop          interface to OneProp (by L.V.Skripnikov)  disabled
+ twoprop          interface to TwoProp (by D.E.Maison)      disabled
+ oneprop          interface to the MDPROP file              disabled
+ density 0h0p     construct density matrix in 0h0p          disabled
+ density 0h1p     construct density matrix in 0h1p          disabled
+ density 0h2p     construct density matrix in 0h2p          disabled
+ density 0h3p     construct density matrix in 0h3p          disabled
+ lambda 0h1p      solve lambda equations in the 0h1p sector  disabled
+ overlap          calculate overlap int-s for target wfns   disabled
+ nohermit         hermitization of effective Hamiltonians   disabled
+ dltdm            model-space estimates of tran dipoles     disabled
+ natorb           model-space natural orbitals              disabled
+ prop             model-space estimates of properties       enabled: XDIPLEN (md) 1u+ 2/2; XDIPLEN (md) 1u- 2/2; YDIPLEN (md) 1u+ 2/2; YDIPLEN (md) 1u- 2/2; ZDIPLEN (md) 0u 2/2;
+ select           selection of cluster amplitudes           disabled
+ restrict_t3      restriction of triples                    disabled
+ use_oe           use orbital energies from DIRAC           disabled
+ ih_imms          simple intermediate Hamiltonian           disabled
+
+
+ Scratch directory 'scratch' exists
+ Current working directory:
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/Xe2+_tdm_1h0p
+ Full path to one-electron integrals:
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/Xe2+_tdm_1h0p/MRCONEE
+ Full path to Coulomb integrals:
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/Xe2+_tdm_1h0p/MDCINT
+ Full path to properties integrals:
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/Xe2+_tdm_1h0p/MDPROP
+ Changing working directory to scratch ...
+ Current working directory:
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/Xe2+_tdm_1h0p/scratch
+ 
+ ******************************************************************
+ **       BINARY INTERFACE TO THE DIRAC PROGRAM PACKAGE          **
+ **                    version 10 Apr 2020                       **
+ ******************************************************************
+ 
+ required unformatted files (produced by DIRAC):
+   MRCONEE -- spinor info & transformed one-electron integrals
+   MDCINT  -- transformed two-electron integrals
+ optional files (DIRAC):
+   MDPROP  -- transformed integrals of one-electron properties
+ optional files (D. E. Maison, L. V. Skripnikov):
+   MGINT   -- transformed Gaunt integrals
+ 
+ HINT: in order to obtain these files, add option .4INDEX to the
+   **DIRAC section of the DIRAC input file; this will enable the
+   code for integrals transformation. Then run:
+   $ pam --inp=<inp-file> --mol=<mol-file> --get="MRCONEE MDCINT"
+ 
+ 
+ Names of integral files:
+ MRCONEE = /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/Xe2+_tdm_1h0p/MRCONEE
+ MDCINT  = /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/Xe2+_tdm_1h0p/MDCINT
+ MDPROP  = /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/Xe2+_tdm_1h0p/MDPROP
+ default integer type in DIRAC              integer(8)
+ 
+ *** MRCONEE FILE ***
+ NSPINORS                                            208
+ was breit in DHF                            F
+ nuclear repulsion energy                      11.0344827586207     
+ inversion symmetry (1-no,2-yes)                       2
+ group type (1-real,2-cmplx,4-quater)                  1
+ is spinfree                                           0
+ arithmetic                                 complex
+ total num of orb-s (+frozen+deleted)                104
+ Total SCF energy =                           -30.5558688163781     
+ number of fermion irreps in parent group              4
+ names of these reps (grd, ungrd)             Eg 1Eg        Eg 2Eg      
+   Eu 1Eu        Eu 2Eu      
+ number of spinors active in the transf-n              4           4           4
+           4
+ total number of orb-s of this ircop                  52          52
+ number of occupied frozen (core) spinors   
+   - total                                             0           0
+   - positive energy                                   0           0
+   - negative energy                                   0           0
+ number of deleted spinors                             0           0
+ number of fermion irreps in Abelian subgrp           32
+ names of these irreps                        1g -1g  3g -3g  5g -5g  7g -7g  9g
+  -9g 11g-11g 13g-13g 15g-15g  1u -1u  3u -3u  5u -5u  7u -7u  9u -9u 11u-11u
+  13u-13u 15u-15u  0g  2g -2g  4g -4g  6g -6g  8g -8g 10g-10g 12g-12g 14g-14g
+  16g  0u  2u -2u  4u -4u  6u -6u  8u -8u 10u-10u 12u-12u 14u-14u 16u
+ number of g/u Kramers pairs          52          52
+ number of boson symmetry reps(LUCITA)            8
+ *** END OF MRCONEE FILE ***
+ 
+ *** MDPROP FILE ***
+ path to MDPROP file = 
+ /home/oleynichenko/EXPT_RELEASES/EXP-T/examples/Xe2+_tdm_1h0p/MDPROP
+ MDPROP file exists
+ property = XDIPLEN 
+ order of parts: Re + i*Im
+ property = YDIPLEN 
+ order of parts: Re + i*Im
+ property = ZDIPLEN 
+ order of parts: Re + i*Im
+ reached end of file MDPROP
+ *** END OF MDPROP FILE ***
+ 
+ ELECTRONIC contribution to dipole moment (DHF level)
+ dx =   0.000000000000000E+000  (re)  0.000000000000000E+000 (im)
+ dy =   0.000000000000000E+000  (re)  0.000000000000000E+000 (im)
+ dz =   0.000000000000000E+000  (re)  0.000000000000000E+000 (im)
+ |d| =   0.000000000000000E+000  a.u. =   0.000000000000000E+000  Debye
+ 1 a.u = 2.54174623 Debye
+ reading and sorting of MDCINT file will be skipped
+
+ Dinfh group is to be extended:
+ max 2x|Omega| = 62
+ number of irreps = 250
+
+ Blocks of molecular spinors:
+ --------------------------------------------------------------------------------
+   #  size  irrep  spinor indices
+ --------------------------------------------------------------------------------
+ [ 0]   27  1/2g+  1-3,5-7,11-12,14,19,21-22,26-27,29,34-35,37,39,42-43,45-46,48-50,52
+ [ 1]   27  1/2g-  53-55,57-59,63-64,66,71,73-74,78-79,81,86-87,89,91,94-95,97-98,100-102,104
+ [ 2]   16  3/2g+  56,60-61,65,68,72,75-76,80,83,88,90,92,96,99,103
+ [ 3]   16  3/2g-  4,8-9,13,16,20,23-24,28,31,36,38,40,44,47,51
+ [ 4]    7  5/2g+  10,15,18,25,30,33,41
+ [ 5]    7  5/2g-  62,67,70,77,82,85,93
+ [ 6]    2  7/2g+  69,84
+ [ 7]    2  7/2g-  17,32
+ [ 8]   27  1/2u+  105-106,108-110,113-114,117-118,122,126-127,130,132-133,137,140-141,143,145,148-149,151-153,155-156
+ [ 9]   27  1/2u-  157-158,160-162,165-166,169-170,174,178-179,182,184-185,189,192-193,195,197,200-201,203-205,207-208
+ [10]   16  3/2u+  159,163-164,167,171,175,177,180-181,188,191,194,196,198,202,206
+ [11]   16  3/2u-  107,111-112,115,119,123,125,128-129,136,139,142,144,146,150,154
+ [12]    7  5/2u+  116,121,124,131,135,138,147
+ [13]    7  5/2u-  168,173,176,183,187,190,199
+ [14]    2  7/2u+  172,186
+ [15]    2  7/2u-  120,134
+ --------------------------------------------------------------------------------
+
+
+		Symmetry & irreducible representations
+		--------------------------------------
+
+ Point group: Dinfh
+ Group type: real
+ Arithmetic: complex
+ Is abelian: yes
+ Number of irreps: 250
+ Totally symmetric irrep: 0g
+ Representation names:
+   0 1/2g+     1 1/2g-     2 3/2g+     3 3/2g-     4 5/2g+     5 5/2g-     6 7/2g+     7 7/2g-  
+   8 9/2g+     9 9/2g-    10 11/2g+   11 11/2g-   12 13/2g+   13 13/2g-   14 15/2g+   15 15/2g- 
+  16 17/2g+   17 17/2g-   18 19/2g+   19 19/2g-   20 21/2g+   21 21/2g-   22 23/2g+   23 23/2g- 
+  24 25/2g+   25 25/2g-   26 27/2g+   27 27/2g-   28 29/2g+   29 29/2g-   30 31/2g+   31 31/2g- 
+  32 33/2g+   33 33/2g-   34 35/2g+   35 35/2g-   36 37/2g+   37 37/2g-   38 39/2g+   39 39/2g- 
+  40 41/2g+   41 41/2g-   42 43/2g+   43 43/2g-   44 45/2g+   45 45/2g-   46 47/2g+   47 47/2g- 
+  48 49/2g+   49 49/2g-   50 51/2g+   51 51/2g-   52 53/2g+   53 53/2g-   54 55/2g+   55 55/2g- 
+  56 57/2g+   57 57/2g-   58 59/2g+   59 59/2g-   60 61/2g+   61 61/2g-   62 1/2u+    63 1/2u-  
+  64 3/2u+    65 3/2u-    66 5/2u+    67 5/2u-    68 7/2u+    69 7/2u-    70 9/2u+    71 9/2u-  
+  72 11/2u+   73 11/2u-   74 13/2u+   75 13/2u-   76 15/2u+   77 15/2u-   78 17/2u+   79 17/2u- 
+  80 19/2u+   81 19/2u-   82 21/2u+   83 21/2u-   84 23/2u+   85 23/2u-   86 25/2u+   87 25/2u- 
+  88 27/2u+   89 27/2u-   90 29/2u+   91 29/2u-   92 31/2u+   93 31/2u-   94 33/2u+   95 33/2u- 
+  96 35/2u+   97 35/2u-   98 37/2u+   99 37/2u-  100 39/2u+  101 39/2u-  102 41/2u+  103 41/2u- 
+ 104 43/2u+  105 43/2u-  106 45/2u+  107 45/2u-  108 47/2u+  109 47/2u-  110 49/2u+  111 49/2u- 
+ 112 51/2u+  113 51/2u-  114 53/2u+  115 53/2u-  116 55/2u+  117 55/2u-  118 57/2u+  119 57/2u- 
+ 120 59/2u+  121 59/2u-  122 61/2u+  123 61/2u-  124 0g      125 1g+     126 1g-     127 2g+    
+ 128 2g-     129 3g+     130 3g-     131 4g+     132 4g-     133 5g+     134 5g-     135 6g+    
+ 136 6g-     137 7g+     138 7g-     139 8g+     140 8g-     141 9g+     142 9g-     143 10g+   
+ 144 10g-    145 11g+    146 11g-    147 12g+    148 12g-    149 13g+    150 13g-    151 14g+   
+ 152 14g-    153 15g+    154 15g-    155 16g+    156 16g-    157 17g+    158 17g-    159 18g+   
+ 160 18g-    161 19g+    162 19g-    163 20g+    164 20g-    165 21g+    166 21g-    167 22g+   
+ 168 22g-    169 23g+    170 23g-    171 24g+    172 24g-    173 25g+    174 25g-    175 26g+   
+ 176 26g-    177 27g+    178 27g-    179 28g+    180 28g-    181 29g+    182 29g-    183 30g+   
+ 184 30g-    185 31g+    186 31g-    187 0u      188 1u+     189 1u-     190 2u+     191 2u-    
+ 192 3u+     193 3u-     194 4u+     195 4u-     196 5u+     197 5u-     198 6u+     199 6u-    
+ 200 7u+     201 7u-     202 8u+     203 8u-     204 9u+     205 9u-     206 10u+    207 10u-   
+ 208 11u+    209 11u-    210 12u+    211 12u-    212 13u+    213 13u-    214 14u+    215 14u-   
+ 216 15u+    217 15u-    218 16u+    219 16u-    220 17u+    221 17u-    222 18u+    223 18u-   
+ 224 19u+    225 19u-    226 20u+    227 20u-    228 21u+    229 21u-    230 22u+    231 22u-   
+ 232 23u+    233 23u-    234 24u+    235 24u-    236 25u+    237 25u-    238 26u+    239 26u-   
+ 240 27u+    241 27u-    242 28u+    243 28u-    244 29u+    245 29u-    246 30u+    247 30u-   
+ 248 31u+    249 31u-   
+
+				Spinors info
+				------------
+
+     no    rep         occ    active        one-el energy
+    -------------------------------------------------------
+       1   0 "1/2g+ "   1       -          -1.033162278420
+       2   0 "1/2g+ "   1       a          -0.534659865170
+       3   0 "1/2g+ "   1       a          -0.452703955831
+       4   3 "3/2g- "   1       a          -0.423605662581
+       5   0 "1/2g+ "   0       -           0.207837627537
+       6   0 "1/2g+ "   0       -           0.215433682449
+       7   0 "1/2g+ "   0       -           0.234292272472
+       8   3 "3/2g- "   0       -           0.240347256487
+       9   3 "3/2g- "   0       -           0.297738771359
+      10   4 "5/2g+ "   0       -           0.297935243523
+      11   0 "1/2g+ "   0       -           0.379927580213
+      12   0 "1/2g+ "   0       -           0.449483234001
+      13   3 "3/2g- "   0       -           0.450601282015
+      14   0 "1/2g+ "   0       -           0.856347452491
+      15   4 "5/2g+ "   0       -           0.877356100113
+      16   3 "3/2g- "   0       -           0.877955306862
+      17   7 "7/2g- "   0       -           0.940901415080
+      18   4 "5/2g+ "   0       -           0.941835725689
+      19   0 "1/2g+ "   0       -           0.963761625519
+      20   3 "3/2g- "   0       -           0.992146319083
+      21   0 "1/2g+ "   0       -           1.011545220177
+      22   0 "1/2g+ "   0       -           1.099191905754
+      23   3 "3/2g- "   0       -           1.105306339961
+      24   3 "3/2g- "   0       -           1.112099267497
+      25   4 "5/2g+ "   0       -           1.120443077639
+      26   0 "1/2g+ "   0       -           1.209820483984
+      27   0 "1/2g+ "   0       -           1.299926578493
+      28   3 "3/2g- "   0       -           1.303047517077
+      29   0 "1/2g+ "   0       -           1.378968126497
+      30   4 "5/2g+ "   0       -           2.016417754801
+      31   3 "3/2g- "   0       -           2.016976499484
+      32   7 "7/2g- "   0       -           2.065952912505
+      33   4 "5/2g+ "   0       -           2.066825449879
+      34   0 "1/2g+ "   0       -           2.244294058498
+      35   0 "1/2g+ "   0       -           2.256426648907
+      36   3 "3/2g- "   0       -           2.256432971505
+      37   0 "1/2g+ "   0       -           2.953393001326
+      38   3 "3/2g- "   0       -           3.039761933293
+      39   0 "1/2g+ "   0       -           3.125702339022
+      40   3 "3/2g- "   0       -           3.397095691378
+      41   4 "5/2g+ "   0       -           3.427662993412
+      42   0 "1/2g+ "   0       -           3.478931742840
+      43   0 "1/2g+ "   0       -           3.514905877163
+      44   3 "3/2g- "   0       -           3.518414741837
+      45   0 "1/2g+ "   0       -           6.944649266916
+      46   0 "1/2g+ "   0       -           7.112413128412
+      47   3 "3/2g- "   0       -           7.171933363580
+      48   0 "1/2g+ "   0       -          11.095663851324
+      49   0 "1/2g+ "   0       -          19.515104456807
+      50   0 "1/2g+ "   0       -          20.113389639804
+      51   3 "3/2g- "   0       -          20.297384360192
+      52   0 "1/2g+ "   0       -          35.872451637679
+      53   1 "1/2g- "   1       -          -1.033162278420
+      54   1 "1/2g- "   1       a          -0.534659865170
+      55   1 "1/2g- "   1       a          -0.452703955831
+      56   2 "3/2g+ "   1       a          -0.423605662581
+      57   1 "1/2g- "   0       -           0.207837627537
+      58   1 "1/2g- "   0       -           0.215433682449
+      59   1 "1/2g- "   0       -           0.234292272472
+      60   2 "3/2g+ "   0       -           0.240347256487
+      61   2 "3/2g+ "   0       -           0.297738771359
+      62   5 "5/2g- "   0       -           0.297935243523
+      63   1 "1/2g- "   0       -           0.379927580213
+      64   1 "1/2g- "   0       -           0.449483234001
+      65   2 "3/2g+ "   0       -           0.450601282015
+      66   1 "1/2g- "   0       -           0.856347452491
+      67   5 "5/2g- "   0       -           0.877356100113
+      68   2 "3/2g+ "   0       -           0.877955306862
+      69   6 "7/2g+ "   0       -           0.940901415080
+      70   5 "5/2g- "   0       -           0.941835725689
+      71   1 "1/2g- "   0       -           0.963761625519
+      72   2 "3/2g+ "   0       -           0.992146319083
+      73   1 "1/2g- "   0       -           1.011545220177
+      74   1 "1/2g- "   0       -           1.099191905754
+      75   2 "3/2g+ "   0       -           1.105306339961
+      76   2 "3/2g+ "   0       -           1.112099267497
+      77   5 "5/2g- "   0       -           1.120443077639
+      78   1 "1/2g- "   0       -           1.209820483984
+      79   1 "1/2g- "   0       -           1.299926578493
+      80   2 "3/2g+ "   0       -           1.303047517077
+      81   1 "1/2g- "   0       -           1.378968126497
+      82   5 "5/2g- "   0       -           2.016417754801
+      83   2 "3/2g+ "   0       -           2.016976499484
+      84   6 "7/2g+ "   0       -           2.065952912505
+      85   5 "5/2g- "   0       -           2.066825449879
+      86   1 "1/2g- "   0       -           2.244294058498
+      87   1 "1/2g- "   0       -           2.256426648907
+      88   2 "3/2g+ "   0       -           2.256432971505
+      89   1 "1/2g- "   0       -           2.953393001326
+      90   2 "3/2g+ "   0       -           3.039761933293
+      91   1 "1/2g- "   0       -           3.125702339022
+      92   2 "3/2g+ "   0       -           3.397095691378
+      93   5 "5/2g- "   0       -           3.427662993412
+      94   1 "1/2g- "   0       -           3.478931742840
+      95   1 "1/2g- "   0       -           3.514905877163
+      96   2 "3/2g+ "   0       -           3.518414741837
+      97   1 "1/2g- "   0       -           6.944649266916
+      98   1 "1/2g- "   0       -           7.112413128412
+      99   2 "3/2g+ "   0       -           7.171933363580
+     100   1 "1/2g- "   0       -          11.095663851324
+     101   1 "1/2g- "   0       -          19.515104456807
+     102   1 "1/2g- "   0       -          20.113389639804
+     103   2 "3/2g+ "   0       -          20.297384360192
+     104   1 "1/2g- "   0       -          35.872451637679
+     105  62 "1/2u+ "   1       -          -0.995896078332
+     106  62 "1/2u+ "   1       a          -0.497755396579
+     107  65 "3/2u- "   1       a          -0.458037844236
+     108  62 "1/2u+ "   1       a          -0.380179668724
+     109  62 "1/2u+ "   0       -           0.187569999831
+     110  62 "1/2u+ "   0       -           0.204211639390
+     111  65 "3/2u- "   0       -           0.210639367284
+     112  65 "3/2u- "   0       -           0.267056870342
+     113  62 "1/2u+ "   0       -           0.267212161599
+     114  62 "1/2u+ "   0       -           0.320676237484
+     115  65 "3/2u- "   0       -           0.346467171955
+     116  66 "5/2u+ "   0       -           0.347290253673
+     117  62 "1/2u+ "   0       -           0.613608543256
+     118  62 "1/2u+ "   0       -           0.839259719149
+     119  65 "3/2u- "   0       -           0.842628544001
+     120  69 "7/2u- "   0       -           0.924280098574
+     121  66 "5/2u+ "   0       -           0.925243958302
+     122  62 "1/2u+ "   0       -           0.961337770062
+     123  65 "3/2u- "   0       -           0.987642134886
+     124  66 "5/2u+ "   0       -           0.987707104488
+     125  65 "3/2u- "   0       -           0.993155896996
+     126  62 "1/2u+ "   0       -           0.993785950622
+     127  62 "1/2u+ "   0       -           1.148196621796
+     128  65 "3/2u- "   0       -           1.151051498124
+     129  65 "3/2u- "   0       -           1.161417714057
+     130  62 "1/2u+ "   0       -           1.163736620234
+     131  66 "5/2u+ "   0       -           1.166308901525
+     132  62 "1/2u+ "   0       -           1.429807286045
+     133  62 "1/2u+ "   0       -           1.612136938746
+     134  69 "7/2u- "   0       -           2.047972091315
+     135  66 "5/2u+ "   0       -           2.048831320546
+     136  65 "3/2u- "   0       -           2.056114383201
+     137  62 "1/2u+ "   0       -           2.056343477733
+     138  66 "5/2u+ "   0       -           2.121696442929
+     139  65 "3/2u- "   0       -           2.122277540842
+     140  62 "1/2u+ "   0       -           2.386641616657
+     141  62 "1/2u+ "   0       -           2.947231308851
+     142  65 "3/2u- "   0       -           3.037931962303
+     143  62 "1/2u+ "   0       -           3.101579671409
+     144  65 "3/2u- "   0       -           3.417318667053
+     145  62 "1/2u+ "   0       -           3.420796923815
+     146  65 "3/2u- "   0       -           3.447360598433
+     147  66 "5/2u+ "   0       -           3.456794054059
+     148  62 "1/2u+ "   0       -           3.633989672821
+     149  62 "1/2u+ "   0       -           6.577527911649
+     150  65 "3/2u- "   0       -           6.689938727058
+     151  62 "1/2u+ "   0       -           7.066831606933
+     152  62 "1/2u+ "   0       -          11.433526296853
+     153  62 "1/2u+ "   0       -          18.391809260695
+     154  65 "3/2u- "   0       -          18.633765772982
+     155  62 "1/2u+ "   0       -          19.994222034213
+     156  62 "1/2u+ "   0       -          39.314004914154
+     157  63 "1/2u- "   1       -          -0.995896078332
+     158  63 "1/2u- "   1       a          -0.497755396579
+     159  64 "3/2u+ "   1       a          -0.458037844236
+     160  63 "1/2u- "   1       a          -0.380179668724
+     161  63 "1/2u- "   0       -           0.187569999831
+     162  63 "1/2u- "   0       -           0.204211639390
+     163  64 "3/2u+ "   0       -           0.210639367284
+     164  64 "3/2u+ "   0       -           0.267056870342
+     165  63 "1/2u- "   0       -           0.267212161599
+     166  63 "1/2u- "   0       -           0.320676237484
+     167  64 "3/2u+ "   0       -           0.346467171955
+     168  67 "5/2u- "   0       -           0.347290253673
+     169  63 "1/2u- "   0       -           0.613608543256
+     170  63 "1/2u- "   0       -           0.839259719149
+     171  64 "3/2u+ "   0       -           0.842628544001
+     172  68 "7/2u+ "   0       -           0.924280098574
+     173  67 "5/2u- "   0       -           0.925243958302
+     174  63 "1/2u- "   0       -           0.961337770062
+     175  64 "3/2u+ "   0       -           0.987642134886
+     176  67 "5/2u- "   0       -           0.987707104488
+     177  64 "3/2u+ "   0       -           0.993155896996
+     178  63 "1/2u- "   0       -           0.993785950622
+     179  63 "1/2u- "   0       -           1.148196621796
+     180  64 "3/2u+ "   0       -           1.151051498124
+     181  64 "3/2u+ "   0       -           1.161417714057
+     182  63 "1/2u- "   0       -           1.163736620234
+     183  67 "5/2u- "   0       -           1.166308901525
+     184  63 "1/2u- "   0       -           1.429807286045
+     185  63 "1/2u- "   0       -           1.612136938746
+     186  68 "7/2u+ "   0       -           2.047972091315
+     187  67 "5/2u- "   0       -           2.048831320546
+     188  64 "3/2u+ "   0       -           2.056114383201
+     189  63 "1/2u- "   0       -           2.056343477733
+     190  67 "5/2u- "   0       -           2.121696442929
+     191  64 "3/2u+ "   0       -           2.122277540842
+     192  63 "1/2u- "   0       -           2.386641616657
+     193  63 "1/2u- "   0       -           2.947231308851
+     194  64 "3/2u+ "   0       -           3.037931962303
+     195  63 "1/2u- "   0       -           3.101579671409
+     196  64 "3/2u+ "   0       -           3.417318667053
+     197  63 "1/2u- "   0       -           3.420796923815
+     198  64 "3/2u+ "   0       -           3.447360598433
+     199  67 "5/2u- "   0       -           3.456794054059
+     200  63 "1/2u- "   0       -           3.633989672821
+     201  63 "1/2u- "   0       -           6.577527911649
+     202  64 "3/2u+ "   0       -           6.689938727058
+     203  63 "1/2u- "   0       -           7.066831606933
+     204  63 "1/2u- "   0       -          11.433526296853
+     205  63 "1/2u- "   0       -          18.391809260695
+     206  64 "3/2u+ "   0       -          18.633765772982
+     207  63 "1/2u- "   0       -          19.994222034213
+     208  63 "1/2u- "   0       -          39.314004914154
+    -------------------------------------------------------
+
+    irreps             1/2g+ 1/2g- 3/2g+ 3/2g- 5/2g+ 5/2g- 7/2g+ 7/2g- 1/2u+ 1/2u- 3/2u+ 3/2u- 5/2u+ 5/2u- 7/2u+ 7/2u-
+    occupied inactive      1     1     0     0     0     0     0     0     1     1     0     0     0     0     0     0
+    occupied active        2     2     1     1     0     0     0     0     2     2     1     1     0     0     0     0
+    virtual active         0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+    virtual inactive      24    24    15    15     7     7     2     2    24    24    15    15     7     7     2     2
+
+
+
+				*****************
+				** Sector 0h0p **
+				*****************
+
+
+ Reuse 2-electron integrals file 'hhpp'
+ Reuse 2-electron integrals file 'pphh'
+ Reuse 2-electron integrals file 'hhhh'
+ Reuse 2-electron integrals file 'phhp'
+ Reuse 2-electron integrals file 'ppppr'
+ Reuse 2-electron integrals file 'pphp'
+ Reuse 2-electron integrals file 'phpp'
+ Reuse 2-electron integrals file 'phhh'
+ Reuse 2-electron integrals file 'hhhp'
+ Reuse 2-electron integrals file 'hphh'
+ Reuse 2-electron integrals file 'hphp'
+
+ Integral sorting for the 0h0p sector
+ started at Mon Jun  3 16:42:01 2024
+ number of spinors                              208
+ number of spinor blocks                        16
+ tile size                                      100
+ max spinor block size                          27
+ size of i/o buffer for integrals and indices   0.375 MB
+ size of the buffer for two-elec integrals      0.507 MB
+ sorting one-electron integrals ...
+   Fock matrix reconstruction ...
+   SCF energy (energy of reference determinant) =     -30.555868816378 a.u.
+ max deviation of the diagonal elements of the reconstructed Fock matrix and orbital energies = 5.248573e-09
+ fill 1-electron diagrams ... hh hp ph pp done
+ time for 2-e integrals sorting, sec: 0.02
+ time for DIRAC interface (integral extraction & write), sec: 0.72
+ total time for sorting operations, sec: 0.74
+ finished at at Mon Jun  3 16:42:01 2024
+
+ Initial guess
+ -------------
+ Trying to read amplitudes from disk ...
+ T1 amplitudes successfully read from disk
+ T2 amplitudes successfully read from disk
+
+
+ solution of amplitude equations (sector 0h0p)		 Mon Jun  3 16:42:01 2024
+ ---------------------------------------------------------------------------------------
+ it.       diffmax(T1)       diffmax(T2)     max(T1)     max(T2)    t,sec       mem,Gb
+ ---------------------------------------------------------------------------------------
+   1    0.000000000638    0.000000000068    0.007379    0.027599      3.5    0.68/1.73
+ ---------------------------------------------------------------------------------------
+ converged in 1 iterations
+
+ average time per iteration = 3.548 sec
+
+
+          SCF reference energy =     -30.555868816378
+       CCSD correlation energy =      -0.378127298805
+             Total CCSD energy =     -30.933996115183
+
+
+ (absolute values)
+ Max T{0h0p}_1 amplitude (t{00}_ia) [ 1 -> 5 ] = 0.00737947
+   [   1] eps=     -1.03316228 rep=1/2g+ inactive occ
+   [   5] eps=      0.20783763 rep=1/2g+ inactive virt
+ Max T{0h0p}_2 amplitude (t{00}_ijab) [ 56 4 -> 116 168 ] = 0.02759886
+   [  56] eps=     -0.42360567 rep=3/2g+ active occ
+   [   4] eps=     -0.42360567 rep=3/2g- active occ
+   [ 116] eps=      0.34729025 rep=5/2u+ inactive virt
+   [ 168] eps=      0.34729025 rep=5/2u- inactive virt
+
+ Norm |T{0h0p}_1| = 0.02133958
+ Norm |T{0h0p}_2| = 0.81952034
+
+ T1 diagnostic = 0.00533489
+ More on T1 diagnostic: [T.J.Lee,P.R.Taylor,IJQC 23,199(1989)]
+
+
+
+				*****************
+				** Sector 1h0p **
+				*****************
+
+
+ Reuse 2-electron integrals file 'pphg'
+ Reuse 2-electron integrals file 'phhg'
+ Reuse 2-electron integrals file 'hhgp'
+ Reuse 2-electron integrals file 'phgp'
+ Reuse 2-electron integrals file 'hhhg'
+ Reuse 2-electron integrals file 'ppgp'
+
+ Integral sorting for the 1h0p sector
+ started at Mon Jun  3 16:42:05 2024
+ number of spinors                              208
+ number of spinor blocks                        16
+ tile size                                      100
+ max spinor block size                          27
+ size of i/o buffer for integrals and indices   0.375 MB
+ size of the buffer for two-elec integrals      0.507 MB
+ sorting one-electron integrals ...
+   Fock matrix reconstruction ...
+   SCF energy (energy of reference determinant) =     -30.555868816378 a.u.
+ fill 1-electron diagrams ... hg pg done
+ time for 2-e integrals sorting, sec: 0.05
+ time for DIRAC interface (integral extraction & write), sec: 0.72
+ total time for sorting operations, sec: 0.76
+ finished at at Mon Jun  3 16:42:05 2024
+ Construction of T^(1h0p)-independent contributions to the IPCCSD-equations ...
+
+ Initialization of T{1h0p}_1 and T{1h0p}_2 amplitudes ...
+ Trying to read amplitudes from disk ...
+ T{1h0p}_1 amplitudes successfully read from disk
+ T{1h0p}_2 amplitudes successfully read from disk
+ Heff{1h0p} diagram successfully read from disk
+
+ solution of amplitude equations (sector 1h0p)		 Mon Jun  3 16:42:05 2024
+ ---------------------------------------------------------------------------------------
+ it.       diffmax(T1)       diffmax(T2)     max(T1)     max(T2)    t,sec       mem,Gb
+ ---------------------------------------------------------------------------------------
+   1    0.000000000428    0.000000000730    0.006311    0.071779      0.8    0.75/1.73
+ ---------------------------------------------------------------------------------------
+ converged in 1 iterations
+
+ average time per iteration = 0.849 sec
+
+
+ (absolute values)
+ Max T{1h0p}_1 amplitude (t{10}_ia) [ 157 -> 160 ] = 0.00631083
+   [ 157] eps=     -0.99589608 rep=1/2u- inactive occ
+   [ 160] eps=     -0.38017967 rep=1/2u- active occ
+ Max T{1h0p}_2 amplitude (t{10}_ijab) [ 108 160 -> 2 63 ] = 0.07177872
+   [ 108] eps=     -0.38017967 rep=1/2u+ active occ
+   [ 160] eps=     -0.38017967 rep=1/2u- active occ
+   [   2] eps=     -0.53465986 rep=1/2g+ active occ
+   [  63] eps=      0.37992758 rep=1/2g- inactive virt
+
+ Norm |T{1h0p}_1| = 0.01022137
+ Norm |T{1h0p}_2| = 1.16720474
+
+ Model space dimensions:
+  [  0] dim = 2      1/2g+
+  [  1] dim = 2      1/2g-
+  [  2] dim = 1      3/2g+
+  [  3] dim = 1      3/2g-
+  [ 62] dim = 2      1/2u+
+  [ 63] dim = 2      1/2u-
+  [ 64] dim = 1      3/2u+
+  [ 65] dim = 1      3/2u-
+
+
+ Heff eigenvalues:
+ (degeneracy threshold = 1.0e-08 a.u.)
+
+ Level  Re(eigenvalue)  Im(eigv)               Abs energy  Rel eigenvalue    Rel eigv, eV  Rel eigv, cm-1  deg  symmetry
+ ------------------------------------------------------------------------------------------------------------------------
+@    1    0.3736381081  0.00e+00    -30.56035800703416427    0.0000000000    0.0000000000        0.000000   2   1/2u+ 1/2u-
+@    2    0.4161361343  0.00e+00    -30.51785998092541874    0.0424980261    1.1564302031     9327.238614   2   3/2g+ 3/2g-
+@    3    0.4421950532  0.00e+00    -30.49180106194353002    0.0685569451    1.8655295127    15046.510251   2   1/2g+ 1/2g-
+@    4    0.4482740863  0.00e+00    -30.48572202886083815    0.0746359782    2.0309484299    16380.703796   2   3/2u+ 3/2u-
+@    5    0.4835630850  0.00e+00    -30.45043303015044600    0.1099249769    2.9912110041    24125.743779   2   1/2u+ 1/2u-
+@    6    0.5144765414  0.00e+00    -30.41951957375317761    0.1408384333    3.8324090063    30910.463226   2   1/2g+ 1/2g-
+
+ Ionization potential 0h0p -> 1h0p =     0.373638108149 a.u. =  10.1672 eV =   82004.09 cm^-1
+
+ **
+ ** Finite-order calculation of property matrix elements
+ ** Electronic transitions: 1h0p - 1h0p
+ ** MDPROP: XDIPLEN
+ ** Operator symmetry: 1u+ (irrep 188)
+ ** Scheme: connected
+ ** Order of numerator: quadratic
+ ** Order of denominator: quadratic
+ **
+
+ real part: zero
+ imag part: non-zero antisymmetric
+ list of non-zero symmetry blocks:
+ 1/2g+ - 1/2u-   =>  31g- 1u+ 31u- 
+ 1/2g+ - 3/2u+   =>  61/2g+ 61/2u+ 30g+ 31g+ 1u- 30u+ 31u+ 
+ 1/2g- - 1/2u+   =>  1u- 
+ 1/2g- - 3/2u-   =>  1u+ 
+ 3/2g+ - 1/2u+   =>  1u+ 
+ 3/2g+ - 5/2u+   =>  1u- 
+ 3/2g- - 1/2u-   =>  1u- 
+ 3/2g- - 5/2u-   =>  1u+ 
+ 5/2g+ - 3/2u+   =>  1u+ 
+ 5/2g+ - 7/2u+   =>  1u- 
+ 5/2g- - 3/2u-   =>  1u- 
+ 5/2g- - 7/2u-   =>  1u+ 
+ 7/2g+ - 5/2u+   =>  1u+ 
+ 7/2g- - 5/2u-   =>  1u- 
+ 1/2u+ - 1/2g-   =>  1u+ 
+ 1/2u+ - 3/2g+   =>  1u- 
+ 1/2u- - 1/2g+   =>  1u- 
+ 1/2u- - 3/2g-   =>  1u+ 
+ 3/2u+ - 1/2g+   =>  1u+ 
+ 3/2u+ - 5/2g+   =>  1u- 
+ 3/2u- - 1/2g-   =>  1u- 
+ 3/2u- - 5/2g-   =>  1u+ 
+ 5/2u+ - 3/2g+   =>  1u+ 
+ 5/2u+ - 7/2g+   =>  1u- 
+ 5/2u- - 3/2g-   =>  1u- 
+ 5/2u- - 7/2g-   =>  1u+ 
+ 7/2u+ - 5/2g+   =>  1u+ 
+ 7/2u- - 5/2g-   =>  1u- 
+
+ sorting property integrals ...
+ construction of the one-body contribution (1h0p) ...
+ scalar contribution to property = 0.00000000 0.00000000
+ effective property operator diagrams:
+ - prop_1h0p
+ construction of the overlap diagram (1h0p) ...
+ scalar contribution to overlap = 1.16835877 0.00000000
+ overlap diagrams:
+ - overlap_1h0p
+
+ < 1/2g+ | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2g- >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2g- >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2u- >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2u+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2g+) ->  1 (3/2u+)   15046.51   16380.70       0.000000      -0.005466       0.005466
+ 2 (1/2g+) ->  1 (3/2u+)   30910.46   16380.70       0.000000       0.022132       0.022132
+
+ < 1/2g+ | prop | 3/2u- >     no allowed transitions
+
+ < 1/2g- | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2g- | prop | 1/2g- >     no allowed transitions
+
+ < 1/2g- | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2g- | prop | 3/2g- >     no allowed transitions
+
+ < 1/2g- | prop | 1/2u+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2g-) ->  1 (1/2u+)   15046.51       0.00       0.000000       0.038064       0.038064
+ 1 (1/2g-) ->  2 (1/2u+)   15046.51   24125.74       0.000000      -0.011427       0.011427
+ 2 (1/2g-) ->  1 (1/2u+)   30910.46       0.00       0.000000       0.012668       0.012668
+ 2 (1/2g-) ->  2 (1/2u+)   30910.46   24125.74       0.000000       0.023241       0.023241
+
+ < 1/2g- | prop | 1/2u- >     no allowed transitions
+
+ < 1/2g- | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2g- | prop | 3/2u- >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2g- >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2g- >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2u- >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2u- >     no allowed transitions
+
+ < 3/2g- | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2g- | prop | 1/2g- >     no allowed transitions
+
+ < 3/2g- | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2g- | prop | 3/2g- >     no allowed transitions
+
+ < 3/2g- | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2g- | prop | 1/2u- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2g-) ->  1 (1/2u-)    9327.24       0.00       0.000000      -0.045020       0.045020
+ 1 (3/2g-) ->  2 (1/2u-)    9327.24   24125.74       0.000000       0.006169       0.006169
+
+ < 3/2g- | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2g- | prop | 3/2u- >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2g- >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2g+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2u+) ->  1 (3/2g+)       0.00    9327.24       0.000000       0.044963       0.044963
+ 2 (1/2u+) ->  1 (3/2g+)   24125.74    9327.24       0.000000      -0.006232       0.006232
+
+ < 1/2u+ | prop | 3/2g- >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2u- >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2u- >     no allowed transitions
+
+ < 1/2u- | prop | 1/2g+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2u-) ->  1 (1/2g+)       0.00   15046.51       0.000000      -0.037951       0.037951
+ 1 (1/2u-) ->  2 (1/2g+)       0.00   30910.46       0.000000      -0.012516       0.012516
+ 2 (1/2u-) ->  1 (1/2g+)   24125.74   15046.51       0.000000       0.011431       0.011431
+ 2 (1/2u-) ->  2 (1/2g+)   24125.74   30910.46       0.000000      -0.022633       0.022633
+
+ < 1/2u- | prop | 1/2g- >     no allowed transitions
+
+ < 1/2u- | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2u- | prop | 3/2g- >     no allowed transitions
+
+ < 1/2u- | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2u- | prop | 1/2u- >     no allowed transitions
+
+ < 1/2u- | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2u- | prop | 3/2u- >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2g- >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2g- >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2u- >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2u- >     no allowed transitions
+
+ < 3/2u- | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2u- | prop | 1/2g- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2u-) ->  1 (1/2g-)   16380.70   15046.51       0.000000       0.005373       0.005373
+ 1 (3/2u-) ->  2 (1/2g-)   16380.70   30910.46       0.000000      -0.021352       0.021352
+
+ < 3/2u- | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2u- | prop | 3/2g- >     no allowed transitions
+
+ < 3/2u- | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2u- | prop | 1/2u- >     no allowed transitions
+
+ < 3/2u- | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2u- | prop | 3/2u- >     no allowed transitions
+
+
+ **
+ ** Finite-order calculation of property matrix elements
+ ** Electronic transitions: 1h0p - 1h0p
+ ** MDPROP: XDIPLEN
+ ** Operator symmetry: 1u- (irrep 189)
+ ** Scheme: connected
+ ** Order of numerator: quadratic
+ ** Order of denominator: quadratic
+ **
+
+ real part: zero
+ imag part: non-zero antisymmetric
+ list of non-zero symmetry blocks:
+ 1/2g+ - 1/2u-   =>  31g- 1u+ 31u- 
+ 1/2g+ - 3/2u+   =>  61/2g+ 61/2u+ 30g+ 31g+ 1u- 30u+ 31u+ 
+ 1/2g- - 1/2u+   =>  1u- 
+ 1/2g- - 3/2u-   =>  1u+ 
+ 3/2g+ - 1/2u+   =>  1u+ 
+ 3/2g+ - 5/2u+   =>  1u- 
+ 3/2g- - 1/2u-   =>  1u- 
+ 3/2g- - 5/2u-   =>  1u+ 
+ 5/2g+ - 3/2u+   =>  1u+ 
+ 5/2g+ - 7/2u+   =>  1u- 
+ 5/2g- - 3/2u-   =>  1u- 
+ 5/2g- - 7/2u-   =>  1u+ 
+ 7/2g+ - 5/2u+   =>  1u+ 
+ 7/2g- - 5/2u-   =>  1u- 
+ 1/2u+ - 1/2g-   =>  1u+ 
+ 1/2u+ - 3/2g+   =>  1u- 
+ 1/2u- - 1/2g+   =>  1u- 
+ 1/2u- - 3/2g-   =>  1u+ 
+ 3/2u+ - 1/2g+   =>  1u+ 
+ 3/2u+ - 5/2g+   =>  1u- 
+ 3/2u- - 1/2g-   =>  1u- 
+ 3/2u- - 5/2g-   =>  1u+ 
+ 5/2u+ - 3/2g+   =>  1u+ 
+ 5/2u+ - 7/2g+   =>  1u- 
+ 5/2u- - 3/2g-   =>  1u- 
+ 5/2u- - 7/2g-   =>  1u+ 
+ 7/2u+ - 5/2g+   =>  1u+ 
+ 7/2u- - 5/2g-   =>  1u- 
+
+ sorting property integrals ...
+ construction of the one-body contribution (1h0p) ...
+ scalar contribution to property = 0.00000000 0.00000000
+ effective property operator diagrams:
+ - prop_1h0p
+ construction of the overlap diagram (1h0p) ...
+ scalar contribution to overlap = 1.16835877 0.00000000
+ overlap diagrams:
+ - overlap_1h0p
+
+ < 1/2g+ | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2g- >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2g- >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2u- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2g+) ->  1 (1/2u-)   15046.51       0.00       0.000000       0.038064       0.038064
+ 1 (1/2g+) ->  2 (1/2u-)   15046.51   24125.74       0.000000      -0.011427       0.011427
+ 2 (1/2g+) ->  1 (1/2u-)   30910.46       0.00       0.000000       0.012668       0.012668
+ 2 (1/2g+) ->  2 (1/2u-)   30910.46   24125.74       0.000000       0.023241       0.023241
+
+ < 1/2g+ | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2u- >     no allowed transitions
+
+ < 1/2g- | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2g- | prop | 1/2g- >     no allowed transitions
+
+ < 1/2g- | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2g- | prop | 3/2g- >     no allowed transitions
+
+ < 1/2g- | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2g- | prop | 1/2u- >     no allowed transitions
+
+ < 1/2g- | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2g- | prop | 3/2u- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2g-) ->  1 (3/2u-)   15046.51   16380.70       0.000000      -0.005466       0.005466
+ 2 (1/2g-) ->  1 (3/2u-)   30910.46   16380.70       0.000000       0.022132       0.022132
+
+ < 3/2g+ | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2g- >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2g- >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2u+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2g+) ->  1 (1/2u+)    9327.24       0.00       0.000000      -0.045020       0.045020
+ 1 (3/2g+) ->  2 (1/2u+)    9327.24   24125.74       0.000000       0.006169       0.006169
+
+ < 3/2g+ | prop | 1/2u- >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2u- >     no allowed transitions
+
+ < 3/2g- | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2g- | prop | 1/2g- >     no allowed transitions
+
+ < 3/2g- | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2g- | prop | 3/2g- >     no allowed transitions
+
+ < 3/2g- | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2g- | prop | 1/2u- >     no allowed transitions
+
+ < 3/2g- | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2g- | prop | 3/2u- >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2g- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2u+) ->  1 (1/2g-)       0.00   15046.51       0.000000      -0.037951       0.037951
+ 1 (1/2u+) ->  2 (1/2g-)       0.00   30910.46       0.000000      -0.012516       0.012516
+ 2 (1/2u+) ->  1 (1/2g-)   24125.74   15046.51       0.000000       0.011431       0.011431
+ 2 (1/2u+) ->  2 (1/2g-)   24125.74   30910.46       0.000000      -0.022633       0.022633
+
+ < 1/2u+ | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2g- >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2u- >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2u- >     no allowed transitions
+
+ < 1/2u- | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2u- | prop | 1/2g- >     no allowed transitions
+
+ < 1/2u- | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2u- | prop | 3/2g- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2u-) ->  1 (3/2g-)       0.00    9327.24       0.000000       0.044963       0.044963
+ 2 (1/2u-) ->  1 (3/2g-)   24125.74    9327.24       0.000000      -0.006232       0.006232
+
+ < 1/2u- | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2u- | prop | 1/2u- >     no allowed transitions
+
+ < 1/2u- | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2u- | prop | 3/2u- >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2g+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2u+) ->  1 (1/2g+)   16380.70   15046.51       0.000000       0.005373       0.005373
+ 1 (3/2u+) ->  2 (1/2g+)   16380.70   30910.46       0.000000      -0.021352       0.021352
+
+ < 3/2u+ | prop | 1/2g- >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2g- >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2u- >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2u- >     no allowed transitions
+
+ < 3/2u- | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2u- | prop | 1/2g- >     no allowed transitions
+
+ < 3/2u- | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2u- | prop | 3/2g- >     no allowed transitions
+
+ < 3/2u- | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2u- | prop | 1/2u- >     no allowed transitions
+
+ < 3/2u- | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2u- | prop | 3/2u- >     no allowed transitions
+
+
+ **
+ ** Finite-order calculation of property matrix elements
+ ** Electronic transitions: 1h0p - 1h0p
+ ** MDPROP: YDIPLEN
+ ** Operator symmetry: 1u+ (irrep 188)
+ ** Scheme: connected
+ ** Order of numerator: quadratic
+ ** Order of denominator: quadratic
+ **
+
+ real part: non-zero symmetric
+ imag part: zero
+ list of non-zero symmetry blocks:
+ 1/2g+ - 1/2u-   =>  31g- 1u+ 31u- 
+ 1/2g+ - 3/2u+   =>  61/2g+ 61/2u+ 30g+ 31g+ 1u- 30u+ 31u+ 
+ 1/2g- - 1/2u+   =>  1u- 
+ 1/2g- - 3/2u-   =>  1u+ 
+ 3/2g+ - 1/2u+   =>  1u+ 
+ 3/2g+ - 5/2u+   =>  1u- 
+ 3/2g- - 1/2u-   =>  1u- 
+ 3/2g- - 5/2u-   =>  1u+ 
+ 5/2g+ - 3/2u+   =>  1u+ 
+ 5/2g+ - 7/2u+   =>  1u- 
+ 5/2g- - 3/2u-   =>  1u- 
+ 5/2g- - 7/2u-   =>  1u+ 
+ 7/2g+ - 5/2u+   =>  1u+ 
+ 7/2g- - 5/2u-   =>  1u- 
+ 1/2u+ - 1/2g-   =>  1u+ 
+ 1/2u+ - 3/2g+   =>  1u- 
+ 1/2u- - 1/2g+   =>  1u- 
+ 1/2u- - 3/2g-   =>  1u+ 
+ 3/2u+ - 1/2g+   =>  1u+ 
+ 3/2u+ - 5/2g+   =>  1u- 
+ 3/2u- - 1/2g-   =>  1u- 
+ 3/2u- - 5/2g-   =>  1u+ 
+ 5/2u+ - 3/2g+   =>  1u+ 
+ 5/2u+ - 7/2g+   =>  1u- 
+ 5/2u- - 3/2g-   =>  1u- 
+ 5/2u- - 7/2g-   =>  1u+ 
+ 7/2u+ - 5/2g+   =>  1u+ 
+ 7/2u- - 5/2g-   =>  1u- 
+
+ sorting property integrals ...
+ construction of the one-body contribution (1h0p) ...
+ scalar contribution to property = 0.00000000 0.00000000
+ effective property operator diagrams:
+ - prop_1h0p
+ construction of the overlap diagram (1h0p) ...
+ scalar contribution to overlap = 1.16835877 0.00000000
+ overlap diagrams:
+ - overlap_1h0p
+
+ < 1/2g+ | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2g- >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2g- >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2u- >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2u+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2g+) ->  1 (3/2u+)   15046.51   16380.70       0.005466       0.000000       0.005466
+ 2 (1/2g+) ->  1 (3/2u+)   30910.46   16380.70      -0.022132       0.000000       0.022132
+
+ < 1/2g+ | prop | 3/2u- >     no allowed transitions
+
+ < 1/2g- | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2g- | prop | 1/2g- >     no allowed transitions
+
+ < 1/2g- | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2g- | prop | 3/2g- >     no allowed transitions
+
+ < 1/2g- | prop | 1/2u+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2g-) ->  1 (1/2u+)   15046.51       0.00      -0.038064       0.000000       0.038064
+ 1 (1/2g-) ->  2 (1/2u+)   15046.51   24125.74       0.011427       0.000000       0.011427
+ 2 (1/2g-) ->  1 (1/2u+)   30910.46       0.00      -0.012668       0.000000       0.012668
+ 2 (1/2g-) ->  2 (1/2u+)   30910.46   24125.74      -0.023241       0.000000       0.023241
+
+ < 1/2g- | prop | 1/2u- >     no allowed transitions
+
+ < 1/2g- | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2g- | prop | 3/2u- >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2g- >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2g- >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2u- >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2u- >     no allowed transitions
+
+ < 3/2g- | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2g- | prop | 1/2g- >     no allowed transitions
+
+ < 3/2g- | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2g- | prop | 3/2g- >     no allowed transitions
+
+ < 3/2g- | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2g- | prop | 1/2u- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2g-) ->  1 (1/2u-)    9327.24       0.00       0.045020       0.000000       0.045020
+ 1 (3/2g-) ->  2 (1/2u-)    9327.24   24125.74      -0.006169       0.000000       0.006169
+
+ < 3/2g- | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2g- | prop | 3/2u- >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2g- >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2g+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2u+) ->  1 (3/2g+)       0.00    9327.24      -0.044963       0.000000       0.044963
+ 2 (1/2u+) ->  1 (3/2g+)   24125.74    9327.24       0.006232       0.000000       0.006232
+
+ < 1/2u+ | prop | 3/2g- >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2u- >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2u- >     no allowed transitions
+
+ < 1/2u- | prop | 1/2g+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2u-) ->  1 (1/2g+)       0.00   15046.51       0.037951       0.000000       0.037951
+ 1 (1/2u-) ->  2 (1/2g+)       0.00   30910.46       0.012516       0.000000       0.012516
+ 2 (1/2u-) ->  1 (1/2g+)   24125.74   15046.51      -0.011431       0.000000       0.011431
+ 2 (1/2u-) ->  2 (1/2g+)   24125.74   30910.46       0.022633       0.000000       0.022633
+
+ < 1/2u- | prop | 1/2g- >     no allowed transitions
+
+ < 1/2u- | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2u- | prop | 3/2g- >     no allowed transitions
+
+ < 1/2u- | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2u- | prop | 1/2u- >     no allowed transitions
+
+ < 1/2u- | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2u- | prop | 3/2u- >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2g- >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2g- >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2u- >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2u- >     no allowed transitions
+
+ < 3/2u- | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2u- | prop | 1/2g- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2u-) ->  1 (1/2g-)   16380.70   15046.51      -0.005373       0.000000       0.005373
+ 1 (3/2u-) ->  2 (1/2g-)   16380.70   30910.46       0.021352       0.000000       0.021352
+
+ < 3/2u- | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2u- | prop | 3/2g- >     no allowed transitions
+
+ < 3/2u- | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2u- | prop | 1/2u- >     no allowed transitions
+
+ < 3/2u- | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2u- | prop | 3/2u- >     no allowed transitions
+
+
+ **
+ ** Finite-order calculation of property matrix elements
+ ** Electronic transitions: 1h0p - 1h0p
+ ** MDPROP: YDIPLEN
+ ** Operator symmetry: 1u- (irrep 189)
+ ** Scheme: connected
+ ** Order of numerator: quadratic
+ ** Order of denominator: quadratic
+ **
+
+ real part: non-zero symmetric
+ imag part: zero
+ list of non-zero symmetry blocks:
+ 1/2g+ - 1/2u-   =>  31g- 1u+ 31u- 
+ 1/2g+ - 3/2u+   =>  61/2g+ 61/2u+ 30g+ 31g+ 1u- 30u+ 31u+ 
+ 1/2g- - 1/2u+   =>  1u- 
+ 1/2g- - 3/2u-   =>  1u+ 
+ 3/2g+ - 1/2u+   =>  1u+ 
+ 3/2g+ - 5/2u+   =>  1u- 
+ 3/2g- - 1/2u-   =>  1u- 
+ 3/2g- - 5/2u-   =>  1u+ 
+ 5/2g+ - 3/2u+   =>  1u+ 
+ 5/2g+ - 7/2u+   =>  1u- 
+ 5/2g- - 3/2u-   =>  1u- 
+ 5/2g- - 7/2u-   =>  1u+ 
+ 7/2g+ - 5/2u+   =>  1u+ 
+ 7/2g- - 5/2u-   =>  1u- 
+ 1/2u+ - 1/2g-   =>  1u+ 
+ 1/2u+ - 3/2g+   =>  1u- 
+ 1/2u- - 1/2g+   =>  1u- 
+ 1/2u- - 3/2g-   =>  1u+ 
+ 3/2u+ - 1/2g+   =>  1u+ 
+ 3/2u+ - 5/2g+   =>  1u- 
+ 3/2u- - 1/2g-   =>  1u- 
+ 3/2u- - 5/2g-   =>  1u+ 
+ 5/2u+ - 3/2g+   =>  1u+ 
+ 5/2u+ - 7/2g+   =>  1u- 
+ 5/2u- - 3/2g-   =>  1u- 
+ 5/2u- - 7/2g-   =>  1u+ 
+ 7/2u+ - 5/2g+   =>  1u+ 
+ 7/2u- - 5/2g-   =>  1u- 
+
+ sorting property integrals ...
+ construction of the one-body contribution (1h0p) ...
+ scalar contribution to property = 0.00000000 0.00000000
+ effective property operator diagrams:
+ - prop_1h0p
+ construction of the overlap diagram (1h0p) ...
+ scalar contribution to overlap = 1.16835877 0.00000000
+ overlap diagrams:
+ - overlap_1h0p
+
+ < 1/2g+ | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2g- >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2g- >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2u- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2g+) ->  1 (1/2u-)   15046.51       0.00       0.038064       0.000000       0.038064
+ 1 (1/2g+) ->  2 (1/2u-)   15046.51   24125.74      -0.011427       0.000000       0.011427
+ 2 (1/2g+) ->  1 (1/2u-)   30910.46       0.00       0.012668       0.000000       0.012668
+ 2 (1/2g+) ->  2 (1/2u-)   30910.46   24125.74       0.023241       0.000000       0.023241
+
+ < 1/2g+ | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2u- >     no allowed transitions
+
+ < 1/2g- | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2g- | prop | 1/2g- >     no allowed transitions
+
+ < 1/2g- | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2g- | prop | 3/2g- >     no allowed transitions
+
+ < 1/2g- | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2g- | prop | 1/2u- >     no allowed transitions
+
+ < 1/2g- | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2g- | prop | 3/2u- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2g-) ->  1 (3/2u-)   15046.51   16380.70      -0.005466       0.000000       0.005466
+ 2 (1/2g-) ->  1 (3/2u-)   30910.46   16380.70       0.022132       0.000000       0.022132
+
+ < 3/2g+ | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2g- >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2g- >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2u+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2g+) ->  1 (1/2u+)    9327.24       0.00      -0.045020       0.000000       0.045020
+ 1 (3/2g+) ->  2 (1/2u+)    9327.24   24125.74       0.006169       0.000000       0.006169
+
+ < 3/2g+ | prop | 1/2u- >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2u- >     no allowed transitions
+
+ < 3/2g- | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2g- | prop | 1/2g- >     no allowed transitions
+
+ < 3/2g- | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2g- | prop | 3/2g- >     no allowed transitions
+
+ < 3/2g- | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2g- | prop | 1/2u- >     no allowed transitions
+
+ < 3/2g- | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2g- | prop | 3/2u- >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2g- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2u+) ->  1 (1/2g-)       0.00   15046.51      -0.037951       0.000000       0.037951
+ 1 (1/2u+) ->  2 (1/2g-)       0.00   30910.46      -0.012516       0.000000       0.012516
+ 2 (1/2u+) ->  1 (1/2g-)   24125.74   15046.51       0.011431       0.000000       0.011431
+ 2 (1/2u+) ->  2 (1/2g-)   24125.74   30910.46      -0.022633       0.000000       0.022633
+
+ < 1/2u+ | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2g- >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2u- >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2u- >     no allowed transitions
+
+ < 1/2u- | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2u- | prop | 1/2g- >     no allowed transitions
+
+ < 1/2u- | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2u- | prop | 3/2g- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2u-) ->  1 (3/2g-)       0.00    9327.24       0.044963       0.000000       0.044963
+ 2 (1/2u-) ->  1 (3/2g-)   24125.74    9327.24      -0.006232       0.000000       0.006232
+
+ < 1/2u- | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2u- | prop | 1/2u- >     no allowed transitions
+
+ < 1/2u- | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2u- | prop | 3/2u- >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2g+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2u+) ->  1 (1/2g+)   16380.70   15046.51       0.005373       0.000000       0.005373
+ 1 (3/2u+) ->  2 (1/2g+)   16380.70   30910.46      -0.021352       0.000000       0.021352
+
+ < 3/2u+ | prop | 1/2g- >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2g- >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2u- >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2u- >     no allowed transitions
+
+ < 3/2u- | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2u- | prop | 1/2g- >     no allowed transitions
+
+ < 3/2u- | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2u- | prop | 3/2g- >     no allowed transitions
+
+ < 3/2u- | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2u- | prop | 1/2u- >     no allowed transitions
+
+ < 3/2u- | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2u- | prop | 3/2u- >     no allowed transitions
+
+
+ **
+ ** Finite-order calculation of property matrix elements
+ ** Electronic transitions: 1h0p - 1h0p
+ ** MDPROP: ZDIPLEN
+ ** Operator symmetry: 0u (irrep 187)
+ ** Scheme: connected
+ ** Order of numerator: quadratic
+ ** Order of denominator: quadratic
+ **
+
+ real part: zero
+ imag part: non-zero antisymmetric
+ list of non-zero symmetry blocks:
+ 1/2g+ - 1/2u+   =>  31g+ 0u 31u+ 
+ 1/2g- - 1/2u-   =>  0u 
+ 3/2g+ - 3/2u+   =>  0u 
+ 3/2g- - 3/2u-   =>  0u 
+ 5/2g+ - 5/2u+   =>  0u 
+ 5/2g- - 5/2u-   =>  0u 
+ 7/2g+ - 7/2u+   =>  0u 
+ 7/2g- - 7/2u-   =>  0u 
+ 1/2u+ - 1/2g+   =>  0u 
+ 1/2u- - 1/2g-   =>  0u 
+ 3/2u+ - 3/2g+   =>  0u 
+ 3/2u- - 3/2g-   =>  0u 
+ 5/2u+ - 5/2g+   =>  0u 
+ 5/2u- - 5/2g-   =>  0u 
+ 7/2u+ - 7/2g+   =>  0u 
+ 7/2u- - 7/2g-   =>  0u 
+
+ sorting property integrals ...
+ construction of the one-body contribution (1h0p) ...
+ scalar contribution to property = 0.00000000 0.00000000
+ effective property operator diagrams:
+ - prop_1h0p
+ construction of the overlap diagram (1h0p) ...
+ scalar contribution to overlap = 1.16835877 0.00000000
+ overlap diagrams:
+ - overlap_1h0p
+
+ < 1/2g+ | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2g- >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2g- >     no allowed transitions
+
+ < 1/2g+ | prop | 1/2u+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2g+) ->  1 (1/2u+)   15046.51       0.00       0.000000       1.202781       1.202781
+ 1 (1/2g+) ->  2 (1/2u+)   15046.51   24125.74       0.000000       1.965594       1.965594
+ 2 (1/2g+) ->  1 (1/2u+)   30910.46       0.00       0.000000      -2.001174       2.001174
+ 2 (1/2g+) ->  2 (1/2u+)   30910.46   24125.74       0.000000       1.190768       1.190768
+
+ < 1/2g+ | prop | 1/2u- >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2g+ | prop | 3/2u- >     no allowed transitions
+
+ < 1/2g- | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2g- | prop | 1/2g- >     no allowed transitions
+
+ < 1/2g- | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2g- | prop | 3/2g- >     no allowed transitions
+
+ < 1/2g- | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2g- | prop | 1/2u- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2g-) ->  1 (1/2u-)   15046.51       0.00       0.000000      -1.202781       1.202781
+ 1 (1/2g-) ->  2 (1/2u-)   15046.51   24125.74       0.000000      -1.965594       1.965594
+ 2 (1/2g-) ->  1 (1/2u-)   30910.46       0.00       0.000000       2.001174       2.001174
+ 2 (1/2g-) ->  2 (1/2u-)   30910.46   24125.74       0.000000      -1.190768       1.190768
+
+ < 1/2g- | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2g- | prop | 3/2u- >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2g- >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2g- >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2g+ | prop | 1/2u- >     no allowed transitions
+
+ < 3/2g+ | prop | 3/2u+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2g+) ->  1 (3/2u+)    9327.24   16380.70       0.000000       2.299794       2.299794
+
+ < 3/2g+ | prop | 3/2u- >     no allowed transitions
+
+ < 3/2g- | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2g- | prop | 1/2g- >     no allowed transitions
+
+ < 3/2g- | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2g- | prop | 3/2g- >     no allowed transitions
+
+ < 3/2g- | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2g- | prop | 1/2u- >     no allowed transitions
+
+ < 3/2g- | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2g- | prop | 3/2u- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2g-) ->  1 (3/2u-)    9327.24   16380.70       0.000000      -2.299794       2.299794
+
+ < 1/2u+ | prop | 1/2g+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2u+) ->  1 (1/2g+)       0.00   15046.51       0.000000      -1.177289       1.177289
+ 1 (1/2u+) ->  2 (1/2g+)       0.00   30910.46       0.000000       1.916617       1.916617
+ 2 (1/2u+) ->  1 (1/2g+)   24125.74   15046.51       0.000000      -1.985299       1.985299
+ 2 (1/2u+) ->  2 (1/2g+)   24125.74   30910.46       0.000000      -1.177993       1.177993
+
+ < 1/2u+ | prop | 1/2g- >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2g- >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2u+ | prop | 1/2u- >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2u+ | prop | 3/2u- >     no allowed transitions
+
+ < 1/2u- | prop | 1/2g+ >     no allowed transitions
+
+ < 1/2u- | prop | 1/2g- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (1/2u-) ->  1 (1/2g-)       0.00   15046.51       0.000000       1.177289       1.177289
+ 1 (1/2u-) ->  2 (1/2g-)       0.00   30910.46       0.000000      -1.916617       1.916617
+ 2 (1/2u-) ->  1 (1/2g-)   24125.74   15046.51       0.000000       1.985299       1.985299
+ 2 (1/2u-) ->  2 (1/2g-)   24125.74   30910.46       0.000000       1.177993       1.177993
+
+ < 1/2u- | prop | 3/2g+ >     no allowed transitions
+
+ < 1/2u- | prop | 3/2g- >     no allowed transitions
+
+ < 1/2u- | prop | 1/2u+ >     no allowed transitions
+
+ < 1/2u- | prop | 1/2u- >     no allowed transitions
+
+ < 1/2u- | prop | 3/2u+ >     no allowed transitions
+
+ < 1/2u- | prop | 3/2u- >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2g- >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2g+ >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2u+) ->  1 (3/2g+)   16380.70    9327.24       0.000000      -2.314858       2.314858
+
+ < 3/2u+ | prop | 3/2g- >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2u+ | prop | 1/2u- >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2u+ | prop | 3/2u- >     no allowed transitions
+
+ < 3/2u- | prop | 1/2g+ >     no allowed transitions
+
+ < 3/2u- | prop | 1/2g- >     no allowed transitions
+
+ < 3/2u- | prop | 3/2g+ >     no allowed transitions
+
+ < 3/2u- | prop | 3/2g- >  E1(cm-1)  E2(cm-1)         Re            Im          |prop|
+ 1 (3/2u-) ->  1 (3/2g-)   16380.70    9327.24       0.000000       2.314858       2.314858
+
+ < 3/2u- | prop | 1/2u+ >     no allowed transitions
+
+ < 3/2u- | prop | 1/2u- >     no allowed transitions
+
+ < 3/2u- | prop | 3/2u+ >     no allowed transitions
+
+ < 3/2u- | prop | 3/2u- >     no allowed transitions
+
+
+ time for (sec):
+ -------------------------------------------------------
+  Total time of execution                         7.791
+  Diagram contraction (mult) for <PP||PP>         1.306
+  DIRAC interface (MRCONEE/MDCINT)                0.720
+  Diagram template constr (tmplt)                 0.044
+  Sorting of integrals                            0.045
+  Tensor transposition (reorder)                  1.029
+  0h0p -- Singles equations (T1)                  0.627
+  Diagram contraction (mult)                      4.149
+  mult M <- M x M                                 3.804
+  mult M <- D x M                                 0.000
+  Diagram addition (update)                       0.033
+  0h0p -- Doubles equations (T2)                  2.911
+  Permutation operators                           0.229
+  Energy denominators (diveps)                    0.006
+  DIIS extrapolation                              0.000
+  Constant part of 1h0p amplitudes                0.263
+  Extraction of a closed part                     0.001
+ -------------------------------------------------------
+
+
+ memory in usage  = 766861824 bytes = 731.3 Mb = 0.71 Gb
+ max memory usage = 1854435512 bytes = 1768.5 Mb = 1.73 Gb
+ Disk I/O:
+   files created: 13   files removed: 0
+   read         361118624 bytes = 0.336 Gb
+   write          6798024 bytes = 0.006 Gb
+
+ EXP-T terminated normally at Mon Jun  3 16:42:08 2024
+ Total run time: 0 days 0 hours 0 minutes 7 seconds 791 milliseconds

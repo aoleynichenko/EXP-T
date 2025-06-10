@@ -1,0 +1,38 @@
+maxiter 200
+conv 1e-9
+sector 0h2p
+nactp 18
+disk_usage 0
+diis 200
+nthreads 2
+memory 2 gb
+
+shift 0h2p 3 -0.5
+roots_cutoff 20000 cm
+print "model vectors"
+
+# calculate density matrix for the multireference state 3Po_1
+density 0h2p [1u+]:1
+
+spinor_labels
+   2   4s
+   3   3d3/2
+   4   3d3/2
+   5   3d5/2
+   6   3d5/2
+   7   3d5/2
+  46   4s
+  47   3d3/2
+  48   3d3/2
+  49   3d5/2
+  50   3d5/2
+  51   3d5/2
+  92   4p1/2
+  93   4p3/2
+  94   4p3/2
+ 125   4p1/2
+ 126   4p3/2
+ 127   4p3/2
+end
+
+

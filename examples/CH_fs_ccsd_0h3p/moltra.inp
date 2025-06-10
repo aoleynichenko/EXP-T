@@ -1,0 +1,21 @@
+!
+! calculation of CH+ electronic states
+!
+**DIRAC
+.TITLE
+molecular oxygen -- ground state
+.WAVE F
+.4INDEX
+**HAMILTONIAN
+.NONREL
+**WAVE FUNCTIONS
+.SCF
+*SCF
+.CLOSED SHELL
+ 4
+**MOLTRA
+.PRPTRA
+.SCHEME
+ 4
+*END OF
+

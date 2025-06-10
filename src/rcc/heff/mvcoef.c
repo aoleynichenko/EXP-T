@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -204,6 +204,13 @@ void mvcoef_read_vectors_unformatted_for_state(
         if (strcmp(mv_blocks[iblock].rep_name, irrep_name) == 0) {
             mvb1 = mv_blocks + iblock;
         }
+    }
+
+    /*
+     * check if this electronic state exists
+     */
+    if (mvb1 == NULL || (state >= mvb1->nroots)) {
+        errquit("no such electronic state (irrep=%s, state=%d)", irrep_name, state + 1);
     }
 
     /*

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -95,14 +95,19 @@ spinor_labels   { inc_col(); return KEYWORD_SPINOR_LABELS;}
 flush_amplitudes_txt { inc_col(); return KEYWORD_FLUSH_AMPLITUDES_TXT; }
 analyt_prop     { inc_col(); return KEYWORD_ANALYT_PROP;  }
 density         { inc_col(); return KEYWORD_DENSITY;      }
+lambda          { inc_col(); return KEYWORD_LAMBDA;       }
 overlap         { inc_col(); return KEYWORD_OVERLAP;      }
 hughes_kaldor_1h2p { inc_col(); return KEYWORD_HUGHES_KALDOR_1H2P; }
 hughes_kaldor_2h1p { inc_col(); return KEYWORD_HUGHES_KALDOR_2H1P; }
 use_oe          { inc_col(); return KEYWORD_USE_ORB_ENERGIES; }
 recalc_oe       { inc_col(); return KEYWORD_RECALC_ORB_ENERGIES; }
-tt_tol          { inc_col(); return KEYWORD_TT_TOL;       }
+use_tt_ccsd     { inc_col(); return KEYWORD_USE_TT_CCSD;  }
+tt_svd_tol      { inc_col(); return KEYWORD_TT_SVD_TOL;   }
+tt_cholesky_tol { inc_col(); return KEYWORD_TT_CHOLESKY_TOL; }
 tt_mult_pppp    { inc_col(); return KEYWORD_TT_MULT_PPPP; }
 tt_diis         { inc_col(); return KEYWORD_TT_DIIS;      }
+tensor_trains   { inc_col(); return KEYWORD_TENSOR_TRAINS;}
+goldstone       { inc_col(); return KEYWORD_GOLDSTONE;    }
 !=              { inc_col(); return TT_NEQ;               }
 =               { inc_col(); return TT_EQ;                }
 \".*\"          { inc_col(); return TT_QUOTE;             }

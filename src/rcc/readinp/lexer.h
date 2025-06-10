@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -100,6 +100,7 @@ enum {
     KEYWORD_FLUSH_AMPLITUDES_TXT,
     KEYWORD_ANALYT_PROP,
     KEYWORD_DENSITY,
+    KEYWORD_LAMBDA,
     KEYWORD_OVERLAP,
     KEYWORD_SPINOR_LABELS,
     KEYWORD_HUGHES_KALDOR_1H2P,
@@ -107,9 +108,13 @@ enum {
     KEYWORD_USE_ORB_ENERGIES,
     KEYWORD_RECALC_ORB_ENERGIES,
     /* tensor trains */
-    KEYWORD_TT_TOL,
+    KEYWORD_USE_TT_CCSD,
+    KEYWORD_TT_SVD_TOL,
+    KEYWORD_TT_CHOLESKY_TOL,
     KEYWORD_TT_MULT_PPPP,
     KEYWORD_TT_DIIS,
+    KEYWORD_TENSOR_TRAINS,
+    KEYWORD_GOLDSTONE,
     /* special */
     END_OF_LINE,
     END_OF_FILE

@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -270,6 +270,8 @@ void gen_dirac_mol_file(FILE *mol_file, molecule_t *mol, basis_lib_t *bas_lib, e
  */
 void gen_dirac_mol_file_symmetry_label(char *buf, molecule_t *mol)
 {
+    sprintf(buf, ""); // default - empty string
+
     if (mol->sym_group.group == SYMMETRY_C1) {
         sprintf(buf, "    0");
     }

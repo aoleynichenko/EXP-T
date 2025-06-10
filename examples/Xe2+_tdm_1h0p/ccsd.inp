@@ -1,0 +1,8 @@
+
+memory 2 gb
+sector 1h0p
+disk_usage 0
+nthreads 4
+nacth 12
+
+

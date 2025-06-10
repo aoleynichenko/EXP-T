@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -638,6 +638,45 @@ void multiply_irreps_Dinfh(char *irrep_1, char *irrep_2, char *prod_irrep)
     else { // integer irrep
         sprintf(prod_irrep, "%d%s%s", prod_omega_x2 / 2, (prod_gerade > 0) ? "g" : "u", prod_sign == 1 ? "+" : "-");
     }
+}
+
+
+int detect_operator_symmetry(char *bra_irrep_name, char *ket_irrep_name)
+{
+    int bra_irrep_num = get_rep_number(bra_irrep_name);
+    int ket_irrep_num = get_rep_number(ket_irrep_name);
+
+    // Cinfv/Dinfh or other groups?
+    int rel_inf_group = 0;
+    if (strcmp(point_group_name, "Cinfv") == 0 || strcmp(point_group_name, "Dinfh") == 0) {
+        rel_inf_group = 1;
+    }
+
+    int min_omega_x2 = 1000;
+    int irrep_with_min_omega_x2 = -1;
+
+    for (int irep = 0; irep < get_num_irreps(); irep++) {
+
+
+        if (mulrep2_abelian(bra_irrep_num, irep) == ket_irrep_num) {
+        //if (mulrep2_abelian(irep, ket_irrep_num) == bra_irrep_num) {
+
+            if (rel_inf_group) {
+                int omega_x2, sign, gerade;
+                parse_infty_irrep_name(get_irrep_name(irep), &omega_x2, &sign, &gerade);
+                if (omega_x2 < min_omega_x2) {
+                    min_omega_x2 = omega_x2;
+                    irrep_with_min_omega_x2 = irep;
+                }
+            }
+            else {
+                irrep_with_min_omega_x2 = irep;
+                break;
+            }
+        }
+    }
+
+    return irrep_with_min_omega_x2;
 }
 
 

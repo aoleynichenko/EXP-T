@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -298,7 +298,7 @@ void elementary_perm(char *src_name, char *perm_str)
         nthreads = cc_opts->nthreads;
     }
 
-    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    //#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
     for (size_t ib = 0; ib < d_tgt->n_blocks; ib++) {
         block_t *b_tgt = d_tgt->blocks[ib];
         block_load(b_tgt);
@@ -313,6 +313,8 @@ void elementary_perm(char *src_name, char *perm_str)
                 perm[i] = perm_tasks[itask].perm_str[i] - '0' - 1;
             }
             reverse_perm(rk, perm, inv_perm);
+
+            // why -1 ??
             for (int i = 0; i < rk; i++) {
                 inv_perm[i] -= 1;
             }

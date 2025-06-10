@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -34,5 +34,7 @@
 #include "options.h"
 
 void dirac_interface(cc_options_t *opts);
+
+void pyscf_interface(cc_options_t *opts);
 
 #endif /* CC_INTERFACES_H_INCLUDED */

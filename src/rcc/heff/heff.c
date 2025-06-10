@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -123,7 +123,7 @@ void heff_analysis(int sect_h, int sect_p, ...)
     /*
      * Write Heff to the formatted file
      */
-    write_formatted_heff(sect_h, sect_p, block_dims, heff);
+    write_formatted_heff_file(sect_h, sect_p, block_dims, heff);
 
     /*
      * Diagonalization

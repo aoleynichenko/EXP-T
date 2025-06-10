@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -34,6 +34,7 @@
 
 #include "comdef.h"
 #include "intham_imms.h"
+#include "tt_options.h"
 #include "linalg.h"
 #include "selection.h"
 #include "../new_sorting/mrconee.h"
@@ -66,7 +67,8 @@ enum {
 
 // integral source
 typedef enum {
-    CC_INTEGRALS_DIRAC
+    CC_INTEGRALS_DIRAC,
+    CC_INTEGRALS_PYSCF
 } cc_interface_t;
 
 // source of property matrices
@@ -378,6 +380,11 @@ struct cc_options {
     // CCSD(0h0p) energy
     double eref;
 
+    /*
+     * flag indicating if we are currently solving lambda equations or not
+     */
+    int curr_in_lambda_equations;
+
     // ground state energies in different Fock space sectors
     // these data are used to calculate ionization potentials / electron affinities
     double ground_energy_0h1p;
@@ -459,10 +466,14 @@ struct cc_options {
      */
     int n_analyt_prop;
     char analyt_prop_files[CC_MAX_NPROP][CC_MAX_PATH_LENGTH];
-    int calc_density_0h0p;
-    int calc_density_0h1p;
-    int density_0h1p_num_states;
-    cc_denmat_query_t density_0h1p_states[CC_MAX_NPROP];
+
+    int calc_density[MAX_SECTOR_RANK][MAX_SECTOR_RANK];
+    int density_num_states[MAX_SECTOR_RANK][MAX_SECTOR_RANK];
+    cc_denmat_query_t density_target_states[MAX_SECTOR_RANK][MAX_SECTOR_RANK][CC_MAX_NPROP];
+
+    int calc_lambda_0h1p;
+    int lambda_0h1p_num_states;
+    cc_denmat_query_t lambda_0h1p_states[CC_MAX_NPROP];
 
     /*
      * perform Dipole-Length (DL) estimation of TDMs or not
@@ -526,9 +537,12 @@ struct cc_options {
     /*
      * use tensor trains in different situations
      */
-    double tensor_train_tol;
-    int use_tt_mult;
-    int use_tt_diis;
+    tensor_trains_options_t tt_options;
+
+    /*
+     * use Goldstone diagrams
+     */
+    int use_goldstone;
 };
 
 typedef struct cc_options cc_options_t;

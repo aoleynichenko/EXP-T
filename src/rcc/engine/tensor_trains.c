@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -41,7 +41,7 @@ double tensor_train_restoration_error(size_t n, void *original, void *restored);
 
 double size_t_to_gygabytes(size_t num_bytes);
 
-
+/*
 void tensor_decomposition_benchmark(char *diagram_name, double svd_threshold)
 {
     printf("\n");
@@ -193,7 +193,7 @@ double tensor_train_restoration_error(size_t n, void *original, void *restored)
 double size_t_to_gygabytes(size_t num_bytes)
 {
     return ((double) num_bytes) / (1024.0 * 1024.0 * 1024.0);
-}
+}*/
 
 
 #endif // TENSOR_TRAIN

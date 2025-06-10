@@ -1,0 +1,16 @@
+
+memory 2 gb
+sector 1h0p
+disk_usage 0
+nthreads 4
+nacth 12
+
+reuse 2-integrals amplitudes
+arith complex
+
+mdprop "XDIPLEN" approx 2 2 sym 1u+ scheme connected
+mdprop "XDIPLEN" approx 2 2 sym 1u- scheme connected
+mdprop "YDIPLEN" approx 2 2 sym 1u+ scheme connected
+mdprop "YDIPLEN" approx 2 2 sym 1u- scheme connected
+mdprop "ZDIPLEN" approx 2 2 sym 0u  scheme connected
+

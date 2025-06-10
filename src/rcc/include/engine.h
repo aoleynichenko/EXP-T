@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -152,6 +152,7 @@ void print_amplitude_distribution_analysis(char *diagram_name);
 
 void diagram_conjugate(char *source_name, char *target_name);
 
+#include "../engine/disconnected.h"
 #include "../engine/tensor_trains.h"
 
 #endif /* CC_ENGINE_H_INCLUDED */

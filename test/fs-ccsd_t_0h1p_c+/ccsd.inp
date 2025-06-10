@@ -1,0 +1,14 @@
+nthreads 2
+openmp_algorithm external
+
+sector 0h1p
+model ccsdt
+nactp 6
+
+memory 6 gb
+maxiter 300
+diis triples
+conv 1e-8
+disk_usage 0
+
+

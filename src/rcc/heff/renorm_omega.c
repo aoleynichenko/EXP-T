@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -40,7 +40,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "formatted_heff.h"
+#include "formatted_heff_file.h"
 #include "io.h"
 #include "mvcoef.h"
 #include "slater_det.h"
@@ -98,8 +98,8 @@ void restore_intermediate_normalization(
      * together with the transformation P \Omega P matrix
      */
     FILE *hefff = open_formatted_heff_file(1, 1, "0011");
-    hefff_write_block(hefff, arith == CC_ARITH_COMPLEX, vacuum_irrep - first_irrep + 1, dim_prime,
-                      heff_0h0p_1h1p_prime);
+    formatted_heff_file_write_block(hefff, arith == CC_ARITH_COMPLEX, vacuum_irrep - first_irrep + 1, dim_prime,
+                                    heff_0h0p_1h1p_prime);
 
     /*
      * P \Omega P

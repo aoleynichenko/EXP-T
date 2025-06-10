@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -70,6 +70,12 @@ void new_sort_2e();
 
 void new_sort_1e();
 
+void sort_pyscf_one_electron();
+
+void sort_pyscf_two_electron();
+
+void pyscf_data_free();
+
 
 /**
  * prints sorting configuration:
@@ -80,15 +86,22 @@ void sorting_print_configuration()
     const size_t io_integrals_buf_size = sizeof(double complex) * CC_SORTING_IO_BUF_SIZE;
     const size_t io_indices_buf_size = 4 * sizeof(int16_t) * CC_SORTING_IO_BUF_SIZE;
     const size_t io_total_buf_size = io_integrals_buf_size + io_indices_buf_size;
-    const double io_total_buf_size_mb = io_total_buf_size / (1024.0 * 1024.0);
-    const double twoelec_buf_size_mb = pow(get_max_spinor_block_size(), 4) / (1024.0 * 1024.0);
 
     printf(" number of spinors                              %d\n", get_num_spinors());
     printf(" number of spinor blocks                        %d\n", n_spinor_blocks);
     printf(" tile size                                      %d\n", cc_opts->tile_size);
     printf(" max spinor block size                          %d\n", get_max_spinor_block_size());
-    printf(" size of i/o buffer for integrals and indices   %.3f MB\n", io_total_buf_size_mb);
-    printf(" size of the buffer for two-elec integrals      %.3f MB\n", twoelec_buf_size_mb);
+
+    if (cc_opts->int_source == CC_INTEGRALS_DIRAC) {
+        const double io_total_buf_size_mb = io_total_buf_size / (1024.0 * 1024.0);
+        const double twoelec_buf_size_mb = pow(get_max_spinor_block_size(), 4) / (1024.0 * 1024.0);
+        printf(" size of i/o buffer for integrals and indices   %.3f MB\n", io_total_buf_size_mb);
+        printf(" size of the buffer for two-elec integrals      %.3f MB\n", twoelec_buf_size_mb);
+    }
+    else { // pyscf
+        const double twoelec_buf_size_mb = pow(get_num_spinors(), 4) * 16.0 / (8.0 * 1024.0 * 1024.0);
+        printf(" size of the buffer for two-elec integrals      %.3f MB\n", twoelec_buf_size_mb);
+    }
 }
 
 
@@ -203,13 +216,19 @@ void perform_sorting()
 
     sorting_print_configuration();
 
-    if (cc_opts->new_sorting) {
-        new_sort_2e();
-        new_sort_1e();
+    if (cc_opts->int_source == CC_INTEGRALS_DIRAC) {
+        if (cc_opts->new_sorting) {
+            new_sort_2e();
+            new_sort_1e();
+        }
+        else {
+            sort_twoel();
+            sort_onel();
+        }
     }
     else {
-        sort_twoel();
-        sort_onel();
+        sort_pyscf_two_electron();
+        sort_pyscf_one_electron();
     }
 
     // только для реально отсортированных в этом запуске запросов!
@@ -249,6 +268,12 @@ void perform_sorting()
      * finalize
      */
     n_requests = 0;
+    if (cc_opts->int_source == CC_INTEGRALS_PYSCF) {
+        if (cc_opts->curr_sector_h == cc_opts->sector_h &&
+            cc_opts->curr_sector_p == cc_opts->sector_p) {
+            pyscf_data_free();
+        }
+    }
 
     timer_stop("sort");
     //printf("   number of blocks read from disk: %d\n", n_blocks_read);
@@ -257,10 +282,15 @@ void perform_sorting()
     //       (double) n_bytes_read / (1024.0 * 1024.0 * 1024.0));
     //printf("   sorting performance, Mb/sec: %.2f\n", (double) n_bytes_read / (1024.0 * 1024.0) / timer_get("sort"));
 
-    if (!cc_opts->new_sorting) {
+    if (cc_opts->int_source == CC_INTEGRALS_DIRAC && !cc_opts->new_sorting) {
         printf(" time for 2-e integrals sorting, sec: %.2f\n", timer_get("sort"));
         printf(" time for DIRAC interface (integral extraction & write), sec: %.2f\n", timer_get("dirac"));
         printf(" total time for sorting operations, sec: %.2f\n", timer_get("dirac") + timer_get("sort"));
+    }
+    else {
+        printf(" time for 2-e integrals sorting, sec: %.2f\n", timer_get("sort"));
+        printf(" time for PySCF interface (reading integrals), sec: %.2f\n", timer_get("pyscf"));
+        printf(" total time for sorting operations, sec: %.2f\n", timer_get("pyscf") + timer_get("sort"));
     }
 
     printf(" finished at at");

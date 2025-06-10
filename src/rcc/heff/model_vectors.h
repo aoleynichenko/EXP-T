@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -46,7 +46,7 @@ void write_model_vectors_unformatted(
         double complex **coef_right
 );
 
-void write_formatted_heff(
+void write_formatted_heff_file(
         int sect_h,
         int sect_p,
         size_t *block_dims,

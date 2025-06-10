@@ -1,0 +1,13 @@
+build/
+cmake-build-debug/
+.DS_Store
+src/.DS_Store
+test/.DS_Store
+.idea/
+*.tgz
+scratch/
+MRCONEE
+MDCINT
+MDPROP
+
+

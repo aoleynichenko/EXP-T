@@ -1,6 +1,6 @@
 /*
  *  EXP-T -- A Relativistic Fock-Space Multireference Coupled Cluster Program
- *  Copyright (C) 2018-2024 The EXP-T developers.
+ *  Copyright (C) 2018-2025 The EXP-T developers.
  *
  *  This file is part of EXP-T.
  *
@@ -98,5 +98,7 @@ void multiply_irreps_Dinfh(char *irrep_1, char *irrep_2, char *prod_irrep);
 int *construct_direct_product_table(int n_irreps, char **irrep_names, void (*prod_function)(char *a, char *b, char *prod));
 
 int search_string(char *str, char **str_list, int list_len);
+
+int detect_operator_symmetry(char *bra_irrep_name, char *ket_irrep_name);
 
 #endif /* CC_SYMMETRY_H_INCLUDED */
